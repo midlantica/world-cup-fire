@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Match } from '../composables/useMatches'
+import type { Match } from '../composables/useScores'
+import { useTimezone } from '../composables/useTimezone'
 
 const props = defineProps<{
   match: Match
@@ -7,9 +8,22 @@ const props = defineProps<{
   hideTime?: boolean   // hide kickoff time from centre (By Time mode — time is in slot heading)
 }>()
 
-// 🔥 shown only when both teams are among the winningest — high combined points
-const isHot = computed(() => props.match.qualityScore >= 35)
+const { formatTime, iana } = useTimezone()
+
+// 🔥 shown only when both teams are genuinely elite — top ~15% of matchups
+const isHot = computed(() => props.match.qualityScore >= 50)
 const showFire = computed(() => props.match.status.code !== 'ft' && isHot.value)
+
+// Quality tier class for styling
+const qClass = computed(() => {
+  const q = props.match.qualityScore
+  if (q >= 50) return 'high'
+  if (q >= 35) return 'mid'
+  return 'low'
+})
+
+// Kickoff time formatted in the user's selected timezone
+const kickoffLabel = computed(() => formatTime(props.match.date))
 
 const dayDateLabel = computed(() => {
   if (!props.match.date) return ''
@@ -17,7 +31,7 @@ const dayDateLabel = computed(() => {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
-    timeZone: 'America/Chicago',
+    timeZone: iana.value,
   })
 })
 </script>
@@ -48,7 +62,7 @@ const dayDateLabel = computed(() => {
         <div class="status-badge-wrap">
           <span v-if="match.status.code === 'ns' && !hideTime" class="status-vs">
             <span class="status-dash">—</span>
-            <span class="status-label">{{ match.kickoffCT }}</span>
+            <span class="status-label">{{ kickoffLabel }}</span>
             <span class="status-dash">—</span>
           </span>
           <span v-else-if="match.status.code === 'ns' && hideTime" class="status-vs">
@@ -101,10 +115,10 @@ const dayDateLabel = computed(() => {
 .date-row {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   font-size: 0.875rem;
-  font-weight: 300;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(255 255 255);
+  color: var(--color-tropical-mint-600);
   text-align: center;
   margin-bottom: 0.3125rem;
 }

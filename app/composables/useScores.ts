@@ -1,3 +1,5 @@
+import { $fetch } from 'ofetch'
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface MatchStatus {
   code: 'ns' | 'live' | 'ht' | 'ft'
@@ -6,7 +8,7 @@ export interface MatchStatus {
 
 export interface Match {
   id: string
-  date: string
+  date: string          // ISO 8601 — format at display time via useTimezone
   home: string
   homeRec: string
   homeScore: string | null
@@ -14,8 +16,7 @@ export interface Match {
   awayRec: string
   awayScore: string | null
   status: MatchStatus
-  kickoffCT: string   // e.g. "7:30 PM CT"
-  kickoffKey: string  // rounded to nearest 30min for grouping
+  kickoffSlot: number   // UTC epoch ms rounded to nearest 30min — for slot grouping
   qualityScore: number
 }
 
@@ -24,11 +25,10 @@ export type WeekTab = 'last' | 'this' | 'next'
 // ── Game quality score ────────────────────────────────────────────────────────
 // Uses MLS points logic: W=3pts, D=1pt, L=0pts
 // We sum both teams' implied points totals.
-// Ties indicate competitive teams that play close games — worth watching.
-// We also penalise heavy loss records slightly.
-//
 // Formula: (homePoints + awayPoints) where points = W*3 + D*1
-// Bonus: if both teams have similar points (close matchup), add 2
+// Bonus: +3 if both teams are within 4 pts of each other (close matchup)
+// 🔥 fire threshold: ≥50 — requires both teams to be genuinely strong
+//    e.g. two teams each with ~23+ pts (≈8W-2L-2D) + closeness bonus
 function parseRec(summary: string): { w: number; l: number; d: number } {
   const parts = summary.split('-').map(Number)
   return { w: parts[0] ?? 0, l: parts[1] ?? 0, d: parts[2] ?? 0 }
@@ -57,14 +57,10 @@ function normalizeTeamName(name: string): string {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function toCT(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-US', {
-    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Chicago',
-  }) + ' CT'
-}
-
-// Round to nearest 30-min slot for grouping simultaneous kickoffs
-function toKickoffKey(iso: string): string {
+// Times are formatted at display time via useTimezone — we only need a stable
+// 30-min slot key for grouping, stored as UTC epoch ms.
+/** Round ISO date down to nearest 30-min UTC slot, return epoch ms for grouping */
+function toKickoffSlot(iso: string): number {
   const d = new Date(iso)
   const mins = d.getUTCMinutes()
   const rounded = mins < 15 ? 0 : mins < 45 ? 30 : 60
@@ -72,9 +68,7 @@ function toKickoffKey(iso: string): string {
   const m = rounded === 60 ? 0 : rounded
   const slot = new Date(d)
   slot.setUTCHours(h, m, 0, 0)
-  return slot.toLocaleTimeString('en-US', {
-    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Chicago',
-  }) + ' CT'
+  return slot.getTime()
 }
 
 function parseRecord(competitor: Record<string, unknown>): string {
@@ -117,8 +111,7 @@ export function transformMatches(data: Record<string, unknown>): Match[] {
       awayRec,
       awayScore: (away.score as string) ?? null,
       status: parseStatus(evt),
-      kickoffCT: toCT(evt.date as string),
-      kickoffKey: toKickoffKey(evt.date as string),
+      kickoffSlot: toKickoffSlot(evt.date as string),
       qualityScore: calcQuality(homeRec, awayRec),
     }
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())

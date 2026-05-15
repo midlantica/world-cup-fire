@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { useScores } from '~/composables/useScores'
 import { useStandings } from '~/composables/useStandings'
+import { useTimezone, TZ_OPTIONS } from '~/composables/useTimezone'
 import type { Match } from '~/composables/useScores'
 
 // ── Main tab ──────────────────────────────────────────────────────────────────
 type MainTab = 'scores' | 'standings'
 const mainTab = ref<MainTab>('scores')
+
+// ── Timezone ──────────────────────────────────────────────────────────────────
+const { selectedTz, kickoffKey: tzKickoffKey } = useTimezone()
 
 // ── Scores composable ─────────────────────────────────────────────────────────
 const { weeks, activeTab, lastUpdated, fetchWeek, selectTab } = useScores()
@@ -64,38 +68,50 @@ const dayTabs = computed<DayTab[]>(() => {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, matches]) => ({
       key,
-      label: toCTDayLabel(matches[0].date),
-      shortDate: toCTShortDate(matches[0].date),
+      label: toCTDayLabel(matches[0]!.date),
+      shortDate: toCTShortDate(matches[0]!.date),
       matches,
     }))
 })
 
-// Active day — auto-select today if present, else nearest day with games
-const activeDayKey = ref<string>('')
+// ── Active day key ────────────────────────────────────────────────────────────
+// Computed synchronously so SSR and client agree on the initial value.
+// User overrides are stored in _manualDayKey; null means "use auto".
+const _manualDayKey = ref<string | null>(null)
 
-// When week changes, reset day selection
-watch(allWeekMatches, () => {
+function autoSelectDay(days: DayTab[]): string {
+  if (days.length === 0) return ''
   const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
-  const days = dayTabs.value
-  if (days.length === 0) { activeDayKey.value = ''; return }
   const todayTab = days.find(d => d.key === todayKey)
-  if (todayTab) {
-    activeDayKey.value = todayKey
-  } else {
-    // Pick the nearest day to today (prefer future over past if equidistant)
-    const todayMs = new Date(todayKey).getTime()
-    const nearest = days.reduce((best: DayTab, d: DayTab) => {
-      const dMs = new Date(d.key).getTime()
-      const bestMs = new Date(best.key).getTime()
-      const dDiff = Math.abs(dMs - todayMs)
-      const bestDiff = Math.abs(bestMs - todayMs)
-      if (dDiff < bestDiff) return d
-      if (dDiff === bestDiff && dMs > bestMs) return d // prefer future
-      return best
-    })
-    activeDayKey.value = nearest.key
-  }
-}, { immediate: true })
+  if (todayTab) return todayKey
+  // Pick nearest day to today (prefer future if equidistant)
+  const todayMs = new Date(todayKey).getTime()
+  return days.reduce((best: DayTab, d: DayTab) => {
+    const dMs = new Date(d.key).getTime()
+    const bestMs = new Date(best.key).getTime()
+    const dDiff = Math.abs(dMs - todayMs)
+    const bestDiff = Math.abs(bestMs - todayMs)
+    if (dDiff < bestDiff) return d
+    if (dDiff === bestDiff && dMs > bestMs) return d
+    return best
+  }).key
+}
+
+const activeDayKey = computed({
+  get() {
+    // If user manually picked a day that still exists in current week, use it
+    if (_manualDayKey.value && dayTabs.value.some(d => d.key === _manualDayKey.value)) {
+      return _manualDayKey.value
+    }
+    return autoSelectDay(dayTabs.value)
+  },
+  set(val: string) {
+    _manualDayKey.value = val
+  },
+})
+
+// Reset manual selection when week changes
+watch(allWeekMatches, () => { _manualDayKey.value = null })
 
 // Matches for the selected day
 const selectedDayMatches = computed(() => {
@@ -104,25 +120,25 @@ const selectedDayMatches = computed(() => {
   return day?.matches ?? []
 })
 
-// ── By Time: group selected day by kickoffKey, sort each slot by quality ──────
-function buildTimeGroups(matches: Match[]): [string, Match[]][] {
-  const map = new Map<string, Match[]>()
+// ── By Time: group by kickoffSlot (epoch ms), label via tzKickoffKey ──────────
+// Returns [slotLabel, matches[]] sorted chronologically, each slot sorted by quality
+const byTimeGroups = computed((): [string, Match[]][] => {
+  const matches = selectedDayMatches.value
+  // Group by kickoffSlot (stable numeric key)
+  const slotMap = new Map<number, Match[]>()
   for (const m of matches) {
-    const arr = map.get(m.kickoffKey) ?? []
+    const arr = slotMap.get(m.kickoffSlot) ?? []
     arr.push(m)
-    map.set(m.kickoffKey, arr)
+    slotMap.set(m.kickoffSlot, arr)
   }
-  for (const [key, arr] of map) {
-    map.set(key, [...arr].sort((a, b) => b.qualityScore - a.qualityScore))
-  }
-  return [...map.entries()].sort((a, b) => {
-    const aTime = matches.find(m => m.kickoffKey === a[0])?.date ?? ''
-    const bTime = matches.find(m => m.kickoffKey === b[0])?.date ?? ''
-    return new Date(aTime).getTime() - new Date(bTime).getTime()
-  })
-}
-
-const byTimeGroups = computed(() => buildTimeGroups(selectedDayMatches.value))
+  // Sort slots chronologically, then sort each slot's matches by quality desc
+  return [...slotMap.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([slot, slotMatches]) => [
+      tzKickoffKey(new Date(slot).toISOString()),
+      [...slotMatches].sort((a, b) => b.qualityScore - a.qualityScore),
+    ])
+})
 
 // ── Day's Best / Week's Best: sorted by quality desc ─────────────────────────
 const bestMatches = computed(() =>
@@ -165,18 +181,34 @@ if (weeks.this.matches.length === 0) {
         <h1 class="site-title" role="button" @click="goHome">⚽ MLS Scores</h1>
         <p class="site-date">{{ todayLabel() }}</p>
       </div>
-      <div class="header-actions">
-        <span class="update-label">
-          {{ weeks[activeTab].loading ? 'Loading…' : lastUpdated ? `Updated ${lastUpdated}` : '' }}
-        </span>
-        <button
-          v-if="mainTab === 'scores'"
-          class="btn-refresh"
-          :disabled="weeks[activeTab].loading"
-          @click="fetchWeek(activeTab)"
-        >
-          ↻ Refresh
-        </button>
+      <div class="header-right">
+        <!-- Row 1: Updated … [↻ Refresh] -->
+        <div class="header-row1">
+          <span class="update-label">
+            {{ weeks[activeTab].loading ? 'Loading…' : lastUpdated ? `Updated ${lastUpdated}` : '' }}
+          </span>
+          <button
+            v-if="mainTab === 'scores'"
+            class="btn-refresh"
+            :disabled="weeks[activeTab].loading"
+            @click="fetchWeek(activeTab)"
+          >
+            ↻ Refresh
+          </button>
+        </div>
+        <!-- Row 2: Time zone: [ ET | CT | MT | PT ] -->
+        <div class="header-row2">
+          <span class="tz-label">Time Zone</span>
+          <div class="tz-toggle">
+            <button
+              v-for="tz in TZ_OPTIONS"
+              :key="tz.code"
+              class="tz-btn"
+              :class="{ active: selectedTz === tz.code }"
+              @click="selectedTz = tz.code"
+            >{{ tz.code }}</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -350,22 +382,17 @@ if (weeks.this.matches.length === 0) {
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: rgb(243 244 246);
+  color: var(--color-tropical-mint-500);
   cursor: pointer;
   user-select: none;
 }
 .site-title:hover {
-  color: rgb(255 255 255);
+  color: var(--color-tropical-mint-400);
 }
 .site-date {
   font-size: 0.6875rem;
   color: rgb(75 85 99);
   margin-top: 0.125rem;
-}
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 }
 .update-label {
   font-size: 0.6875rem;
@@ -386,6 +413,62 @@ if (weeks.this.matches.length === 0) {
   color: rgb(209 213 219);
 }
 .btn-refresh:disabled { opacity: 0.4; cursor: default; }
+
+/* ── Header right: two rows, flush right ───────────────────────────────── */
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.header-row1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.header-row2 {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.tz-label {
+  font-size: 0.647rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(90 102 119);
+  white-space: nowrap;
+}
+
+/* ── Timezone toggle ────────────────────────────────────────────────────── */
+.tz-toggle {
+  display: flex;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 0.3rem;
+  overflow: hidden;
+}
+.tz-btn {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.1875rem 0.375rem;
+  color: rgb(75 85 99);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tz-btn + .tz-btn {
+  border-left: 1px solid rgb(255 255 255 / 0.06);
+}
+.tz-btn:hover:not(.active) {
+  color: rgb(156 163 175);
+  background: rgb(255 255 255 / 0.04);
+}
+.tz-btn.active {
+  color: var(--color-tropical-mint-500);
+  background: var(--color-tropical-mint-950);
+}
 
 /* ── Main tabs ──────────────────────────────────────────────────────────── */
 .main-tabs {
@@ -409,10 +492,10 @@ if (weeks.this.matches.length === 0) {
 }
 .main-tab:hover:not(.active) { color: rgb(209 213 219); }
 .main-tab.active {
-  color: rgb(243 244 246);
-  border: 1px solid rgb(255 255 255 / 0.08);
+  color: var(--color-tropical-mint-500);
+  border: 1px solid var(--color-tropical-mint-900);
   border-bottom-color: rgb(3 7 18);
-  background: rgb(255 255 255 / 0.04);
+  background: var(--color-tropical-mint-950);
 }
 
 /* ── Week sub-tabs ──────────────────────────────────────────────────────── */
@@ -440,9 +523,9 @@ if (weeks.this.matches.length === 0) {
   background: rgb(255 255 255 / 0.04);
 }
 .week-tab.active {
-  color: rgb(209 213 219);
-  background: rgb(255 255 255 / 0.07);
-  border-color: rgb(255 255 255 / 0.1);
+  color: var(--color-tropical-mint-500);
+  background: var(--color-tropical-mint-950);
+  border-color: var(--color-tropical-mint-900);
 }
 .week-label {
   font-size: 0.5625rem;
@@ -486,8 +569,8 @@ if (weeks.this.matches.length === 0) {
   border-color: rgb(255 255 255 / 0.07);
 }
 .day-tab.active {
-  background: rgb(255 255 255 / 0.08);
-  border-color: rgb(255 255 255 / 0.12);
+  background: var(--color-tropical-mint-950);
+  border-color: var(--color-tropical-mint-900);
 }
 .day-label {
   font-size: 0.75rem;
@@ -495,12 +578,13 @@ if (weeks.this.matches.length === 0) {
   color: rgb(209 213 219);
 }
 .day-tab:not(.active) .day-label { color: rgb(107 114 128); }
+.day-tab.active .day-label { color: var(--color-tropical-mint-500); }
 .day-date {
   font-size: 0.65rem;
   color: rgb(75 85 99);
   margin-top: 0.0625rem;
 }
-.day-tab.active .day-date { color: rgb(107 114 128); }
+.day-tab.active .day-date { color: var(--color-tropical-mint-800); }
 
 /* ── View toggle ────────────────────────────────────────────────────────── */
 .view-toggle {
@@ -529,8 +613,8 @@ if (weeks.this.matches.length === 0) {
   color: rgb(156 163 175);
 }
 .toggle-btn.active {
-  background: rgb(255 255 255 / 0.1);
-  color: rgb(209 213 219);
+  background: var(--color-tropical-mint-950);
+  color: var(--color-tropical-mint-500);
 }
 
 /* ── Error / empty / skeleton ───────────────────────────────────────────── */
@@ -573,7 +657,7 @@ if (weeks.this.matches.length === 0) {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(243 244 246);
+  color: var(--color-tropical-mint-600);
   text-align: center;
 }
 .cards { display: flex; flex-direction: column; gap: 0.375rem; }

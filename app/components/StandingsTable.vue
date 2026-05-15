@@ -73,10 +73,10 @@ defineProps<{ conference: ConferenceStandings }>()
 .conf-title {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   font-size: 0.75rem;
-  font-weight: 300;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgb(156 163 175);
+  color: var(--color-tropical-mint-600);
   margin-bottom: 0.5rem;
   text-align: center;
 }
@@ -92,6 +92,7 @@ defineProps<{ conference: ConferenceStandings }>()
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   font-size: 0.8125rem;
   font-weight: 300;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
@@ -102,7 +103,7 @@ defineProps<{ conference: ConferenceStandings }>()
 .standings-table th {
   font-size: 0.625rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(75 85 99);
   padding: 0.375rem 0.5rem;
