@@ -1,10 +1,6 @@
 [build]
   command = "npm run build"
-  publish = ".output/public"
+  publish = ".netlify/build"
 
 [build.environment]
   NODE_VERSION = "22"
-
-[functions]
-  directory = ".output/server"
-  node_bundler = "nft"
