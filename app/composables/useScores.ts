@@ -12,9 +12,11 @@ export interface Match {
   home: string
   homeRec: string
   homeScore: string | null
+  homeColor: string     // hex color for home team swatch
   away: string
   awayRec: string
   awayScore: string | null
+  awayColor: string     // hex color for away team swatch
   status: MatchStatus
   kickoffSlot: number   // UTC epoch ms rounded to nearest 30min — for slot grouping
   qualityScore: number
@@ -54,6 +56,17 @@ const TEAM_NAME_MAP: Record<string, string> = {
 
 function normalizeTeamName(name: string): string {
   return TEAM_NAME_MAP[name] ?? name
+}
+
+// ── Team color ────────────────────────────────────────────────────────────────
+// ESPN provides `color` (primary) and `alternateColor` on each team object.
+// When the primary is pure black (#000000) we fall back to the alternate so the
+// swatch is visible on the dark background.
+function resolveTeamColor(color?: string, alternateColor?: string): string {
+  const primary = color ? `#${color.replace(/^#/, '')}` : ''
+  const alternate = alternateColor ? `#${alternateColor.replace(/^#/, '')}` : ''
+  if (!primary || primary.toLowerCase() === '#000000') return alternate || '#888888'
+  return primary
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -107,9 +120,11 @@ export function transformMatches(data: Record<string, unknown>): Match[] {
       home: normalizeTeamName((homeTeam?.displayName as string) || '?'),
       homeRec,
       homeScore: (home.score as string) ?? null,
+      homeColor: resolveTeamColor(homeTeam?.color as string, homeTeam?.alternateColor as string),
       away: normalizeTeamName((awayTeam?.displayName as string) || '?'),
       awayRec,
       awayScore: (away.score as string) ?? null,
+      awayColor: resolveTeamColor(awayTeam?.color as string, awayTeam?.alternateColor as string),
       status: parseStatus(evt),
       kickoffSlot: toKickoffSlot(evt.date as string),
       qualityScore: calcQuality(homeRec, awayRec),

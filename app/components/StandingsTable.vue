@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ConferenceStandings } from '~/composables/useStandings'
+import { getTeamColor } from '~/composables/useTeamColors'
 
 defineProps<{ conference: ConferenceStandings }>()
 </script>
@@ -44,6 +45,7 @@ defineProps<{ conference: ConferenceStandings }>()
               >▼</span>
             </td>
             <td class="col-team">
+              <span class="team-swatch" :style="{ background: getTeamColor(entry.team) }" aria-hidden="true" />
               {{ entry.team }}
               <span v-if="entry.overall" class="overall-rec">{{ entry.overall }}</span>
             </td>
@@ -158,6 +160,18 @@ defineProps<{ conference: ConferenceStandings }>()
   color: rgb(243 244 246) !important;
   font-weight: 500;
   min-width: 10rem;
+}
+
+.team-swatch {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border-radius: 0.15em;
+  vertical-align: middle;
+  margin-right: 0.375rem;
+  flex-shrink: 0;
+  position: relative;
+  top: -0.05em;
 }
 
 .overall-rec {

@@ -42,16 +42,19 @@ const dayDateLabel = computed(() => {
     <!-- Day + date header -->
     <div v-if="showDate" class="date-row">{{ dayDateLabel }}</div>
 
-    <!-- Main layout: 3 cols desktop, 3 rows mobile -->
+    <!-- Main layout: 3 cols desktop, 2 rows mobile -->
     <div class="match-row" :class="{ 'match-row-vs': match.status.code === 'ns' }">
 
       <!-- Col 1 / Row 1: Home team -->
       <div class="team team-home">
+        <span class="team-swatch" :style="{ background: match.homeColor }" aria-hidden="true" />
         <span class="team-name">{{ match.home }}</span>
         <span class="team-rec">{{ match.homeRec }}</span>
+        <!-- Mobile-only inline score -->
+        <span v-if="match.status.code !== 'ns'" class="team-score-inline">{{ match.homeScore ?? '0' }}</span>
       </div>
 
-      <!-- Col 2 / Row 2: Scores + badge (flex row) -->
+      <!-- Col 2 / Row 2 (desktop only): Scores + badge (flex row) -->
       <div class="scores-row">
         <!-- Home score -->
         <div v-if="match.status.code !== 'ns'" class="score score-active score-home">
@@ -83,11 +86,22 @@ const dayDateLabel = computed(() => {
         </div>
       </div>
 
-      <!-- Col 3 / Row 3: Away team -->
+      <!-- Col 3 / Row 2: Away team -->
       <div class="team team-away">
-        <span class="team-rec">{{ match.awayRec }}</span>
+        <span class="team-swatch" :style="{ background: match.awayColor }" aria-hidden="true" />
         <span class="team-name">{{ match.away }}</span>
+        <span class="team-rec">{{ match.awayRec }}</span>
+        <!-- Mobile-only inline score -->
+        <span v-if="match.status.code !== 'ns'" class="team-score-inline">{{ match.awayScore ?? '0' }}</span>
       </div>
+    </div>
+
+    <!-- Mobile-only: status badge row for live/ht (not ft, not ns) -->
+    <div v-if="match.status.code === 'live' || match.status.code === 'ht'" class="mobile-status-row">
+      <span v-if="match.status.code === 'live'" class="badge badge-live">
+        {{ match.status.clock || 'LIVE' }}
+      </span>
+      <span v-else-if="match.status.code === 'ht'" class="badge badge-ht">HT</span>
     </div>
 
     <!-- 🔥 Fire badge for top matchups -->
@@ -105,6 +119,7 @@ const dayDateLabel = computed(() => {
   padding: 0.5rem 0.75rem;
   background: rgb(255 255 255 / 0.03);
   transition: border-color 0.15s, background 0.15s;
+  position: relative;
 }
 .match-card:hover {
   border-color: rgb(255 255 255 / 0.14);
@@ -142,42 +157,67 @@ const dayDateLabel = computed(() => {
 .scores-row .score-home { flex: 1; text-align: right; }
 .scores-row .score-away { flex: 1; text-align: left; }
 
-/* ── Mobile: 3 rows ── */
+/* Mobile-only inline score — hidden on desktop */
+.team-score-inline { display: none; }
+
+/* Mobile-only status row — hidden on desktop */
+.mobile-status-row { display: none; }
+
+/* ── Mobile: 2 rows (home + away), Google-style ── */
 @media (max-width: 530px) {
   .match-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    row-gap: 0.1875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
-  /* Each row centred */
-  .team-home,
-  .team-away,
-  .scores-row {
-    width: 100%;
+  /* Hide the desktop scores-row entirely when there are scores to show inline */
+  .match-row:not(.match-row-vs) .scores-row {
+    display: none;
+  }
+
+  /* For pre-match (ns): hide team inline scores (none rendered), show scores-row as VS/time */
+  .match-row-vs .scores-row {
+    display: flex;
     justify-content: center;
-    text-align: center;
+    order: 2; /* between home and away */
   }
+  .match-row-vs .team-home { order: 1; }
+  .match-row-vs .team-away { order: 3; }
 
-  /* Team rows: inline name + rec */
+  /* Each team row: swatch + name + rec flush left, score pinned right */
   .team-home,
   .team-away {
     display: flex;
     flex-direction: row;
-    align-items: baseline;
+    align-items: center;
     gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
   }
-  /* Away: name before rec */
-  .team-away .team-rec  { order: 2; }
-  .team-away .team-name { order: 1; }
 
-  .score-active { font-size: 1.25rem; }
-  .team-name    { font-size: 0.9375rem; }
+  /* Score pushed to far right */
+  .team-score-inline {
+    display: block;
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: rgb(243 244 246);
+    line-height: 1;
+  }
+
+  .team-name { font-size: 0.9375rem; }
 
   /* status-vs: no extra padding */
   .status-vs    { gap: 0.375rem; padding-inline: 0; }
   .status-label { padding-inline: 0; }
+
+  /* Live/HT badge shown below the two team rows */
+  .mobile-status-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
 }
 
 /* ── Teams ── */
@@ -187,7 +227,7 @@ const dayDateLabel = computed(() => {
   gap: 0.5rem;
 }
 
-/* Desktop-only alignment — scoped so mobile centre overrides don't get clobbered */
+/* Desktop-only alignment */
 @media (min-width: 531px) {
   .team-home {
     justify-content: flex-end;
@@ -197,6 +237,14 @@ const dayDateLabel = computed(() => {
     justify-content: flex-start;
     text-align: left;
   }
+}
+.team-swatch {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border-radius: 0.15em;
+  flex-shrink: 0;
+  align-self: center;
 }
 .team-name {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -272,12 +320,13 @@ const dayDateLabel = computed(() => {
 
 /* ── Fire badge ── */
 .quality-row {
-  margin-top: 0.25rem;
-  display: flex;
-  justify-content: center;
+  position: absolute;
+  top: -0.2em;
+  right: -0.2em;
+  line-height: 1;
 }
 .fire-badge {
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1;
 }
 </style>

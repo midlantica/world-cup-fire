@@ -358,7 +358,7 @@ if (weeks.this.matches.length === 0) {
     <!-- ── Footer ─────────────────────────────────────────────────────────── -->
     <footer class="footer">
       <span>Live data via ESPN API</span>
-      <span v-if="mainTab === 'scores'">Quality = MLS pts formula · 🍺🍺🍺 best games</span>
+      <span v-if="mainTab === 'scores'">Quality = MLS pts formula · 🔥 best games</span>
     </footer>
 
   </main>
@@ -501,22 +501,29 @@ if (weeks.this.matches.length === 0) {
 /* ── Week sub-tabs ──────────────────────────────────────────────────────── */
 .week-tabs {
   display: flex;
-  gap: 0.25rem;
+  width: 100%;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
   margin-bottom: 1rem;
 }
 .week-tab {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.375rem 0.875rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
+  justify-content: center;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(75 85 99);
   background: transparent;
-  border: 1px solid transparent;
+  border: none;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  transition: color 0.15s, background 0.15s;
+}
+.week-tab + .week-tab {
+  border-left: 1px solid rgb(255 255 255 / 0.08);
 }
 .week-tab:hover:not(.active) {
   color: rgb(156 163 175);
@@ -525,10 +532,9 @@ if (weeks.this.matches.length === 0) {
 .week-tab.active {
   color: var(--color-tropical-mint-500);
   background: var(--color-tropical-mint-950);
-  border-color: var(--color-tropical-mint-900);
 }
 .week-label {
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 400;
   opacity: 0.6;
   margin-top: 0.125rem;
