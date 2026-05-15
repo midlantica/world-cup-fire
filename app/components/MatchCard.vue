@@ -202,7 +202,7 @@ const dayDateLabel = computed(() => {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: oklab(96.4% -0.002 -0.006);
+    color: var(--color-text-primary);
     line-height: 1;
   }
 
@@ -251,7 +251,7 @@ const dayDateLabel = computed(() => {
   font-size: 1rem;
   font-weight: 300;
   letter-spacing: 0.04em;
-  color: oklab(96.4% -0.002 -0.006);
+  color: var(--color-text-primary);
 }
 .team-rec {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -268,9 +268,9 @@ const dayDateLabel = computed(() => {
 }
 .score-active {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: oklab(96.4% -0.002 -0.006);
+  color: var(--color-text-primary);
 }
 
 /* ── Status badge ── */
@@ -305,8 +305,8 @@ const dayDateLabel = computed(() => {
 }
 .badge-live {
   background: oklab(34.8% -0.072 0.028 / 0.6);
-  color: oklab(88.5% -0.107 0.042);
-  border: 1px solid oklab(88.5% -0.107 0.042 / 0.2);
+  color: var(--color-text-accent);
+  border: 1px solid color-mix(in oklab, var(--color-text-accent) 20%, transparent);
 }
 .badge-ht {
   background: oklab(33.2% 0.028 0.062 / 0.6);

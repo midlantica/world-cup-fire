@@ -122,7 +122,7 @@ defineProps<{ conference: ConferenceStandings }>()
 
 .standings-table td {
   padding: 0.2rem 0;
-  color: oklab(85.5% -0.003 -0.012);
+  color: var(--color-text-secondary);
   text-align: right;
 }
 
@@ -143,12 +143,12 @@ defineProps<{ conference: ConferenceStandings }>()
   margin-left: 0.125rem;
   vertical-align: middle;
 }
-.rank-up   { color: oklab(82.5% -0.130 0.052); }
+.rank-up   { color: var(--color-text-accent); }
 .rank-down { color: oklab(68.5% 0.130 0.048); }
 
 .col-team {
   text-align: left !important;
-  color: oklab(96.4% -0.002 -0.006) !important;
+  color: var(--color-text-primary) !important;
   font-weight: 500;
   min-width: 10rem;
 }
@@ -178,7 +178,7 @@ defineProps<{ conference: ConferenceStandings }>()
 
 .col-pts {
   font-weight: 700;
-  color: oklab(96.4% -0.002 -0.006) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .col-ppg {
@@ -187,7 +187,7 @@ defineProps<{ conference: ConferenceStandings }>()
 }
 
 .gd-pos {
-  color: oklab(82.5% -0.130 0.052) !important;
+  color: var(--color-text-accent) !important;
 }
 .gd-neg {
   color: oklab(68.5% 0.130 0.048) !important;

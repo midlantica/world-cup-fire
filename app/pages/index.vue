@@ -408,7 +408,7 @@ if (weeks.this.matches.length === 0) {
 }
 .btn-refresh:hover:not(:disabled) {
   background: oklab(100% 0 0 / 0.06);
-  color: oklab(85.5% -0.003 -0.012);
+  color: var(--color-text-secondary);
 }
 .btn-refresh:disabled { opacity: 0.4; cursor: default; }
 .btn-refresh.invisible { visibility: hidden; }
@@ -489,7 +489,7 @@ if (weeks.this.matches.length === 0) {
   position: relative;
   bottom: -1px;
 }
-.main-tab:hover:not(.active) { color: oklab(85.5% -0.003 -0.012); }
+.main-tab:hover:not(.active) { color: var(--color-text-secondary); }
 .main-tab.active {
   color: var(--color-tropical-mint-500);
   border: 1px solid var(--color-tropical-mint-900);
@@ -580,7 +580,7 @@ if (weeks.this.matches.length === 0) {
 .day-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: oklab(85.5% -0.003 -0.012);
+  color: var(--color-text-secondary);
 }
 .day-tab:not(.active) .day-label { color: oklab(50.2% -0.004 -0.018); }
 .day-tab.active .day-label { color: var(--color-tropical-mint-500); }
