@@ -1,0 +1,18 @@
+# Nuxt build output
+.nuxt/
+.output/
+.netlify/
+dist/
+
+# Dependencies
+node_modules/
+
+# Lockfiles (only pnpm-lock.yaml should be committed)
+package-lock.json
+yarn.lock
+
+# Misc
+.DS_Store
+.env
+.env.*
+!.env.example

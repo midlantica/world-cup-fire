@@ -1,0 +1,592 @@
+<script setup lang="ts">
+import { useScores } from '~/composables/useScores'
+import { useStandings } from '~/composables/useStandings'
+import type { Match } from '~/composables/useScores'
+
+// ── Main tab ──────────────────────────────────────────────────────────────────
+type MainTab = 'scores' | 'standings'
+const mainTab = ref<MainTab>('scores')
+
+// ── Scores composable ─────────────────────────────────────────────────────────
+const { weeks, activeTab, lastUpdated, fetchWeek, selectTab } = useScores()
+
+// ── Standings composable ──────────────────────────────────────────────────────
+const { conferences, loading: standingsLoading, error: standingsError, loaded: standingsLoaded, fetchStandings } = useStandings()
+
+async function switchMainTab(tab: MainTab) {
+  mainTab.value = tab
+  if (tab === 'standings' && !standingsLoaded.value) {
+    await fetchStandings()
+  }
+}
+
+function goHome() {
+  mainTab.value = 'scores'
+  selectTab('this')
+  viewMode.value = 'bytime'
+}
+
+// ── View mode: By Time / Day's Best / Week's Best ────────────────────────────
+type ViewMode = 'bytime' | 'todaybest' | 'weekbest'
+const viewMode = ref<ViewMode>('bytime')
+
+// ── All matches for active week ───────────────────────────────────────────────
+const allWeekMatches = computed(() => weeks[activeTab.value].matches)
+
+// ── Day sub-tabs ──────────────────────────────────────────────────────────────
+// Build list of unique days that have games (CT date label)
+interface DayTab {
+  key: string        // e.g. "2026-05-14"
+  label: string      // e.g. "Wed"
+  shortDate: string  // e.g. "May 14"
+  matches: Match[]
+}
+
+function toCTDateKey(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }) // YYYY-MM-DD
+}
+function toCTDayLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Chicago' })
+}
+function toCTShortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Chicago' })
+}
+
+const dayTabs = computed<DayTab[]>(() => {
+  const map = new Map<string, Match[]>()
+  for (const m of allWeekMatches.value) {
+    const key = toCTDateKey(m.date)
+    const arr = map.get(key) ?? []
+    arr.push(m)
+    map.set(key, arr)
+  }
+  return [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, matches]) => ({
+      key,
+      label: toCTDayLabel(matches[0].date),
+      shortDate: toCTShortDate(matches[0].date),
+      matches,
+    }))
+})
+
+// Active day — auto-select today if present, else first day with games
+const activeDayKey = ref<string>('')
+
+// When week changes, reset day selection
+watch(allWeekMatches, () => {
+  const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+  const days = dayTabs.value
+  if (days.length === 0) { activeDayKey.value = ''; return }
+  const todayTab = days.find(d => d.key === todayKey)
+  activeDayKey.value = todayTab ? todayKey : days[0].key
+}, { immediate: true })
+
+// Matches for the selected day
+const selectedDayMatches = computed(() => {
+  if (viewMode.value === 'weekbest') return allWeekMatches.value
+  const day = dayTabs.value.find(d => d.key === activeDayKey.value)
+  return day?.matches ?? []
+})
+
+// ── By Time: group selected day by kickoffKey, sort each slot by quality ──────
+function buildTimeGroups(matches: Match[]): [string, Match[]][] {
+  const map = new Map<string, Match[]>()
+  for (const m of matches) {
+    const arr = map.get(m.kickoffKey) ?? []
+    arr.push(m)
+    map.set(m.kickoffKey, arr)
+  }
+  for (const [key, arr] of map) {
+    map.set(key, [...arr].sort((a, b) => b.qualityScore - a.qualityScore))
+  }
+  return [...map.entries()].sort((a, b) => {
+    const aTime = matches.find(m => m.kickoffKey === a[0])?.date ?? ''
+    const bTime = matches.find(m => m.kickoffKey === b[0])?.date ?? ''
+    return new Date(aTime).getTime() - new Date(bTime).getTime()
+  })
+}
+
+const byTimeGroups = computed(() => buildTimeGroups(selectedDayMatches.value))
+
+// ── Day's Best / Week's Best: sorted by quality desc ─────────────────────────
+const bestMatches = computed(() =>
+  [...selectedDayMatches.value].sort((a, b) => b.qualityScore - a.qualityScore)
+)
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function todayLabel(): string {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  })
+}
+
+function selectDay(key: string) {
+  activeDayKey.value = key
+  if (viewMode.value === 'weekbest') viewMode.value = 'todaybest'
+}
+
+// ── Initial load ──────────────────────────────────────────────────────────────
+await fetchWeek('this')
+
+if (weeks.this.matches.length === 0) {
+  activeTab.value = 'last'
+  await fetchWeek('last')
+} else {
+  const allDone = weeks.this.matches.every(m => m.status.code === 'ft')
+  if (allDone) {
+    activeTab.value = 'next'
+    await fetchWeek('next')
+  }
+}
+</script>
+
+<template>
+  <main class="page">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header class="header">
+      <div>
+        <h1 class="site-title" role="button" @click="goHome">⚽ MLS Scores</h1>
+        <p class="site-date">{{ todayLabel() }}</p>
+      </div>
+      <div class="header-actions">
+        <span class="update-label">
+          {{ weeks[activeTab].loading ? 'Loading…' : lastUpdated ? `Updated ${lastUpdated}` : '' }}
+        </span>
+        <button
+          v-if="mainTab === 'scores'"
+          class="btn-refresh"
+          :disabled="weeks[activeTab].loading"
+          @click="fetchWeek(activeTab)"
+        >
+          ↻ Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Main tabs: Scores / Standings ─────────────────────────────────── -->
+    <div class="main-tabs">
+      <button
+        class="main-tab"
+        :class="{ active: mainTab === 'scores' }"
+        @click="switchMainTab('scores')"
+      >
+        Scores
+      </button>
+      <button
+        class="main-tab"
+        :class="{ active: mainTab === 'standings' }"
+        @click="switchMainTab('standings')"
+      >
+        Standings
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- SCORES TAB                                                          -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <section v-if="mainTab === 'scores'">
+
+      <!-- Week sub-tabs -->
+      <div class="week-tabs">
+        <button
+          v-for="tab in (['last', 'this', 'next'] as const)"
+          :key="tab"
+          class="week-tab"
+          :class="{ active: activeTab === tab }"
+          @click="selectTab(tab)"
+        >
+          <span v-if="tab === 'last'">← Last</span>
+          <span v-else-if="tab === 'this'">This Week</span>
+          <span v-else>Next →</span>
+          <span class="week-label">{{ weeks[tab].label }}</span>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div v-if="weeks[activeTab].error" class="error-box">
+        {{ weeks[activeTab].error }}
+      </div>
+
+      <!-- Loading skeleton -->
+      <div v-else-if="weeks[activeTab].loading && !allWeekMatches.length" class="skeleton-list">
+        <div v-for="i in 6" :key="i" class="skeleton-row" />
+      </div>
+
+      <!-- No matches -->
+      <p v-else-if="!weeks[activeTab].loading && !allWeekMatches.length" class="empty-msg">
+        No MLS matches found for this period.
+      </p>
+
+      <template v-else>
+
+        <!-- View toggle: By Time / Day's Best / Week's Best -->
+        <div class="controls-row">
+          <!-- Day sub-tabs: always visible; in Week's Best all tabs appear selected -->
+          <div class="day-tabs">
+            <button
+              v-for="day in dayTabs"
+              :key="day.key"
+              class="day-tab"
+              :class="{ active: viewMode === 'weekbest' || activeDayKey === day.key }"
+              @click="selectDay(day.key)"
+            >
+              <span class="day-label">{{ day.label }}</span>
+              <span class="day-date">{{ day.shortDate }}</span>
+            </button>
+          </div>
+
+          <div class="view-toggle">
+            <button
+              class="toggle-btn"
+              :class="{ active: viewMode === 'bytime' }"
+              @click="viewMode = 'bytime'"
+            >
+              By Time
+            </button>
+            <button
+              class="toggle-btn"
+              :class="{ active: viewMode === 'todaybest' }"
+              @click="viewMode = 'todaybest'"
+            >
+              Day's Best
+            </button>
+            <button
+              class="toggle-btn"
+              :class="{ active: viewMode === 'weekbest' }"
+              @click="viewMode = 'weekbest'"
+            >
+              Week's Best
+            </button>
+          </div>
+        </div>
+
+        <!-- ── BY TIME view ───────────────────────────────────────────── -->
+        <div v-if="viewMode === 'bytime'" class="match-list">
+          <p v-if="!selectedDayMatches.length" class="empty-msg">No games on this day.</p>
+          <section v-for="[slot, slotMatches] in byTimeGroups" :key="slot" class="slot-section">
+            <h2 class="slot-heading">{{ slot }}</h2>
+            <div class="cards">
+              <MatchCard v-for="m in slotMatches" :key="m.id" :match="m" :hide-time="true" />
+            </div>
+          </section>
+        </div>
+
+        <!-- ── TODAY'S BEST / WEEK'S BEST view ───────────────────────── -->
+        <div v-else class="match-list">
+          <p v-if="!bestMatches.length" class="empty-msg">No games found.</p>
+          <div class="cards">
+            <MatchCard v-for="m in bestMatches" :key="m.id" :match="m" :show-date="viewMode === 'weekbest'" />
+          </div>
+        </div>
+
+      </template>
+
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- STANDINGS TAB                                                       -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <section v-else-if="mainTab === 'standings'" class="standings-section">
+
+      <div v-if="standingsLoading" class="skeleton-list">
+        <div v-for="i in 4" :key="i" class="skeleton-row" style="height: 2rem;" />
+      </div>
+
+      <div v-else-if="standingsError" class="error-box">
+        {{ standingsError }}
+      </div>
+
+      <div v-else-if="conferences.length" class="conferences-grid">
+        <StandingsTable
+          v-for="conf in conferences"
+          :key="conf.name"
+          :conference="conf"
+        />
+      </div>
+
+    </section>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <footer class="footer">
+      <span>Live data via ESPN API</span>
+      <span v-if="mainTab === 'scores'">Quality = MLS pts formula · 🍺🍺🍺 best games</span>
+    </footer>
+
+  </main>
+</template>
+
+<style scoped>
+.page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.site-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(243 244 246);
+  cursor: pointer;
+  user-select: none;
+}
+.site-title:hover {
+  color: rgb(255 255 255);
+}
+.site-date {
+  font-size: 0.6875rem;
+  color: rgb(75 85 99);
+  margin-top: 0.125rem;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.update-label {
+  font-size: 0.6875rem;
+  color: rgb(75 85 99);
+}
+.btn-refresh {
+  font-size: 0.6875rem;
+  color: rgb(107 114 128);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.375rem;
+  padding: 0.3125rem 0.625rem;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-refresh:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(209 213 219);
+}
+.btn-refresh:disabled { opacity: 0.4; cursor: default; }
+
+/* ── Main tabs ──────────────────────────────────────────────────────────── */
+.main-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  margin-bottom: 1.25rem;
+}
+.main-tab {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem 0.375rem 0 0;
+  color: rgb(107 114 128);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+  bottom: -1px;
+}
+.main-tab:hover:not(.active) { color: rgb(209 213 219); }
+.main-tab.active {
+  color: rgb(243 244 246);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-bottom-color: rgb(3 7 18);
+  background: rgb(255 255 255 / 0.04);
+}
+
+/* ── Week sub-tabs ──────────────────────────────────────────────────────── */
+.week-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+.week-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(75 85 99);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.week-tab:hover:not(.active) {
+  color: rgb(156 163 175);
+  background: rgb(255 255 255 / 0.04);
+}
+.week-tab.active {
+  color: rgb(209 213 219);
+  background: rgb(255 255 255 / 0.07);
+  border-color: rgb(255 255 255 / 0.1);
+}
+.week-label {
+  font-size: 0.5625rem;
+  font-weight: 400;
+  opacity: 0.6;
+  margin-top: 0.125rem;
+}
+
+/* ── Controls row (day tabs + view toggle) ──────────────────────────────── */
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Day sub-tabs ───────────────────────────────────────────────────────── */
+.day-tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+.day-tabs-placeholder {
+  flex: 1;
+}
+.day-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.3125rem 0.625rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.day-tab:hover:not(.active) {
+  background: rgb(255 255 255 / 0.04);
+  border-color: rgb(255 255 255 / 0.07);
+}
+.day-tab.active {
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.12);
+}
+.day-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(209 213 219);
+}
+.day-tab:not(.active) .day-label { color: rgb(107 114 128); }
+.day-date {
+  font-size: 0.65rem;
+  color: rgb(75 85 99);
+  margin-top: 0.0625rem;
+}
+.day-tab.active .day-date { color: rgb(107 114 128); }
+
+/* ── View toggle ────────────────────────────────────────────────────────── */
+.view-toggle {
+  display: flex;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.375rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.toggle-btn {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.3125rem 0.625rem;
+  color: rgb(107 114 128);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.toggle-btn + .toggle-btn {
+  border-left: 1px solid rgb(255 255 255 / 0.08);
+}
+.toggle-btn:hover:not(.active) {
+  background: rgb(255 255 255 / 0.05);
+  color: rgb(156 163 175);
+}
+.toggle-btn.active {
+  background: rgb(255 255 255 / 0.1);
+  color: rgb(209 213 219);
+}
+
+/* ── Error / empty / skeleton ───────────────────────────────────────────── */
+.error-box {
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  background: rgb(127 29 29 / 0.3);
+  border: 1px solid rgb(248 113 113 / 0.2);
+  padding: 0.625rem 1rem;
+  font-size: 0.75rem;
+  color: rgb(252 165 165);
+}
+.skeleton-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.skeleton-row {
+  height: 2.75rem;
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.05);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.empty-msg {
+  font-size: 0.875rem;
+  color: rgb(75 85 99);
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* ── Match list ─────────────────────────────────────────────────────────── */
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.slot-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.slot-heading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(243 244 246);
+  text-align: center;
+}
+.cards { display: flex; flex-direction: column; gap: 0.375rem; }
+
+/* ── Standings ──────────────────────────────────────────────────────────── */
+.standings-section { margin-top: 0.5rem; }
+.conferences-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .conferences-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.footer {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 0.06);
+  font-size: 0.6875rem;
+  color: rgb(55 65 81);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+</style>
