@@ -237,6 +237,10 @@ const dayDateLabel = computed(() => {
     justify-content: flex-start;
     text-align: left;
   }
+  /* Pull the W-T-L record to the left of the swatch on the away side */
+  .team-away .team-rec {
+    order: -1;
+  }
 }
 .team-swatch {
   display: inline-block;
@@ -255,7 +259,7 @@ const dayDateLabel = computed(() => {
 }
 .team-rec {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 300;
   color: var(--color-text-secondary);
   white-space: nowrap;
