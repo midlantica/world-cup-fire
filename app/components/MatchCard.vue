@@ -174,7 +174,7 @@
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-tropical-mint-600);
+    color: var(--color-theme-500);
     text-align: center;
     margin-bottom: 0.3125rem;
   }

@@ -81,7 +81,7 @@
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-tropical-mint-600);
+    color: var(--color-theme-500);
     margin-bottom: 0.5rem;
     text-align: center;
   }

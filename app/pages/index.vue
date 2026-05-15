@@ -2,6 +2,7 @@
   import { useScores } from '~/composables/useScores'
   import { useStandings } from '~/composables/useStandings'
   import { useTimezone, TZ_OPTIONS } from '~/composables/useTimezone'
+  import { useMyTeam, TEAM_LIST } from '~/composables/useMyTeam'
   import type { Match } from '~/composables/useScores'
 
   // ── Main tab ──────────────────────────────────────────────────────────────────
@@ -27,6 +28,33 @@
     loaded: standingsLoaded,
     fetchStandings,
   } = useStandings()
+
+  // ── My Team ───────────────────────────────────────────────────────────────────
+  const { selectedTeam, selectTeam, logoUrl } = useMyTeam()
+  const teamPickerOpen = ref(false)
+  const teamPickerRef = ref<HTMLElement | null>(null)
+
+  function toggleTeamPicker() {
+    teamPickerOpen.value = !teamPickerOpen.value
+  }
+
+  function chooseTeam(name: string | null) {
+    selectTeam(name)
+    teamPickerOpen.value = false
+  }
+
+  // Close picker on outside click
+  onMounted(() => {
+    document.addEventListener('click', (e) => {
+      if (
+        teamPickerOpen.value &&
+        teamPickerRef.value &&
+        !teamPickerRef.value.contains(e.target as Node)
+      ) {
+        teamPickerOpen.value = false
+      }
+    })
+  })
 
   async function switchMainTab(tab: MainTab) {
     mainTab.value = tab
@@ -95,8 +123,6 @@
   })
 
   // ── Active day key ────────────────────────────────────────────────────────────
-  // Computed synchronously so SSR and client agree on the initial value.
-  // User overrides are stored in _manualDayKey; null means "use auto".
   const _manualDayKey = ref<string | null>(null)
 
   function autoSelectDay(days: DayTab[]): string {
@@ -106,7 +132,6 @@
     })
     const todayTab = days.find((d) => d.key === todayKey)
     if (todayTab) return todayKey
-    // Pick nearest day to today (prefer future if equidistant)
     const todayMs = new Date(todayKey).getTime()
     return days.reduce((best: DayTab, d: DayTab) => {
       const dMs = new Date(d.key).getTime()
@@ -121,7 +146,6 @@
 
   const activeDayKey = computed({
     get() {
-      // If user manually picked a day that still exists in current week, use it
       if (
         _manualDayKey.value &&
         dayTabs.value.some((d) => d.key === _manualDayKey.value)
@@ -135,30 +159,25 @@
     },
   })
 
-  // Reset manual selection when week changes
   watch(allWeekMatches, () => {
     _manualDayKey.value = null
   })
 
-  // Matches for the selected day
   const selectedDayMatches = computed(() => {
     if (viewMode.value === 'weekbest') return allWeekMatches.value
     const day = dayTabs.value.find((d) => d.key === activeDayKey.value)
     return day?.matches ?? []
   })
 
-  // ── By Time: group by kickoffSlot (epoch ms), label via tzKickoffKey ──────────
-  // Returns [slotLabel, matches[]] sorted chronologically, each slot sorted by quality
+  // ── By Time: group by kickoffSlot ─────────────────────────────────────────────
   const byTimeGroups = computed((): [string, Match[]][] => {
     const matches = selectedDayMatches.value
-    // Group by kickoffSlot (stable numeric key)
     const slotMap = new Map<number, Match[]>()
     for (const m of matches) {
       const arr = slotMap.get(m.kickoffSlot) ?? []
       arr.push(m)
       slotMap.set(m.kickoffSlot, arr)
     }
-    // Sort slots chronologically, then sort each slot's matches by quality desc
     return [...slotMap.entries()]
       .sort(([a], [b]) => a - b)
       .map(([slot, slotMatches]) => [
@@ -167,7 +186,7 @@
       ])
   })
 
-  // ── Day's Best / Week's Best: sorted by quality desc ─────────────────────────
+  // ── Day's Best / Week's Best ──────────────────────────────────────────────────
   const bestMatches = computed(() =>
     [...selectedDayMatches.value].sort(
       (a, b) => b.qualityScore - a.qualityScore
@@ -254,7 +273,7 @@
       </div>
     </header>
 
-    <!-- ── Main tabs: Scores / Standings ─────────────────────────────────── -->
+    <!-- ── Main tabs: Scores / Standings / [My Team picker] ──────────────── -->
     <ClientOnly>
       <div class="main-tabs">
         <button
@@ -271,6 +290,58 @@
         >
           Standings
         </button>
+
+        <!-- Spacer -->
+        <div class="tabs-spacer" />
+
+        <!-- My Team picker -->
+        <div ref="teamPickerRef" class="my-team-wrap">
+          <button
+            class="my-team-btn"
+            :class="{ 'has-team': !!selectedTeam }"
+            :title="
+              selectedTeam ? `My Team: ${selectedTeam}` : 'Choose your team'
+            "
+            @click="toggleTeamPicker"
+          >
+            <!-- Logo or placeholder box -->
+            <span class="team-logo-slot">
+              <img
+                v-if="logoUrl"
+                :src="logoUrl"
+                :alt="selectedTeam ?? ''"
+                class="team-logo-img"
+              />
+              <span v-else class="team-logo-placeholder" />
+            </span>
+            <span class="my-team-label">
+              {{ selectedTeam ?? 'My Team' }}
+            </span>
+            <span class="my-team-caret">▾</span>
+          </button>
+
+          <!-- Dropdown -->
+          <div v-if="teamPickerOpen" class="team-dropdown">
+            <div class="team-dropdown-inner">
+              <!-- Clear option -->
+              <button
+                class="team-option team-option-clear"
+                @click="chooseTeam(null)"
+              >
+                — No team —
+              </button>
+              <button
+                v-for="team in TEAM_LIST"
+                :key="team"
+                class="team-option"
+                :class="{ selected: selectedTeam === team }"
+                @click="chooseTeam(team)"
+              >
+                {{ team }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ════════════════════════════════════════════════════════════════════ -->
@@ -312,7 +383,7 @@
         <template v-else>
           <!-- View toggle: By Time / Day's Best / Week's Best -->
           <div class="controls-row">
-            <!-- Day sub-tabs: always visible; in Week's Best all tabs appear selected -->
+            <!-- Day sub-tabs -->
             <div class="day-tabs">
               <button
                 v-for="day in dayTabs"
@@ -445,12 +516,13 @@
     font-size: 1.125rem;
     font-weight: 600;
     letter-spacing: -0.01em;
-    color: var(--color-tropical-mint-500);
+    color: var(--color-theme-400);
     cursor: pointer;
     user-select: none;
+    transition: color 0.15s;
   }
   .site-title:hover {
-    color: var(--color-tropical-mint-400);
+    color: var(--color-theme-300);
   }
   .site-date {
     font-size: 0.6875rem;
@@ -460,6 +532,11 @@
   .update-label {
     font-size: 0.6875rem;
     color: var(--color-text-secondary);
+  }
+  @media (max-width: 530px) {
+    .update-label {
+      display: none;
+    }
   }
   .btn-refresh {
     font-size: 0.6rem;
@@ -510,6 +587,11 @@
     color: var(--color-text-secondary);
     white-space: nowrap;
   }
+  @media (max-width: 530px) {
+    .tz-label {
+      display: none;
+    }
+  }
 
   /* ── Timezone toggle ────────────────────────────────────────────────────── */
   .tz-toggle {
@@ -539,16 +621,19 @@
     background: oklab(100% 0 0 / 0.04);
   }
   .tz-btn.active {
-    color: var(--color-tropical-mint-500);
-    background: var(--color-tropical-mint-950);
+    color: var(--color-theme-300);
+    background: var(--color-theme-900);
   }
 
   /* ── Main tabs ──────────────────────────────────────────────────────────── */
   .main-tabs {
     display: flex;
+    align-items: stretch;
     gap: 0.25rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.08);
-    margin-bottom: 1.25rem;
+  }
+  .tabs-spacer {
+    flex: 1;
   }
   .main-tab {
     font-size: 0.875rem;
@@ -569,18 +654,140 @@
     color: var(--color-text-secondary);
   }
   .main-tab.active {
-    color: var(--color-tropical-mint-500);
-    border: 1px solid var(--color-tropical-mint-900);
-    border-bottom-color: oklab(4.2% -0.001 -0.012);
-    background: var(--color-tropical-mint-950);
+    color: var(--color-theme-300);
+    border: 1px solid var(--color-theme-700);
+    border-bottom-color: var(--app-bg, oklch(12.9% 0.042 264.3));
+    background: var(--color-theme-900);
+  }
+
+  /* ── My Team picker ─────────────────────────────────────────────────────── */
+  .my-team-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-bottom: 1px; /* sit just above the border-bottom */
+  }
+
+  .my-team-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.5rem 0.3rem 0.35rem;
+    border-radius: 0.375rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .my-team-btn:hover {
+    background: oklab(100% 0 0 / 0.06);
+  }
+  .my-team-btn.has-team {
+    background: var(--color-theme-900);
+  }
+
+  /* Logo slot: fixed-size box, slate bg until a logo fills it */
+  .team-logo-slot {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .team-logo-placeholder {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.2rem;
+    background: var(--color-theme-800);
+    opacity: 0.5;
+  }
+  .team-logo-img {
+    width: 1.5rem;
+    height: 1.5rem;
+    object-fit: contain;
+    border-radius: 0.15rem;
+  }
+
+  .my-team-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--color-theme-300);
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .my-team-caret {
+    font-size: 0.6rem;
+    color: var(--color-text-secondary);
+    line-height: 1;
+  }
+
+  /* Dropdown */
+  .team-dropdown {
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    right: 0;
+    z-index: 100;
+    background: oklch(18% 0.025 260);
+    border: 1px solid var(--color-theme-800);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px oklab(0% 0 0 / 0.5);
+    min-width: 14rem;
+    max-height: 22rem;
+    overflow: hidden;
+  }
+  .team-dropdown-inner {
+    overflow-y: auto;
+    max-height: 22rem;
+    padding: 0.25rem 0;
+  }
+  .team-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.4rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition:
+      background 0.1s,
+      color 0.1s;
+    white-space: nowrap;
+  }
+  .team-option:hover {
+    background: var(--color-theme-900);
+    color: var(--color-theme-300);
+  }
+  .team-option.selected {
+    color: var(--color-theme-400);
+    background: var(--color-theme-950);
+    font-weight: 600;
+  }
+  .team-option-clear {
+    font-style: italic;
+    opacity: 0.6;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.06);
+    margin-bottom: 0.125rem;
+  }
+  .team-option-clear:hover {
+    opacity: 1;
   }
 
   /* ── Week sub-tabs ──────────────────────────────────────────────────────── */
   .week-tabs {
     display: flex;
     width: 100%;
-    border: 1px solid oklab(100% 0 0 / 0.1);
-    border-radius: 0.5rem;
+    border-left: 1px solid oklab(100% 0 0 / 0.1);
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    border-right: 1px solid oklab(100% 0 0 / 0.1);
+    border-radius: 0rem 0rem 0.5rem 0.5rem;
     overflow: hidden;
     margin-bottom: 1rem;
   }
@@ -609,8 +816,8 @@
     background: oklab(100% 0 0 / 0.04);
   }
   .week-tab.active {
-    color: var(--color-tropical-mint-500);
-    background: var(--color-tropical-mint-950);
+    color: var(--color-theme-300);
+    background: var(--color-theme-900);
   }
   .week-label {
     font-size: 0.625rem;
@@ -657,8 +864,8 @@
     border-color: oklab(100% 0 0 / 0.07);
   }
   .day-tab.active {
-    background: var(--color-tropical-mint-950);
-    border-color: var(--color-tropical-mint-900);
+    background: var(--color-theme-900);
+    border-color: var(--color-theme-700);
   }
   .day-label {
     font-size: 0.75rem;
@@ -669,7 +876,7 @@
     color: var(--color-text-secondary);
   }
   .day-tab.active .day-label {
-    color: var(--color-tropical-mint-500);
+    color: var(--color-theme-300);
   }
   .day-date {
     font-size: 0.65rem;
@@ -677,7 +884,7 @@
     margin-top: 0.0625rem;
   }
   .day-tab.active .day-date {
-    color: var(--color-tropical-mint-800);
+    color: var(--color-theme-500);
   }
 
   /* ── View toggle ────────────────────────────────────────────────────────── */
@@ -709,8 +916,8 @@
     color: var(--color-text-secondary);
   }
   .toggle-btn.active {
-    background: var(--color-tropical-mint-950);
-    color: var(--color-tropical-mint-500);
+    background: var(--color-theme-900);
+    color: var(--color-theme-300);
   }
 
   /* ── Error / empty / skeleton ───────────────────────────────────────────── */
@@ -767,7 +974,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-tropical-mint-600);
+    color: var(--color-theme-500);
     text-align: center;
   }
   .slot-heading :deep(.ampm) {
@@ -781,7 +988,7 @@
 
   /* ── Standings ──────────────────────────────────────────────────────────── */
   .standings-section {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
   }
 
   .conferences-grid {
