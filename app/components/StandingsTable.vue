@@ -99,7 +99,7 @@ defineProps<{ conference: ConferenceStandings }>()
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
   padding: 0.2rem 0;
   text-align: right;
 }
@@ -128,7 +128,7 @@ defineProps<{ conference: ConferenceStandings }>()
 
 .col-rank {
   text-align: left !important;
-  color: oklab(38.5% -0.005 -0.020) !important;
+  color: var(--color-text-secondary) !important;
   font-size: 0.6875rem;
   white-space: nowrap;
 }
@@ -168,7 +168,7 @@ defineProps<{ conference: ConferenceStandings }>()
 .overall-rec {
   font-size: 0.85rem;
   font-weight: 300;
-  color: oklab(58.3% -0.004 -0.019);
+  color: var(--color-text-secondary);
   margin-left: 0.375rem;
 }
 
@@ -182,7 +182,7 @@ defineProps<{ conference: ConferenceStandings }>()
 }
 
 .col-ppg {
-  color: oklab(67.8% -0.004 -0.016) !important;
+  color: var(--color-text-secondary) !important;
   font-size: 0.75rem;
 }
 

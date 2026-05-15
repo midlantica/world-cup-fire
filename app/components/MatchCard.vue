@@ -257,7 +257,7 @@ const dayDateLabel = computed(() => {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   font-size: 0.85rem;
   font-weight: 300;
-  color: oklab(71.2% -0.004 -0.018);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -315,7 +315,7 @@ const dayDateLabel = computed(() => {
 }
 .badge-ft {
   background: oklab(100% 0 0 / 0.06);
-  color: oklab(50.2% -0.004 -0.018);
+  color: var(--color-text-secondary);
 }
 
 /* ── Fire badge ── */

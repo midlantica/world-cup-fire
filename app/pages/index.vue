@@ -389,16 +389,16 @@ if (weeks.this.matches.length === 0) {
 }
 .site-date {
   font-size: 0.6875rem;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
   margin-top: 0.125rem;
 }
 .update-label {
   font-size: 0.6875rem;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
 }
 .btn-refresh {
   font-size: 0.6rem;
-  color: oklab(50.2% -0.004 -0.018);
+  color: var(--color-text-secondary);
   border: 1px solid oklab(100% 0 0 / 0.1);
   border-radius: 0.375rem;
   padding: 0.25rem 0.5rem;
@@ -435,7 +435,7 @@ if (weeks.this.matches.length === 0) {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: oklab(45.1% -0.005 -0.021);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -451,7 +451,7 @@ if (weeks.this.matches.length === 0) {
   font-weight: 600;
   letter-spacing: 0.04em;
   padding: 0.1875rem 0.375rem;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -461,7 +461,7 @@ if (weeks.this.matches.length === 0) {
   border-left: 1px solid oklab(100% 0 0 / 0.06);
 }
 .tz-btn:hover:not(.active) {
-  color: oklab(67.8% -0.004 -0.016);
+  color: var(--color-text-secondary);
   background: oklab(100% 0 0 / 0.04);
 }
 .tz-btn.active {
@@ -481,7 +481,7 @@ if (weeks.this.matches.length === 0) {
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem 0.375rem 0 0;
-  color: oklab(50.2% -0.004 -0.018);
+  color: var(--color-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -515,7 +515,7 @@ if (weeks.this.matches.length === 0) {
   padding: 0.5rem 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -525,7 +525,7 @@ if (weeks.this.matches.length === 0) {
   border-left: 1px solid oklab(100% 0 0 / 0.08);
 }
 .week-tab:hover:not(.active) {
-  color: oklab(67.8% -0.004 -0.016);
+  color: var(--color-text-secondary);
   background: oklab(100% 0 0 / 0.04);
 }
 .week-tab.active {
@@ -582,11 +582,11 @@ if (weeks.this.matches.length === 0) {
   font-weight: 600;
   color: var(--color-text-secondary);
 }
-.day-tab:not(.active) .day-label { color: oklab(50.2% -0.004 -0.018); }
+.day-tab:not(.active) .day-label { color: var(--color-text-secondary); }
 .day-tab.active .day-label { color: var(--color-tropical-mint-500); }
 .day-date {
   font-size: 0.65rem;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
   margin-top: 0.0625rem;
 }
 .day-tab.active .day-date { color: var(--color-tropical-mint-800); }
@@ -603,7 +603,7 @@ if (weeks.this.matches.length === 0) {
   font-size: 0.6875rem;
   font-weight: 500;
   padding: 0.3125rem 0.625rem;
-  color: oklab(50.2% -0.004 -0.018);
+  color: var(--color-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -615,7 +615,7 @@ if (weeks.this.matches.length === 0) {
 }
 .toggle-btn:hover:not(.active) {
   background: oklab(100% 0 0 / 0.05);
-  color: oklab(67.8% -0.004 -0.016);
+  color: var(--color-text-secondary);
 }
 .toggle-btn.active {
   background: var(--color-tropical-mint-950);
@@ -645,7 +645,7 @@ if (weeks.this.matches.length === 0) {
 }
 .empty-msg {
   font-size: 0.875rem;
-  color: oklab(38.5% -0.005 -0.020);
+  color: var(--color-text-secondary);
   text-align: center;
   padding: 3rem 0;
 }
