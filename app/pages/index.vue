@@ -2,7 +2,11 @@
   import { useScores } from '~/composables/useScores'
   import { useStandings } from '~/composables/useStandings'
   import { useTimezone, TZ_OPTIONS } from '~/composables/useTimezone'
-  import { useMyTeam, TEAM_LIST } from '~/composables/useMyTeam'
+  import {
+    useMyTeam,
+    TEAM_LIST,
+    TEAM_SHORT_NAME,
+  } from '~/composables/useMyTeam'
   import type { Match } from '~/composables/useScores'
 
   // ── Main tab ──────────────────────────────────────────────────────────────────
@@ -315,7 +319,11 @@
               <span v-else class="team-logo-placeholder" />
             </span>
             <span class="my-team-label">
-              {{ selectedTeam ?? 'My Team' }}
+              {{
+                selectedTeam
+                  ? (TEAM_SHORT_NAME[selectedTeam] ?? selectedTeam)
+                  : 'My Team'
+              }}
             </span>
             <span class="my-team-caret">▾</span>
           </button>
@@ -638,7 +646,7 @@
   .main-tab {
     font-size: 0.875rem;
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.625rem;
     border-radius: 0.375rem 0.375rem 0 0;
     color: var(--color-text-secondary);
     background: transparent;
@@ -665,14 +673,14 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding-bottom: 1px; /* sit just above the border-bottom */
+    margin-bottom: 4px;
   }
 
   .my-team-btn {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.3rem 0.5rem 0.3rem 0.35rem;
+    gap: 0.2rem;
+    padding: 0.3rem 0.3rem 0.3rem 0.25rem;
     border-radius: 0.375rem;
     border: none;
     background: transparent;
@@ -712,18 +720,21 @@
   }
 
   .my-team-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 100;
+    letter-spacing: 0.04em;
     color: var(--color-theme-300);
-    max-width: 9rem;
+    max-width: 8rem;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .my-team-caret {
-    font-size: 0.6rem;
-    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+    color: var(--color-theme-400);
     line-height: 1;
+    margin: -0.2rem 0 0;
+    padding: 0;
   }
 
   /* Dropdown */
@@ -752,7 +763,7 @@
     padding: 0.4rem 0.875rem;
     font-size: 0.8125rem;
     font-weight: 400;
-    color: var(--color-text-secondary);
+    color: oklab(88% 0 0);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -789,7 +800,7 @@
     border-right: 1px solid oklab(100% 0 0 / 0.1);
     border-radius: 0rem 0rem 0.5rem 0.5rem;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
   .week-tab {
     flex: 1;
@@ -833,39 +844,40 @@
     justify-content: space-between;
     gap: 0.75rem;
     margin-bottom: 1rem;
-    flex-wrap: wrap;
   }
 
-  /* ── Day sub-tabs ───────────────────────────────────────────────────────── */
+  /* ── Day sub-tabs — segmented control ───────────────────────────────────── */
   .day-tabs {
     display: flex;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-  }
-  .day-tabs-placeholder {
-    flex: 1;
+    border: 1px solid oklab(100% 0 0 / 0.1);
+    border-radius: 0.375rem;
+    overflow: hidden;
+    flex-shrink: 1;
+    min-width: 0;
   }
   .day-tab {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.4rem 1.25rem;
-    border-radius: 0.375rem;
-    border: 1px solid transparent;
+    padding: 0.4rem 0.75rem;
+    border: none;
+    border-left: 1px solid oklab(100% 0 0 / 0.08);
     background: transparent;
     cursor: pointer;
     transition:
       color 0.15s,
-      background 0.15s,
-      border-color 0.15s;
+      background 0.15s;
+    white-space: nowrap;
+  }
+  .day-tab:first-child {
+    border-left: none;
   }
   .day-tab:hover:not(.active) {
     background: oklab(100% 0 0 / 0.04);
-    border-color: oklab(100% 0 0 / 0.07);
   }
   .day-tab.active {
     background: var(--color-theme-900);
-    border-color: var(--color-theme-700);
   }
   .day-label {
     font-size: 0.75rem;
@@ -918,6 +930,30 @@
   .toggle-btn.active {
     background: var(--color-theme-900);
     color: var(--color-theme-300);
+  }
+
+  /* ── Mobile: full-width day tabs + attached view toggle ─────────────────── */
+  @media (max-width: 530px) {
+    .controls-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+    .day-tabs {
+      border-radius: 0.375rem 0.375rem 0 0;
+      border-bottom: none;
+    }
+    .view-toggle {
+      border-radius: 0 0 0.375rem 0.375rem;
+      border-top: 1px solid oklab(100% 0 0 / 0.08);
+    }
+    .day-tab {
+      padding: 0.5rem 0.5rem;
+    }
+    .toggle-btn {
+      flex: 1;
+      text-align: center;
+    }
   }
 
   /* ── Error / empty / skeleton ───────────────────────────────────────────── */
