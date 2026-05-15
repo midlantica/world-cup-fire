@@ -15,11 +15,7 @@ defineProps<{ conference: ConferenceStandings }>()
             <th class="col-rank">#</th>
             <th class="col-team">Team</th>
             <th class="col-num" title="Games Played">GP</th>
-            <th class="col-num" title="Wins">W</th>
-            <th class="col-num" title="Draws">D</th>
-            <th class="col-num" title="Losses">L</th>
             <th class="col-num col-pts" title="Points">Pts</th>
-            <th class="col-num" title="Points Per Game">PPG</th>
             <th class="col-num" title="Goals For">GF</th>
             <th class="col-num" title="Goals Against">GA</th>
             <th class="col-num" title="Goal Difference">GD</th>
@@ -50,11 +46,7 @@ defineProps<{ conference: ConferenceStandings }>()
               <span v-if="entry.overall" class="overall-rec">{{ entry.overall }}</span>
             </td>
             <td class="col-num">{{ entry.gp }}</td>
-            <td class="col-num">{{ entry.w }}</td>
-            <td class="col-num">{{ entry.d }}</td>
-            <td class="col-num">{{ entry.l }}</td>
             <td class="col-num col-pts">{{ entry.pts }}</td>
-            <td class="col-num col-ppg">{{ entry.ppg.toFixed(2) }}</td>
             <td class="col-num">{{ entry.gf }}</td>
             <td class="col-num">{{ entry.ga }}</td>
             <td class="col-num" :class="entry.gd > 0 ? 'gd-pos' : entry.gd < 0 ? 'gd-neg' : ''">
@@ -108,7 +100,7 @@ defineProps<{ conference: ConferenceStandings }>()
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(75 85 99);
-  padding: 0.375rem 0.5rem;
+  padding: 0.2rem 0;
   text-align: right;
 }
 
@@ -129,7 +121,7 @@ defineProps<{ conference: ConferenceStandings }>()
 }
 
 .standings-table td {
-  padding: 0.4375rem 0.5rem;
+  padding: 0.2rem 0;
   color: rgb(209 213 219);
   text-align: right;
 }
@@ -138,7 +130,6 @@ defineProps<{ conference: ConferenceStandings }>()
   text-align: left !important;
   color: rgb(75 85 99) !important;
   font-size: 0.6875rem;
-  width: 2.5rem;
   white-space: nowrap;
 }
 

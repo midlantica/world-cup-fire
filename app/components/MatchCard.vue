@@ -200,8 +200,8 @@ const dayDateLabel = computed(() => {
   .team-score-inline {
     display: block;
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 300;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: rgb(243 244 246);
     line-height: 1;
   }
@@ -268,8 +268,8 @@ const dayDateLabel = computed(() => {
 }
 .score-active {
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-  font-size: 1.625rem;
-  font-weight: 300;
+  font-size: 1rem;
+  font-weight: 600;
   color: rgb(243 244 246);
 }
 
