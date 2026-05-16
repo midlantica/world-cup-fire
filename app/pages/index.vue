@@ -99,6 +99,11 @@
     })
   })
 
+  // ── Log lastUpdated to console ────────────────────────────────────────────────
+  watch(lastUpdated, (val) => {
+    if (val) console.log(`[MLS Scores] Updated ${val}`)
+  })
+
   // ── Auto-poll every 90 seconds when there are live/HT matches ────────────────
   const hasLiveMatches = computed(() =>
     weeks[activeTab.value].matches.some(
@@ -305,20 +310,6 @@
         >
       </div>
       <div class="header-right">
-        <!-- Row 1: Updated timestamp -->
-        <div class="header-row1">
-          <ClientOnly>
-            <span class="update-label">
-              {{
-                weeks[activeTab].loading
-                  ? 'Loading…'
-                  : lastUpdated
-                    ? `Updated ${lastUpdated}`
-                    : ''
-              }}
-            </span>
-          </ClientOnly>
-        </div>
         <!-- Row 2: Time zone: [ ET | CT | MT | PT ] -->
         <div class="header-row2">
           <span class="tz-label">Time Zone</span>
@@ -590,7 +581,7 @@
   .page {
     max-width: 56rem;
     margin: 0 auto;
-    padding: 1rem 1rem 2rem;
+    padding: 0.5rem 1rem 2rem;
   }
 
   /* ── Header ─────────────────────────────────────────────────────────────── */
@@ -598,7 +589,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
   }
   .site-title {
     font-size: 1.125rem;
@@ -754,7 +745,7 @@
     display: flex;
     align-items: stretch;
     gap: 2px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .my-team-btn {
@@ -946,7 +937,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   /* ── Day sub-tabs — segmented control ───────────────────────────────────── */

@@ -96,18 +96,16 @@ export const TEAM_SHORT_NAME: Record<string, string> = {
   'Chicago Fire FC': 'Chicago Fire',
   'Houston Dynamo FC': 'Houston Dynamo',
   'Inter Miami CF': 'Inter Miami',
-  'Minnesota United FC': 'Minn United FC',
+  'Minnesota United FC': 'Minnesota United',
   'New England Revolution': 'NE Revolution',
   'New York City FC': 'NY City FC',
   'Red Bull New York': 'NY Red Bulls',
   'Orlando City SC': 'Orlando City',
-  'Philadelphia Union': 'Phila Union',
   'San Jose Earthquakes': 'SJ Earthquakes',
   'Seattle Sounders FC': 'Seattle Sounders',
-  'Sporting Kansas City': 'Sprtg KC',
-  'St. Louis City SC': 'St. Louis City',
-  'St. Louis CITY SC': 'St. Louis City',
-  'Vancouver Whitecaps': 'Van Whitecaps',
+  'St. Louis City SC': 'St. Louis City SC',
+  'St. Louis CITY SC': 'St. Louis City SC',
+  'Vancouver Whitecaps': 'Vancouver Whitecaps',
 }
 
 // ── Team primary colors ───────────────────────────────────────────────────────

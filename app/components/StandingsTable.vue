@@ -5,6 +5,14 @@
 
   defineProps<{ conference: ConferenceStandings }>()
   const emit = defineEmits<{ 'select-team': [team: string] }>()
+
+  const STANDINGS_SHORT_NAME: Record<string, string> = {
+    'New England Revolution': 'NE Revolution',
+    'Vancouver Whitecaps': 'Van Whitecaps',
+    'San Jose Earthquakes': 'SJ Earthquakes',
+    'Minnesota United FC': 'Minnesota Utd FC',
+    'Sporting Kansas City': 'Sporting KC',
+  }
 </script>
 
 <template>
@@ -63,7 +71,10 @@
                     :style="{ background: getTeamColor(entry.team) }"
                   />
                 </span>
-                {{ entry.team }}
+                <span class="team-name-full">{{ entry.team }}</span>
+                <span class="team-name-short">{{
+                  STANDINGS_SHORT_NAME[entry.team] ?? entry.team
+                }}</span>
               </button>
             </td>
             <td class="col-rec">{{ entry.overall }}</td>
@@ -227,6 +238,23 @@
     height: 1em;
     border-radius: 0.15em;
     flex-shrink: 0;
+  }
+
+  /* Desktop: full name visible, short hidden */
+  .team-name-short {
+    display: none;
+  }
+  .team-name-full {
+    display: inline;
+  }
+
+  @media (max-width: 480px) {
+    .team-name-full {
+      display: none;
+    }
+    .team-name-short {
+      display: inline;
+    }
   }
 
   .overall-rec {

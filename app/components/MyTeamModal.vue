@@ -9,6 +9,7 @@
   } from '~/composables/useMyTeam'
   import { useTimezone } from '~/composables/useTimezone'
   import type { Match } from '~/composables/useScores'
+  import { calcQuality } from '~/composables/useScores'
 
   const props = defineProps<{
     open: boolean
@@ -120,6 +121,14 @@
     'Vancouver Whitecaps': 'BC Place, Vancouver, BC',
   }
 
+  // ── Team name normalization (matches ESPN's inconsistent casing) ──────────────
+  const MODAL_TEAM_NAME_MAP: Record<string, string> = {
+    'St. Louis CITY SC': 'St. Louis City SC',
+  }
+  function normalizeTeamName(name: string): string {
+    return MODAL_TEAM_NAME_MAP[name] ?? name
+  }
+
   // ── Schedule data ─────────────────────────────────────────────────────────────
   interface ScheduleEvent {
     id: string
@@ -217,8 +226,8 @@
       id: evt.id as string,
       name: evt.name as string,
       date: evt.date as string,
-      homeTeam: (homeTeam?.displayName as string) || '?',
-      awayTeam: (awayTeam?.displayName as string) || '?',
+      homeTeam: normalizeTeamName((homeTeam?.displayName as string) || '?'),
+      awayTeam: normalizeTeamName((awayTeam?.displayName as string) || '?'),
       homeColor: resolveColor(
         homeTeam?.color as string,
         homeTeam?.alternateColor as string
@@ -343,7 +352,7 @@
       awayLogo: TEAM_LOGO[evt.awayTeam] ?? null,
       status: { code: evt.statusCode, clock: evt.statusClock },
       kickoffSlot: 0,
-      qualityScore: 0,
+      qualityScore: calcQuality(evt.homeRec, evt.awayRec),
     }
   }
 
@@ -384,8 +393,17 @@
       : ''
   )
 
+  const TEAM_VENUE_SHORT: Record<string, string> = {
+    'Sporting Kansas City': "Children's Mercy Pk, Kansas City, KS",
+  }
+
   const venue = computed(() =>
     displayTeam.value ? (TEAM_VENUE[displayTeam.value] ?? '') : ''
+  )
+  const venueShort = computed(() =>
+    displayTeam.value
+      ? (TEAM_VENUE_SHORT[displayTeam.value] ?? venue.value)
+      : ''
   )
 
   const conference = computed(() =>
@@ -409,7 +427,7 @@
         >
           <!-- Close button -->
           <button class="modal-close" @click="emit('close')" aria-label="Close">
-            ✕
+            <CloseIcon />
           </button>
 
           <!-- Header: logo + team name + venue -->
@@ -421,8 +439,14 @@
               class="modal-logo"
             />
             <div class="modal-team-info">
-              <div class="modal-team-name">{{ displayTeam }}</div>
-              <div class="modal-venue">{{ venue }}</div>
+              <div class="modal-team-name">
+                <span class="name-full">{{ displayTeam }}</span>
+                <span class="name-short">{{ displayName }}</span>
+              </div>
+              <div class="modal-venue">
+                <span class="venue-full">{{ venue }}</span>
+                <span class="venue-short">{{ venueShort }}</span>
+              </div>
             </div>
           </div>
 
@@ -493,15 +517,19 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding: 4rem 1rem 2rem;
+    padding: 1rem;
+    padding-bottom: 3rem; /* asymmetric: shifts card ~1rem above center */
     overflow-y: auto;
   }
 
   /* ── Card ─────────────────────────────────────────────────────────────────── */
+  /* auto margins center the card when there's room; overflow scrolls naturally */
   .modal-card {
     position: relative;
     width: 100%;
     max-width: 36rem;
+    margin-top: auto;
+    margin-bottom: auto;
     background: color-mix(
       in oklab,
       var(--app-bg, #0f172a) 85%,
@@ -519,23 +547,27 @@
   /* ── Close button ─────────────────────────────────────────────────────────── */
   .modal-close {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: 0.35rem;
+    right: 0.35rem;
     background: transparent;
     border: none;
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
+    color: oklab(100% 0 0 / 0.75);
     cursor: pointer;
-    padding: 0.25rem 0.375rem;
+    padding: 0.375rem;
     border-radius: 0.25rem;
-    line-height: 1;
-    transition:
-      color 0.15s,
-      background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
   }
-  .modal-close:hover {
-    color: var(--color-text-primary);
-    background: oklab(100% 0 0 / 0.06);
+  .modal-close:hover,
+  .modal-close:focus-visible {
+    color: white;
+    outline: none;
+  }
+  .modal-close:hover :deep(svg),
+  .modal-close:focus-visible :deep(svg) {
+    stroke: white;
   }
 
   /* ── Header ───────────────────────────────────────────────────────────────── */
@@ -543,7 +575,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding-right: 2rem; /* room for close btn */
+    padding-right: 1rem; /* room for close btn */
   }
 
   .modal-logo {
@@ -558,6 +590,8 @@
     flex-direction: column;
     gap: 0;
     min-width: 0;
+    position: relative;
+    top: -0.3rem;
   }
 
   .modal-team-name {
@@ -565,8 +599,32 @@
     font-size: 1.75rem;
     font-weight: 500;
     color: var(--color-text-primary);
-    line-height: 1.42;
+    line-height: 1.5;
     letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Desktop: show full name, hide short */
+  .name-short {
+    display: none;
+  }
+  .name-full {
+    display: inline;
+  }
+
+  @media (max-width: 480px) {
+    .modal-team-name {
+      font-size: 1.35rem;
+    }
+    /* Mobile: hide full name, show short */
+    .name-full {
+      display: none;
+    }
+    .name-short {
+      display: inline;
+    }
   }
 
   .modal-venue {
@@ -575,6 +633,23 @@
     color: var(--color-text-secondary);
     letter-spacing: 0.04em;
     line-height: 1.38;
+  }
+
+  /* Desktop: full venue visible, short hidden */
+  .venue-short {
+    display: none;
+  }
+  .venue-full {
+    display: inline;
+  }
+
+  @media (max-width: 480px) {
+    .venue-full {
+      display: none;
+    }
+    .venue-short {
+      display: inline;
+    }
   }
 
   .schedule-conference-heading {

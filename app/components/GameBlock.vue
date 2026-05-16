@@ -269,11 +269,12 @@
   }
 
   .status-time {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: var(--color-text-primary);
     white-space: nowrap;
-    line-height: 1.2;
+    line-height: 1;
+    letter-spacing: 0.05rem;
   }
 
   .status-time :deep(.ampm) {
