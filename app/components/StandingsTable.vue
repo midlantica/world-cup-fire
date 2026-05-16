@@ -16,6 +16,7 @@
           <tr>
             <th class="col-rank">#</th>
             <th class="col-team">Team</th>
+            <th class="col-rec" title="Record">W-T-L</th>
             <th class="col-num" title="Games Played">GP</th>
             <th class="col-num col-pts" title="Points">Pts</th>
             <th class="col-num" title="Goals For">GF</th>
@@ -64,10 +65,8 @@
                 </span>
                 {{ entry.team }}
               </button>
-              <span v-if="entry.overall" class="overall-rec">{{
-                entry.overall
-              }}</span>
             </td>
+            <td class="col-rec">{{ entry.overall }}</td>
             <td class="col-num">{{ entry.gp }}</td>
             <td class="col-num col-pts">{{ entry.pts }}</td>
             <td class="col-num">{{ entry.gf }}</td>
@@ -235,6 +234,15 @@
     font-weight: 300;
     color: var(--color-text-secondary);
     margin-left: 0.375rem;
+  }
+
+  .col-rec {
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--color-text-secondary);
+    text-align: right;
+    padding-right: 0.5rem;
+    white-space: nowrap;
   }
 
   .col-num {
