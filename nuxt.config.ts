@@ -45,7 +45,7 @@ export default defineNuxtConfig({
         },
         {
           property: 'og:image',
-          content: 'https://mlsscores.netlify.app/og-image.png',
+          content: 'https://mlsscores.netlify.app/og-image.png?v=2',
         },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
@@ -61,7 +61,7 @@ export default defineNuxtConfig({
         },
         {
           name: 'twitter:image',
-          content: 'https://mlsscores.netlify.app/og-image.png',
+          content: 'https://mlsscores.netlify.app/og-image.png?v=2',
         },
       ],
       link: [
