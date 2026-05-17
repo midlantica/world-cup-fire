@@ -279,7 +279,8 @@ export interface WeekData {
 }
 
 export function useScores() {
-  const weeks = reactive<Record<WeekTab, WeekData>>({
+  // Use Nuxt's useState so all component instances share the same reactive state
+  const weeks = useState<Record<WeekTab, WeekData>>('scores-weeks', () => ({
     last: {
       matches: [],
       label: 'Last Week',
@@ -301,13 +302,13 @@ export function useScores() {
       error: null,
       loaded: false,
     },
-  })
+  }))
 
-  const activeTab = ref<WeekTab>('this')
-  const lastUpdated = ref<string | null>(null)
+  const activeTab = useState<WeekTab>('scores-activeTab', () => 'this')
+  const lastUpdated = useState<string | null>('scores-lastUpdated', () => null)
 
   async function fetchWeek(tab: WeekTab) {
-    const w = weeks[tab]
+    const w = weeks.value[tab]
     if (w.loading) return
     w.loading = true
     w.error = null
@@ -338,8 +339,8 @@ export function useScores() {
 
   async function selectTab(tab: WeekTab) {
     activeTab.value = tab
-    if (!weeks[tab].loaded) await fetchWeek(tab)
+    if (!weeks.value[tab].loaded) await fetchWeek(tab)
   }
 
-  return { weeks, activeTab, lastUpdated, fetchWeek, selectTab }
+  return { weeks: weeks.value, activeTab, lastUpdated, fetchWeek, selectTab }
 }

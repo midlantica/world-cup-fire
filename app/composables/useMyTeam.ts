@@ -13,6 +13,7 @@
  */
 
 import { formatHex, oklch, parse, wcagContrast } from 'culori'
+import { TEAM_COLORS } from '~/composables/useTeamColors'
 
 // ── Team → logo filename map ──────────────────────────────────────────────────
 // Keys match TEAM_COLORS keys exactly.
@@ -125,41 +126,6 @@ export const TEAM_SHORT_NAME: Record<string, string> = {
   'Vancouver Whitecaps': 'Vancouver',
 }
 
-// ── Team primary colors ───────────────────────────────────────────────────────
-export const TEAM_COLORS: Record<string, string> = {
-  'Atlanta United FC': '#9d2235',
-  'Austin FC': '#00b140',
-  'CF Montréal': '#003da6',
-  'Charlotte FC': '#0085ca',
-  'Chicago Fire FC': '#ff0000',
-  'Colorado Rapids': '#8a2432',
-  'Columbus Crew': '#fedd00',
-  'D.C. United': '#d61018',
-  'FC Cincinnati': '#003087',
-  'FC Dallas': '#c6093b',
-  'Houston Dynamo FC': '#ff6b00',
-  'Inter Miami CF': '#f7b5cd',
-  'LA Galaxy': '#00235d',
-  LAFC: '#c7a36f',
-  'Minnesota United FC': '#9bcde4',
-  'Nashville SC': '#ece83a',
-  'New England Revolution': '#022166',
-  'New York City FC': '#9fd2ff',
-  'Orlando City SC': '#60269e',
-  'Philadelphia Union': '#051f31',
-  'Portland Timbers': '#2c5234',
-  'Real Salt Lake': '#a32035',
-  'Red Bull New York': '#ba0c2f',
-  'San Diego FC': '#697a7c',
-  'San Jose Earthquakes': '#003da6',
-  'Seattle Sounders FC': '#2dc84d',
-  'Sporting Kansas City': '#a7c6ed',
-  'St. Louis City SC': '#ec1458',
-  'St. Louis CITY SC': '#ec1458',
-  'Toronto FC': '#aa182c',
-  'Vancouver Whitecaps': '#12284c',
-}
-
 // ── Slate fallback palette (Tailwind slate in oklch) ─────────────────────────
 // These are the default values written into main.css @theme.
 const SLATE_PALETTE: Record<string, string> = {
@@ -256,6 +222,81 @@ function clearTheme() {
   root.style.removeProperty('--color-theme-on-primary')
   root.style.removeProperty('--app-bg')
   document.body.style.backgroundColor = ''
+}
+
+// ── ESPN team ID map ──────────────────────────────────────────────────────────
+export const TEAM_ESPN_ID: Record<string, string> = {
+  'Atlanta United FC': '18418',
+  'Austin FC': '20906',
+  'CF Montréal': '9720',
+  'Charlotte FC': '21300',
+  'Chicago Fire FC': '182',
+  'Colorado Rapids': '184',
+  'Columbus Crew': '183',
+  'D.C. United': '193',
+  'FC Cincinnati': '18267',
+  'FC Dallas': '185',
+  'Houston Dynamo FC': '6077',
+  'Inter Miami CF': '20232',
+  'LA Galaxy': '187',
+  LAFC: '18966',
+  'Minnesota United FC': '17362',
+  'Nashville SC': '18986',
+  'New England Revolution': '189',
+  'New York City FC': '17606',
+  'Orlando City SC': '12011',
+  'Philadelphia Union': '10739',
+  'Portland Timbers': '9723',
+  'Real Salt Lake': '4771',
+  'Red Bull New York': '190',
+  'San Diego FC': '22529',
+  'San Jose Earthquakes': '191',
+  'Seattle Sounders FC': '9726',
+  'Sporting Kansas City': '186',
+  'St. Louis City SC': '21812',
+  'St. Louis CITY SC': '21812',
+  'Toronto FC': '7318',
+  'Vancouver Whitecaps': '9727',
+}
+
+// ── Venue map ─────────────────────────────────────────────────────────────────
+export const TEAM_VENUE: Record<string, string> = {
+  'Atlanta United FC': 'Mercedes-Benz Stadium, Atlanta, GA',
+  'Austin FC': 'Q2 Stadium, Austin, TX',
+  'CF Montréal': 'Stade Saputo, Montreal, QC',
+  'Charlotte FC': 'Bank of America Stadium, Charlotte, NC',
+  'Chicago Fire FC': 'Soldier Field, Chicago, IL',
+  'Colorado Rapids': "Dick's Sporting Goods Park, Commerce City, CO",
+  'Columbus Crew': 'Lower.com Field, Columbus, OH',
+  'D.C. United': 'Audi Field, Washington, D.C.',
+  'FC Cincinnati': 'TQL Stadium, Cincinnati, OH',
+  'FC Dallas': 'Toyota Stadium, Frisco, TX',
+  'Houston Dynamo FC': 'Shell Energy Stadium, Houston, TX',
+  'Inter Miami CF': 'Chase Stadium, Fort Lauderdale, FL',
+  'LA Galaxy': 'Dignity Health Sports Park, Carson, CA',
+  LAFC: 'BMO Stadium, Los Angeles, CA',
+  'Minnesota United FC': 'Allianz Field, St. Paul, MN',
+  'Nashville SC': 'GEODIS Park, Nashville, TN',
+  'New England Revolution': 'Gillette Stadium, Foxborough, MA',
+  'New York City FC': 'Yankee Stadium, Bronx, NY',
+  'Orlando City SC': 'Inter&Co Stadium, Orlando, FL',
+  'Philadelphia Union': 'Subaru Park, Chester, PA',
+  'Portland Timbers': 'Providence Park, Portland, OR',
+  'Real Salt Lake': 'America First Field, Sandy, UT',
+  'Red Bull New York': 'Red Bull Arena, Harrison, NJ',
+  'San Diego FC': 'Snapdragon Stadium, San Diego, CA',
+  'San Jose Earthquakes': 'PayPal Park, San Jose, CA',
+  'Seattle Sounders FC': 'Lumen Field, Seattle, WA',
+  'Sporting Kansas City': "Children's Mercy Park, Kansas City, KS",
+  'St. Louis City SC': 'CITYPARK, St. Louis, MO',
+  'St. Louis CITY SC': 'CITYPARK, St. Louis, MO',
+  'Toronto FC': 'BMO Field, Toronto, ON',
+  'Vancouver Whitecaps': 'BC Place, Vancouver, BC',
+}
+
+// ── Short venue overrides (for narrow displays) ───────────────────────────────
+export const TEAM_VENUE_SHORT: Record<string, string> = {
+  'Sporting Kansas City': "Children's Mercy Pk, Kansas City, KS",
 }
 
 // ── Composable ────────────────────────────────────────────────────────────────
