@@ -296,13 +296,7 @@
             (comp.competitors as Array<Record<string, unknown>>) || []
           const involved = competitors.some((c) => {
             const t = c.team as Record<string, unknown> | undefined
-            return (
-              t?.displayName === teamName ||
-              t?.id === teamId ||
-              (t?.displayName as string)
-                ?.toLowerCase()
-                .includes(teamName.toLowerCase().split(' ')[0] ?? '')
-            )
+            return t?.displayName === teamName || t?.id === teamId
           })
           if (!involved) continue
           const se = evtToScheduleEvent(evt, teamName, teamId)
