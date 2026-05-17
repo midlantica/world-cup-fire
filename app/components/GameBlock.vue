@@ -162,8 +162,8 @@
   }
 
   .game-block-live {
-    border-color: oklab(95% 0 0 / 0.6);
-    box-shadow: 0 0 6px 1px oklab(95% 0 0 / 0.15);
+    outline: 1px solid oklab(100% 0 0 / 0.25);
+    outline-offset: -1px;
   }
 
   /* Team rows */
