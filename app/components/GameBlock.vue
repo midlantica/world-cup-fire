@@ -34,17 +34,22 @@
   const isFT = computed(() => props.match.status.code === 'ft')
   const isNS = computed(() => props.match.status.code === 'ns')
 
-  // 🔥 fire threshold: qualityScore ≥ 50
-  const isFire = computed(() => props.match.qualityScore >= 50)
+  const isFire = computed(() => props.match.badge === 'fire')
+  const isWild = computed(() => props.match.badge === 'wild')
 </script>
 
 <template>
   <div
     class="game-block"
-    :class="{ 'game-block-live': isLive, 'game-block-fire': isFire }"
+    :class="{
+      'game-block-live': isLive,
+      'game-block-fire': isFire,
+      'game-block-wild': isWild,
+    }"
   >
-    <!-- Fire indicator -->
+    <!-- Badge indicator -->
     <span v-if="isFire" class="fire-badge" aria-label="Top match">🔥</span>
+    <span v-else-if="isWild" class="fire-badge" aria-label="Wild card">🤞</span>
 
     <!-- Home team row -->
     <div class="team-row">

@@ -6,6 +6,7 @@
     useMyTeam,
     TEAM_LIST,
     TEAM_SHORT_NAME,
+    TEAM_COLORS,
   } from '~/composables/useMyTeam'
   import type { Match } from '~/composables/useScores'
 
@@ -303,16 +304,27 @@
   <main class="page">
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
     <header class="header">
-      <div>
-        <h1 class="site-title" role="button" @click="goHome">⚽ MLS Scores</h1>
-        <ClientOnly
-          ><p class="site-date">{{ todayLabel() }}</p></ClientOnly
-        >
+      <div
+        class="header-left"
+        @click="goHome"
+        role="button"
+        style="cursor: pointer"
+      >
+        <MlsLogo
+          class="mls-logo"
+          :class="{ 'mls-logo--themed': !!selectedTeam }"
+        />
+        <div>
+          <h1 class="site-title">MLS Scores</h1>
+          <ClientOnly
+            ><p class="site-date">{{ todayLabel() }}</p></ClientOnly
+          >
+        </div>
       </div>
       <div class="header-right">
         <!-- Row 2: Time zone: [ ET | CT | MT | PT ] -->
         <div class="header-row2">
-          <span class="tz-label">Time Zone</span>
+          <span class="tz-label">TZ</span>
           <div class="tz-toggle">
             <button
               v-for="tz in TZ_OPTIONS"
@@ -570,7 +582,7 @@
       <footer class="footer">
         <span>Live data via ESPN API</span>
         <span v-if="mainTab === 'scores'"
-          >Quality = MLS pts formula · 🔥 best games</span
+          >🔥 both winning &amp; close · 🤞 derby or equal underdogs</span
         >
       </footer>
     </ClientOnly>
@@ -581,7 +593,7 @@
   .page {
     max-width: 56rem;
     margin: 0 auto;
-    padding: 0.5rem 1rem 2rem;
+    padding: 1.25rem 1rem 2rem;
   }
 
   /* ── Header ─────────────────────────────────────────────────────────────── */
@@ -591,22 +603,45 @@
     justify-content: space-between;
     margin-bottom: 0.5rem;
   }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    user-select: none;
+  }
+
+  .mls-logo {
+    width: 2.6rem;
+    height: 2.6rem;
+    flex-shrink: 0;
+    /* Default: dim white */
+    color: oklab(100% 0 0 / 0.2);
+    transition: color 0.3s;
+  }
+
+  /* When a team is selected, use the theme accent color — same as the title */
+  .mls-logo--themed {
+    color: var(--color-theme-300);
+  }
+
   .site-title {
-    font-size: 1.125rem;
+    font-size: 1.575rem;
     font-weight: 600;
     letter-spacing: -0.01em;
-    color: var(--color-theme-400);
+    color: var(--color-theme-300);
     cursor: pointer;
     user-select: none;
     transition: color 0.15s;
+    line-height: 1.2;
   }
-  .site-title:hover {
-    color: var(--color-theme-300);
+  .header-left:hover .site-title {
+    color: var(--color-theme-200);
   }
   .site-date {
     font-size: 0.6875rem;
     color: var(--color-text-secondary);
     margin-top: 0.125rem;
+    opacity: 0.5;
   }
   .update-label {
     font-size: 0.6875rem;
@@ -902,7 +937,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 0.5rem;
+    padding: 0.4rem 0.5rem;
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--color-text-secondary);
@@ -928,7 +963,7 @@
     font-size: 0.625rem;
     font-weight: 400;
     opacity: 0.6;
-    margin-top: 0.125rem;
+    margin-top: 0.025rem;
   }
 
   /* ── Controls row (day tabs + view toggle) ──────────────────────────────── */
@@ -937,7 +972,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
   }
 
   /* ── Day sub-tabs — segmented control ───────────────────────────────────── */
@@ -1096,7 +1131,7 @@
   .slot-section {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.3rem;
   }
 
   .slot-heading {
@@ -1154,9 +1189,9 @@
   .footer {
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid oklab(100% 0 0 / 0.06);
+    border-top: 1px solid var(--color-text-secondary);
     font-size: 0.6875rem;
-    color: oklab(30.8% -0.005 -0.021);
+    color: var(--color-text-secondary);
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;

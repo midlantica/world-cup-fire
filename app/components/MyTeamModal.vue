@@ -9,7 +9,7 @@
   } from '~/composables/useMyTeam'
   import { useTimezone } from '~/composables/useTimezone'
   import type { Match } from '~/composables/useScores'
-  import { calcQuality } from '~/composables/useScores'
+  import { calcQuality, calcBadge } from '~/composables/useScores'
 
   const props = defineProps<{
     open: boolean
@@ -347,6 +347,7 @@
       status: { code: evt.statusCode, clock: evt.statusClock },
       kickoffSlot: 0,
       qualityScore: calcQuality(evt.homeRec, evt.awayRec),
+      badge: calcBadge(evt.homeRec, evt.awayRec, evt.homeTeam, evt.awayTeam),
     }
   }
 

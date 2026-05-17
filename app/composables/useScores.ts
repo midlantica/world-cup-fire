@@ -7,6 +7,8 @@ export interface MatchStatus {
   clock?: string
 }
 
+export type MatchBadge = 'fire' | 'wild' | null
+
 export interface Match {
   id: string
   date: string // ISO 8601 — format at display time via useTimezone
@@ -23,17 +25,42 @@ export interface Match {
   status: MatchStatus
   kickoffSlot: number // UTC epoch ms rounded to nearest 30min — for slot grouping
   qualityScore: number
+  badge: MatchBadge // 🔥 top clash | 🤞 wild card | null
 }
 
 export type WeekTab = 'last' | 'this' | 'next'
 
+// ── Known MLS derbies / rivalries ─────────────────────────────────────────────
+// Each pair is stored as a sorted tuple so order doesn't matter
+const DERBY_PAIRS: [string, string][] = [
+  ['LA Galaxy', 'LAFC'], // El Tráfico
+  ['Seattle Sounders FC', 'Portland Timbers'], // Cascadia Cup
+  ['Seattle Sounders FC', 'Vancouver Whitecaps'], // Cascadia
+  ['Portland Timbers', 'Vancouver Whitecaps'], // Cascadia
+  ['New York City FC', 'Red Bull New York'], // Hudson River Derby
+  ['Atlanta United FC', 'Charlotte FC'], // I-85 Derby
+  ['FC Cincinnati', 'Columbus Crew'], // Hell is Real Derby
+  ['Sporting Kansas City', 'Colorado Rapids'], // Rocky Mountain Cup
+  ['Houston Dynamo FC', 'FC Dallas'], // Texas Derby
+  ['D.C. United', 'New England Revolution'], // Atlantic Cup
+  ['Inter Miami CF', 'Orlando City SC'], // Florida Derby
+  ['Minnesota United FC', 'Sporting Kansas City'], // Midwest rivalry
+  ['Real Salt Lake', 'Colorado Rapids'], // Rocky Mountain
+  ['San Jose Earthquakes', 'LA Galaxy'], // California Clásico
+  ['San Jose Earthquakes', 'LAFC'], // California
+  ['CF Montréal', 'Toronto FC'], // Canadian rivalry
+  ['Vancouver Whitecaps', 'Toronto FC'], // Canadian
+  ['CF Montréal', 'Vancouver Whitecaps'], // Canadian
+]
+
+function isDerby(home: string, away: string): boolean {
+  return DERBY_PAIRS.some(
+    ([a, b]) => (a === home && b === away) || (a === away && b === home)
+  )
+}
+
 // ── Game quality score ────────────────────────────────────────────────────────
 // Uses MLS points logic: W=3pts, D=1pt, L=0pts
-// We sum both teams' implied points totals.
-// Formula: (homePoints + awayPoints) where points = W*3 + D*1
-// Bonus: +3 if both teams are within 4 pts of each other (close matchup)
-// 🔥 fire threshold: ≥50 — requires both teams to be genuinely strong
-//    e.g. two teams each with ~23+ pts (≈8W-2L-2D) + closeness bonus
 function parseRec(summary: string): { w: number; l: number; d: number } {
   const parts = summary.split('-').map(Number)
   return { w: parts[0] ?? 0, l: parts[1] ?? 0, d: parts[2] ?? 0 }
@@ -46,9 +73,53 @@ export function calcQuality(homeRec: string, awayRec: string): number {
   const hPts = h.w * 3 + h.d
   const aPts = a.w * 3 + a.d
   const total = hPts + aPts
-  // Bonus for close matchup (within 4 pts of each other)
   const closeness = Math.abs(hPts - aPts) <= 4 ? 3 : 0
   return total + closeness
+}
+
+/**
+ * Determine the badge tier for a match:
+ *
+ * 🔥 "fire"  — Both teams have winning records (W > L) AND are closely matched
+ *              (within 5 pts of each other). These are the genuine top clashes.
+ *
+ * 🤞 "wild"  — Selective underdog/derby interest:
+ *   • A known derby where both teams are within 6 pts of each other, OR
+ *   • Both teams are evenly humble (neither has a winning record, both have
+ *     played ≥6 games, within 3 pts of each other) — a true fight-to-the-death.
+ *   NOT every mediocre game — must meet the criteria above.
+ *
+ * null — everything else
+ */
+export function calcBadge(
+  homeRec: string,
+  awayRec: string,
+  home: string,
+  away: string
+): MatchBadge {
+  if (homeRec === '–' || awayRec === '–') return null
+  const h = parseRec(homeRec)
+  const a = parseRec(awayRec)
+  const hPts = h.w * 3 + h.d
+  const aPts = a.w * 3 + a.d
+  const ptDiff = Math.abs(hPts - aPts)
+  const hGames = h.w + h.l + h.d
+  const aGames = a.w + a.l + a.d
+  const hWinning = h.w > h.l
+  const aWinning = a.w > a.l
+
+  // 🔥 Both winning records + closely matched
+  if (hWinning && aWinning && ptDiff <= 5) return 'fire'
+
+  // 🤞 Derby with close points
+  if (isDerby(home, away) && ptDiff <= 6) return 'wild'
+
+  // 🤞 Both evenly humble (not winning records), enough games played, very close
+  const hHumble = !hWinning && hGames >= 6
+  const aHumble = !aWinning && aGames >= 6
+  if (hHumble && aHumble && ptDiff <= 3) return 'wild'
+
+  return null
 }
 
 // ── Team name normalization ───────────────────────────────────────────────────
@@ -153,6 +224,12 @@ export function transformMatches(data: Record<string, unknown>): Match[] {
         status: parseStatus(evt),
         kickoffSlot: toKickoffSlot(evt.date as string),
         qualityScore: calcQuality(homeRec, awayRec),
+        badge: calcBadge(
+          homeRec,
+          awayRec,
+          normalizeTeamName((homeTeam?.displayName as string) || '?'),
+          normalizeTeamName((awayTeam?.displayName as string) || '?')
+        ),
       }
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
