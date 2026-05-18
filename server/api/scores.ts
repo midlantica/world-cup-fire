@@ -15,12 +15,18 @@ function weekRange(offset: number): {
   to: string
   label: string
 } {
-  const now = new Date()
+  // Use CT (America/Chicago) local date so the week doesn't advance until
+  // midnight CT — not midnight UTC (which is 6-7h earlier).
+  const ctDateStr = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Chicago',
+  }) // "YYYY-MM-DD"
+  const [year, month, dayOfMonth] = ctDateStr.split('-').map(Number)
+  // Reconstruct a local Date at midnight using the CT calendar date
+  const now = new Date(year!, month! - 1, dayOfMonth!)
   const day = now.getDay() // 0=Sun
   const diffToMon = day === 0 ? -6 : 1 - day
   const monday = new Date(now)
   monday.setDate(now.getDate() + diffToMon + offset * 7)
-  monday.setHours(0, 0, 0, 0)
   const sunday = new Date(monday)
   sunday.setDate(monday.getDate() + 6)
 

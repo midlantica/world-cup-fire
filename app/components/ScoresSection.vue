@@ -63,6 +63,8 @@
 
   // ── Auto-collapse past days/slots ─────────────────────────────────────────
   // Only applies to "This Week" — last/next week show everything open.
+  // Rule: past days collapse, but the LAST day with games stays fully open
+  // until midnight (so the final game of the week is always visible until 12:01am).
   function buildInitialCollapse() {
     if (activeTab.value !== 'this') {
       collapsedDays.value = new Set()
@@ -77,16 +79,28 @@
     const days = new Set<string>()
     const slots = new Set<string>()
 
+    // Find the last day that has any matches this week
+    const allDayKeys = weekByDayGroups.value.map(({ day }) => day.key)
+    const lastMatchDayKey =
+      allDayKeys.length > 0 ? allDayKeys[allDayKeys.length - 1] : null
+
     for (const { day, slots: daySlots } of weekByDayGroups.value) {
       if (day.key < todayKey) {
-        // Entire past day — collapse it
-        days.add(day.key)
+        // Past day — collapse it, UNLESS it's the last match day of the week
+        // and it's still today (i.e. today IS the last match day — keep open until midnight)
+        if (day.key !== lastMatchDayKey) {
+          days.add(day.key)
+        }
       } else if (day.key === todayKey) {
-        // Today — collapse only slots where kickoff was more than 2h ago
-        for (const [slotLabel, slotMatches] of daySlots) {
-          const slotTime = slotMatches[0]?.kickoffSlot ?? 0
-          if (slotTime > 0 && slotTime + 2 * 60 * 60 * 1000 < now) {
-            slots.add(day.key + slotLabel)
+        // Today — only collapse slots where kickoff was more than 2h ago,
+        // BUT only if this is NOT the last match day of the week.
+        // On the last match day, keep everything open until midnight.
+        if (day.key !== lastMatchDayKey) {
+          for (const [slotLabel, slotMatches] of daySlots) {
+            const slotTime = slotMatches[0]?.kickoffSlot ?? 0
+            if (slotTime > 0 && slotTime + 2 * 60 * 60 * 1000 < now) {
+              slots.add(day.key + slotLabel)
+            }
           }
         }
       }
