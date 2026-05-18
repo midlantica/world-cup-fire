@@ -37,6 +37,20 @@
   const isFire = computed(() => props.match.badge === 'fire')
   const isWild = computed(() => props.match.badge === 'wild')
 
+  // ── Winner / loser (FT only) ──────────────────────────────────────────────
+  const homeWins = computed(() => {
+    if (!isFT.value) return false
+    const h = parseInt(props.match.homeScore ?? '0', 10)
+    const a = parseInt(props.match.awayScore ?? '0', 10)
+    return h > a
+  })
+  const awayWins = computed(() => {
+    if (!isFT.value) return false
+    const h = parseInt(props.match.homeScore ?? '0', 10)
+    const a = parseInt(props.match.awayScore ?? '0', 10)
+    return a > h
+  })
+
   // ── Local clock ticker ────────────────────────────────────────────────────
   // Parse "MM:SS" → total seconds, tick every second, display as "MM:SS"
   // Resets whenever the prop clock changes (i.e. after each API refresh).
@@ -172,7 +186,17 @@
         </button>
         <span v-if="!isFT" class="team-rec">{{ match.homeRec }}</span>
       </div>
-      <span v-if="!isNS" class="team-score">{{ match.homeScore ?? '0' }}</span>
+      <div v-if="!isNS" class="score-cell">
+        <span
+          class="team-score"
+          :class="{
+            'score-winner': homeWins,
+            'score-loser': isFT && !homeWins,
+          }"
+          >{{ match.homeScore ?? '0' }}</span
+        >
+        <span v-if="homeWins" class="winner-caret" aria-hidden="true">◀</span>
+      </div>
     </div>
 
     <!-- Away team row -->
@@ -196,7 +220,17 @@
         </button>
         <span v-if="!isFT" class="team-rec">{{ match.awayRec }}</span>
       </div>
-      <span v-if="!isNS" class="team-score">{{ match.awayScore ?? '0' }}</span>
+      <div v-if="!isNS" class="score-cell">
+        <span
+          class="team-score"
+          :class="{
+            'score-winner': awayWins,
+            'score-loser': isFT && !awayWins,
+          }"
+          >{{ match.awayScore ?? '0' }}</span
+        >
+        <span v-if="awayWins" class="winner-caret" aria-hidden="true">◀</span>
+      </div>
     </div>
 
     <!-- Right column: status / time -->
@@ -382,13 +416,38 @@
     flex-shrink: 0;
   }
 
+  /* Score cell wraps the number + optional winner caret side-by-side */
+  .score-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
   .team-score {
     font-size: 0.9375rem;
-    font-weight: 600;
+    font-weight: 100;
     color: var(--color-text-primary);
     line-height: 1;
     min-width: 1ch;
     text-align: right;
+  }
+
+  /* FT winner: full white */
+  .score-winner {
+    color: white;
+  }
+
+  /* FT loser: muted — distinct from winner but not invisible */
+  .score-loser {
+    color: oklab(65% 0 0);
+  }
+
+  /* Green winner caret ◀ */
+  .winner-caret {
+    font-size: 0.6rem;
+    line-height: 1;
+    color: #4ade80; /* green-400 */
+    flex-shrink: 0;
   }
 
   /* Status column — fixed width so cards always line up down the page */
