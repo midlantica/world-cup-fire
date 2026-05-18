@@ -276,6 +276,7 @@ export interface WeekData {
   loading: boolean
   error: string | null
   loaded: boolean
+  hiatus: string | null // non-null when this week is inside a hiatus window
 }
 
 export function useScores() {
@@ -287,6 +288,7 @@ export function useScores() {
       loading: false,
       error: null,
       loaded: false,
+      hiatus: null,
     },
     this: {
       matches: [],
@@ -294,6 +296,7 @@ export function useScores() {
       loading: false,
       error: null,
       loaded: false,
+      hiatus: null,
     },
     next: {
       matches: [],
@@ -301,6 +304,7 @@ export function useScores() {
       loading: false,
       error: null,
       loaded: false,
+      hiatus: null,
     },
   }))
 
@@ -321,6 +325,7 @@ export function useScores() {
       if (!data._error) {
         w.matches = transformMatches(data)
         w.label = (data._weekLabel as string) || w.label
+        w.hiatus = (data._hiatus as string) ?? null
         w.loaded = true
       }
       // Always update timestamp so user knows we tried

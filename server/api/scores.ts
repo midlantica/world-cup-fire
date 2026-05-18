@@ -10,25 +10,124 @@ function toDateStr(d: Date): string {
   return d.toISOString().slice(0, 10).replace(/-/g, '')
 }
 
-function weekRange(offset: number): {
+// ── MLS hiatus / off-season windows ──────────────────────────────────────────
+// During the World Cup hiatus (Jun 11 – Jul 19 2026) and the off-season,
+// "Last Week" snaps back to the last week with MLS games, and "Next Week"
+// snaps forward to the first week with MLS games, so users always see real
+// match data rather than an empty calendar week.
+interface HiatusWindow {
+  start: Date // first day of hiatus (inclusive)
+  end: Date // last day of hiatus (inclusive)
+  lastGameWeekMonday: Date // Monday of the last MLS week before hiatus
+  nextGameWeekMonday: Date // Monday of the first MLS week after hiatus
+  message: string // shown on the "This Week" tab
+}
+
+const HIATUS_WINDOWS: HiatusWindow[] = [
+  {
+    // 2026 FIFA World Cup break
+    start: new Date('2026-06-11'),
+    end: new Date('2026-07-19'),
+    lastGameWeekMonday: new Date('2026-06-08'), // week of Jun 8–14 (last MLS games)
+    nextGameWeekMonday: new Date('2026-07-20'), // week of Jul 20–26 (MLS resumes)
+    message:
+      'The MLS season is on hiatus for the 2026 FIFA World Cup. MLS play resumes July 19, 2026.',
+  },
+  {
+    // 2026–27 off-season
+    start: new Date('2026-11-30'),
+    end: new Date('2027-02-26'),
+    lastGameWeekMonday: new Date('2026-11-23'), // week of MLS Cup / final games
+    nextGameWeekMonday: new Date('2027-02-22'), // week MLS 2027 season opens
+    message:
+      'The 2026 MLS season has concluded. The 2027 MLS season begins February 27, 2027.',
+  },
+]
+
+/** Return the hiatus window that contains the given date, or null. */
+function getHiatus(d: Date): HiatusWindow | null {
+  return HIATUS_WINDOWS.find((h) => d >= h.start && d <= h.end) ?? null
+}
+
+function weekRange(
+  offset: number,
+  ctNow?: Date
+): {
   from: string
   to: string
   label: string
+  hiatus?: string // present when this tab is inside a hiatus window
 } {
   // Use CT (America/Chicago) local date so the week doesn't advance until
   // midnight CT — not midnight UTC (which is 6-7h earlier).
-  const ctDateStr = new Date().toLocaleDateString('en-CA', {
+  const ctDateStr = (ctNow ?? new Date()).toLocaleDateString('en-CA', {
     timeZone: 'America/Chicago',
   }) // "YYYY-MM-DD"
   const [year, month, dayOfMonth] = ctDateStr.split('-').map(Number)
   // Reconstruct a local Date at midnight using the CT calendar date
-  const now = new Date(year!, month! - 1, dayOfMonth!)
-  const day = now.getDay() // 0=Sun
+  const today = new Date(year!, month! - 1, dayOfMonth!)
+  const day = today.getDay() // 0=Sun
   const diffToMon = day === 0 ? -6 : 1 - day
-  const monday = new Date(now)
-  monday.setDate(now.getDate() + diffToMon + offset * 7)
+  const monday = new Date(today)
+  monday.setDate(today.getDate() + diffToMon + offset * 7)
   const sunday = new Date(monday)
   sunday.setDate(monday.getDate() + 6)
+
+  // Check if the requested week falls entirely within a hiatus window.
+  // A week is "in hiatus" when its Monday is inside the window.
+  const hiatus = getHiatus(monday)
+
+  if (hiatus) {
+    if (offset === 0) {
+      // "This Week" — show the hiatus message; return the actual calendar week
+      // dates so the label is accurate, but flag it as a hiatus.
+      const label =
+        monday.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }) +
+        ' – ' +
+        sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      return {
+        from: toDateStr(monday),
+        to: toDateStr(sunday),
+        label,
+        hiatus: hiatus.message,
+      }
+    } else if (offset === -1) {
+      // "Last Week" — snap to the last week with MLS games before the hiatus
+      const snapMonday = hiatus.lastGameWeekMonday
+      const snapSunday = new Date(snapMonday)
+      snapSunday.setDate(snapMonday.getDate() + 6)
+      const label =
+        snapMonday.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }) +
+        ' – ' +
+        snapSunday.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })
+      return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
+    } else {
+      // "Next Week" — snap to the first week with MLS games after the hiatus
+      const snapMonday = hiatus.nextGameWeekMonday
+      const snapSunday = new Date(snapMonday)
+      snapSunday.setDate(snapMonday.getDate() + 6)
+      const label =
+        snapMonday.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }) +
+        ' – ' +
+        snapSunday.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })
+      return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
+    }
+  }
 
   const label =
     monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
@@ -83,6 +182,17 @@ export default defineEventHandler(async (event) => {
     from = range.from
     to = range.to
     label = range.label
+    if (range.hiatus) {
+      // This week is inside a hiatus — return immediately with the message.
+      // No need to hit ESPN since there are no MLS games this week.
+      return {
+        events: [],
+        _weekLabel: label,
+        _from: from,
+        _to: to,
+        _hiatus: range.hiatus,
+      }
+    }
   }
 
   const cacheKey = `${from}-${to}`

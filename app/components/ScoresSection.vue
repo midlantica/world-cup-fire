@@ -8,30 +8,9 @@
 
   const allWeekMatches = computed(() => weeks[activeTab.value].matches)
 
-  // ── Off-season / hiatus message ───────────────────────────────────────────
-  const WC_START = new Date('2026-06-11')
-  const WC_END = new Date('2026-07-19')
-  const SEASON_END = new Date('2026-11-30')
-  const NEXT_SEASON_START = new Date('2027-02-27')
-
-  function fmtDate(d: Date) {
-    return d.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
-  const offseasonMsg = computed<string | null>(() => {
-    const now = new Date()
-    if (now >= WC_START && now <= WC_END) {
-      return `The MLS Season is on hiatus until the end of the World Cup. The continued MLS season will restart on ${fmtDate(WC_END)}.`
-    }
-    if (now > SEASON_END) {
-      return `The MLS Season is finished. The new MLS season will begin on ${fmtDate(NEXT_SEASON_START)}.`
-    }
-    return null
-  })
+  // Hiatus message comes from the server (scores API) — it's set when the
+  // current week falls inside a known hiatus window (WC break, off-season).
+  const hiatusMsg = computed(() => weeks[activeTab.value].hiatus ?? null)
 
   const { weekByDayGroups } = useMatchView(allWeekMatches, activeTab)
 
@@ -142,7 +121,7 @@
     v-if="!allWeekMatches.length && !weeks[activeTab].loading"
     class="empty-state"
   >
-    <h3 v-if="offseasonMsg" class="offseason-msg">{{ offseasonMsg }}</h3>
+    <h3 v-if="hiatusMsg" class="hiatus-msg">{{ hiatusMsg }}</h3>
     <p v-else class="empty-msg">No MLS matches found for this period.</p>
   </div>
 
@@ -263,7 +242,7 @@
     padding: 4rem 1rem;
   }
 
-  .offseason-msg {
+  .hiatus-msg {
     font-size: 1rem;
     font-weight: 500;
     color: var(--color-text-secondary);
