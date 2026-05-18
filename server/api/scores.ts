@@ -10,6 +10,15 @@ function toDateStr(d: Date): string {
   return d.toISOString().slice(0, 10).replace(/-/g, '')
 }
 
+/** Format a Date as "Mon D" using UTC date parts (avoids timezone-shift on ISO-string dates) */
+function fmtUTC(d: Date): string {
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
 // ── MLS hiatus / off-season windows ──────────────────────────────────────────
 // During the World Cup hiatus (Jun 11 – Jul 19 2026) and the off-season,
 // "Last Week" snaps back to the last week with MLS games, and "Next Week"
@@ -26,12 +35,14 @@ interface HiatusWindow {
 const HIATUS_WINDOWS: HiatusWindow[] = [
   {
     // 2026 FIFA World Cup break
-    start: new Date('2026-06-11'),
-    end: new Date('2026-07-19'),
-    lastGameWeekMonday: new Date('2026-06-08'), // week of Jun 8–14 (last MLS games)
-    nextGameWeekMonday: new Date('2026-07-20'), // week of Jul 20–26 (MLS resumes)
+    // Last MLS games: May 24, 2026 (week of May 18–24)
+    // MLS resumes: July 22, 2026 (week of Jul 20–26)
+    start: new Date('2026-05-25'),
+    end: new Date('2026-07-21'),
+    lastGameWeekMonday: new Date('2026-05-18'), // week of May 18–24 (last MLS games)
+    nextGameWeekMonday: new Date('2026-07-20'), // week of Jul 20–26 (MLS resumes Jul 22)
     message:
-      'The MLS season is on hiatus for the 2026 FIFA World Cup. MLS play resumes July 19, 2026.',
+      'The MLS season is on hiatus for the 2026 FIFA World Cup. MLS play resumes July 22, 2026.',
   },
   {
     // 2026–27 off-season
@@ -99,32 +110,16 @@ function weekRange(
       const snapMonday = hiatus.lastGameWeekMonday
       const snapSunday = new Date(snapMonday)
       snapSunday.setDate(snapMonday.getDate() + 6)
-      const label =
-        snapMonday.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }) +
-        ' – ' +
-        snapSunday.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        })
+      // Use fmtUTC to avoid timezone shift on ISO-string-constructed dates
+      const label = fmtUTC(snapMonday) + ' – ' + fmtUTC(snapSunday)
       return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
     } else {
       // "Next Week" — snap to the first week with MLS games after the hiatus
       const snapMonday = hiatus.nextGameWeekMonday
       const snapSunday = new Date(snapMonday)
       snapSunday.setDate(snapMonday.getDate() + 6)
-      const label =
-        snapMonday.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }) +
-        ' – ' +
-        snapSunday.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        })
+      // Use fmtUTC to avoid timezone shift on ISO-string-constructed dates
+      const label = fmtUTC(snapMonday) + ' – ' + fmtUTC(snapSunday)
       return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
     }
   }
