@@ -159,6 +159,8 @@
       'game-block-fire': isFire,
       'game-block-wild': isWild,
       'game-block-goal': justScored,
+      'game-block-home-wins': homeWins,
+      'game-block-away-wins': awayWins,
     }"
   >
     <!-- Badge indicator -->
@@ -195,7 +197,6 @@
           }"
           >{{ match.homeScore ?? '0' }}</span
         >
-        <span v-if="homeWins" class="winner-caret" aria-hidden="true">◀</span>
       </div>
     </div>
 
@@ -229,7 +230,6 @@
           }"
           >{{ match.awayScore ?? '0' }}</span
         >
-        <span v-if="awayWins" class="winner-caret" aria-hidden="true">◀</span>
       </div>
     </div>
 
@@ -463,6 +463,34 @@
     width: 3.5rem;
     flex-shrink: 0;
     text-align: center;
+    position: relative;
+  }
+
+  /* Winner caret — CSS triangle sitting on the left border of the status col,
+     pointing left (into the score area). Positioned at the winning team's row. */
+  .game-block-home-wins .status-col::before,
+  .game-block-away-wins .status-col::before {
+    content: '';
+    position: absolute;
+    left: -5px; /* overlap the 1px border so the tip touches it */
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 5px solid #4ade80; /* green-400, pointing left */
+    pointer-events: none;
+  }
+
+  /* Home wins → caret on the top (home) row */
+  .game-block-home-wins .status-col::before {
+    top: 25%;
+    transform: translateY(-50%);
+  }
+
+  /* Away wins → caret on the bottom (away) row */
+  .game-block-away-wins .status-col::before {
+    top: 75%;
+    transform: translateY(-50%);
   }
 
   .status-time {
