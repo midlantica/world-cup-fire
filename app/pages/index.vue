@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useScores } from '~/composables/useScores'
+  import { useScores, transformMatches } from '~/composables/useScores'
   import { useStandings } from '~/composables/useStandings'
 
   // ── Main tab ──────────────────────────────────────────────────────────────────
@@ -8,6 +8,27 @@
 
   // ── Scores composable ─────────────────────────────────────────────────────────
   const { weeks, activeTab, lastUpdated, fetchWeek, selectTab } = useScores()
+
+  // ── SSR pre-fetch: seed "this week" data before first paint ──────────────────
+  // Runs on the server (and once on the client for hydration). Populates the
+  // shared useState so ScoresSection renders immediately without a loading gap.
+  await useAsyncData('scores-this', async () => {
+    if (weeks.this.loaded) return null // already seeded (client re-run)
+    try {
+      const data = await $fetch<Record<string, unknown>>(
+        '/api/scores?week=this'
+      )
+      if (!data._error) {
+        weeks.this.matches = transformMatches(data)
+        weeks.this.label = (data._weekLabel as string) || weeks.this.label
+        weeks.this.hiatus = (data._hiatus as string) ?? null
+        weeks.this.loaded = true
+      }
+    } catch {
+      // silently ignore — client-side initialLoad will retry
+    }
+    return null
+  })
 
   // ── Standings composable ──────────────────────────────────────────────────────
   const {
@@ -96,20 +117,27 @@
     }
   }
 
-  // ── Initial load (client-side — page is wrapped in <ClientOnly>) ──────────────
+  // ── Initial load (client-side) ────────────────────────────────────────────────
+  // SSR already seeded "this week" via useAsyncData above. This runs on mount
+  // to apply the tab-selection logic (redirect to last/next if needed) and
+  // to refresh stale data.
   async function initialLoad() {
     await fetchWeek('this')
 
-    if (weeks.this.matches.length === 0) {
+    const thisMatches = weeks.this.matches
+    if (thisMatches.length === 0) {
       // No games at all this week — show last week
       activeTab.value = 'last'
       await fetchWeek('last')
     } else {
-      const hasUpcoming = weeks.this.matches.some((m) => m.status.code === 'ns')
-      const hasLive = weeks.this.matches.some(
+      const hasUpcoming = thisMatches.some((m) => m.status.code === 'ns')
+      const hasLive = thisMatches.some(
         (m) => m.status.code === 'live' || m.status.code === 'ht'
       )
-      const allDone = weeks.this.matches.every((m) => m.status.code === 'ft')
+      // NOTE: .every() returns true on empty arrays — guard with length check
+      const allDone =
+        thisMatches.length > 0 &&
+        thisMatches.every((m) => m.status.code === 'ft')
       if (allDone && !hasUpcoming && !hasLive) {
         // Every game this week is finished and nothing is pending — show next week
         activeTab.value = 'next'
@@ -128,70 +156,75 @@
 
 <template>
   <main class="page">
+    <!-- ── Header (client-only: timezone detection) ──────────────────────── -->
     <ClientOnly>
-      <!-- ── Header ───────────────────────────────────────────────────────── -->
       <AppHeader @go-home="goHome" @open-team-modal="openTeamModal" />
+    </ClientOnly>
 
-      <!-- ── Main tabs: Scores / Standings / My Team ──────────────────────── -->
-      <div class="main-tabs">
-        <button
-          class="main-tab"
-          :class="{ active: mainTab === 'scores' }"
-          @click="switchMainTab('scores')"
-        >
-          Scores
-        </button>
-        <button
-          class="main-tab"
-          :class="{ active: mainTab === 'standings' }"
-          @click="switchMainTab('standings')"
-        >
-          Standings
-        </button>
-        <div class="tabs-spacer" />
+    <!-- ── Main tabs: Scores / Standings ────────────────────────────────── -->
+    <div class="main-tabs">
+      <button
+        class="main-tab"
+        :class="{ active: mainTab === 'scores' }"
+        @click="switchMainTab('scores')"
+      >
+        Scores
+      </button>
+      <button
+        class="main-tab"
+        :class="{ active: mainTab === 'standings' }"
+        @click="switchMainTab('standings')"
+      >
+        Standings
+      </button>
+      <div class="tabs-spacer" />
+      <!-- TeamPicker is client-only: reads localStorage for saved team -->
+      <ClientOnly>
         <TeamPicker class="team-picker-in-tabs" @open-modal="openTeamModal" />
-      </div>
+      </ClientOnly>
+    </div>
 
-      <!-- ── Content area (grows to fill viewport, keeps footer at bottom) ── -->
-      <div class="content-area">
-        <!-- ── Scores tab ──────────────────────────────────────────────────── -->
-        <section v-if="mainTab === 'scores'" class="tab-section">
-          <ScoresSection @select-team="openTeamModalFor" />
-        </section>
+    <!-- ── Content area (grows to fill viewport, keeps footer at bottom) ── -->
+    <div class="content-area">
+      <!-- ── Scores tab ────────────────────────────────────────────────── -->
+      <section v-if="mainTab === 'scores'" class="tab-section">
+        <ScoresSection @select-team="openTeamModalFor" />
+      </section>
 
-        <!-- ── Standings tab ───────────────────────────────────────────────── -->
-        <section
-          v-else-if="mainTab === 'standings'"
-          class="tab-section standings-section"
-        >
-          <div v-if="standingsLoading" class="skeleton-list">
-            <div
-              v-for="i in 4"
-              :key="i"
-              class="skeleton-row"
-              style="height: 2rem"
-            />
-          </div>
+      <!-- ── Standings tab ─────────────────────────────────────────────── -->
+      <section
+        v-else-if="mainTab === 'standings'"
+        class="tab-section standings-section"
+      >
+        <div v-if="standingsLoading" class="skeleton-list">
+          <div
+            v-for="i in 4"
+            :key="i"
+            class="skeleton-row"
+            style="height: 2rem"
+          />
+        </div>
 
-          <div v-else-if="standingsError" class="error-box">
-            {{ standingsError }}
-          </div>
+        <div v-else-if="standingsError" class="error-box">
+          {{ standingsError }}
+        </div>
 
-          <div v-else-if="conferences.length" class="conferences-grid">
-            <StandingsTable
-              v-for="conf in conferences"
-              :key="conf.name"
-              :conference="conf"
-              @select-team="openTeamModalFor"
-            />
-          </div>
-        </section>
+        <div v-else-if="conferences.length" class="conferences-grid">
+          <StandingsTable
+            v-for="conf in conferences"
+            :key="conf.name"
+            :conference="conf"
+            @select-team="openTeamModalFor"
+          />
+        </div>
+      </section>
 
-        <!-- ── Footer ─────────────────────────────────────────────────────── -->
-        <AppFooter :show-score-legend="mainTab === 'scores'" />
-      </div>
+      <!-- ── Footer ───────────────────────────────────────────────────── -->
+      <AppFooter :show-score-legend="mainTab === 'scores'" />
+    </div>
 
-      <!-- ── My Team Modal ─────────────────────────────────────────────────── -->
+    <!-- ── My Team Modal (client-only) ──────────────────────────────────── -->
+    <ClientOnly>
       <MyTeamModal
         :open="teamModalOpen"
         :view-team="viewTeam"
