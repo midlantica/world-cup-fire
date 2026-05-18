@@ -31,6 +31,7 @@ body {
   --color-text-secondary: oklab(
     65% 0 0
   ); /* muted neutral grey — labels, table cells */
+  --color-text-tertiary: oklab(45% 0 0); /* more muted — footer, fine print */
   --color-text-accent: var(
     --color-theme-400
   ); /* active accent — live, rank-up, gd+ */

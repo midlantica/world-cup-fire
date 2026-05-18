@@ -23,7 +23,7 @@
     margin-top: 1.5rem;
     padding-top: 0.5rem;
     border-top: 1px solid #343434;
-    color: var(--color-text-secondary);
+    color: var(--color-text-tertiary);
     display: flex;
     flex-direction: column;
     align-items: center;
