@@ -116,13 +116,12 @@
     </button>
   </div>
 
-  <!-- No matches (only after load completes) -->
+  <!-- Hiatus message (only after load completes and no matches) -->
   <div
-    v-if="!allWeekMatches.length && !weeks[activeTab].loading"
+    v-if="hiatusMsg && !allWeekMatches.length && !weeks[activeTab].loading"
     class="empty-state"
   >
-    <h3 v-if="hiatusMsg" class="hiatus-msg">{{ hiatusMsg }}</h3>
-    <p v-else class="empty-msg">No MLS matches found for this period.</p>
+    <h3 class="hiatus-msg">{{ hiatusMsg }}</h3>
   </div>
 
   <!-- All week's games: grouped by day → time slot, quality-sorted within each slot -->
@@ -249,13 +248,6 @@
     text-align: center;
     max-width: 36rem;
     line-height: 1.6;
-  }
-
-  .empty-msg {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    text-align: center;
-    padding: 3rem 0;
   }
 
   /* ── Match list ─────────────────────────────────────────────────────────── */
