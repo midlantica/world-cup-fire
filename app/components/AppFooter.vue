@@ -4,11 +4,9 @@
 
 <template>
   <footer class="footer">
-    <span class="footer-info">
-      <span v-if="showScoreLegend"
-        >🔥 both winning &amp; close · 🎲 derby or equal underdogs · </span
-      >Live data via ESPN API
-    </span>
+    <span v-if="showScoreLegend" class="footer-info"
+      >🔥 both winning &amp; close · 🎲 derby or equal underdogs</span
+    >
     <span class="footer-disclaimer"
       >This is an unofficial fan site and is not affiliated with, endorsed by,
       or sponsored by MLS. The MLS name, crest, and all team logos are

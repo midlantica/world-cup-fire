@@ -23,6 +23,7 @@
     close: []
     'select-team': [team: string]
     'view-standings': [conference: string]
+    'open-game-detail': [match: Match]
   }>()
 
   const { selectedTeam } = useMyTeam()
@@ -285,11 +286,12 @@
   }
 
   // Split into past and upcoming
-  const pastEvents = computed(() =>
-    scheduleEvents.value
-      .filter((e) => e.statusCode === 'ft')
-      .slice(-5)
-      .reverse()
+  const allPastEvents = computed(
+    () =>
+      scheduleEvents.value
+        .filter((e) => e.statusCode === 'ft')
+        .slice()
+        .reverse() // most recent first
   )
   const upcomingEvents = computed(() =>
     scheduleEvents.value
@@ -302,17 +304,25 @@
       .slice(0, 5)
   )
 
-  const pastMatches = computed(() => pastEvents.value.map(toMatch))
-  const upcomingMatches = computed(() =>
-    upcomingEvents.value.map((evt, i) => {
-      const m = toMatch(evt)
-      // Only show W/T/L record on the very next game
-      if (i > 0) {
-        m.homeRec = ''
-        m.awayRec = ''
-      }
-      return m
-    })
+  // Past games — most recent first, capped at 10 (rounded down to even)
+  const pastMatches = computed(() => {
+    const all = scheduleEvents.value
+      .filter((e) => e.statusCode === 'ft')
+      .map(toMatch)
+    const cap = Math.min(all.length, 10)
+    const even = cap % 2 === 0 ? cap : cap - 1
+    return all.slice(-even).reverse() // most recent at top
+  })
+
+  // Upcoming / live games, soonest first
+  const showMoreGames = ref(false)
+  // The very next game — always visible
+  const nextGame = computed(() =>
+    upcomingEvents.value.length ? toMatch(upcomingEvents.value[0]!) : null
+  )
+  // Additional upcoming games (2nd onward) — revealed on toggle
+  const moreUpcomingMatches = computed(() =>
+    upcomingEvents.value.slice(1).map(toMatch)
   )
 
   const displayName = computed(() =>
@@ -371,6 +381,14 @@
                 <span class="venue-full">{{ venue }}</span>
                 <span class="venue-short">{{ venueShort }}</span>
               </div>
+              <button
+                v-if="conference"
+                class="schedule-conference-heading"
+                @click="emit('view-standings', conference)"
+              >
+                {{ conference }}
+                <span class="conf-standings-arrow">›</span>
+              </button>
             </div>
           </div>
 
@@ -384,44 +402,53 @@
           </div>
 
           <div v-else class="schedule-body">
-            <!-- Conference heading — click to view standings -->
-            <button
-              v-if="conference"
-              class="schedule-conference-heading"
-              @click="emit('view-standings', conference)"
+            <!-- Additional upcoming games (revealed above button on toggle) -->
+            <div
+              v-if="showMoreGames && moreUpcomingMatches.length"
+              class="schedule-section"
             >
-              {{ conference }}
-              <span class="conf-standings-arrow">›</span>
-            </button>
-
-            <!-- Upcoming -->
-            <div v-if="upcomingMatches.length" class="schedule-section">
               <div class="schedule-list">
                 <GameBlock
-                  v-for="match in upcomingMatches"
+                  v-for="match in moreUpcomingMatches"
                   :key="match.id"
                   :match="match"
-                  @select-team="emit('select-team', $event)"
+                  @open-game-detail="emit('open-game-detail', $event)"
                 />
               </div>
             </div>
 
-            <!-- Recent results -->
+            <!-- Show More Games button (only if there are more upcoming) -->
+            <button
+              v-if="moreUpcomingMatches.length"
+              class="show-future-btn"
+              @click="showMoreGames = !showMoreGames"
+            >
+              {{ showMoreGames ? 'Hide More Games' : 'Show More Games' }}
+            </button>
+
+            <!-- Next game — always at top of the list -->
+            <div v-if="nextGame" class="schedule-section">
+              <div class="schedule-list schedule-list--single">
+                <GameBlock
+                  :match="nextGame"
+                  @open-game-detail="emit('open-game-detail', $event)"
+                />
+              </div>
+            </div>
+
+            <!-- Past games — most recent first, going down -->
             <div v-if="pastMatches.length" class="schedule-section">
               <div class="schedule-list">
                 <GameBlock
                   v-for="match in pastMatches"
                   :key="match.id"
                   :match="match"
-                  @select-team="emit('select-team', $event)"
+                  @open-game-detail="emit('open-game-detail', $event)"
                 />
               </div>
             </div>
 
-            <p
-              v-if="!upcomingMatches.length && !pastMatches.length"
-              class="schedule-empty"
-            >
+            <p v-if="!pastMatches.length && !nextGame" class="schedule-empty">
               No schedule data available.
             </p>
           </div>
@@ -460,9 +487,10 @@
       var(--color-theme-950, #0f172a)
     );
     border: 1px solid var(--team-border, var(--color-theme-700, #374151));
+    border-bottom: 3px solid var(--team-border, var(--color-theme-700, #374151));
     border-radius: 0.5rem;
     padding: 1.25rem;
-    box-shadow: 0 16px 48px oklab(0% 0 0 / 0.6);
+    box-shadow: 0 8px 24px oklab(0% 0 0 / 1);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -503,8 +531,8 @@
   }
 
   .modal-logo {
-    width: 3.4rem;
-    height: 3.4rem;
+    width: 4rem;
+    height: 4rem;
     object-fit: contain;
     flex-shrink: 0;
   }
@@ -520,10 +548,10 @@
 
   .modal-team-name {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 1.75rem;
-    font-weight: 500;
+    font-size: 1.65rem;
+    font-weight: 400;
     color: var(--color-text-primary);
-    line-height: 1.5;
+    line-height: 1.2;
     letter-spacing: 0.02em;
     white-space: nowrap;
     overflow: hidden;
@@ -553,9 +581,10 @@
 
   .modal-venue {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 0.9375rem;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.04em;
+    font-size: 0.85rem;
+    font-weight: 200;
+    color: white;
+    letter-spacing: 0.06em;
     line-height: 1.38;
   }
 
@@ -578,11 +607,10 @@
 
   .schedule-conference-heading {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 200;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-theme-500);
+    color: white;
     background: none;
     border: none;
     padding: 0;
@@ -595,7 +623,7 @@
     text-align: left;
   }
   .schedule-conference-heading:hover {
-    color: var(--color-theme-300);
+    color: oklab(100% 0 0 / 0.7);
   }
   .conf-standings-arrow {
     font-size: 1.1em;
@@ -617,14 +645,27 @@
     gap: 0.5rem;
   }
 
-  .schedule-section-title {
+  .schedule-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* "Last Game" label */
+  .section-label {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.375rem;
+    color: var(--color-text-primary);
+  }
+
+  /* Subtle divider between last game and older results */
+  .past-divider {
+    height: 1px;
+    background: oklab(100% 0 0 / 0.08);
+    margin: 0.25rem 0;
   }
 
   .schedule-list {
@@ -632,10 +673,61 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 0.625rem;
   }
+
+  /* Last game spans full width */
+  .schedule-list--single {
+    grid-template-columns: 1fr;
+  }
+
   @media (max-width: 480px) {
     .schedule-list {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* Show Next Games toggle */
+  .show-future-btn {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.6125rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    background: oklab(100% 0 0 / 0.05);
+    border: 1px solid oklab(100% 0 0 / 0.1);
+    border-radius: 20.375rem;
+    padding: 0.2rem 0.8rem;
+    cursor: pointer;
+    align-self: center;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+  }
+  .show-future-btn:hover {
+    background: oklab(100% 0 0 / 0.09);
+    border-color: oklab(100% 0 0 / 0.18);
+  }
+  /* Load More button */
+  .load-more-btn {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+    background: oklab(100% 0 0 / 0.05);
+    border: 1px solid oklab(100% 0 0 / 0.1);
+    border-radius: 0.375rem;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    align-self: center;
+    margin-top: 0.25rem;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+  }
+  .load-more-btn:hover {
+    background: oklab(100% 0 0 / 0.09);
+    border-color: oklab(100% 0 0 / 0.18);
   }
 
   /* ── Loading skeleton ─────────────────────────────────────────────────────── */

@@ -1,9 +1,19 @@
 <script setup lang="ts">
   import { useScores, transformMatches } from '~/composables/useScores'
   import { useStandings } from '~/composables/useStandings'
+  import { useStats } from '~/composables/useStats'
+  import type { Match } from '~/composables/useScores'
 
   // ── Main tab ──────────────────────────────────────────────────────────────────
-  type MainTab = 'scores' | 'standings'
+  type MainTab = 'scores' | 'standings' | 'stats'
+  const VALID_TABS: MainTab[] = ['scores', 'standings', 'stats']
+
+  function tabFromHash(): MainTab {
+    if (import.meta.server) return 'scores'
+    const hash = window.location.hash.replace('#', '') as MainTab
+    return VALID_TABS.includes(hash) ? hash : 'scores'
+  }
+
   const mainTab = ref<MainTab>('scores')
 
   // ── Scores composable ─────────────────────────────────────────────────────────
@@ -39,26 +49,74 @@
     fetchStandings,
   } = useStandings()
 
+  // ── Stats composable ──────────────────────────────────────────────────────────
+  const { loaded: statsLoaded, fetchStats } = useStats()
+
+  // ── Game detail modal state ───────────────────────────────────────────────────
+  const gameDetailOpen = ref(false)
+  const gameDetailMatch = ref<Match | null>(null)
+
+  function openGameDetail(match: Match) {
+    gameDetailMatch.value = match
+    gameDetailOpen.value = true
+    pushModalHash('game', match.id)
+  }
+
+  function closeGameDetail() {
+    // If the current history entry is this modal, pop it so back/forward stays in sync.
+    // onPopState will handle the actual state update.
+    const state = window.history.state as { modal?: string } | null
+    if (state?.modal === 'game') {
+      window.history.back()
+    } else {
+      gameDetailOpen.value = false
+      gameDetailMatch.value = null
+    }
+  }
+
+  // Silent close — used when transitioning directly to another modal so we
+  // replace the current history entry rather than popping it asynchronously.
+  function closeGameDetailSilent() {
+    gameDetailOpen.value = false
+    gameDetailMatch.value = null
+  }
+
   // ── Team modal state ──────────────────────────────────────────────────────────
   const teamModalOpen = ref(false)
   const viewTeam = ref<string | null>(null)
 
   function openTeamModal() {
     teamModalOpen.value = true
+    pushModalHash('team', '__myteam__')
   }
 
   function openTeamModalFor(teamName: string) {
     viewTeam.value = teamName
     teamModalOpen.value = true
+    pushModalHash('team', teamName)
   }
 
   function closeTeamModal() {
+    // If the current history entry is this modal, pop it so back/forward stays in sync.
+    // onPopState will handle the actual state update.
+    const state = window.history.state as { modal?: string } | null
+    if (state?.modal === 'team') {
+      window.history.back()
+    } else {
+      teamModalOpen.value = false
+      viewTeam.value = null
+    }
+  }
+
+  // Silent close — used internally when we're about to push a new history entry
+  // (e.g. switching from team modal → standings tab) so we don't double-pop.
+  function closeTeamModalSilent() {
     teamModalOpen.value = false
     viewTeam.value = null
   }
 
   async function goToStandings(conferenceName: string) {
-    closeTeamModal()
+    closeTeamModalSilent()
     await switchMainTab('standings')
     await nextTick()
     const headings = document.querySelectorAll('.conf-title')
@@ -75,17 +133,94 @@
     }
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────────────
-  function goHome() {
-    mainTab.value = 'scores'
-    selectTab('this')
+  // ── Modal history helpers ─────────────────────────────────────────────────────
+  // Push a history entry for an open modal so the back button closes it.
+  // State shape: { tab, modal: 'game' | 'team', modalId: string }
+  function pushModalHash(kind: 'game' | 'team', id: string) {
+    const tab = mainTab.value
+    const tabHash = tab === 'scores' ? '' : `#${tab}`
+    const url = window.location.pathname + window.location.search + tabHash
+    window.history.pushState({ tab, modal: kind, modalId: id }, '', url)
   }
 
-  async function switchMainTab(tab: MainTab) {
+  // ── Hash-based navigation (back/forward support) ──────────────────────────────
+  function pushHash(tab: MainTab) {
+    const hash = tab === 'scores' ? '' : `#${tab}`
+    const url = window.location.pathname + window.location.search + hash
+    window.history.pushState({ tab }, '', url)
+  }
+
+  function onPopState(e: PopStateEvent) {
+    const state = e.state as {
+      tab?: MainTab
+      modal?: 'game' | 'team'
+      modalId?: string
+    } | null
+
+    // ── Forward into a modal state ────────────────────────────────────────────
+    if (state?.modal === 'game' && state.modalId) {
+      // Re-open the game detail modal if we have the match cached
+      const allMatches = [
+        ...weeks.this.matches,
+        ...weeks.last.matches,
+        ...weeks.next.matches,
+      ]
+      const match = allMatches.find((m) => m.id === state.modalId)
+      if (match) {
+        gameDetailOpen.value = true
+        gameDetailMatch.value = match
+      }
+      applyTab(state.tab ?? 'scores')
+      return
+    }
+
+    if (state?.modal === 'team' && state.modalId) {
+      // Re-open the team modal
+      if (state.modalId === '__myteam__') {
+        viewTeam.value = null
+      } else {
+        viewTeam.value = state.modalId
+      }
+      teamModalOpen.value = true
+      applyTab(state.tab ?? 'scores')
+      return
+    }
+
+    // ── Back from a modal — close whichever is open ───────────────────────────
+    if (gameDetailOpen.value) {
+      gameDetailOpen.value = false
+      gameDetailMatch.value = null
+    }
+    if (teamModalOpen.value) {
+      teamModalOpen.value = false
+      viewTeam.value = null
+    }
+
+    const tab = state?.tab ?? tabFromHash()
+    applyTab(tab)
+  }
+
+  // Apply a tab without pushing history (used for popstate / initial load)
+  async function applyTab(tab: MainTab) {
     mainTab.value = tab
     if (tab === 'standings' && !standingsLoaded.value) {
       await fetchStandings()
     }
+    if (tab === 'stats' && !statsLoaded.value) {
+      await fetchStats()
+    }
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────────
+  function goHome() {
+    mainTab.value = 'scores'
+    selectTab('this')
+    pushHash('scores')
+  }
+
+  async function switchMainTab(tab: MainTab) {
+    await applyTab(tab)
+    pushHash(tab)
   }
 
   // ── Auto-poll every 30 s when live matches are on screen ──────────────────────
@@ -148,10 +283,21 @@
   }
 
   onMounted(async () => {
+    // Seed the initial history state so popstate works from the very first entry
+    const initialTab = tabFromHash()
+    window.history.replaceState({ tab: initialTab }, '', window.location.href)
+    await applyTab(initialTab)
+
+    window.addEventListener('popstate', onPopState)
+
     await initialLoad()
     startPoll()
   })
-  onUnmounted(stopPoll)
+
+  onUnmounted(() => {
+    stopPoll()
+    window.removeEventListener('popstate', onPopState)
+  })
 </script>
 
 <template>
@@ -177,6 +323,13 @@
       >
         Standings
       </button>
+      <button
+        class="main-tab"
+        :class="{ active: mainTab === 'stats' }"
+        @click="switchMainTab('stats')"
+      >
+        Stats
+      </button>
       <div class="tabs-spacer" />
       <!-- TeamPicker is client-only: reads localStorage for saved team -->
       <ClientOnly>
@@ -188,7 +341,18 @@
     <div class="content-area">
       <!-- ── Scores tab ────────────────────────────────────────────────── -->
       <section v-if="mainTab === 'scores'" class="tab-section">
-        <ScoresSection @select-team="openTeamModalFor" />
+        <ScoresSection
+          @select-team="openTeamModalFor"
+          @open-game-detail="openGameDetail"
+        />
+      </section>
+
+      <!-- ── Stats tab ─────────────────────────────────────────────────── -->
+      <section
+        v-else-if="mainTab === 'stats'"
+        class="tab-section stats-tab-section"
+      >
+        <StatsSection />
       </section>
 
       <!-- ── Standings tab ─────────────────────────────────────────────── -->
@@ -231,6 +395,27 @@
         @close="closeTeamModal"
         @select-team="openTeamModalFor"
         @view-standings="goToStandings"
+        @open-game-detail="
+          (match) => {
+            closeTeamModalSilent()
+            openGameDetail(match)
+          }
+        "
+      />
+    </ClientOnly>
+
+    <!-- ── Game Detail Modal (client-only) ──────────────────────────────── -->
+    <ClientOnly>
+      <GameDetailModal
+        :open="gameDetailOpen"
+        :match="gameDetailMatch"
+        @close="closeGameDetail"
+        @select-team="
+          (team) => {
+            closeGameDetailSilent()
+            openTeamModalFor(team)
+          }
+        "
       />
     </ClientOnly>
   </main>

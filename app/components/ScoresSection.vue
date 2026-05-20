@@ -212,7 +212,6 @@
               v-for="m in slotMatches"
               :key="m.id"
               :match="m"
-              @select-team="emit('select-team', $event)"
               @open-game-detail="emit('open-game-detail', $event)"
             />
           </div>

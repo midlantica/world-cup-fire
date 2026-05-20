@@ -111,7 +111,10 @@
     match: Match | null
   }>()
 
-  const emit = defineEmits<{ close: [] }>()
+  const emit = defineEmits<{
+    close: []
+    'select-team': [team: string]
+  }>()
 
   // ── Data fetching ─────────────────────────────────────────────────────────────
   const { detail, loading, error, fetchDetail, clear } = useMatchDetail()
@@ -150,8 +153,17 @@
   onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
   // ── Tab state ─────────────────────────────────────────────────────────────────
-  type ModalTab = 'overview' | 'squad' | 'clubs'
+  type ModalTab = 'overview' | 'leaders' | 'squad' | 'h2h'
+  const TAB_ORDER: ModalTab[] = ['overview', 'leaders', 'squad', 'h2h']
   const activeTab = ref<ModalTab>('overview')
+  const slideDir = ref<'left' | 'right'>('left')
+
+  function setTab(tab: ModalTab) {
+    const from = TAB_ORDER.indexOf(activeTab.value)
+    const to = TAB_ORDER.indexOf(tab)
+    slideDir.value = to > from ? 'left' : 'right'
+    activeTab.value = tab
+  }
 
   watch(
     () => props.open,
@@ -161,7 +173,6 @@
   )
 
   // ── Derived data ──────────────────────────────────────────────────────────────
-  const home = computed(() => props.match)
   const homeTeam = computed(() => props.match?.home ?? '')
   const awayTeam = computed(() => props.match?.away ?? '')
 
@@ -183,25 +194,46 @@
   const homeBio = computed(() => TEAM_BIO[homeTeam.value] ?? null)
   const awayBio = computed(() => TEAM_BIO[awayTeam.value] ?? null)
 
-  const matchDate = computed(() => {
+  // Compact header meta: "Sat, May 17 · 7:30 PM CDT · 2026"
+  const matchMeta = computed(() => {
     if (!props.match?.date) return ''
-    return new Date(props.match.date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
+    const d = new Date(props.match.date)
+    const day = d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
       day: 'numeric',
-      year: 'numeric',
       timeZone: iana.value,
     })
-  })
-
-  const matchTime = computed(() => {
-    if (!props.match?.date) return ''
-    return new Date(props.match.date).toLocaleTimeString('en-US', {
+    const time = d.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: iana.value,
     })
+    const year = d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      timeZone: iana.value,
+    })
+    return `${day} · ${time} · ${year}`
+  })
+
+  const matchVenue = computed(() => {
+    if (!detail.value?.info.venue) return null
+    return detail.value.info.city
+      ? `${detail.value.info.venue}, ${detail.value.info.city}`
+      : detail.value.info.venue
+  })
+
+  const matchAttendance = computed(() =>
+    detail.value?.info.attendance
+      ? detail.value.info.attendance.toLocaleString() + ' att.'
+      : null
+  )
+
+  // Combined venue + attendance for desktop header footer line
+  const matchVenueAttendance = computed(() => {
+    const parts = [matchVenue.value, matchAttendance.value].filter(Boolean)
+    return parts.length ? parts.join(' - ') : null
   })
 
   // ── Stats helpers ─────────────────────────────────────────────────────────────
@@ -238,7 +270,6 @@
     return ts?.stats.find((s) => s.name === statName)?.displayValue ?? '–'
   }
 
-  // Stat bar width: for possession it's a direct %, for others we compare the two
   function statBarWidth(
     teamId: string,
     statName: string,
@@ -247,12 +278,10 @@
     if (!detail.value) return 50
     const teams = detail.value.teamStats
     if (teams.length < 2) return 50
-
     if (statName === 'possessionPct') {
       const val = parseFloat(getStat(teamId, statName))
       return isNaN(val) ? 50 : val
     }
-
     const homeVal = parseFloat(getStat(teams[0]?.teamId ?? '', statName))
     const awayVal = parseFloat(getStat(teams[1]?.teamId ?? '', statName))
     const total = homeVal + awayVal
@@ -266,19 +295,15 @@
   const winProb = computed(() => {
     if (!detail.value) return null
     const o = detail.value.odds
-
-    // Try moneyline first (live odds), then convert pre-match fractional
     let homeML = o.home.moneyLine
     let awayML = o.away.moneyLine
     let drawML = o.draw.moneyLine
-
     if (!homeML && o.preMatchHome)
       homeML = fractionalToMoneyline(o.preMatchHome)
     if (!awayML && o.preMatchAway)
       awayML = fractionalToMoneyline(o.preMatchAway)
     if (!drawML && o.preMatchDraw)
       drawML = fractionalToMoneyline(o.preMatchDraw)
-
     return normaliseOdds(homeML, drawML, awayML)
   })
 
@@ -344,18 +369,89 @@
     return 'h2h-draw'
   }
 
-  function h2hYear(dateStr: string): string {
-    return new Date(dateStr).getFullYear().toString()
+  // Returns CSS class based on whether this score is the higher (win), lower (loss), or equal (draw)
+  function h2hScoreClass(myScore: string, theirScore: string): string {
+    const a = parseInt(myScore)
+    const b = parseInt(theirScore)
+    if (isNaN(a) || isNaN(b)) return 'h2h-draw'
+    if (a > b) return 'h2h-win'
+    if (a < b) return 'h2h-loss'
+    return 'h2h-draw'
+  }
+
+  function h2hDate(dateStr: string): string {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'UTC',
+    })
+  }
+
+  // Parse "homeScore-awayScore" from ESPN's perspective for that game,
+  // then return scores from the perspective of our home/away teams.
+  function h2hScores(
+    scoreStr: string,
+    atVs: string
+  ): { left: string; right: string } {
+    const parts = scoreStr?.split('-') ?? []
+    const gameHome = parts[0]?.trim() ?? '–'
+    const gameAway = parts[1]?.trim() ?? '–'
+    // atVs === 'vs' means our home team was the home team in this game
+    // atVs === '@'  means our home team was the away team in this game
+    if (atVs === 'vs') return { left: gameHome, right: gameAway }
+    return { left: gameAway, right: gameHome }
   }
 
   // ── Leaders ───────────────────────────────────────────────────────────────────
   const LEADER_LABELS: Record<string, string> = {
-    totalShots: '⚽ Shots',
-    accuratePasses: '🎯 Passes',
-    saves: '🧤 Saves',
-    goals: '⚽ Goals',
-    assists: '🅰️ Assists',
+    totalShots: 'Shots',
+    accuratePasses: 'Passes',
+    saves: 'Saves',
+    goals: 'Goals',
+    assists: 'Assists',
   }
+
+  // Short names for H2H mobile display (e.g. "NE Revolution" instead of full name)
+  const TEAM_SHORT_NAME: Record<string, string> = {
+    'Atlanta United FC': 'Atlanta Utd',
+    'Austin FC': 'Austin FC',
+    'CF Montréal': 'CF Montréal',
+    'Charlotte FC': 'Charlotte FC',
+    'Chicago Fire FC': 'Chicago Fire',
+    'Colorado Rapids': 'CO Rapids',
+    'Columbus Crew': 'Columbus',
+    'D.C. United': 'DC United',
+    'FC Cincinnati': 'FC Cincinnati',
+    'FC Dallas': 'FC Dallas',
+    'Houston Dynamo FC': 'Houston',
+    'Inter Miami CF': 'Inter Miami',
+    'LA Galaxy': 'LA Galaxy',
+    LAFC: 'LAFC',
+    'Minnesota United FC': 'Minnesota',
+    'Nashville SC': 'Nashville SC',
+    'New England Revolution': 'NE Revolution',
+    'New York City FC': 'NYCFC',
+    'Orlando City SC': 'Orlando City',
+    'Philadelphia Union': 'Philadelphia',
+    'Portland Timbers': 'Portland',
+    'Real Salt Lake': 'Real Salt Lake',
+    'Red Bull New York': 'NY Red Bulls',
+    'San Diego FC': 'San Diego FC',
+    'San Jose Earthquakes': 'San Jose',
+    'Seattle Sounders FC': 'Seattle',
+    'Sporting Kansas City': 'Sporting KC',
+    'St. Louis City SC': 'St. Louis',
+    'Toronto FC': 'Toronto FC',
+    'Vancouver Whitecaps': 'Vancouver',
+  }
+
+  const homeAbbr = computed(
+    () => TEAM_SHORT_NAME[homeTeam.value] ?? homeTeam.value
+  )
+  const awayAbbr = computed(
+    () => TEAM_SHORT_NAME[awayTeam.value] ?? awayTeam.value
+  )
 
   const homeLeaders = computed(() => {
     if (!detail.value) return null
@@ -391,84 +487,182 @@
         <div class="modal-panel">
           <!-- ── Header ──────────────────────────────────────────────────────── -->
           <div class="modal-header">
-            <!-- Home team -->
-            <div class="header-team header-team-home">
-              <img
-                v-if="homeLogo"
-                :src="homeLogo"
-                :alt="homeTeam"
-                class="header-logo"
-              />
-              <span
-                v-else
-                class="header-swatch"
-                :style="{ background: match.homeColor }"
-              />
-              <div class="header-team-info">
-                <span class="header-team-name">{{ homeTeam }}</span>
-                <span class="header-team-rec">{{ match.homeRec }}</span>
+            <!-- Mobile game-card header (hidden on desktop) -->
+            <div class="header-mobile">
+              <!-- Home team row -->
+              <div class="header-mobile-team">
+                <button
+                  class="header-logo-btn"
+                  @click.stop="emit('select-team', homeTeam)"
+                >
+                  <img
+                    v-if="homeLogo"
+                    :src="homeLogo"
+                    :alt="homeTeam"
+                    class="header-mobile-logo"
+                  />
+                  <span
+                    v-else
+                    class="header-mobile-swatch"
+                    :style="{ background: match.homeColor }"
+                  />
+                </button>
+                <button
+                  class="header-mobile-name header-mobile-name-btn"
+                  @click.stop="emit('select-team', homeTeam)"
+                >
+                  {{ homeTeam }}
+                </button>
+                <span class="header-mobile-rec">{{ match.homeRec }}</span>
+                <span class="header-mobile-spacer" />
+                <span
+                  v-if="match.status.code !== 'ns'"
+                  class="header-mobile-score"
+                  >{{ match.homeScore ?? '0' }}</span
+                >
+              </div>
+              <!-- Away team row -->
+              <div class="header-mobile-team">
+                <button
+                  class="header-logo-btn"
+                  @click.stop="emit('select-team', awayTeam)"
+                >
+                  <img
+                    v-if="awayLogo"
+                    :src="awayLogo"
+                    :alt="awayTeam"
+                    class="header-mobile-logo"
+                  />
+                  <span
+                    v-else
+                    class="header-mobile-swatch"
+                    :style="{ background: match.awayColor }"
+                  />
+                </button>
+                <button
+                  class="header-mobile-name header-mobile-name-btn"
+                  @click.stop="emit('select-team', awayTeam)"
+                >
+                  {{ awayTeam }}
+                </button>
+                <span class="header-mobile-rec">{{ match.awayRec }}</span>
+                <span class="header-mobile-spacer" />
+                <span
+                  v-if="match.status.code !== 'ns'"
+                  class="header-mobile-score"
+                  >{{ match.awayScore ?? '0' }}</span
+                >
+              </div>
+              <!-- Meta info -->
+              <div class="header-mobile-meta">
+                <span class="header-meta-line">{{ matchMeta }}</span>
+                <span
+                  v-if="matchVenueAttendance"
+                  class="header-meta-line header-venue"
+                  >{{ matchVenueAttendance }}</span
+                >
               </div>
             </div>
 
-            <!-- Score / status -->
-            <div class="header-score-block">
-              <div class="header-score-row">
-                <span v-if="match.status.code !== 'ns'" class="header-score">{{
-                  match.homeScore ?? '0'
-                }}</span>
-                <span class="header-sep">
-                  <span v-if="match.status.code === 'ns'" class="header-vs"
-                    >VS</span
+            <!-- Desktop header (hidden on mobile) -->
+            <div class="header-row">
+              <!-- Home team: info (right-aligned) + logo -->
+              <div class="header-team header-team-home">
+                <div class="header-team-info header-team-info-home">
+                  <button
+                    class="header-team-name header-team-name-btn"
+                    @click.stop="emit('select-team', homeTeam)"
                   >
+                    {{ homeTeam }}
+                  </button>
+                  <span class="header-team-rec">{{ match.homeRec }}</span>
+                </div>
+                <button
+                  class="header-logo-btn"
+                  @click.stop="emit('select-team', homeTeam)"
+                >
+                  <img
+                    v-if="homeLogo"
+                    :src="homeLogo"
+                    :alt="homeTeam"
+                    class="header-logo"
+                  />
                   <span
-                    v-else-if="match.status.code === 'live'"
-                    class="badge badge-live"
-                    >{{ match.status.clock || 'LIVE' }}</span
-                  >
-                  <span
-                    v-else-if="match.status.code === 'ht'"
-                    class="badge badge-ht"
-                    >HT</span
-                  >
-                  <span v-else class="badge badge-ft">FT</span>
-                </span>
-                <span v-if="match.status.code !== 'ns'" class="header-score">{{
-                  match.awayScore ?? '0'
-                }}</span>
+                    v-else
+                    class="header-swatch"
+                    :style="{ background: match.homeColor }"
+                  />
+                </button>
               </div>
-              <div class="header-meta">
-                <span class="header-date">{{ matchDate }}</span>
-                <span class="header-time">{{ matchTime }}</span>
-                <span v-if="detail?.info.venue" class="header-venue">
-                  📍 {{ detail.info.venue
-                  }}<span v-if="detail.info.city"
-                    >, {{ detail.info.city }}</span
+
+              <!-- Center: score + meta -->
+              <div class="header-score-block">
+                <div class="header-score-row">
+                  <span
+                    v-if="match.status.code !== 'ns'"
+                    class="header-score"
+                    >{{ match.homeScore ?? '0' }}</span
                   >
-                </span>
-                <span v-if="detail?.info.attendance" class="header-attendance">
-                  👥
-                  {{ detail.info.attendance.toLocaleString() }} att.
-                </span>
+                  <span class="header-sep">
+                    <span v-if="match.status.code === 'ns'" class="header-vs"
+                      >VS</span
+                    >
+                    <span
+                      v-else-if="match.status.code === 'live'"
+                      class="badge badge-live"
+                      >{{ match.status.clock || 'LIVE' }}</span
+                    >
+                    <span
+                      v-else-if="match.status.code === 'ht'"
+                      class="badge badge-ht"
+                      >HT</span
+                    >
+                    <span v-else class="badge badge-ft">FT</span>
+                  </span>
+                  <span
+                    v-if="match.status.code !== 'ns'"
+                    class="header-score"
+                    >{{ match.awayScore ?? '0' }}</span
+                  >
+                </div>
+                <div class="header-meta">
+                  <span class="header-meta-line">{{ matchMeta }}</span>
+                </div>
+              </div>
+
+              <!-- Away team: logo + info (left-aligned) -->
+              <div class="header-team header-team-away">
+                <button
+                  class="header-logo-btn"
+                  @click.stop="emit('select-team', awayTeam)"
+                >
+                  <img
+                    v-if="awayLogo"
+                    :src="awayLogo"
+                    :alt="awayTeam"
+                    class="header-logo"
+                  />
+                  <span
+                    v-else
+                    class="header-swatch"
+                    :style="{ background: match.awayColor }"
+                  />
+                </button>
+                <div class="header-team-info header-team-info-away">
+                  <button
+                    class="header-team-name header-team-name-btn"
+                    @click.stop="emit('select-team', awayTeam)"
+                  >
+                    {{ awayTeam }}
+                  </button>
+                  <span class="header-team-rec">{{ match.awayRec }}</span>
+                </div>
               </div>
             </div>
 
-            <!-- Away team -->
-            <div class="header-team header-team-away">
-              <div class="header-team-info header-team-info-away">
-                <span class="header-team-name">{{ awayTeam }}</span>
-                <span class="header-team-rec">{{ match.awayRec }}</span>
-              </div>
-              <img
-                v-if="awayLogo"
-                :src="awayLogo"
-                :alt="awayTeam"
-                class="header-logo"
-              />
-              <span
-                v-else
-                class="header-swatch"
-                :style="{ background: match.awayColor }"
-              />
+            <!-- Venue + attendance — full-width line below the grid (desktop only) -->
+            <div v-if="matchVenueAttendance" class="header-venue-line">
+              {{ matchVenueAttendance }}
             </div>
 
             <!-- Close button -->
@@ -477,7 +671,7 @@
               aria-label="Close"
               @click="emit('close')"
             >
-              ✕
+              <CloseIcon />
             </button>
           </div>
 
@@ -486,23 +680,30 @@
             <button
               class="modal-tab"
               :class="{ active: activeTab === 'overview' }"
-              @click="activeTab = 'overview'"
+              @click="setTab('overview')"
             >
-              Overview
+              Stats
+            </button>
+            <button
+              class="modal-tab"
+              :class="{ active: activeTab === 'leaders' }"
+              @click="setTab('leaders')"
+            >
+              Leaders
             </button>
             <button
               class="modal-tab"
               :class="{ active: activeTab === 'squad' }"
-              @click="activeTab = 'squad'"
+              @click="setTab('squad')"
             >
               Squads
             </button>
             <button
               class="modal-tab"
-              :class="{ active: activeTab === 'clubs' }"
-              @click="activeTab = 'clubs'"
+              :class="{ active: activeTab === 'h2h' }"
+              @click="setTab('h2h')"
             >
-              Clubs
+              H2H
             </button>
           </div>
 
@@ -516,288 +717,332 @@
             <!-- Error -->
             <div v-else-if="error" class="error-msg">⚠️ {{ error }}</div>
 
-            <!-- ── OVERVIEW TAB ─────────────────────────────────────────────── -->
-            <template v-else-if="activeTab === 'overview' && detail">
-              <!-- Win probability bar -->
-              <section v-if="winProb" class="section">
-                <h3 class="section-title">Win Probability</h3>
-                <div class="prob-bar-wrap">
-                  <span class="prob-label prob-label-home">
-                    <span class="prob-abbr">{{
-                      detail.teams.find((t) => t.homeAway === 'home')
-                        ?.abbreviation ?? homeTeam.split(' ').pop()
-                    }}</span>
-                    <span class="prob-pct">{{ winProb.home }}%</span>
-                  </span>
-                  <div class="prob-bar">
-                    <div
-                      class="prob-fill prob-fill-home"
-                      :style="{ width: winProb.home + '%' }"
-                      :title="`${homeTeam}: ${winProb.home}%`"
-                    />
-                    <div
-                      class="prob-fill prob-fill-draw"
-                      :style="{ width: winProb.draw + '%' }"
-                      :title="`Draw: ${winProb.draw}%`"
-                    />
-                    <div
-                      class="prob-fill prob-fill-away"
-                      :style="{ width: winProb.away + '%' }"
-                      :title="`${awayTeam}: ${winProb.away}%`"
-                    />
-                  </div>
-                  <span class="prob-label prob-label-away">
-                    <span class="prob-pct">{{ winProb.away }}%</span>
-                    <span class="prob-abbr">{{
-                      detail.teams.find((t) => t.homeAway === 'away')
-                        ?.abbreviation ?? awayTeam.split(' ').pop()
-                    }}</span>
-                  </span>
-                </div>
-                <div class="prob-draw-label">Draw {{ winProb.draw }}%</div>
-                <div v-if="detail.odds.provider" class="odds-provider">
-                  Odds via {{ detail.odds.provider }}
-                </div>
-              </section>
-
-              <!-- Match stats -->
-              <section v-if="detail.teamStats.length >= 2" class="section">
-                <h3 class="section-title">Match Stats</h3>
-                <div class="stats-grid">
-                  <template v-for="statName in FEATURED_STATS" :key="statName">
-                    <div class="stat-row">
-                      <span class="stat-val stat-val-home">{{
-                        getStat(detail.teamStats[0]?.teamId ?? '', statName)
-                      }}</span>
-                      <div class="stat-bar-wrap">
-                        <div
-                          class="stat-bar-fill stat-bar-home"
-                          :style="{
-                            width:
-                              statBarWidth(
+            <!-- ── Tab content with slide transition ──────────────────────── -->
+            <Transition v-else :name="`tab-slide-${slideDir}`" mode="out-in">
+              <div :key="activeTab" class="tab-pane">
+                <!-- ── STATS TAB ───────────────────────────────────────────── -->
+                <template v-if="activeTab === 'overview' && detail">
+                  <div v-if="detail.teamStats.length >= 2" class="stats-table">
+                    <!-- Header: home name | Team Stats | away name -->
+                    <div class="stats-head">
+                      <div class="stats-th stats-th-home">{{ homeAbbr }}</div>
+                      <div class="stats-th-center">Team Stats</div>
+                      <div class="stats-th stats-th-away">{{ awayAbbr }}</div>
+                    </div>
+                    <template
+                      v-for="(statName, idx) in FEATURED_STATS"
+                      :key="statName"
+                    >
+                      <div
+                        class="stats-row"
+                        :class="{ 'row-stripe': idx % 2 === 1 }"
+                      >
+                        <div class="stats-val-cell stats-val-home">
+                          <span
+                            :class="[
+                              'stats-num',
+                              parseFloat(
+                                getStat(
+                                  detail.teamStats[0]?.teamId ?? '',
+                                  statName
+                                )
+                              ) >
+                              parseFloat(
+                                getStat(
+                                  detail.teamStats[1]?.teamId ?? '',
+                                  statName
+                                )
+                              )
+                                ? 'stats-num-hi'
+                                : '',
+                            ]"
+                            >{{
+                              getStat(
                                 detail.teamStats[0]?.teamId ?? '',
-                                statName,
-                                'home'
-                              ) + '%',
-                          }"
-                        />
-                        <div
-                          class="stat-bar-fill stat-bar-away"
-                          :style="{
-                            width:
-                              statBarWidth(
+                                statName
+                              )
+                            }}</span
+                          >
+                        </div>
+                        <div class="stats-label-col">
+                          {{ STAT_LABELS[statName] ?? statName }}
+                        </div>
+                        <div class="stats-val-cell stats-val-away">
+                          <span
+                            :class="[
+                              'stats-num',
+                              parseFloat(
+                                getStat(
+                                  detail.teamStats[1]?.teamId ?? '',
+                                  statName
+                                )
+                              ) >
+                              parseFloat(
+                                getStat(
+                                  detail.teamStats[0]?.teamId ?? '',
+                                  statName
+                                )
+                              )
+                                ? 'stats-num-hi'
+                                : '',
+                            ]"
+                            >{{
+                              getStat(
                                 detail.teamStats[1]?.teamId ?? '',
-                                statName,
-                                'away'
-                              ) + '%',
-                          }"
-                        />
+                                statName
+                              )
+                            }}</span
+                          >
+                        </div>
                       </div>
-                      <span class="stat-label">{{
-                        STAT_LABELS[statName] ?? statName
-                      }}</span>
-                      <span class="stat-val stat-val-away">{{
-                        getStat(detail.teamStats[1]?.teamId ?? '', statName)
-                      }}</span>
-                    </div>
-                  </template>
-                </div>
-              </section>
+                    </template>
+                  </div>
+                  <div v-else class="no-data">Stats not yet available</div>
+                </template>
 
-              <!-- Player leaders -->
-              <section v-if="homeLeaders || awayLeaders" class="section">
-                <h3 class="section-title">Player Leaders</h3>
-                <div class="leaders-grid">
-                  <div
-                    v-for="side in ['home', 'away']"
-                    :key="side"
-                    class="leaders-col"
-                  >
-                    <div class="leaders-team-name">
-                      {{
-                        side === 'home'
-                          ? homeLeaders?.displayName
-                          : awayLeaders?.displayName
-                      }}
+                <!-- ── LEADERS TAB ─────────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'leaders' && detail">
+                  <div v-if="homeLeaders || awayLeaders" class="leaders-table">
+                    <!-- Header: home name | home-val | category | away-val | away name -->
+                    <div class="leaders-head">
+                      <div class="leaders-th leaders-th-home">
+                        {{ homeAbbr }}
+                      </div>
+                      <div></div>
+                      <div class="leaders-th-center"></div>
+                      <div></div>
+                      <div class="leaders-th leaders-th-away">
+                        {{ awayAbbr }}
+                      </div>
                     </div>
-                    <div
-                      v-for="cat in (side === 'home'
-                        ? homeLeaders
-                        : awayLeaders
-                      )?.categories.filter((c) => c.athlete && c.value)"
+                    <!-- Rows: player-name | home-val | category | away-val | player-name -->
+                    <template
+                      v-for="(cat, idx) in (
+                        homeLeaders?.categories ??
+                        awayLeaders?.categories ??
+                        []
+                      ).filter((c) => LEADER_LABELS[c.name])"
                       :key="cat.name"
-                      class="leader-row"
                     >
-                      <span class="leader-cat">{{
-                        LEADER_LABELS[cat.name] ?? cat.shortDisplayName
-                      }}</span>
-                      <span class="leader-athlete">{{ cat.athlete }}</span>
-                      <span class="leader-val">{{ cat.value }}</span>
+                      <div
+                        class="leaders-row"
+                        :class="{ 'row-stripe': idx % 2 === 1 }"
+                      >
+                        <div class="leaders-name leaders-name-home">
+                          {{
+                            homeLeaders?.categories.find(
+                              (c) => c.name === cat.name
+                            )?.athlete ?? '–'
+                          }}
+                        </div>
+                        <div class="leaders-val leaders-val-home">
+                          {{
+                            homeLeaders?.categories.find(
+                              (c) => c.name === cat.name
+                            )?.value ?? '–'
+                          }}
+                        </div>
+                        <div class="leaders-cat-col">
+                          {{ LEADER_LABELS[cat.name] ?? cat.shortDisplayName }}
+                        </div>
+                        <div class="leaders-val leaders-val-away">
+                          {{
+                            awayLeaders?.categories.find(
+                              (c) => c.name === cat.name
+                            )?.value ?? '–'
+                          }}
+                        </div>
+                        <div class="leaders-name leaders-name-away">
+                          {{
+                            awayLeaders?.categories.find(
+                              (c) => c.name === cat.name
+                            )?.athlete ?? '–'
+                          }}
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                  <div v-else class="no-data">Leaders not yet available</div>
+                </template>
+
+                <!-- ── SQUAD TAB ───────────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'squad' && detail">
+                  <div class="squads-table">
+                    <!-- Header row: home abbr | pos | away abbr -->
+                    <div class="squads-head">
+                      <div class="squads-th squads-th-home">{{ homeAbbr }}</div>
+                      <div class="squads-th-center"></div>
+                      <div class="squads-th squads-th-away">{{ awayAbbr }}</div>
                     </div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Head-to-head -->
-              <section v-if="h2h.length" class="section">
-                <h3 class="section-title">
-                  Head to Head
-                  <span class="section-subtitle"
-                    >(from {{ homeTeam }}'s perspective)</span
-                  >
-                </h3>
-                <div class="h2h-list">
-                  <div v-for="game in h2h" :key="game.id" class="h2h-row">
-                    <span class="h2h-year">{{ h2hYear(game.date) }}</span>
-                    <span class="h2h-atvs">{{ game.atVs }}</span>
-                    <span class="h2h-score">{{ game.score }}</span>
-                    <span
-                      class="h2h-result"
-                      :class="h2hResultClass(game.result)"
-                      >{{ game.result }}</span
+                    <template
+                      v-for="(_, rowIdx) in Array(
+                        Math.max(
+                          sortedPlayers(homeRoster).length,
+                          sortedPlayers(awayRoster).length
+                        )
+                      )"
+                      :key="rowIdx"
                     >
-                    <span class="h2h-comp">{{ game.competition }}</span>
-                  </div>
-                </div>
-              </section>
-            </template>
-
-            <!-- ── SQUAD TAB ────────────────────────────────────────────────── -->
-            <template v-else-if="activeTab === 'squad' && detail">
-              <div class="squads-grid">
-                <div
-                  v-for="(roster, idx) in [homeRoster, awayRoster]"
-                  :key="idx"
-                  class="squad-col"
-                >
-                  <div class="squad-team-header">
-                    <img
-                      v-if="idx === 0 ? homeLogo : awayLogo"
-                      :src="idx === 0 ? homeLogo! : awayLogo!"
-                      :alt="idx === 0 ? homeTeam : awayTeam"
-                      class="squad-logo"
-                    />
-                    <span class="squad-team-name">{{
-                      idx === 0 ? homeTeam : awayTeam
-                    }}</span>
-                  </div>
-
-                  <div
-                    v-if="roster && roster.players.length"
-                    class="squad-list"
-                  >
+                      <div
+                        class="squads-row"
+                        :class="{ 'row-stripe': rowIdx % 2 === 1 }"
+                      >
+                        <!-- Home player: [sub-icon] [jersey] [name] → flush right -->
+                        <div class="squads-player squads-player-home">
+                          <span
+                            v-if="sortedPlayers(homeRoster)[rowIdx]?.subbedIn"
+                            class="sub-icon sub-in"
+                            >⯅</span
+                          >
+                          <span
+                            v-if="sortedPlayers(homeRoster)[rowIdx]?.subbedOut"
+                            class="sub-icon sub-out"
+                            >⯆</span
+                          >
+                          <span
+                            v-if="sortedPlayers(homeRoster)[rowIdx]"
+                            class="squad-jersey"
+                            >{{
+                              sortedPlayers(homeRoster)[rowIdx]?.jersey ?? '–'
+                            }}</span
+                          >
+                          <span
+                            v-if="sortedPlayers(homeRoster)[rowIdx]"
+                            class="squad-pname"
+                            >{{
+                              sortedPlayers(homeRoster)[rowIdx]?.displayName ??
+                              ''
+                            }}</span
+                          >
+                        </div>
+                        <!-- Center: position badge -->
+                        <div class="squads-pos-col">
+                          <span
+                            v-if="
+                              sortedPlayers(homeRoster)[rowIdx] ||
+                              sortedPlayers(awayRoster)[rowIdx]
+                            "
+                            class="squad-pos"
+                            >{{
+                              sortedPlayers(homeRoster)[rowIdx]?.position ??
+                              sortedPlayers(awayRoster)[rowIdx]?.position ??
+                              ''
+                            }}</span
+                          >
+                        </div>
+                        <!-- Away player: [name] [jersey] [sub-icon] → flush left -->
+                        <div class="squads-player squads-player-away">
+                          <span
+                            v-if="sortedPlayers(awayRoster)[rowIdx]"
+                            class="squad-pname"
+                            >{{
+                              sortedPlayers(awayRoster)[rowIdx]?.displayName ??
+                              ''
+                            }}</span
+                          >
+                          <span
+                            v-if="sortedPlayers(awayRoster)[rowIdx]"
+                            class="squad-jersey"
+                            >{{
+                              sortedPlayers(awayRoster)[rowIdx]?.jersey ?? '–'
+                            }}</span
+                          >
+                          <span
+                            v-if="sortedPlayers(awayRoster)[rowIdx]?.subbedIn"
+                            class="sub-icon sub-in"
+                            >⯅</span
+                          >
+                          <span
+                            v-if="sortedPlayers(awayRoster)[rowIdx]?.subbedOut"
+                            class="sub-icon sub-out"
+                            >⯆</span
+                          >
+                        </div>
+                      </div>
+                    </template>
                     <div
-                      v-for="player in sortedPlayers(roster)"
-                      :key="player.id"
-                      class="squad-player"
-                      :class="{
-                        'player-starter': player.starter,
-                        'player-sub': !player.starter,
-                        'player-subbed-in': player.subbedIn,
-                        'player-subbed-out': player.subbedOut,
-                      }"
+                      v-if="
+                        !sortedPlayers(homeRoster).length &&
+                        !sortedPlayers(awayRoster).length
+                      "
+                      class="no-data"
                     >
-                      <span class="player-jersey">{{
-                        player.jersey ?? '–'
-                      }}</span>
-                      <span class="player-pos">{{ player.position }}</span>
-                      <span class="player-name">{{ player.displayName }}</span>
-                      <span
-                        v-if="player.subbedIn"
-                        class="sub-icon sub-in"
-                        title="Subbed in"
-                        >↑</span
-                      >
-                      <span
-                        v-if="player.subbedOut"
-                        class="sub-icon sub-out"
-                        title="Subbed out"
-                        >↓</span
-                      >
+                      Lineup not yet available
                     </div>
                   </div>
-                  <div v-else class="no-data">Lineup not yet available</div>
-                </div>
-              </div>
-            </template>
+                </template>
 
-            <!-- ── CLUBS TAB ───────────────────────────────────────────────── -->
-            <template v-else-if="activeTab === 'clubs'">
-              <div class="clubs-grid">
-                <div
-                  v-for="(team, idx) in [
-                    {
-                      name: homeTeam,
-                      logo: homeLogo,
-                      color: match.homeColor,
-                      founded: homeFounded,
-                      bio: homeBio,
-                      venue: homeVenue,
-                    },
-                    {
-                      name: awayTeam,
-                      logo: awayLogo,
-                      color: match.awayColor,
-                      founded: awayFounded,
-                      bio: awayBio,
-                      venue: TEAM_VENUE[awayTeam] ?? null,
-                    },
-                  ]"
-                  :key="idx"
-                  class="club-card"
-                >
-                  <div class="club-header">
-                    <img
-                      v-if="team.logo"
-                      :src="team.logo"
-                      :alt="team.name"
-                      class="club-logo"
-                    />
-                    <span
-                      v-else
-                      class="club-swatch"
-                      :style="{ background: team.color }"
-                    />
-                    <div class="club-title-block">
-                      <h3 class="club-name">{{ team.name }}</h3>
-                      <span v-if="team.founded" class="club-founded"
-                        >Est. {{ team.founded }}</span
-                      >
+                <!-- ── H2H TAB ─────────────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'h2h'">
+                  <section v-if="detail && h2h.length" class="section">
+                    <div class="h2h-list">
+                      <div v-for="game in h2h" :key="game.id" class="h2h-entry">
+                        <div class="h2h-meta-row">
+                          <span class="h2h-date">{{ h2hDate(game.date) }}</span>
+                          <span class="h2h-comp">{{ game.competition }}</span>
+                        </div>
+                        <div class="h2h-score-row">
+                          <div class="h2h-side h2h-side-left">
+                            <div class="h2h-name">
+                              <span class="h2h-name-full">{{
+                                game.atVs === 'vs' ? homeTeam : awayTeam
+                              }}</span>
+                              <span class="h2h-name-abbr">{{
+                                game.atVs === 'vs' ? homeAbbr : awayAbbr
+                              }}</span>
+                            </div>
+                            <div
+                              class="h2h-score-val"
+                              :class="
+                                h2hScoreClass(
+                                  h2hScores(game.score, game.atVs).left,
+                                  h2hScores(game.score, game.atVs).right
+                                )
+                              "
+                            >
+                              {{ h2hScores(game.score, game.atVs).left }}
+                            </div>
+                          </div>
+                          <span class="h2h-hyphen">–</span>
+                          <div class="h2h-side h2h-side-right">
+                            <div
+                              class="h2h-score-val"
+                              :class="
+                                h2hScoreClass(
+                                  h2hScores(game.score, game.atVs).right,
+                                  h2hScores(game.score, game.atVs).left
+                                )
+                              "
+                            >
+                              {{ h2hScores(game.score, game.atVs).right }}
+                            </div>
+                            <div class="h2h-name">
+                              <span class="h2h-name-full">{{
+                                game.atVs === 'vs' ? awayTeam : homeTeam
+                              }}</span>
+                              <span class="h2h-name-abbr">{{
+                                game.atVs === 'vs' ? awayAbbr : homeAbbr
+                              }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </section>
+                  <div v-else-if="loading" class="skeleton-wrap">
+                    <div v-for="i in 4" :key="i" class="skeleton-row" />
                   </div>
-
-                  <div v-if="team.venue" class="club-detail">
-                    <span class="club-detail-label">🏟️ Stadium</span>
-                    <span class="club-detail-val">{{ team.venue }}</span>
+                  <div v-else class="no-data">
+                    No head-to-head data available
                   </div>
+                </template>
 
-                  <div class="club-detail">
-                    <span class="club-detail-label">📊 Record</span>
-                    <span class="club-detail-val">
-                      {{ idx === 0 ? match.homeRec : match.awayRec }}
-                      <span class="club-pts">
-                        ({{
-                          detail?.teams.find(
-                            (t) => t.homeAway === (idx === 0 ? 'home' : 'away')
-                          )?.points ?? '–'
-                        }}
-                        pts)
-                      </span>
-                    </span>
-                  </div>
-
-                  <p v-if="team.bio" class="club-bio">{{ team.bio }}</p>
-                  <p v-else class="club-bio club-bio-empty">
-                    Club information not available.
-                  </p>
+                <!-- No detail yet -->
+                <div v-else-if="!loading && !detail" class="no-data">
+                  Loading match details…
                 </div>
               </div>
-            </template>
-
-            <!-- No detail yet (open but not loaded) -->
-            <div v-else-if="!loading && !detail" class="no-data">
-              Loading match details…
-            </div>
+            </Transition>
           </div>
         </div>
       </div>
@@ -811,37 +1056,37 @@
     position: fixed;
     inset: 0;
     z-index: 9000;
-    background: oklab(0% 0 0 / 0.72);
+    background: oklab(0% 0 0 / 0.75);
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: center;
-    padding: 0;
-  }
-
-  @media (min-width: 600px) {
-    .modal-backdrop {
-      align-items: center;
-      padding: 1rem;
-    }
+    padding: 1rem;
+    overflow-y: auto;
   }
 
   .modal-panel {
+    margin-top: 3rem;
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    background: var(--color-theme-900, oklch(20.8% 0.042 265.8));
-    border: 1px solid oklab(100% 0 0 / 0.1);
-    border-radius: 1rem 1rem 0 0;
+    font-weight: 100;
+    letter-spacing: 0.03rem;
+    background: oklch(18% 0.01 260);
+    border: 1px solid oklab(100% 0 0 / 0.08);
+    border-bottom: 3px solid oklab(100% 0 0 / 0.08);
+    border-radius: 0.75rem;
     width: 100%;
-    max-width: 52rem;
-    max-height: 92dvh;
+    max-width: 44rem;
+    max-height: 88dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 24px oklab(0% 0 0 / 1);
   }
 
   @media (min-width: 600px) {
     .modal-panel {
-      border-radius: 1rem;
-      max-height: 88dvh;
+      max-height: 80dvh;
+      font-size: 1rem;
     }
   }
 
@@ -849,59 +1094,185 @@
   .modal-enter-active,
   .modal-leave-active {
     transition:
-      opacity 0.2s ease,
-      transform 0.25s ease;
+      opacity 0.18s ease,
+      transform 0.22s ease;
   }
 
   .modal-enter-from,
   .modal-leave-to {
     opacity: 0;
-    transform: translateY(2rem);
+    transform: translateY(1.5rem);
   }
 
   @media (min-width: 600px) {
     .modal-enter-from,
     .modal-leave-to {
-      transform: scale(0.96) translateY(0.5rem);
+      transform: scale(0.97) translateY(0.5rem);
     }
+  }
+
+  /* ── Mobile header ────────────────────────────────────────────────────────── */
+  .header-mobile {
+    display: none;
+  }
+
+  @media (max-width: 599px) {
+    .header-mobile {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      width: 100%;
+    }
+
+    .header-row {
+      display: none;
+    }
+  }
+
+  .header-mobile-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .header-mobile-logo {
+    width: 1.625rem;
+    height: 1.625rem;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .header-mobile-swatch {
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .header-mobile-name {
+    font-size: 1.3rem;
+    font-weight: 200;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .header-mobile-name-btn {
+    font-family: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+    transition: opacity 0.15s;
+  }
+
+  .header-mobile-name-btn:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    opacity: 0.85;
+  }
+
+  .header-mobile-rec {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: oklab(100% 0 0 / 0.6);
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  .header-mobile-spacer {
+    flex: 1;
+  }
+
+  .header-mobile-score {
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+    min-width: 1.25ch;
+    text-align: right;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .header-mobile-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid oklab(100% 0 0 / 0.08);
+    margin-top: 0.1rem;
   }
 
   /* ── Header ───────────────────────────────────────────────────────────────── */
   .modal-header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: start;
-    gap: 0.5rem;
-    padding: 1rem 1rem 0.75rem;
-    border-bottom: 1px solid oklab(100% 0 0 / 0.08);
+    background: linear-gradient(
+      180deg,
+      hsl(219 11% 5% / 1) 0%,
+      hsl(219 11% 10% / 1) 100%
+    );
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     position: relative;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.85rem 0.7rem 0.625rem;
+  }
+
+  @media (max-width: 599px) {
+    .modal-header {
+      padding: 0.625rem 0.875rem 0.5rem;
+    }
+  }
+
+  .header-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+  }
+
+  @media (max-width: 599px) {
+    .header-row {
+      display: none;
+    }
   }
 
   .header-team {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.625rem;
   }
 
   .header-team-home {
-    justify-content: flex-start;
-  }
-
-  .header-team-away {
     justify-content: flex-end;
   }
 
+  .header-team-away {
+    justify-content: flex-start;
+  }
+
   .header-logo {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
     object-fit: contain;
     flex-shrink: 0;
   }
 
   .header-swatch {
-    width: 2rem;
-    height: 2rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 0.25rem;
     flex-shrink: 0;
   }
@@ -909,31 +1280,76 @@
   .header-team-info {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 0;
   }
 
-  .header-team-info-away {
+  .header-team-info-home {
     text-align: right;
   }
 
+  .header-team-info-away {
+    text-align: left;
+  }
+
   .header-team-name {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    line-height: 1.1;
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: oklab(100% 0 0);
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+  }
+
+  /* Logo as clickable button — reset button chrome, add hover opacity */
+  .header-logo-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+
+  .header-logo-btn:hover {
+    opacity: 0.75;
+  }
+
+  /* Team name as clickable button — reset button chrome, add hover underline */
+  .header-team-name-btn {
+    font-family: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .header-team-name-btn:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    opacity: 0.85;
   }
 
   .header-team-rec {
-    font-size: 0.75rem;
-    font-weight: 300;
-    color: var(--color-text-secondary);
+    font-size: 1rem;
+    font-weight: 400;
+    color: oklab(100% 0 0 / 0.7);
+    letter-spacing: 0.07em;
+    line-height: 1.2;
   }
 
+  /* Score block — center column */
   .header-score-block {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.3rem;
+    padding: 0.2rem 0rem 0;
+    justify-content: flex-end;
   }
 
   .header-score-row {
@@ -943,12 +1359,13 @@
   }
 
   .header-score {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
+    font-size: 1.875rem;
+    font-weight: 600;
+    color: oklab(100% 0 0);
     line-height: 1;
-    min-width: 1.5ch;
+    min-width: 1.25ch;
     text-align: center;
+    letter-spacing: 0.01em;
   }
 
   .header-sep {
@@ -959,51 +1376,61 @@
   }
 
   .header-vs {
-    font-size: 1rem;
-    font-weight: 300;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.1em;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.04em;
   }
 
   .header-meta {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.1rem;
+    gap: 0.05rem;
   }
 
-  .header-date {
-    font-size: 0.6875rem;
+  .header-meta-line {
+    font-size: 0.85rem;
     font-weight: 400;
-    color: var(--color-text-secondary);
+    color: oklab(100% 0 0 / 0.85);
     text-align: center;
-  }
-
-  .header-time {
-    font-size: 0.6875rem;
-    color: var(--color-text-secondary);
-    text-align: center;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
   }
 
   .header-venue {
-    font-size: 0.625rem;
-    color: var(--color-text-secondary);
-    text-align: center;
-    opacity: 0.8;
+    color: oklab(100% 0 0 / 0.65);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
   }
 
   .header-attendance {
-    font-size: 0.625rem;
-    color: var(--color-text-secondary);
+    color: oklab(100% 0 0 / 0.5);
+  }
+
+  /* Venue + attendance — full-width line below the 3-col grid (desktop only) */
+  .header-venue-line {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: oklab(100% 0 0 / 0.5);
     text-align: center;
-    opacity: 0.7;
+    letter-spacing: 0.05em;
+    line-height: 1.35;
+    width: 100%;
+    margin-top: 0.3rem;
+  }
+
+  @media (max-width: 599px) {
+    .header-venue-line {
+      display: none;
+    }
   }
 
   /* Badges */
   .badge {
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
     padding: 0.15rem 0.4rem;
     border-radius: 0.25rem;
   }
@@ -1022,91 +1449,131 @@
 
   .badge-ft {
     background: oklab(100% 0 0 / 0.08);
-    color: var(--color-text-secondary);
+    color: oklab(100% 0 0);
   }
 
-  /* Close button */
+  /* Close button — plain X in top-right corner, no circle */
   .modal-close {
     position: absolute;
-    top: 0.625rem;
-    right: 0.625rem;
-    background: oklab(100% 0 0 / 0.08);
+    top: 0.35rem;
+    right: 0.35rem;
+    background: transparent;
     border: none;
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 50%;
+    color: oklab(100% 0 0 / 0.3);
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.25rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
+    transition: color 0.15s;
+    z-index: 9100;
   }
 
   .modal-close:hover {
-    background: oklab(100% 0 0 / 0.15);
-    color: var(--color-text-primary);
+    color: oklab(100% 0 0);
+  }
+
+  @media (max-width: 599px) {
+    .modal-close {
+      display: none;
+    }
   }
 
   /* ── Tabs ─────────────────────────────────────────────────────────────────── */
   .modal-tabs {
     display: flex;
-    gap: 0.25rem;
-    padding: 0.5rem 1rem 0;
-    border-bottom: 1px solid oklab(100% 0 0 / 0.08);
+    justify-content: center;
+    gap: 0;
+    padding: 0 0.75rem;
     flex-shrink: 0;
+    background: linear-gradient(180deg, #000000d6, #00000000);
+    border-bottom: 1px solid oklab(1 0 0 / 0.12);
   }
 
   .modal-tab {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    padding: 0.3rem 0.75rem;
-    border-radius: 0.375rem 0.375rem 0 0;
-    color: var(--color-text-secondary);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    padding: 0.4rem 0.875rem;
+    color: oklab(100% 0 0 / 0.55);
     background: transparent;
     border: none;
+    border-bottom: 2px solid transparent;
     cursor: pointer;
-    position: relative;
-    bottom: -1px;
-    transition: color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+    text-transform: uppercase;
   }
 
   .modal-tab.active {
-    color: var(--color-theme-300);
-    border: 1px solid oklab(100% 0 0 / 0.1);
-    border-bottom-color: var(--color-theme-900, oklch(20.8% 0.042 265.8));
-    background: var(--color-theme-800);
+    color: oklab(100% 0 0);
+    border-bottom-color: oklab(100% 0 0);
   }
 
   .modal-tab:hover:not(.active) {
-    color: var(--color-text-primary);
+    color: oklab(100% 0 0 / 0.75);
   }
 
   /* ── Body ─────────────────────────────────────────────────────────────────── */
   .modal-body {
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
-    padding: 1rem;
+    padding: 0.5rem 0.7rem 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
+  }
+
+  /* ── Tab pane & slide transitions ─────────────────────────────────────────── */
+  .tab-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Slide left (going to a later tab) */
+  .tab-slide-left-enter-active,
+  .tab-slide-left-leave-active,
+  .tab-slide-right-enter-active,
+  .tab-slide-right-leave-active {
+    transition:
+      transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.08s ease;
+    will-change: transform, opacity;
+  }
+
+  .tab-slide-left-enter-from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+  .tab-slide-left-leave-to {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+
+  .tab-slide-right-enter-from {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+  .tab-slide-right-leave-to {
+    transform: translateX(16px);
+    opacity: 0;
   }
 
   /* ── Skeleton ─────────────────────────────────────────────────────────────── */
   .skeleton-wrap {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
-    padding: 0.5rem 0;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
   }
 
   .skeleton-row {
-    height: 2rem;
-    border-radius: 0.375rem;
-    background: oklab(100% 0 0 / 0.06);
+    height: 1.75rem;
+    border-radius: 0.25rem;
+    background: oklab(100% 0 0 / 0.05);
     animation: pulse 1.4s ease-in-out infinite;
   }
 
@@ -1122,11 +1589,12 @@
 
   /* ── Error ────────────────────────────────────────────────────────────────── */
   .error-msg {
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.375rem;
     background: oklab(30.8% 0.072 0.028 / 0.3);
     border: 1px solid oklab(68.5% 0.13 0.048 / 0.2);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
+    font-weight: 100;
     color: oklab(75.8% 0.107 0.04);
   }
 
@@ -1134,15 +1602,15 @@
   .section {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
+    gap: 0.5rem;
   }
 
   .section-title {
     font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    font-weight: 400;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--color-theme-400);
+    color: oklab(100% 0 0);
     margin: 0;
     display: flex;
     align-items: baseline;
@@ -1150,23 +1618,23 @@
   }
 
   .section-subtitle {
-    font-size: 0.625rem;
-    font-weight: 400;
-    letter-spacing: 0.04em;
+    font-size: 0.6875rem;
+    font-weight: 100;
+    letter-spacing: 0.06em;
     text-transform: none;
-    color: var(--color-text-secondary);
+    color: oklab(100% 0 0 / 0.6);
   }
 
   /* ── Win probability ──────────────────────────────────────────────────────── */
   .prob-bar-wrap {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
   }
 
   .prob-bar {
     flex: 1;
-    height: 0.5rem;
+    height: 0.375rem;
     border-radius: 0.25rem;
     overflow: hidden;
     display: flex;
@@ -1179,246 +1647,431 @@
   }
 
   .prob-fill-home {
-    background: var(--color-theme-400);
+    background: oklab(75% 0 0);
   }
-
   .prob-fill-draw {
-    background: oklab(100% 0 0 / 0.2);
+    background: oklab(100% 0 0 / 0.15);
   }
-
   .prob-fill-away {
-    background: oklab(70% 0 0 / 0.5);
+    background: oklab(45% 0 0);
   }
 
   .prob-label {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.2rem;
     flex-shrink: 0;
   }
 
   .prob-label-home {
     flex-direction: row;
   }
-
   .prob-label-away {
     flex-direction: row-reverse;
   }
 
   .prob-abbr {
     font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.05em;
+    font-weight: 400;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.09em;
   }
 
   .prob-pct {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-  }
-
-  .prob-draw-label {
-    text-align: center;
-    font-size: 0.6875rem;
-    color: var(--color-text-secondary);
-    margin-top: -0.25rem;
-  }
-
-  .odds-provider {
-    font-size: 0.5625rem;
-    color: var(--color-text-secondary);
-    opacity: 0.6;
-    text-align: center;
-  }
-
-  /* ── Match stats ──────────────────────────────────────────────────────────── */
-  .stats-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .stat-row {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr 6rem 2.5rem;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  @media (max-width: 480px) {
-    .stat-row {
-      grid-template-columns: 2rem 1fr 5rem 2rem;
-    }
-  }
-
-  .stat-val {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    line-height: 1;
-  }
-
-  .stat-val-home {
-    text-align: right;
-  }
-
-  .stat-val-away {
-    text-align: left;
-  }
-
-  .stat-label {
-    font-size: 0.6875rem;
+    font-size: 0.9rem;
     font-weight: 400;
-    color: var(--color-text-secondary);
-    text-align: center;
-    letter-spacing: 0.03em;
+    color: oklab(100% 0 0);
   }
 
-  .stat-bar-wrap {
-    display: flex;
-    height: 0.3125rem;
-    border-radius: 0.25rem;
-    overflow: hidden;
-    background: oklab(100% 0 0 / 0.06);
+  /* ── Shared: alternating row stripe ──────────────────────────────────────── */
+  .row-stripe {
+    background: oklab(100% 0 0 / 0.035);
   }
 
-  .stat-bar-fill {
-    height: 100%;
-    transition: width 0.4s ease;
-  }
-
-  .stat-bar-home {
-    background: var(--color-theme-400);
-    margin-left: auto;
-  }
-
-  .stat-bar-away {
-    background: oklab(70% 0 0 / 0.4);
-  }
-
-  /* ── Leaders ──────────────────────────────────────────────────────────────── */
-  .leaders-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  .leaders-col {
+  /* ── Stats table: [home-val centered] [label] [away-val centered] ─────────── */
+  .stats-table {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
   }
 
-  .leaders-team-name {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-theme-400);
-    margin-bottom: 0.25rem;
-  }
-
-  .leader-row {
-    display: flex;
+  .stats-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: baseline;
-    gap: 0.375rem;
-    font-size: 0.8125rem;
+    padding: 0.4rem 0.5rem 0.5rem;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    margin-bottom: 0.1rem;
   }
 
-  .leader-cat {
-    font-size: 0.6875rem;
-    color: var(--color-text-secondary);
-    flex-shrink: 0;
-    min-width: 4.5rem;
-  }
-
-  .leader-athlete {
-    flex: 1;
-    color: var(--color-text-primary);
+  .stats-th {
+    font-size: 0.85rem;
     font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0);
+  }
+
+  .stats-th-home {
+    text-align: center;
+  }
+
+  .stats-th-away {
+    text-align: center;
+  }
+
+  .stats-th-center {
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0 / 0.5);
+    text-align: center;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    padding: 0.2rem 0;
+    min-height: 2rem;
+  }
+
+  .stats-val-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .stats-num {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.02em;
+    min-width: 2.5ch;
+    text-align: center;
+  }
+
+  .stats-num-hi {
+    /* winner is same white — could add subtle highlight if desired */
+  }
+
+  .stats-label-col {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0 / 0.55);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 0.25rem;
+  }
+
+  /* ── Leaders table: [name flush-right] [home-val] [cat] [away-val] [name flush-left] ── */
+  .leaders-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 5-column grid: name | home-val | category | away-val | name */
+  .leaders-head {
+    display: grid;
+    grid-template-columns: 1fr 2.5rem 5rem 2.5rem 1fr;
+    align-items: baseline;
+    padding: 0.2rem 0 0.4rem;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    margin-bottom: 0.1rem;
+  }
+
+  .leaders-th {
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0);
+  }
+
+  /* Home header sits above the name column only (col 1) */
+  .leaders-th-home {
+    text-align: right;
+    grid-column: 1;
+  }
+
+  /* Away header sits above the name column only (col 5) */
+  .leaders-th-away {
+    text-align: left;
+    grid-column: 5;
+  }
+
+  .leaders-th-center {
+    /* empty center cell in header */
+  }
+
+  .leaders-row {
+    display: grid;
+    grid-template-columns: 1fr 2.5rem 5rem 2.5rem 1fr;
+    align-items: center;
+    padding: 0.2rem 0;
+    min-height: 2rem;
+  }
+
+  /* Player name — home side flush right */
+  .leaders-name {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.04em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
   }
 
-  .leader-val {
-    font-weight: 600;
-    color: var(--color-text-primary);
+  .leaders-name-home {
+    text-align: right;
+  }
+
+  .leaders-name-away {
+    text-align: left;
+  }
+
+  /* Numeric value — centered in its column */
+  .leaders-val {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.02em;
+    text-align: center;
+  }
+
+  /* Category label — center column */
+  .leaders-cat-col {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0 / 0.55);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 0.25rem;
+  }
+
+  /* ── Squads table: [home-player flush-right] [pos] [away-player flush-left] ── */
+  .squads-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .squads-head {
+    display: grid;
+    grid-template-columns: 1fr 3.5rem 1fr;
+    align-items: baseline;
+    padding: 0.2rem 0 0.4rem;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    margin-bottom: 0.1rem;
+  }
+
+  .squads-th {
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0);
+  }
+
+  .squads-th-home {
+    text-align: right;
+  }
+
+  .squads-th-away {
+    text-align: left;
+  }
+
+  .squads-th-center {
+    /* empty */
+  }
+
+  .squads-row {
+    display: grid;
+    grid-template-columns: 1fr 3.5rem 1fr;
+    align-items: center;
+    padding: 0.2rem 0;
+    min-height: 2rem;
+  }
+
+  /* Home player: jersey + name flush-right */
+  .squads-player {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .squads-player-home {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .squads-player-away {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .squad-jersey {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: oklab(100% 0 0 / 0.5);
+    letter-spacing: 0.04em;
     flex-shrink: 0;
+    min-width: 1.5ch;
+    text-align: center;
+  }
+
+  .squad-pname {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .squads-pos-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .squad-pos {
+    font-size: 0.575rem;
+    font-weight: 400;
+    letter-spacing: 0.09em;
+    color: oklab(100% 0 0 / 0.6);
+    text-align: center;
+    background: oklab(100% 0 0 / 0.06);
+    border-radius: 0.15rem;
+    padding: 0.1rem 0.25rem;
   }
 
   /* ── Head-to-head ─────────────────────────────────────────────────────────── */
   .h2h-list {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.3rem;
   }
 
-  .h2h-row {
-    display: grid;
-    grid-template-columns: 2.5rem 1.5rem 3rem 1.5rem 1fr;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+  .h2h-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.375rem;
     background: oklab(100% 0 0 / 0.03);
   }
 
-  .h2h-year {
-    font-size: 0.6875rem;
-    color: var(--color-text-secondary);
+  /* Date + competition line */
+  .h2h-meta-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
   }
 
-  .h2h-atvs {
-    font-size: 0.6875rem;
-    color: var(--color-text-secondary);
-    text-align: center;
-  }
-
-  .h2h-score {
-    font-weight: 600;
-    color: var(--color-text-primary);
-    text-align: center;
-  }
-
-  .h2h-result {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    text-align: center;
-    padding: 0.1rem 0.3rem;
-    border-radius: 0.2rem;
-  }
-
-  .h2h-win {
-    background: oklab(34.8% -0.072 0.028 / 0.5);
-    color: oklab(80% -0.1 0.04);
-  }
-
-  .h2h-loss {
-    background: oklab(30.8% 0.072 0.028 / 0.4);
-    color: oklab(75.8% 0.107 0.04);
-  }
-
-  .h2h-draw {
-    background: oklab(100% 0 0 / 0.08);
-    color: var(--color-text-secondary);
+  .h2h-date {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0 / 0.65);
+    letter-spacing: 0.05em;
   }
 
   .h2h-comp {
-    font-size: 0.625rem;
-    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0 / 0.6);
+    letter-spacing: 0.04em;
+  }
+
+  /* Score row: [left side] [–] [right side] */
+  .h2h-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  /* Each side is a flex row with name + score */
+  .h2h-side {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .h2h-side-left {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .h2h-side-right {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .h2h-name {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* Full name on desktop, abbreviation on mobile */
+  .h2h-name-abbr {
+    display: none;
+  }
+
+  @media (max-width: 599px) {
+    .h2h-name-full {
+      display: none;
+    }
+    .h2h-name-abbr {
+      display: inline;
+    }
+  }
+
+  .h2h-score-val {
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .h2h-hyphen {
+    font-size: 0.85rem;
+    font-weight: 100;
+    color: oklab(100% 0 0 / 0.4);
+    padding: 0 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Score colors: white = winner, grey = loser or draw */
+  .h2h-win {
+    color: #ffffff;
+  }
+  .h2h-loss {
+    color: oklab(100% 0 0 / 0.45);
+  }
+  .h2h-draw {
+    color: oklab(100% 0 0 / 0.45);
   }
 
   /* ── Squads ───────────────────────────────────────────────────────────────── */
   .squads-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   @media (max-width: 480px) {
@@ -1430,100 +2083,106 @@
   .squad-col {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.25rem;
   }
 
   .squad-team-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.375rem;
+    gap: 0.375rem;
+    margin-bottom: 0.25rem;
   }
 
   .squad-logo {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
     object-fit: contain;
   }
 
   .squad-team-name {
     font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    font-weight: 400;
+    letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: var(--color-theme-400);
+    color: oklab(100% 0 0);
   }
 
   .squad-list {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    gap: 0.1rem;
   }
 
   .squad-player {
     display: grid;
-    grid-template-columns: 1.5rem 1.75rem 1fr auto;
+    grid-template-columns: 1.375rem 1.625rem 1fr 1rem;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.2rem 0.375rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
+    gap: 0.3rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: 0.2rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    min-height: 1.5rem;
   }
 
   .player-starter {
-    background: oklab(100% 0 0 / 0.04);
+    background: oklab(100% 0 0 / 0.03);
   }
-
   .player-sub {
+    background: oklab(100% 0 0 / 0.03);
     opacity: 0.6;
+  }
+  .player-subbed-in,
+  .player-subbed-out {
+    opacity: 1;
   }
 
   .player-jersey {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: oklab(100% 0 0);
     text-align: right;
+    letter-spacing: 0.04em;
   }
 
   .player-pos {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--color-theme-400);
+    font-size: 0.575rem;
+    font-weight: 400;
+    letter-spacing: 0.09em;
+    color: oklab(100% 0 0);
     text-align: center;
-    background: oklab(100% 0 0 / 0.06);
-    border-radius: 0.2rem;
-    padding: 0.05rem 0.2rem;
+    background: oklab(100% 0 0 / 0.05);
+    border-radius: 0.15rem;
+    padding: 0.05rem 0.15rem;
   }
 
   .player-name {
-    font-size: 0.8125rem;
-    font-weight: 300;
-    color: var(--color-text-primary);
+    font-size: 0.825rem;
+    font-weight: 100;
+    color: oklab(100% 0 0);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    letter-spacing: 0.05em;
   }
 
   .sub-icon {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 1.25rem;
     flex-shrink: 0;
+    line-height: 1;
   }
-
   .sub-in {
-    color: oklab(70% -0.1 0.04);
+    color: oklab(0.86 -0.27 0.15);
   }
-
   .sub-out {
-    color: oklab(65% 0.1 0.04);
+    color: oklab(0.6 0.21 0.11);
   }
 
   /* ── Clubs ────────────────────────────────────────────────────────────────── */
   .clubs-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   @media (max-width: 540px) {
@@ -1533,86 +2192,94 @@
   }
 
   .club-card {
-    background: oklab(100% 0 0 / 0.04);
-    border: 1px solid oklab(100% 0 0 / 0.07);
-    border-radius: 0.5rem;
-    padding: 0.875rem;
+    background: oklab(100% 0 0 / 0.03);
+    border: 1px solid oklab(100% 0 0 / 0.06);
+    border-radius: 0.375rem;
+    padding: 0.875rem 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
   }
 
   .club-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.375rem;
   }
 
   .club-logo {
-    width: 3rem;
-    height: 3rem;
+    width: 3.5rem;
+    height: 3.5rem;
     object-fit: contain;
-    flex-shrink: 0;
   }
 
   .club-swatch {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 0.375rem;
-    flex-shrink: 0;
   }
 
   .club-title-block {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    align-items: center;
+    gap: 0.15rem;
   }
 
   .club-name {
     font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
+    font-weight: 400;
+    color: oklab(100% 0 0);
     margin: 0;
     line-height: 1.1;
+    letter-spacing: 0.04em;
   }
 
   .club-founded {
-    font-size: 0.6875rem;
-    color: var(--color-theme-400);
-    font-weight: 400;
+    font-size: 0.7rem;
+    color: oklab(100% 0 0);
+    font-weight: 100;
+    letter-spacing: 0.09em;
   }
 
   .club-detail {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    align-items: center;
+    gap: 0.05rem;
+    width: 100%;
   }
 
   .club-detail-label {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    font-size: 0.575rem;
+    font-weight: 400;
+    letter-spacing: 0.17em;
     text-transform: uppercase;
-    color: var(--color-text-secondary);
+    color: oklab(100% 0 0);
   }
 
   .club-detail-val {
-    font-size: 0.8125rem;
-    color: var(--color-text-primary);
-    font-weight: 300;
+    font-size: 0.825rem;
+    color: oklab(100% 0 0);
+    font-weight: 100;
+    letter-spacing: 0.05em;
   }
 
   .club-pts {
-    color: var(--color-text-secondary);
-    font-size: 0.75rem;
+    color: oklab(100% 0 0 / 0.65);
+    font-size: 0.775rem;
   }
 
   .club-bio {
-    font-size: 0.8125rem;
-    font-weight: 300;
-    color: var(--color-text-secondary);
-    line-height: 1.5;
+    font-size: 0.8rem;
+    font-weight: 100;
+    color: oklab(100% 0 0);
+    line-height: 1.55;
     margin: 0;
+    letter-spacing: 0.04em;
   }
 
   .club-bio-empty {
@@ -1622,10 +2289,11 @@
 
   /* ── No data ──────────────────────────────────────────────────────────────── */
   .no-data {
-    font-size: 0.8125rem;
-    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 100;
+    color: oklab(100% 0 0);
     text-align: center;
-    padding: 1.5rem 0;
-    opacity: 0.6;
+    padding: 1.25rem 0;
+    letter-spacing: 0.06em;
   }
 </style>

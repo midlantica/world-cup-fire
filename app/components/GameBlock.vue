@@ -8,7 +8,6 @@
   }>()
 
   const emit = defineEmits<{
-    'select-team': [team: string]
     'open-game-detail': [match: Match]
   }>()
 
@@ -165,6 +164,10 @@
       'game-block-home-wins': homeWins,
       'game-block-away-wins': awayWins,
     }"
+    role="button"
+    tabindex="0"
+    @click="emit('open-game-detail', match)"
+    @keydown.enter.space.prevent="emit('open-game-detail', match)"
   >
     <!-- Badge indicator -->
     <span v-if="isFire" class="fire-badge" aria-label="Top match">🔥</span>
@@ -186,9 +189,7 @@
             :style="{ background: match.homeColor }"
           />
         </span>
-        <button class="team-name-btn" @click="emit('select-team', match.home)">
-          {{ match.home }}
-        </button>
+        <span class="team-name-text">{{ match.home }}</span>
         <span v-if="!isFT" class="team-rec">{{ match.homeRec }}</span>
       </div>
       <div v-if="!isNS" class="score-cell">
@@ -219,9 +220,7 @@
             :style="{ background: match.awayColor }"
           />
         </span>
-        <button class="team-name-btn" @click="emit('select-team', match.away)">
-          {{ match.away }}
-        </button>
+        <span class="team-name-text">{{ match.away }}</span>
         <span v-if="!isFT" class="team-rec">{{ match.awayRec }}</span>
       </div>
       <div v-if="!isNS" class="score-cell">
@@ -255,15 +254,6 @@
         <span class="status-time" v-html="kickoffLabel" />
         <span class="status-date">{{ dateTimeLabel.day }}</span>
       </template>
-
-      <!-- Detail button -->
-      <button
-        class="detail-btn"
-        :aria-label="`Match details: ${match.home} vs ${match.away}`"
-        @click.stop="emit('open-game-detail', match)"
-      >
-        ℹ
-      </button>
     </div>
   </div>
 </template>
@@ -303,6 +293,7 @@
     background: oklab(100% 0 0 / 0.06);
     transition: border-color 0.15s;
     min-width: 0;
+    cursor: pointer;
   }
 
   .game-block:hover {
@@ -397,28 +388,15 @@
     flex-shrink: 0;
   }
 
-  .team-name-btn {
+  .team-name-text {
     font-size: 0.8125rem;
-    font-weight: 300;
+    font-weight: 200;
     color: var(--color-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
     min-width: 0;
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    font-family: inherit;
-    letter-spacing: inherit;
-    cursor: pointer;
-    text-align: left;
-  }
-  .team-name-btn:hover,
-  .team-row:hover .team-name-btn {
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
   }
 
   .team-rec {
@@ -447,9 +425,10 @@
     text-align: right;
   }
 
-  /* FT winner: full white */
+  /* FT winner: hard white */
   .score-winner {
-    color: white;
+    color: #ffffff;
+    font-weight: 400;
   }
 
   /* FT loser: muted — distinct from winner but not invisible */
@@ -472,7 +451,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
+    gap: 0.075rem;
     padding-left: 0.5rem;
     border-left: 1px solid oklab(100% 0 0 / 0.07);
     width: 3.5rem;
@@ -501,12 +480,12 @@
   }
 
   .status-time {
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 100;
     color: var(--color-text-primary);
     white-space: nowrap;
     line-height: 1;
-    letter-spacing: 0.05rem;
+    letter-spacing: 0.03rem;
   }
 
   .status-time :deep(.ampm) {
@@ -515,9 +494,10 @@
 
   .status-date {
     font-size: 0.75rem;
-    font-weight: 400;
+    font-weight: 100;
     color: oklab(90% 0 0);
     white-space: nowrap;
+    letter-spacing: 0.03rem;
   }
 
   /* Shared badge base */
@@ -546,39 +526,5 @@
   .badge-ht,
   .badge-ft {
     width: auto;
-  }
-
-  /* Detail / info button */
-  .detail-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.4rem;
-    height: 1.4rem;
-    border-radius: 50%;
-    border: 1px solid oklab(100% 0 0 / 0.18);
-    background: none;
-    color: oklab(75% 0 0);
-    font-size: 0.7rem;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0;
-    font-family: inherit;
-    transition:
-      background 0.15s,
-      color 0.15s,
-      border-color 0.15s;
-    flex-shrink: 0;
-  }
-
-  .detail-btn:hover {
-    background: oklab(100% 0 0 / 0.1);
-    color: oklab(95% 0 0);
-    border-color: oklab(100% 0 0 / 0.35);
-  }
-
-  .detail-btn:focus-visible {
-    outline: 2px solid oklab(100% 0 0 / 0.5);
-    outline-offset: 2px;
   }
 </style>

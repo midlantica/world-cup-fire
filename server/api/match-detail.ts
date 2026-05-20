@@ -165,27 +165,83 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    // ── Goal leaders derived from keyEvents ──────────────────────────────────
+    // ESPN's leaders endpoint doesn't include a "goals" category, so we
+    // count goals per player per team from the keyEvents scoring plays.
+    const keyEvents = (raw.keyEvents as Array<Record<string, unknown>>) ?? []
+    // Map: teamId → Map<athleteName, goalCount>
+    const goalsByTeam = new Map<string, Map<string, number>>()
+    // Also need teamId from keyEvents — use team.id if present
+    for (const ke of keyEvents) {
+      const typeText =
+        ((ke.type as Record<string, unknown>)?.text as string)?.toLowerCase() ??
+        ''
+      if (!typeText.startsWith('goal')) continue
+      const keTeam = ke.team as Record<string, unknown> | undefined
+      const teamId = keTeam?.id as string | undefined
+      if (!teamId) continue
+      const participants =
+        (ke.participants as Array<Record<string, unknown>>) ?? []
+      const ath = participants[0]?.athlete as
+        | Record<string, unknown>
+        | undefined
+      const athleteName = ath?.displayName as string | undefined
+      if (!athleteName) continue
+      if (!goalsByTeam.has(teamId)) goalsByTeam.set(teamId, new Map())
+      const teamGoals = goalsByTeam.get(teamId)!
+      teamGoals.set(athleteName, (teamGoals.get(athleteName) ?? 0) + 1)
+    }
+
     // Leaders
     const leadersRaw = (raw.leaders as Array<Record<string, unknown>>) ?? []
     const leaders = leadersRaw.map((l) => {
       const t = l.team as Record<string, unknown> | undefined
+      const teamId = t?.id as string
       const cats = (l.leaders as Array<Record<string, unknown>>) ?? []
-      return {
-        teamId: t?.id as string,
-        displayName: t?.displayName as string,
-        categories: cats.map((cat) => {
-          const topLeaders =
-            (cat.leaders as Array<Record<string, unknown>>) ?? []
-          const top = topLeaders[0] ?? {}
-          const ath = top.athlete as Record<string, unknown> | undefined
-          return {
-            name: cat.name as string,
-            displayName: cat.displayName as string,
-            shortDisplayName: cat.shortDisplayName as string,
-            athlete: ath?.displayName as string | undefined,
-            value: top.displayValue as string | undefined,
+      const categories = cats.map((cat) => {
+        const topLeaders = (cat.leaders as Array<Record<string, unknown>>) ?? []
+        const top = topLeaders[0] ?? {}
+        const ath = top.athlete as Record<string, unknown> | undefined
+        return {
+          name: cat.name as string,
+          displayName: cat.displayName as string,
+          shortDisplayName: cat.shortDisplayName as string,
+          athlete: ath?.displayName as string | undefined,
+          value: top.displayValue as string | undefined,
+        }
+      })
+
+      // Inject goals leader if we have data and it's not already present
+      if (
+        teamId &&
+        goalsByTeam.has(teamId) &&
+        !categories.some((c) => c.name === 'goals')
+      ) {
+        const teamGoals = goalsByTeam.get(teamId)!
+        // Find top scorer
+        let topAthlete = ''
+        let topCount = 0
+        for (const [name, count] of teamGoals) {
+          if (count > topCount) {
+            topCount = count
+            topAthlete = name
           }
-        }),
+        }
+        if (topAthlete) {
+          categories.unshift({
+            name: 'goals',
+            displayName: 'Goals',
+            shortDisplayName: 'Goals',
+            athlete: topAthlete,
+            value: String(topCount),
+          })
+        }
+      }
+
+      return {
+        teamId,
+        displayName: t?.displayName as string,
+        categories,
       }
     })
 

@@ -149,15 +149,18 @@
     border-bottom: 1px solid oklab(100% 0 0 / 0.04);
     transition: background 0.1s;
   }
+  .entry-row:nth-child(even) {
+    background: oklab(100% 0 0 / 0.025);
+  }
   .entry-row:hover {
-    background: oklab(100% 0 0 / 0.04);
+    background: oklab(100% 0 0 / 0.06);
   }
   .entry-row:last-child {
     border-bottom: none;
   }
 
   .standings-table td {
-    padding: 0.2rem 0;
+    padding: 0.3rem 0 0rem;
     color: var(--color-text-secondary);
     text-align: right;
   }
@@ -262,6 +265,7 @@
   }
   .team-name-full {
     display: inline;
+    font-weight: 200;
   }
 
   @media (max-width: 480px) {
@@ -294,7 +298,7 @@
   }
 
   .col-pts {
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-primary) !important;
   }
 

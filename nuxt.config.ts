@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/scrollbar.css'],
 
   // Use the netlify preset so server/api routes become Netlify Functions
   nitro: {

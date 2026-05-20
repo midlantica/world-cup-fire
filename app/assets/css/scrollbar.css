@@ -1,0 +1,32 @@
+/* ── Custom scrollbar — themed to match the app ───────────────────────────── */
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklab(100% 0 0 / 0.04);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-theme-700, oklch(37.2% 0.044 257.9));
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-theme-600, oklch(44.6% 0.043 257.1));
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-theme-700, oklch(37.2% 0.044 257.9))
+    oklab(100% 0 0 / 0.04);
+}
