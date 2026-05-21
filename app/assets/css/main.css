@@ -55,6 +55,9 @@ body {
   --color-theme-on-primary: #ffffff;
   --app-bg: oklch(12.9% 0.042 264.3);
   --color-text-accent: var(--color-theme-400);
+
+  /* ── Modal typography ──────────────────────────────────────────────────── */
+  --modal-copy-size: 0.75rem; /* table body copy in GameDetailModal & MyTeamModal */
 }
 
 /* Smooth all theme color transitions */

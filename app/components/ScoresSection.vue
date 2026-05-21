@@ -19,21 +19,16 @@
   // Banner: shown on "next" tab when today is inside a hiatus window.
   // Uses the "this week" hiatus flag OR a direct date-range check as fallback
   // (in case "this week" data hasn't loaded yet when the user lands on Next).
-  const HIATUS_MSG =
-    "The MLS season is on hiatus for the 2026 FIFA World Cup — but we'll be back soon! MLS play resumes July 22, 2026."
-
-  const hiatusBannerMsg = computed((): string | null => {
-    if (activeTab.value !== 'next') return null
-    if (weeks.this.hiatus) return HIATUS_MSG
+  const showHiatusBanner = computed((): boolean => {
+    if (activeTab.value !== 'next') return false
+    if (weeks.this.hiatus) return true
     // Show banner on Next tab any time before MLS resumes (Jul 22 2026),
     // covering both the lead-up to the break and the break itself.
     const today = new Date()
     const wcResume = new Date('2026-07-22')
-    const wcAnnounced = new Date('2026-05-18') // start showing from today
-    if (today >= wcAnnounced && today < wcResume) return HIATUS_MSG
-    return null
+    const wcAnnounced = new Date('2026-05-18')
+    return today >= wcAnnounced && today < wcResume
   })
-  const bannerDismissed = ref(false)
 
   const { weekByDayGroups } = useMatchView(allWeekMatches, activeTab)
 
@@ -140,21 +135,7 @@
   </div>
 
   <!-- Hiatus banner: always shown at top of content when on Next tab during WC break -->
-  <div
-    v-if="hiatusBannerMsg && !bannerDismissed"
-    class="hiatus-banner"
-    role="status"
-  >
-    <span class="hiatus-banner-icon">⚽</span>
-    <span class="hiatus-banner-text">{{ hiatusBannerMsg }}</span>
-    <button
-      class="hiatus-banner-close"
-      aria-label="Dismiss"
-      @click="bannerDismissed = true"
-    >
-      ✕
-    </button>
-  </div>
+  <HiatusBanner v-if="showHiatusBanner" :dismissible="true" />
 
   <!-- Hiatus message (only after load completes and no matches) -->
   <div
@@ -288,49 +269,6 @@
     text-align: center;
     max-width: 36rem;
     line-height: 1.6;
-  }
-
-  /* ── Hiatus banner ──────────────────────────────────────────────────────── */
-  .hiatus-banner {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.625rem;
-    padding: 0.75rem 1rem;
-    margin: 1.3rem 0;
-    border-radius: 0.5rem;
-    background: oklab(22% 0.01 -0.02);
-    border: 1px solid oklab(100% 0 0 / 0.1);
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-  }
-
-  .hiatus-banner-icon {
-    flex-shrink: 0;
-    font-size: 1rem;
-    margin-top: 0.05em;
-  }
-
-  .hiatus-banner-text {
-    flex: 1;
-  }
-
-  .hiatus-banner-close {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    color: var(--color-text-secondary);
-    font-size: 0.75rem;
-    cursor: pointer;
-    padding: 0.1rem 0.25rem;
-    border-radius: 0.25rem;
-    opacity: 0.6;
-    transition: opacity 0.15s;
-    margin-top: 0.1em;
-  }
-
-  .hiatus-banner-close:hover {
-    opacity: 1;
   }
 
   /* ── Match list ─────────────────────────────────────────────────────────── */

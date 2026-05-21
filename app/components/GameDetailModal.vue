@@ -382,8 +382,9 @@
   function h2hDate(dateStr: string): string {
     const d = new Date(dateStr)
     return d.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
       timeZone: 'UTC',
     })
   }
@@ -703,7 +704,7 @@
               :class="{ active: activeTab === 'h2h' }"
               @click="setTab('h2h')"
             >
-              H2H
+              Head to Head
             </button>
           </div>
 
@@ -726,7 +727,7 @@
                     <!-- Header: home name | Team Stats | away name -->
                     <div class="stats-head">
                       <div class="stats-th stats-th-home">{{ homeAbbr }}</div>
-                      <div class="stats-th-center">Team Stats</div>
+                      <div class="stats-th-center"></div>
                       <div class="stats-th stats-th-away">{{ awayAbbr }}</div>
                     </div>
                     <template
@@ -967,68 +968,138 @@
                       "
                       class="no-data"
                     >
-                      Lineup not yet available
+                      Lineups not yet available
                     </div>
                   </div>
                 </template>
 
                 <!-- ── H2H TAB ─────────────────────────────────────────────── -->
                 <template v-else-if="activeTab === 'h2h'">
-                  <section v-if="detail && h2h.length" class="section">
-                    <div class="h2h-list">
-                      <div v-for="game in h2h" :key="game.id" class="h2h-entry">
-                        <div class="h2h-meta-row">
-                          <span class="h2h-date">{{ h2hDate(game.date) }}</span>
-                          <span class="h2h-comp">{{ game.competition }}</span>
-                        </div>
-                        <div class="h2h-score-row">
-                          <div class="h2h-side h2h-side-left">
-                            <div class="h2h-name">
-                              <span class="h2h-name-full">{{
+                  <div v-if="detail && h2h.length" class="h2h-fixtures-wrap">
+                    <div class="h2h-fixtures-table">
+                      <div
+                        v-for="(game, gi) in h2h"
+                        :key="game.id"
+                        class="h2h-fx-row"
+                        :class="{ 'row-stripe': gi % 2 === 1 }"
+                      >
+                        <!-- Date -->
+                        <div class="h2h-fx-date">{{ h2hDate(game.date) }}</div>
+                        <!-- Home side (left team): name flush-right, logo inner -->
+                        <div class="h2h-fx-home">
+                          <span
+                            class="h2h-fx-team h2h-fx-team-full"
+                            :class="{
+                              'h2h-fx-team-win':
+                                h2hScoreClass(
+                                  h2hScores(game.score, game.atVs).left,
+                                  h2hScores(game.score, game.atVs).right
+                                ) === 'h2h-win',
+                            }"
+                            >{{
+                              game.atVs === 'vs' ? homeTeam : awayTeam
+                            }}</span
+                          >
+                          <span
+                            class="h2h-fx-team h2h-fx-team-abbr"
+                            :class="{
+                              'h2h-fx-team-win':
+                                h2hScoreClass(
+                                  h2hScores(game.score, game.atVs).left,
+                                  h2hScores(game.score, game.atVs).right
+                                ) === 'h2h-win',
+                            }"
+                            >{{
+                              game.atVs === 'vs' ? homeAbbr : awayAbbr
+                            }}</span
+                          >
+                          <img
+                            v-if="
+                              TEAM_LOGO[
                                 game.atVs === 'vs' ? homeTeam : awayTeam
-                              }}</span>
-                              <span class="h2h-name-abbr">{{
-                                game.atVs === 'vs' ? homeAbbr : awayAbbr
-                              }}</span>
-                            </div>
-                            <div
-                              class="h2h-score-val"
+                              ]
+                            "
+                            :src="
+                              TEAM_LOGO[
+                                game.atVs === 'vs' ? homeTeam : awayTeam
+                              ]
+                            "
+                            :alt="game.atVs === 'vs' ? homeTeam : awayTeam"
+                            class="h2h-fx-logo"
+                          />
+                        </div>
+                        <!-- Score -->
+                        <div class="h2h-fx-center">
+                          <span class="h2h-fx-score">
+                            <span
                               :class="
                                 h2hScoreClass(
                                   h2hScores(game.score, game.atVs).left,
                                   h2hScores(game.score, game.atVs).right
                                 )
                               "
+                              >{{ h2hScores(game.score, game.atVs).left }}</span
                             >
-                              {{ h2hScores(game.score, game.atVs).left }}
-                            </div>
-                          </div>
-                          <span class="h2h-hyphen">–</span>
-                          <div class="h2h-side h2h-side-right">
-                            <div
-                              class="h2h-score-val"
+                            <span class="h2h-fx-sep">–</span>
+                            <span
                               :class="
                                 h2hScoreClass(
                                   h2hScores(game.score, game.atVs).right,
                                   h2hScores(game.score, game.atVs).left
                                 )
                               "
+                              >{{
+                                h2hScores(game.score, game.atVs).right
+                              }}</span
                             >
-                              {{ h2hScores(game.score, game.atVs).right }}
-                            </div>
-                            <div class="h2h-name">
-                              <span class="h2h-name-full">{{
+                          </span>
+                        </div>
+                        <!-- Away side (right team): logo inner, name flush-left -->
+                        <div class="h2h-fx-away">
+                          <img
+                            v-if="
+                              TEAM_LOGO[
                                 game.atVs === 'vs' ? awayTeam : homeTeam
-                              }}</span>
-                              <span class="h2h-name-abbr">{{
-                                game.atVs === 'vs' ? awayAbbr : homeAbbr
-                              }}</span>
-                            </div>
-                          </div>
+                              ]
+                            "
+                            :src="
+                              TEAM_LOGO[
+                                game.atVs === 'vs' ? awayTeam : homeTeam
+                              ]
+                            "
+                            :alt="game.atVs === 'vs' ? awayTeam : homeTeam"
+                            class="h2h-fx-logo"
+                          />
+                          <span
+                            class="h2h-fx-team h2h-fx-team-full"
+                            :class="{
+                              'h2h-fx-team-win':
+                                h2hScoreClass(
+                                  h2hScores(game.score, game.atVs).right,
+                                  h2hScores(game.score, game.atVs).left
+                                ) === 'h2h-win',
+                            }"
+                            >{{
+                              game.atVs === 'vs' ? awayTeam : homeTeam
+                            }}</span
+                          >
+                          <span
+                            class="h2h-fx-team h2h-fx-team-abbr"
+                            :class="{
+                              'h2h-fx-team-win':
+                                h2hScoreClass(
+                                  h2hScores(game.score, game.atVs).right,
+                                  h2hScores(game.score, game.atVs).left
+                                ) === 'h2h-win',
+                            }"
+                            >{{
+                              game.atVs === 'vs' ? awayAbbr : homeAbbr
+                            }}</span
+                          >
                         </div>
                       </div>
                     </div>
-                  </section>
+                  </div>
                   <div v-else-if="loading" class="skeleton-wrap">
                     <div v-for="i in 4" :key="i" class="skeleton-row" />
                   </div>
@@ -1217,8 +1288,8 @@
   .modal-header {
     background: linear-gradient(
       180deg,
-      hsl(219 11% 5% / 1) 0%,
-      hsl(219 11% 10% / 1) 100%
+      var(--color-theme-950) 0%,
+      var(--color-theme-900) 100%
     );
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     position: relative;
@@ -1704,7 +1775,7 @@
   }
 
   .stats-th {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -1720,7 +1791,7 @@
   }
 
   .stats-th-center {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -1743,7 +1814,7 @@
   }
 
   .stats-num {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 300;
     color: oklab(100% 0 0);
     letter-spacing: 0.02em;
@@ -1756,9 +1827,9 @@
   }
 
   .stats-label-col {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 100;
-    color: oklab(100% 0 0 / 0.55);
+    color: oklab(100% 0 0 / 1);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     text-align: center;
@@ -1782,7 +1853,7 @@
   }
 
   .leaders-th {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -1815,7 +1886,7 @@
 
   /* Player name — home side flush right */
   .leaders-name {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 100;
     color: oklab(100% 0 0);
     letter-spacing: 0.04em;
@@ -1835,7 +1906,7 @@
 
   /* Numeric value — centered in its column */
   .leaders-val {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 300;
     color: oklab(100% 0 0);
     letter-spacing: 0.02em;
@@ -1844,7 +1915,7 @@
 
   /* Category label — center column */
   .leaders-cat-col {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 100;
     color: oklab(100% 0 0 / 0.55);
     letter-spacing: 0.08em;
@@ -1869,7 +1940,7 @@
   }
 
   .squads-th {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -1915,7 +1986,7 @@
   }
 
   .squad-jersey {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 300;
     color: oklab(100% 0 0 / 0.5);
     letter-spacing: 0.04em;
@@ -1925,7 +1996,7 @@
   }
 
   .squad-pname {
-    font-size: 0.85rem;
+    font-size: var(--modal-copy-size);
     font-weight: 100;
     color: oklab(100% 0 0);
     letter-spacing: 0.04em;
@@ -1952,113 +2023,126 @@
     padding: 0.1rem 0.25rem;
   }
 
-  /* ── Head-to-head ─────────────────────────────────────────────────────────── */
-  .h2h-list {
+  /* ── Head-to-head (fixtures-style layout) ────────────────────────────────── */
+  .h2h-fixtures-wrap {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.25rem;
+    width: 100%;
   }
 
-  .h2h-entry {
+  .h2h-fixtures-table {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.4rem 0.5rem;
-    border-radius: 0.375rem;
-    background: oklab(100% 0 0 / 0.03);
   }
 
-  /* Date + competition line */
-  .h2h-meta-row {
+  /* date | home | score | away — date is fixed, home/away are equal 1fr */
+  .h2h-fx-row {
+    display: grid;
+    grid-template-columns: 9ch 1fr 4rem 1fr;
+    align-items: center;
+    padding: 0.2rem 0;
+    border-radius: 0.25rem;
+  }
+
+  @media (max-width: 599px) {
+    .h2h-fx-row {
+      grid-template-columns: 8ch 1fr 3.5rem 1fr;
+    }
+  }
+
+  .h2h-fx-date {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.85);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    padding-right: 0.25rem;
+  }
+
+  .h2h-fx-home {
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: 0.3rem;
-  }
-
-  .h2h-date {
-    font-size: 0.85rem;
-    font-weight: 100;
-    color: oklab(100% 0 0 / 0.65);
-    letter-spacing: 0.05em;
-  }
-
-  .h2h-comp {
-    font-size: 0.85rem;
-    font-weight: 100;
-    color: oklab(100% 0 0 / 0.6);
-    letter-spacing: 0.04em;
-  }
-
-  /* Score row: [left side] [–] [right side] */
-  .h2h-score-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-  }
-
-  /* Each side is a flex row with name + score */
-  .h2h-side {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    flex: 1;
     min-width: 0;
-  }
-
-  .h2h-side-left {
+    overflow: hidden;
     justify-content: flex-end;
-    text-align: right;
+    padding-right: 0.4rem;
   }
 
-  .h2h-side-right {
+  .h2h-fx-away {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+    overflow: hidden;
     justify-content: flex-start;
-    text-align: left;
+    padding-left: 0.4rem;
   }
 
-  .h2h-name {
-    font-size: 0.85rem;
-    font-weight: 100;
-    color: oklab(100% 0 0);
-    letter-spacing: 0.03em;
+  .h2h-fx-logo {
+    width: 1rem;
+    height: 1rem;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .h2h-fx-team {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.75);
+    letter-spacing: 0.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .h2h-fx-team-win {
+    font-weight: 600;
+    color: oklab(100% 0 0);
   }
 
   /* Full name on desktop, abbreviation on mobile */
-  .h2h-name-abbr {
+  .h2h-fx-team-abbr {
     display: none;
   }
 
   @media (max-width: 599px) {
-    .h2h-name-full {
+    .h2h-fx-team-full {
       display: none;
     }
-    .h2h-name-abbr {
+    .h2h-fx-team-abbr {
       display: inline;
     }
   }
 
-  .h2h-score-val {
-    font-size: 0.85rem;
-    font-weight: 300;
-    letter-spacing: 0.02em;
+  .h2h-fx-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
   }
 
-  .h2h-hyphen {
-    font-size: 0.85rem;
-    font-weight: 100;
+  .h2h-fx-score {
+    font-size: var(--modal-copy-size);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .h2h-fx-sep {
     color: oklab(100% 0 0 / 0.4);
-    padding: 0 0.5rem;
-    flex-shrink: 0;
+    font-weight: 100;
   }
 
-  /* Score colors: white = winner, grey = loser or draw */
+  /* Score colors: white = winner, muted = loser or draw */
   .h2h-win {
-    color: #ffffff;
+    color: oklab(100% 0 0);
   }
   .h2h-loss {
     color: oklab(100% 0 0 / 0.45);
@@ -2100,7 +2184,7 @@
   }
 
   .squad-team-name {
-    font-size: 0.75rem;
+    font-size: var(--modal-copy-size);
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -2289,7 +2373,7 @@
 
   /* ── No data ──────────────────────────────────────────────────────────────── */
   .no-data {
-    font-size: 0.875rem;
+    font-size: var(--modal-copy-size);
     font-weight: 100;
     color: oklab(100% 0 0);
     text-align: center;

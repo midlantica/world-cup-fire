@@ -19,7 +19,7 @@
   // ── Scores composable ─────────────────────────────────────────────────────────
   const { weeks, activeTab, lastUpdated, fetchWeek, selectTab } = useScores()
 
-  // ── SSR pre-fetch: seed "this week" data before first paint ──────────────────
+  // ── SSR pre-fetch: seed "this week" data before first paint ──────────────────Lineup not yet available
   // Runs on the server (and once on the client for hydration). Populates the
   // shared useState so ScoresSection renders immediately without a loading gap.
   await useAsyncData('scores-this', async () => {

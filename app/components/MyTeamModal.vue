@@ -29,17 +29,13 @@
   const { selectedTeam } = useMyTeam()
   const { iana } = useTimezone()
 
-  // The team to display — either the explicitly passed viewTeam, or My Team
   const displayTeam = computed(() => props.viewTeam ?? selectedTeam.value)
 
-  // Logo for the displayed team
   const displayLogoUrl = computed(() => {
     const team = displayTeam.value
     return team ? (TEAM_LOGO[team] ?? null) : null
   })
 
-  // Local palette for the viewed team — applied as inline CSS vars on the card
-  // so the modal uses that team's colors without touching the global theme
   const modalCardStyle = computed(() => {
     const team = displayTeam.value
     if (!team) return {}
@@ -50,12 +46,31 @@
       vars[`--color-theme-${stop}`] = value
     }
     vars['--color-theme-primary'] = hex
-    // Override --app-bg so the card background uses this team's dark shade
     vars['--app-bg'] = palette['950'] ?? '#0f172a'
     return vars
   })
 
-  // ── Team name normalization (matches ESPN's inconsistent casing) ──────────────
+  // ── Tab state ─────────────────────────────────────────────────────────────
+  type ModalTab = 'schedule' | 'leaders' | 'squads' | 'fixtures'
+  const TAB_ORDER: ModalTab[] = ['schedule', 'leaders', 'squads', 'fixtures']
+  const activeTab = ref<ModalTab>('schedule')
+  const slideDir = ref<'left' | 'right'>('left')
+
+  function setTab(tab: ModalTab) {
+    const from = TAB_ORDER.indexOf(activeTab.value)
+    const to = TAB_ORDER.indexOf(tab)
+    slideDir.value = to > from ? 'left' : 'right'
+    activeTab.value = tab
+  }
+
+  watch(
+    () => props.open,
+    (open) => {
+      if (open) activeTab.value = 'schedule'
+    }
+  )
+
+  // ── Team name normalization ───────────────────────────────────────────────
   const MODAL_TEAM_NAME_MAP: Record<string, string> = {
     'St. Louis CITY SC': 'St. Louis City SC',
   }
@@ -63,7 +78,7 @@
     return MODAL_TEAM_NAME_MAP[name] ?? name
   }
 
-  // ── Schedule data ─────────────────────────────────────────────────────────────
+  // ── Schedule data ─────────────────────────────────────────────────────────
   interface ScheduleEvent {
     id: string
     name: string
@@ -86,7 +101,6 @@
   const scheduleLoading = ref(false)
   const scheduleError = ref<string | null>(null)
 
-  // ESPN returns score as an object: { $ref, value, displayValue, ... }
   function extractScore(score: unknown): string | null {
     if (score == null) return null
     if (typeof score === 'string') return score
@@ -136,7 +150,6 @@
       competitors.find((c) => c.homeAway === 'away') || competitors[1] || {}
     const homeTeam = home.team as Record<string, unknown> | undefined
     const awayTeam = away.team as Record<string, unknown> | undefined
-
     const homeRecs = home.records as Array<Record<string, unknown>> | undefined
     const awayRecs = away.records as Array<Record<string, unknown>> | undefined
     const homeRec =
@@ -145,17 +158,14 @@
     const awayRec =
       (awayRecs?.find((r) => r.type === 'total' || r.abbreviation === 'Total')
         ?.summary as string) || '–'
-
     const venue = comp.venue as Record<string, unknown> | undefined
     const statusCode = parseStatusCode(comp)
     const status = comp.status as Record<string, unknown> | undefined
-
     const myTeamComp = competitors.find((c) => {
       const t = c.team as Record<string, unknown> | undefined
       return t?.displayName === teamName || t?.id === teamId
     })
     const isHome = myTeamComp?.homeAway === 'home'
-
     return {
       id: evt.id as string,
       name: evt.name as string,
@@ -184,26 +194,18 @@
   async function loadSchedule(teamName: string) {
     const teamId = TEAM_ESPN_ID[teamName]
     if (!teamId) return
-
     scheduleLoading.value = true
     scheduleError.value = null
     scheduleEvents.value = []
-
     try {
-      // Fetch team schedule + this & next week's scoreboard in parallel.
-      // The ESPN team schedule endpoint omits live/upcoming games, so we
-      // supplement with the scoreboard to catch today's live/upcoming matches.
       const [scheduleData, scoreboardThis, scoreboardNext] =
         await Promise.allSettled([
           $fetch<Record<string, unknown>>(`/api/schedule?teamId=${teamId}`),
           $fetch<Record<string, unknown>>(`/api/scores?week=this`),
           $fetch<Record<string, unknown>>(`/api/scores?week=next`),
         ])
-
       const scheduleEvents_raw: ScheduleEvent[] = []
       const seenIds = new Set<string>()
-
-      // 1. Parse team schedule events
       if (scheduleData.status === 'fulfilled') {
         const events =
           (scheduleData.value.events as Array<Record<string, unknown>>) || []
@@ -213,8 +215,6 @@
           seenIds.add(se.id)
         }
       }
-
-      // 2. Merge scoreboard events involving this team (live/upcoming/today)
       for (const scoreboardData of [scoreboardThis, scoreboardNext]) {
         if (scoreboardData.status !== 'fulfilled') continue
         const events =
@@ -222,7 +222,6 @@
         for (const evt of events) {
           const id = evt.id as string
           if (seenIds.has(id)) continue
-          // Check if this team is in the match
           const comps =
             (evt.competitions as Array<Record<string, unknown>>) || []
           const comp = comps[0] || {}
@@ -238,7 +237,6 @@
           seenIds.add(se.id)
         }
       }
-
       scheduleEvents.value = scheduleEvents_raw.sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       )
@@ -249,21 +247,16 @@
     }
   }
 
-  // Load schedule when modal opens or the displayed team changes
   watch(
     () => props.open,
     (isOpen) => {
-      if (isOpen && displayTeam.value) {
-        loadSchedule(displayTeam.value)
-      }
+      if (isOpen && displayTeam.value) loadSchedule(displayTeam.value)
     }
   )
-
   watch(displayTeam, (team) => {
     if (props.open && team) loadSchedule(team)
   })
 
-  // ── Convert ScheduleEvent → Match for GameBlock ───────────────────────────────
   function toMatch(evt: ScheduleEvent): Match {
     return {
       id: evt.id,
@@ -285,52 +278,367 @@
     }
   }
 
-  // Split into past and upcoming
-  const allPastEvents = computed(
-    () =>
-      scheduleEvents.value
-        .filter((e) => e.statusCode === 'ft')
-        .slice()
-        .reverse() // most recent first
-  )
   const upcomingEvents = computed(() =>
-    scheduleEvents.value
-      .filter(
-        (e) =>
-          e.statusCode === 'ns' ||
-          e.statusCode === 'live' ||
-          e.statusCode === 'ht'
-      )
-      .slice(0, 5)
+    scheduleEvents.value.filter(
+      (e) =>
+        e.statusCode === 'ns' ||
+        e.statusCode === 'live' ||
+        e.statusCode === 'ht'
+    )
   )
 
-  // Past games — most recent first, capped at 10 (rounded down to even)
   const pastMatches = computed(() => {
     const all = scheduleEvents.value
       .filter((e) => e.statusCode === 'ft')
       .map(toMatch)
     const cap = Math.min(all.length, 10)
     const even = cap % 2 === 0 ? cap : cap - 1
-    return all.slice(-even).reverse() // most recent at top
+    return all.slice(-even).reverse()
   })
 
-  // Upcoming / live games, soonest first
   const showMoreGames = ref(false)
-  // The very next game — always visible
   const nextGame = computed(() =>
     upcomingEvents.value.length ? toMatch(upcomingEvents.value[0]!) : null
   )
-  // Additional upcoming games (2nd onward) — revealed on toggle
   const moreUpcomingMatches = computed(() =>
     upcomingEvents.value.slice(1).map(toMatch)
   )
 
+  // ── Team detail (leaders + roster) ───────────────────────────────────────
+  interface StatLeader {
+    athleteId: string
+    displayName: string
+    jersey: string
+    headshot: string
+    value: number
+    displayValue: string
+  }
+  interface StatCategory {
+    name: string
+    displayName: string
+    leaders: StatLeader[]
+  }
+  interface RosterPlayer {
+    id: string
+    displayName: string
+    shortName: string
+    jersey: string
+    position: string
+    positionName: string
+    nationality: string
+    headshot: string
+  }
+  interface TeamDetailData {
+    teamId: string
+    roster: RosterPlayer[]
+    leaders: StatCategory[]
+  }
+
+  const teamDetail = ref<TeamDetailData | null>(null)
+  const teamDetailLoading = ref(false)
+  const teamDetailError = ref<string | null>(null)
+  const teamDetailLoaded = ref<string | null>(null)
+
+  // ── Fallback squad from last played game ─────────────────────────────────
+  interface FallbackPlayer {
+    id: string
+    displayName: string
+    jersey: string
+    position: string
+    starter: boolean
+    subbedIn: boolean
+    subbedOut: boolean
+  }
+  const fallbackSquad = ref<FallbackPlayer[]>([])
+  const fallbackSquadDate = ref<string | null>(null)
+  const fallbackSquadLoading = ref(false)
+
+  async function loadFallbackSquad(teamName: string, teamId: string) {
+    // Find the most recent completed game for this team
+    const lastGame = scheduleEvents.value
+      .filter((e) => e.statusCode === 'ft')
+      .at(-1)
+    if (!lastGame) return
+
+    fallbackSquadLoading.value = true
+    try {
+      const detail = await $fetch<Record<string, unknown>>(
+        `/api/match-detail?eventId=${lastGame.id}`
+      )
+      const rosters = (detail.rosters as Array<Record<string, unknown>>) ?? []
+      const myRoster = rosters.find((r) => {
+        const rid = r.teamId as string
+        return rid === teamId
+      })
+      if (myRoster) {
+        const players =
+          (myRoster.players as Array<Record<string, unknown>>) ?? []
+        fallbackSquad.value = players.map((p) => ({
+          id: p.id as string,
+          displayName: p.displayName as string,
+          jersey: (p.jersey as string) ?? '',
+          position: (p.position as string) ?? '',
+          starter: (p.starter as boolean) ?? false,
+          subbedIn: (p.subbedIn as boolean) ?? false,
+          subbedOut: (p.subbedOut as boolean) ?? false,
+        }))
+        fallbackSquadDate.value = lastGame.date
+      }
+    } catch {
+      // silently ignore — fallback squad is best-effort
+    } finally {
+      fallbackSquadLoading.value = false
+    }
+  }
+
+  async function loadTeamDetail(teamName: string) {
+    const teamId = TEAM_ESPN_ID[teamName]
+    if (!teamId) return
+    if (teamDetailLoaded.value === teamId) return
+    teamDetailLoading.value = true
+    teamDetailError.value = null
+    try {
+      const data = await $fetch<TeamDetailData>(
+        `/api/team-detail?teamId=${teamId}`
+      )
+      teamDetail.value = data
+      teamDetailLoaded.value = teamId
+      // If roster is empty, try to load from last game
+      if (!data.roster?.length) {
+        await loadFallbackSquad(teamName, teamId)
+      }
+    } catch {
+      teamDetailError.value = 'Could not load team data.'
+    } finally {
+      teamDetailLoading.value = false
+    }
+  }
+
+  watch(activeTab, (tab) => {
+    if (
+      (tab === 'leaders' || tab === 'squads') &&
+      displayTeam.value &&
+      !teamDetail.value
+    ) {
+      loadTeamDetail(displayTeam.value)
+    }
+  })
+
+  watch(displayTeam, () => {
+    teamDetail.value = null
+    teamDetailLoaded.value = null
+    fallbackSquad.value = []
+    fallbackSquadDate.value = null
+  })
+
+  // Formatted fallback date label e.g. "May 17, 2026"
+  const fallbackSquadDateLabel = computed(() => {
+    if (!fallbackSquadDate.value) return ''
+    return new Date(fallbackSquadDate.value).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  })
+
+  // Effective roster: API roster if available, else fallback
+  const effectiveRoster = computed<RosterPlayer[]>(() => {
+    if (teamDetail.value?.roster?.length) return sortedRoster.value
+    return [] // handled separately via fallbackSquad
+  })
+
+  const usingFallbackSquad = computed(
+    () =>
+      !!teamDetail.value &&
+      !teamDetail.value.roster?.length &&
+      fallbackSquad.value.length > 0
+  )
+
+  const POS_ORDER_FALLBACK: Record<string, number> = {
+    G: 0,
+    GK: 0,
+    D: 1,
+    CB: 1,
+    LB: 1,
+    RB: 1,
+    WB: 1,
+    M: 2,
+    CM: 2,
+    DM: 2,
+    AM: 2,
+    F: 3,
+    FW: 3,
+    LW: 3,
+    RW: 3,
+    ST: 3,
+  }
+
+  const sortedFallbackSquad = computed(() => {
+    return [...fallbackSquad.value].sort((a, b) => {
+      const ao = POS_ORDER_FALLBACK[a.position] ?? 9
+      const bo = POS_ORDER_FALLBACK[b.position] ?? 9
+      if (ao !== bo) return ao - bo
+      return (
+        (a.jersey ? parseInt(a.jersey) : 99) -
+        (b.jersey ? parseInt(b.jersey) : 99)
+      )
+    })
+  })
+
+  // ── Fixture short names (compact display in All Fixtures tab) ─────────────
+  const FIXTURE_TEAM_NAME: Record<string, string> = {
+    'Atlanta United FC': 'Atlanta Utd',
+    'Austin FC': 'Austin FC',
+    'CF Montréal': 'CF Montréal',
+    'Charlotte FC': 'Charlotte FC',
+    'Chicago Fire FC': 'Chicago Fire',
+    'Colorado Rapids': 'Colorado Rapids',
+    'Columbus Crew': 'Columbus Crew',
+    'D.C. United': 'D.C. United',
+    'FC Cincinnati': 'FC Cincinnati',
+    'FC Dallas': 'FC Dallas',
+    'Houston Dynamo FC': 'Houston Dynamo FC',
+    'Inter Miami CF': 'Inter Miami CF',
+    'LA Galaxy': 'LA Galaxy',
+    LAFC: 'LAFC',
+    'Minnesota United FC': 'Minn United FC',
+    'Nashville SC': 'Nashville SC',
+    'New England Revolution': 'New England Rev',
+    'New York City FC': 'NY City FC',
+    'Orlando City SC': 'Orlando City SC',
+    'Philadelphia Union': 'Philadelphia Un',
+    'Portland Timbers': 'Portland Timbers',
+    'Real Salt Lake': 'Real Salt Lake',
+    'Red Bull New York': 'NY Red Bulls',
+    'San Diego FC': 'San Diego FC',
+    'San Jose Earthquakes': 'SJ Earthquakes',
+    'Seattle Sounders FC': 'Seattle Sounders FC',
+    'Sporting Kansas City': 'Sporting KC',
+    'St. Louis City SC': 'St Louis City SC',
+    'St. Louis CITY SC': 'St Louis City SC',
+    'Toronto FC': 'Toronto FC',
+    'Vancouver Whitecaps': 'Vancouver WC',
+  }
+
+  function fixtureTeamName(name: string): string {
+    return FIXTURE_TEAM_NAME[name] ?? name
+  }
+
+  // ── Stat display config ───────────────────────────────────────────────────
+  const STAT_DISPLAY: Record<string, string> = {
+    goals: 'Goals',
+    assists: 'Assists',
+    yellowCards: 'Yellow Cards',
+    redCards: 'Red Cards',
+    saves: 'Saves',
+    tackles: 'Tackles Won',
+    successfulDribbles: 'Dribbles',
+    totalShots: 'Shots',
+    shotsOnTarget: 'On Target',
+  }
+
+  const STAT_ORDER = [
+    'goals',
+    'assists',
+    'saves',
+    'tackles',
+    'successfulDribbles',
+    'totalShots',
+    'shotsOnTarget',
+    'yellowCards',
+    'redCards',
+  ]
+
+  const sortedLeaders = computed(() => {
+    if (!teamDetail.value?.leaders) return []
+    return [...teamDetail.value.leaders].sort((a, b) => {
+      const ai = STAT_ORDER.indexOf(a.name)
+      const bi = STAT_ORDER.indexOf(b.name)
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+    })
+  })
+
+  // ── Roster sorted by position ─────────────────────────────────────────────
+  const POS_ORDER: Record<string, number> = {
+    G: 0,
+    GK: 0,
+    D: 1,
+    CB: 1,
+    LB: 1,
+    RB: 1,
+    WB: 1,
+    M: 2,
+    CM: 2,
+    DM: 2,
+    AM: 2,
+    F: 3,
+    FW: 3,
+    LW: 3,
+    RW: 3,
+    ST: 3,
+  }
+
+  const sortedRoster = computed(() => {
+    if (!teamDetail.value?.roster) return []
+    return [...teamDetail.value.roster].sort((a, b) => {
+      const ao = POS_ORDER[a.position] ?? 9
+      const bo = POS_ORDER[b.position] ?? 9
+      if (ao !== bo) return ao - bo
+      return (
+        (a.jersey ? parseInt(a.jersey) : 99) -
+        (b.jersey ? parseInt(b.jersey) : 99)
+      )
+    })
+  })
+
+  // ── All Fixtures: full season sorted oldest→newest, grouped by month ──────
+  const fixturesByMonth = computed(() => {
+    const all = scheduleEvents.value
+    if (!all.length) return []
+    const map = new Map<string, ScheduleEvent[]>()
+    for (const evt of all) {
+      const d = new Date(evt.date)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const arr = map.get(key) ?? []
+      arr.push(evt)
+      map.set(key, arr)
+    }
+    return [...map.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, events]) => {
+        const d = new Date(events[0]!.date)
+        const label = d.toLocaleDateString('en-US', {
+          month: 'long',
+        })
+        return { key, label, events }
+      })
+  })
+
+  function fixtureDate(iso: string): string {
+    const d = new Date(iso)
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: iana.value,
+    })
+  }
+
+  function fixtureTime(iso: string): string {
+    const d = new Date(iso)
+    return d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: iana.value,
+    })
+  }
+
+  // ── Header info ───────────────────────────────────────────────────────────
   const displayName = computed(() =>
     displayTeam.value
       ? (TEAM_SHORT_NAME[displayTeam.value] ?? displayTeam.value)
       : ''
   )
-
   const venue = computed(() =>
     displayTeam.value ? (TEAM_VENUE[displayTeam.value] ?? '') : ''
   )
@@ -339,7 +647,6 @@
       ? (TEAM_VENUE_SHORT[displayTeam.value] ?? venue.value)
       : ''
   )
-
   const conference = computed(() =>
     displayTeam.value ? (TEAM_CONFERENCE[displayTeam.value] ?? '') : ''
   )
@@ -364,7 +671,7 @@
             <CloseIcon />
           </button>
 
-          <!-- Header: logo + team name + venue -->
+          <!-- Header -->
           <div class="modal-header">
             <img
               v-if="displayLogoUrl"
@@ -392,65 +699,366 @@
             </div>
           </div>
 
-          <!-- Schedule -->
-          <div v-if="scheduleLoading" class="schedule-loading">
-            <div v-for="i in 4" :key="i" class="skel-row" />
-          </div>
-
-          <div v-else-if="scheduleError" class="schedule-error">
-            {{ scheduleError }}
-          </div>
-
-          <div v-else class="schedule-body">
-            <!-- Additional upcoming games (revealed above button on toggle) -->
-            <div
-              v-if="showMoreGames && moreUpcomingMatches.length"
-              class="schedule-section"
-            >
-              <div class="schedule-list">
-                <GameBlock
-                  v-for="match in moreUpcomingMatches"
-                  :key="match.id"
-                  :match="match"
-                  @open-game-detail="emit('open-game-detail', $event)"
-                />
-              </div>
-            </div>
-
-            <!-- Show More Games button (only if there are more upcoming) -->
+          <!-- Tabs -->
+          <div class="modal-tabs">
             <button
-              v-if="moreUpcomingMatches.length"
-              class="show-future-btn"
-              @click="showMoreGames = !showMoreGames"
+              class="modal-tab"
+              :class="{ active: activeTab === 'schedule' }"
+              @click="setTab('schedule')"
             >
-              {{ showMoreGames ? 'Hide More Games' : 'Show More Games' }}
+              Schedule
             </button>
+            <button
+              class="modal-tab"
+              :class="{ active: activeTab === 'leaders' }"
+              @click="setTab('leaders')"
+            >
+              Leaders
+            </button>
+            <button
+              class="modal-tab"
+              :class="{ active: activeTab === 'squads' }"
+              @click="setTab('squads')"
+            >
+              Squads
+            </button>
+            <button
+              class="modal-tab"
+              :class="{ active: activeTab === 'fixtures' }"
+              @click="setTab('fixtures')"
+            >
+              2026 Fixtures
+            </button>
+          </div>
 
-            <!-- Next game — always at top of the list -->
-            <div v-if="nextGame" class="schedule-section">
-              <div class="schedule-list schedule-list--single">
-                <GameBlock
-                  :match="nextGame"
-                  @open-game-detail="emit('open-game-detail', $event)"
-                />
+          <!-- Tab body -->
+          <div class="modal-body">
+            <Transition :name="`tab-slide-${slideDir}`" mode="out-in">
+              <div :key="activeTab" class="tab-pane">
+                <!-- ── SCHEDULE TAB ──────────────────────────────────────── -->
+                <template v-if="activeTab === 'schedule'">
+                  <div v-if="scheduleLoading" class="schedule-loading">
+                    <div v-for="i in 4" :key="i" class="skel-row" />
+                  </div>
+                  <div v-else-if="scheduleError" class="schedule-error">
+                    {{ scheduleError }}
+                  </div>
+                  <template v-else>
+                    <div class="schedule-body">
+                      <!-- Additional upcoming games -->
+                      <div
+                        v-if="showMoreGames && moreUpcomingMatches.length"
+                        class="schedule-section"
+                      >
+                        <div class="schedule-list">
+                          <GameBlock
+                            v-for="match in moreUpcomingMatches"
+                            :key="match.id"
+                            :match="match"
+                            @open-game-detail="emit('open-game-detail', $event)"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Show More Games button -->
+                      <button
+                        v-if="moreUpcomingMatches.length"
+                        class="show-future-btn"
+                        @click="showMoreGames = !showMoreGames"
+                      >
+                        {{
+                          showMoreGames ? 'Hide More Games' : 'Show More Games'
+                        }}
+                      </button>
+
+                      <!-- Hiatus banner -->
+                      <HiatusBanner />
+
+                      <!-- Next game -->
+                      <div v-if="nextGame" class="schedule-section">
+                        <div class="schedule-list schedule-list--single">
+                          <GameBlock
+                            :match="nextGame"
+                            @open-game-detail="emit('open-game-detail', $event)"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Past games -->
+                      <div v-if="pastMatches.length" class="schedule-section">
+                        <div class="schedule-list">
+                          <GameBlock
+                            v-for="match in pastMatches"
+                            :key="match.id"
+                            :match="match"
+                            @open-game-detail="emit('open-game-detail', $event)"
+                          />
+                        </div>
+                      </div>
+
+                      <p
+                        v-if="!pastMatches.length && !nextGame"
+                        class="schedule-empty"
+                      >
+                        No schedule data available.
+                      </p>
+
+                      <!-- Show all fixtures link -->
+                      <div
+                        v-if="scheduleEvents.length"
+                        class="schedule-fixtures-link-row"
+                      >
+                        <button
+                          class="schedule-fixtures-link"
+                          @click="setTab('fixtures')"
+                        >
+                          Show all 2026 fixtures
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+                </template>
+
+                <!-- ── LEADERS TAB ──────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'leaders'">
+                  <div v-if="teamDetailLoading" class="schedule-loading">
+                    <div v-for="i in 6" :key="i" class="skel-row" />
+                  </div>
+                  <div v-else-if="teamDetailError" class="schedule-error">
+                    {{ teamDetailError }}
+                  </div>
+                  <div v-else-if="sortedLeaders.length" class="leaders-wrap">
+                    <div
+                      v-for="(cat, ci) in sortedLeaders"
+                      :key="cat.name"
+                      class="leaders-category"
+                    >
+                      <div class="leaders-cat-title">
+                        {{ STAT_DISPLAY[cat.name] ?? cat.displayName }}
+                      </div>
+                      <div class="leaders-table">
+                        <div
+                          v-for="(leader, li) in cat.leaders"
+                          :key="leader.athleteId"
+                          class="leaders-row"
+                          :class="{ 'row-stripe': li % 2 === 1 }"
+                        >
+                          <span class="leaders-rank">{{ li + 1 }}</span>
+                          <span class="leaders-name">{{
+                            leader.displayName
+                          }}</span>
+                          <span class="leaders-jersey"
+                            >#{{ leader.jersey }}</span
+                          >
+                          <span class="leaders-value">{{
+                            leader.displayValue
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="schedule-empty">
+                    Leaders not yet available.
+                  </div>
+                </template>
+
+                <!-- ── SQUADS TAB ───────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'squads'">
+                  <div
+                    v-if="teamDetailLoading || fallbackSquadLoading"
+                    class="schedule-loading"
+                  >
+                    <div v-for="i in 8" :key="i" class="skel-row" />
+                  </div>
+                  <div v-else-if="teamDetailError" class="schedule-error">
+                    {{ teamDetailError }}
+                  </div>
+                  <!-- API roster available -->
+                  <div v-else-if="sortedRoster.length" class="squads-table">
+                    <div class="squads-head">
+                      <div class="squads-th-num">#</div>
+                      <div class="squads-th-pos">Pos</div>
+                      <div class="squads-th-name">Player</div>
+                      <div class="squads-th-nat">Nat</div>
+                    </div>
+                    <div
+                      v-for="(player, pi) in sortedRoster"
+                      :key="player.id"
+                      class="squads-row"
+                      :class="{ 'row-stripe': pi % 2 === 1 }"
+                    >
+                      <div class="squads-num">{{ player.jersey }}</div>
+                      <div class="squads-pos">
+                        <span class="pos-badge">{{ player.position }}</span>
+                      </div>
+                      <div class="squads-name">{{ player.displayName }}</div>
+                      <div class="squads-nat">{{ player.nationality }}</div>
+                    </div>
+                  </div>
+                  <!-- Fallback: last game's lineup -->
+                  <div
+                    v-else-if="usingFallbackSquad"
+                    class="squads-fallback-wrap"
+                  >
+                    <div class="squads-table">
+                      <div class="squads-head">
+                        <div class="squads-th-num">#</div>
+                        <div class="squads-th-pos">Pos</div>
+                        <div class="squads-th-name">Player</div>
+                        <div class="squads-th-sub">Sub</div>
+                      </div>
+                      <div
+                        v-for="(player, pi) in sortedFallbackSquad"
+                        :key="player.id"
+                        class="squads-row"
+                        :class="{ 'row-stripe': pi % 2 === 1 }"
+                      >
+                        <div class="squads-num">{{ player.jersey }}</div>
+                        <div class="squads-pos">
+                          <span class="pos-badge">{{ player.position }}</span>
+                        </div>
+                        <div class="squads-name">{{ player.displayName }}</div>
+                        <div class="squads-sub">
+                          <span
+                            v-if="player.subbedIn"
+                            class="sub-badge sub-in"
+                            title="Subbed in"
+                            >↑</span
+                          >
+                          <span
+                            v-else-if="player.subbedOut"
+                            class="sub-badge sub-out"
+                            title="Subbed out"
+                            >↓</span
+                          >
+                          <span
+                            v-else-if="player.starter"
+                            class="sub-badge sub-starter"
+                            title="Starter"
+                            >●</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <p class="squads-fallback-note">
+                      *last squad chosen on {{ fallbackSquadDateLabel }}
+                    </p>
+                  </div>
+                  <div v-else class="schedule-empty">
+                    Squad not yet available.
+                  </div>
+                </template>
+
+                <!-- ── ALL FIXTURES TAB ─────────────────────────────────── -->
+                <template v-else-if="activeTab === 'fixtures'">
+                  <div v-if="scheduleLoading" class="schedule-loading">
+                    <div v-for="i in 6" :key="i" class="skel-row" />
+                  </div>
+                  <div v-else-if="scheduleError" class="schedule-error">
+                    {{ scheduleError }}
+                  </div>
+                  <div v-else-if="fixturesByMonth.length" class="fixtures-wrap">
+                    <template
+                      v-for="(month, mi) in fixturesByMonth"
+                      :key="month.key"
+                    >
+                      <HiatusBanner
+                        v-if="
+                          mi > 0 &&
+                          (fixturesByMonth[mi - 1]?.key ?? '') < '2026-07' &&
+                          month.key >= '2026-07'
+                        "
+                      />
+                      <div class="fixtures-month">
+                        <div class="fixtures-month-label">
+                          {{ month.label }}
+                        </div>
+                        <div class="fixtures-table">
+                          <div
+                            v-for="(evt, ei) in month.events"
+                            :key="evt.id"
+                            class="fixtures-row"
+                            :class="{ 'row-stripe': ei % 2 === 1 }"
+                          >
+                            <!-- Date -->
+                            <div class="fx-date">
+                              {{ fixtureDate(evt.date) }}
+                            </div>
+                            <!-- Home team -->
+                            <div class="fx-home">
+                              <img
+                                v-if="TEAM_LOGO[evt.homeTeam]"
+                                :src="TEAM_LOGO[evt.homeTeam]"
+                                :alt="evt.homeTeam"
+                                class="fx-logo"
+                              />
+                              <span
+                                class="fx-team"
+                                :class="{
+                                  'fx-team-bold': evt.homeTeam === displayTeam,
+                                }"
+                                >{{ fixtureTeamName(evt.homeTeam) }}</span
+                              >
+                            </div>
+                            <!-- Score or time (center) -->
+                            <div class="fx-center">
+                              <template
+                                v-if="
+                                  evt.statusCode === 'ft' ||
+                                  evt.statusCode === 'live' ||
+                                  evt.statusCode === 'ht'
+                                "
+                              >
+                                <span class="fx-score"
+                                  >{{ evt.homeScore }} –
+                                  {{ evt.awayScore }}</span
+                                >
+                                <span
+                                  v-if="
+                                    evt.statusCode === 'live' ||
+                                    evt.statusCode === 'ht'
+                                  "
+                                  class="fx-badge fx-badge-live"
+                                  >{{
+                                    evt.statusCode === 'ht'
+                                      ? 'HT'
+                                      : evt.statusClock || 'LIVE'
+                                  }}</span
+                                >
+                              </template>
+                              <template v-else>
+                                <span class="fx-time">{{
+                                  fixtureTime(evt.date)
+                                }}</span>
+                              </template>
+                            </div>
+                            <!-- Away team -->
+                            <div class="fx-away">
+                              <img
+                                v-if="TEAM_LOGO[evt.awayTeam]"
+                                :src="TEAM_LOGO[evt.awayTeam]"
+                                :alt="evt.awayTeam"
+                                class="fx-logo"
+                              />
+                              <span
+                                class="fx-team"
+                                :class="{
+                                  'fx-team-bold': evt.awayTeam === displayTeam,
+                                }"
+                                >{{ fixtureTeamName(evt.awayTeam) }}</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                  <div v-else class="schedule-empty">
+                    No fixtures available.
+                  </div>
+                </template>
               </div>
-            </div>
-
-            <!-- Past games — most recent first, going down -->
-            <div v-if="pastMatches.length" class="schedule-section">
-              <div class="schedule-list">
-                <GameBlock
-                  v-for="match in pastMatches"
-                  :key="match.id"
-                  :match="match"
-                  @open-game-detail="emit('open-game-detail', $event)"
-                />
-              </div>
-            </div>
-
-            <p v-if="!pastMatches.length && !nextGame" class="schedule-empty">
-              No schedule data available.
-            </p>
+            </Transition>
           </div>
         </div>
       </div>
@@ -469,12 +1077,11 @@
     align-items: flex-start;
     justify-content: center;
     padding: 1rem;
-    padding-bottom: 3rem; /* asymmetric: shifts card ~1rem above center */
+    padding-bottom: 3rem;
     overflow-y: auto;
   }
 
   /* ── Card ─────────────────────────────────────────────────────────────────── */
-  /* auto margins center the card when there's room; overflow scrolls naturally */
   .modal-card {
     position: relative;
     width: 100%;
@@ -489,11 +1096,10 @@
     border: 1px solid var(--team-border, var(--color-theme-700, #374151));
     border-bottom: 3px solid var(--team-border, var(--color-theme-700, #374151));
     border-radius: 0.5rem;
-    padding: 1.25rem;
     box-shadow: 0 8px 24px oklab(0% 0 0 / 1);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    overflow: hidden;
   }
 
   /* ── Close button ─────────────────────────────────────────────────────────── */
@@ -511,6 +1117,7 @@
     align-items: center;
     justify-content: center;
     transition: color 0.15s;
+    z-index: 10;
   }
   .modal-close:hover,
   .modal-close:focus-visible {
@@ -527,7 +1134,14 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding-right: 1rem; /* room for close btn */
+    padding: 1.25rem 1.25rem 0.75rem;
+    padding-right: 2rem;
+    flex-shrink: 0;
+    background: linear-gradient(
+      180deg,
+      var(--color-theme-950) 0%,
+      var(--color-theme-900) 100%
+    );
   }
 
   .modal-logo {
@@ -558,7 +1172,6 @@
     text-overflow: ellipsis;
   }
 
-  /* Desktop: show full name, hide short */
   .name-short {
     display: none;
   }
@@ -570,7 +1183,6 @@
     .modal-team-name {
       font-size: 1.35rem;
     }
-    /* Mobile: hide full name, show short */
     .name-full {
       display: none;
     }
@@ -588,7 +1200,6 @@
     line-height: 1.38;
   }
 
-  /* Desktop: full venue visible, short hidden */
   .venue-short {
     display: none;
   }
@@ -638,7 +1249,86 @@
     transform: translateX(0.15em);
   }
 
-  /* ── Schedule body ────────────────────────────────────────────────────────── */
+  /* ── Tabs ─────────────────────────────────────────────────────────────────── */
+  .modal-tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 1rem;
+    flex-shrink: 0;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    background: oklab(0% 0 0 / 0.2);
+  }
+
+  .modal-tab {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.75rem;
+    color: oklab(100% 0 0 / 0.45);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .modal-tab.active {
+    color: oklab(100% 0 0);
+    border-bottom-color: var(--color-theme-primary, oklab(100% 0 0));
+  }
+
+  .modal-tab:hover:not(.active) {
+    color: oklab(100% 0 0 / 0.75);
+  }
+
+  /* ── Body ─────────────────────────────────────────────────────────────────── */
+  .modal-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    max-height: 70dvh;
+    padding: 0.75rem 1.25rem 1.25rem;
+  }
+
+  /* ── Tab slide transitions ────────────────────────────────────────────────── */
+  .tab-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tab-slide-left-enter-active,
+  .tab-slide-left-leave-active,
+  .tab-slide-right-enter-active,
+  .tab-slide-right-leave-active {
+    transition:
+      transform 0.12s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.1s ease;
+  }
+
+  .tab-slide-left-enter-from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+  .tab-slide-left-leave-to {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+  .tab-slide-right-enter-from {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+  .tab-slide-right-leave-to {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+
+  /* ── Schedule tab ─────────────────────────────────────────────────────────── */
   .schedule-body {
     display: flex;
     flex-direction: column;
@@ -651,30 +1341,12 @@
     gap: 0.5rem;
   }
 
-  /* "Last Game" label */
-  .section-label {
-    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 400;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-text-primary);
-  }
-
-  /* Subtle divider between last game and older results */
-  .past-divider {
-    height: 1px;
-    background: oklab(100% 0 0 / 0.08);
-    margin: 0.25rem 0;
-  }
-
   .schedule-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.625rem;
   }
 
-  /* Last game spans full width */
   .schedule-list--single {
     grid-template-columns: 1fr;
   }
@@ -685,7 +1357,6 @@
     }
   }
 
-  /* Show Next Games toggle */
   .show-future-btn {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     font-size: 0.6125rem;
@@ -707,30 +1378,8 @@
     background: oklab(100% 0 0 / 0.09);
     border-color: oklab(100% 0 0 / 0.18);
   }
-  /* Load More button */
-  .load-more-btn {
-    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-    color: var(--color-text-primary);
-    background: oklab(100% 0 0 / 0.05);
-    border: 1px solid oklab(100% 0 0 / 0.1);
-    border-radius: 0.375rem;
-    padding: 0.4rem 1rem;
-    cursor: pointer;
-    align-self: center;
-    margin-top: 0.25rem;
-    transition:
-      background 0.15s,
-      border-color 0.15s;
-  }
-  .load-more-btn:hover {
-    background: oklab(100% 0 0 / 0.09);
-    border-color: oklab(100% 0 0 / 0.18);
-  }
 
-  /* ── Loading skeleton ─────────────────────────────────────────────────────── */
+  /* ── Shared skeleton / error / empty ─────────────────────────────────────── */
   .schedule-loading {
     display: flex;
     flex-direction: column;
@@ -738,7 +1387,7 @@
   }
 
   .skel-row {
-    height: 3rem;
+    height: 2.5rem;
     border-radius: 0.375rem;
     background: oklab(100% 0 0 / 0.05);
     animation: pulse 1.5s ease-in-out infinite;
@@ -756,10 +1405,408 @@
 
   .schedule-error,
   .schedule-empty {
-    font-size: 0.8125rem;
+    font-size: var(--modal-copy-size);
     color: var(--color-text-secondary);
     text-align: center;
-    padding: 1rem 0;
+    padding: 1.5rem 0;
+  }
+
+  /* ── Shared row stripe ────────────────────────────────────────────────────── */
+  .row-stripe {
+    background: oklab(100% 0 0 / 0.03);
+  }
+
+  /* ── Leaders tab ──────────────────────────────────────────────────────────── */
+  .leaders-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .leaders-category {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .leaders-cat-title {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-theme-primary, oklab(100% 0 0));
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.08);
+  }
+
+  .leaders-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .leaders-row {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr 2.5rem 2rem;
+    align-items: center;
+    padding: 0.3rem 0.4rem;
+    border-radius: 0.25rem;
+    gap: 0.5rem;
+    min-height: 2rem;
+  }
+
+  .leaders-rank {
+    font-size: var(--modal-copy-size);
+    font-weight: 400;
+    color: oklab(100% 0 0 / 0.35);
+    text-align: center;
+  }
+
+  .leaders-name {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .leaders-jersey {
+    font-size: var(--modal-copy-size);
+    font-weight: 300;
+    color: oklab(100% 0 0 / 0.4);
+    text-align: right;
+    letter-spacing: 0.04em;
+  }
+
+  .leaders-value {
+    font-size: var(--modal-copy-size);
+    font-weight: 400;
+    color: var(--color-theme-primary, oklab(100% 0 0));
+    text-align: right;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Squads tab ───────────────────────────────────────────────────────────── */
+  .squads-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .squads-head {
+    display: grid;
+    grid-template-columns: 2rem 3rem 1fr 3rem;
+    align-items: baseline;
+    padding: 0.25rem 0.4rem 0.4rem;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    gap: 0.5rem;
+  }
+
+  .squads-th-num,
+  .squads-th-pos,
+  .squads-th-name,
+  .squads-th-nat {
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0 / 0.45);
+  }
+
+  .squads-th-num {
+    text-align: center;
+  }
+
+  .squads-row {
+    display: grid;
+    grid-template-columns: 2rem 3rem 1fr 3rem;
+    align-items: center;
+    padding: 0.3rem 0.4rem;
+    border-radius: 0.25rem;
+    gap: 0.5rem;
+    min-height: 2rem;
+  }
+
+  .squads-num {
+    font-size: var(--modal-copy-size);
+    font-weight: 300;
+    color: oklab(100% 0 0 / 0.5);
+    text-align: center;
+  }
+
+  .squads-pos {
+    display: flex;
+    align-items: center;
+  }
+
+  .pos-badge {
+    font-size: 0.575rem;
+    font-weight: 400;
+    letter-spacing: 0.09em;
+    color: oklab(100% 0 0 / 0.7);
+    background: oklab(100% 0 0 / 0.08);
+    border-radius: 0.2rem;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .squads-name {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .squads-nat {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.5);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Fallback squad sub column header (reuses same style as nat) */
+  .squads-th-sub {
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0 / 0.45);
+    text-align: center;
+  }
+
+  .squads-sub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sub-badge {
+    font-size: var(--modal-copy-size);
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .sub-in {
+    color: #4ade80;
+  }
+
+  .sub-out {
+    color: #f87171;
+  }
+
+  .sub-starter {
+    color: oklab(100% 0 0 / 0.25);
+    font-size: 0.5rem;
+  }
+
+  /* Fallback note */
+  .squads-fallback-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .squads-fallback-note {
+    font-size: 0.6875rem;
+    font-weight: 300;
+    font-style: italic;
+    color: oklab(100% 0 0 / 0.35);
+    letter-spacing: 0.02em;
+    margin: 0;
+    padding: 0.25rem 0.4rem 0;
+  }
+
+  /* Show all fixtures link row */
+  .schedule-fixtures-link-row {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.25rem;
+  }
+
+  .schedule-fixtures-link {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: oklab(100% 0 0 / 0.45);
+    background: none;
+    border: none;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.2);
+    padding: 0 0 0.05rem;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+
+  .schedule-fixtures-link:hover {
+    color: oklab(100% 0 0 / 0.75);
+    border-bottom-color: oklab(100% 0 0 / 0.5);
+  }
+
+  /* ── All Fixtures tab ─────────────────────────────────────────────────────── */
+  .fixtures-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .fixtures-month {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .fixtures-month-label {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-theme-primary, oklab(100% 0 0));
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid
+      color-mix(
+        in oklab,
+        var(--color-theme-primary, oklab(100% 0 0)) 30%,
+        transparent
+      );
+  }
+
+  .fixtures-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fixtures-head {
+    display: grid;
+    grid-template-columns: 12ch 1fr 5.5rem;
+    align-items: baseline;
+    padding: 0.2rem 0.4rem 0.35rem;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.08);
+    gap: 0.5rem;
+  }
+
+  .fx-th-date,
+  .fx-th-match,
+  .fx-th-result {
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0 / 0.35);
+  }
+
+  .fx-th-result {
+    text-align: right;
+  }
+
+  .fixtures-row {
+    display: grid;
+    grid-template-columns: 9ch 1fr 4.5rem 1fr;
+    align-items: center;
+    padding: 0.2rem 0;
+    border-radius: 0.25rem;
+  }
+
+  .fx-date {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.55);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    padding-right: 0.5rem;
+  }
+
+  .fx-home {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+    padding-right: 0.4rem;
+    flex-direction: row-reverse;
+  }
+
+  .fx-away {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+    padding-left: 0.4rem;
+  }
+
+  .fx-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  .fx-logo {
+    width: 1rem;
+    height: 1rem;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .fx-team {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.75);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .fx-team-bold {
+    font-weight: 400;
+    color: oklab(100% 0 0);
+  }
+
+  .fx-score {
+    font-size: var(--modal-copy-size);
+    font-weight: 400;
+    color: oklab(100% 0 0);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .fx-time {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.55);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .fx-badge {
+    font-size: 0.5rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    padding: 0.1rem 0.25rem;
+    border-radius: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .fx-badge-live {
+    background: oklab(34.8% -0.072 0.028 / 0.7);
+    color: #4ade80;
   }
 
   /* ── Transition ───────────────────────────────────────────────────────────── */
