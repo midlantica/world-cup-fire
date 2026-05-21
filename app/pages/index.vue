@@ -52,6 +52,12 @@
   // ── Stats composable ──────────────────────────────────────────────────────────
   const { loaded: statsLoaded, fetchStats } = useStats()
 
+  // ── Standings conference tab (mobile) ─────────────────────────────────────────
+  const confTab = ref('')
+  watch(conferences, (val) => {
+    if (val.length && !confTab.value) confTab.value = val[0]?.name ?? ''
+  })
+
   // ── Game detail modal state ───────────────────────────────────────────────────
   const gameDetailOpen = ref(false)
   const gameDetailMatch = ref<Match | null>(null)
@@ -81,6 +87,22 @@
     gameDetailMatch.value = null
   }
 
+  // Close ALL modals immediately and return to the main view (no history.back()).
+  // Used when the user clicks the backdrop — we want instant dismissal regardless
+  // of how many modal history entries are stacked.
+  function closeAllModals() {
+    gameDetailOpen.value = false
+    gameDetailMatch.value = null
+    teamModalOpen.value = false
+    viewTeam.value = null
+    // Replace the current history entry with a clean no-modal state so the
+    // back button doesn't re-open a stale modal entry.
+    const tab = mainTab.value
+    const tabHash = tab === 'scores' ? '' : `#${tab}`
+    const url = window.location.pathname + window.location.search + tabHash
+    window.history.replaceState({ tab }, '', url)
+  }
+
   // ── Team modal state ──────────────────────────────────────────────────────────
   const teamModalOpen = ref(false)
   const viewTeam = ref<string | null>(null)
@@ -94,6 +116,22 @@
     viewTeam.value = teamName
     teamModalOpen.value = true
     pushModalHash('team', teamName)
+  }
+
+  // Open a different team modal from within an existing team modal.
+  // Replaces the current history entry so back goes to the previous state
+  // (one back-press returns to whatever was open before the team modal).
+  function switchTeamModal(teamName: string) {
+    viewTeam.value = teamName
+    teamModalOpen.value = true
+    const tab = mainTab.value
+    const tabHash = tab === 'scores' ? '' : `#${tab}`
+    const url = window.location.pathname + window.location.search + tabHash
+    window.history.replaceState(
+      { tab, modal: 'team', modalId: teamName },
+      '',
+      url
+    )
   }
 
   function closeTeamModal() {
@@ -157,8 +195,11 @@
       modalId?: string
     } | null
 
-    // ── Forward into a modal state ────────────────────────────────────────────
+    // ── Forward into a game modal state ───────────────────────────────────────
     if (state?.modal === 'game' && state.modalId) {
+      // Close team modal if open (navigating forward to a game modal)
+      teamModalOpen.value = false
+      viewTeam.value = null
       // Re-open the game detail modal if we have the match cached
       const allMatches = [
         ...weeks.this.matches,
@@ -174,8 +215,12 @@
       return
     }
 
+    // ── Forward into a team modal state ───────────────────────────────────────
     if (state?.modal === 'team' && state.modalId) {
-      // Re-open the team modal
+      // Close game modal if open (navigating forward to a team modal)
+      gameDetailOpen.value = false
+      gameDetailMatch.value = null
+      // Re-open the team modal (or switch to a different team)
       if (state.modalId === '__myteam__') {
         viewTeam.value = null
       } else {
@@ -352,7 +397,7 @@
         v-else-if="mainTab === 'stats'"
         class="tab-section stats-tab-section"
       >
-        <StatsSection />
+        <StatsSection @select-team="openTeamModalFor" />
       </section>
 
       <!-- ── Standings tab ─────────────────────────────────────────────── -->
@@ -373,14 +418,44 @@
           {{ standingsError }}
         </div>
 
-        <div v-else-if="conferences.length" class="conferences-grid">
-          <StandingsTable
-            v-for="conf in conferences"
-            :key="conf.name"
-            :conference="conf"
-            @select-team="openTeamModalFor"
-          />
-        </div>
+        <template v-else-if="conferences.length">
+          <!-- Desktop: side-by-side -->
+          <div class="conferences-grid">
+            <StandingsTable
+              v-for="conf in conferences"
+              :key="conf.name"
+              :conference="conf"
+              @select-team="openTeamModalFor"
+            />
+          </div>
+
+          <!-- Mobile: tabbed -->
+          <div class="conferences-mobile">
+            <div class="conf-tabs" role="tablist">
+              <button
+                v-for="conf in conferences"
+                :key="conf.name"
+                class="conf-tab"
+                :class="{ active: confTab === conf.name }"
+                role="tab"
+                :aria-selected="confTab === conf.name"
+                @click="confTab = conf.name"
+              >
+                <span class="conf-tab-full">{{ conf.name }}</span>
+                <span class="conf-tab-short">{{
+                  conf.name.includes('Eastern') ? 'Eastern' : 'Western'
+                }}</span>
+              </button>
+            </div>
+            <StandingsTable
+              v-for="conf in conferences"
+              v-show="confTab === conf.name"
+              :key="conf.name"
+              :conference="conf"
+              @select-team="openTeamModalFor"
+            />
+          </div>
+        </template>
       </section>
 
       <!-- ── Footer ───────────────────────────────────────────────────── -->
@@ -392,8 +467,8 @@
       <MyTeamModal
         :open="teamModalOpen"
         :view-team="viewTeam"
-        @close="closeTeamModal"
-        @select-team="openTeamModalFor"
+        @close="closeAllModals"
+        @select-team="switchTeamModal"
         @view-standings="goToStandings"
         @open-game-detail="
           (match) => {
@@ -409,7 +484,7 @@
       <GameDetailModal
         :open="gameDetailOpen"
         :match="gameDetailMatch"
-        @close="closeGameDetail"
+        @close="closeAllModals"
         @select-team="
           (team) => {
             closeGameDetailSilent()
@@ -500,15 +575,81 @@
   }
 
   .conferences-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    display: none;
+  }
+
+  .conferences-mobile {
+    display: block;
   }
 
   @media (min-width: 768px) {
     .conferences-grid {
+      display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2.5rem;
+    }
+    .conferences-mobile {
+      display: none;
+    }
+  }
+
+  /* Hide the redundant conf-title heading inside the mobile tabbed view */
+  .conferences-mobile :deep(.conf-title) {
+    display: none;
+  }
+
+  /* ── Conference tabs (mobile) ───────────────────────────────────────────── */
+  .conf-tabs {
+    display: flex;
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
+    margin-bottom: 1rem;
+  }
+
+  .conf-tab {
+    flex: 1;
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    padding: 0.4rem 0.5rem 0.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+    position: relative;
+    bottom: -1px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .conf-tab:hover:not(.active) {
+    color: var(--color-text-primary);
+  }
+
+  .conf-tab.active {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-theme-400, #60a5fa);
+    font-weight: 600;
+  }
+
+  .conf-tab-short {
+    display: none;
+  }
+
+  .conf-tab-full {
+    display: inline;
+  }
+
+  @media (max-width: 480px) {
+    .conf-tab-full {
+      display: none;
+    }
+    .conf-tab-short {
+      display: inline;
     }
   }
 

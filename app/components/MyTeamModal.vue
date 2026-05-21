@@ -51,8 +51,8 @@
   })
 
   // ── Tab state ─────────────────────────────────────────────────────────────
-  type ModalTab = 'schedule' | 'leaders' | 'squads' | 'fixtures'
-  const TAB_ORDER: ModalTab[] = ['schedule', 'leaders', 'squads', 'fixtures']
+  type ModalTab = 'schedule' | 'leaders' | 'lineups' | 'fixtures'
+  const TAB_ORDER: ModalTab[] = ['schedule', 'leaders', 'lineups', 'fixtures']
   const activeTab = ref<ModalTab>('schedule')
   const slideDir = ref<'left' | 'right'>('left')
 
@@ -416,7 +416,7 @@
 
   watch(activeTab, (tab) => {
     if (
-      (tab === 'leaders' || tab === 'squads') &&
+      (tab === 'leaders' || tab === 'lineups') &&
       displayTeam.value &&
       !teamDetail.value
     ) {
@@ -489,35 +489,35 @@
   const FIXTURE_TEAM_NAME: Record<string, string> = {
     'Atlanta United FC': 'Atlanta Utd',
     'Austin FC': 'Austin FC',
-    'CF Montréal': 'CF Montréal',
-    'Charlotte FC': 'Charlotte FC',
-    'Chicago Fire FC': 'Chicago Fire',
-    'Colorado Rapids': 'Colorado Rapids',
-    'Columbus Crew': 'Columbus Crew',
-    'D.C. United': 'D.C. United',
-    'FC Cincinnati': 'FC Cincinnati',
+    'CF Montréal': 'CF Mtl',
+    'Charlotte FC': 'Charlotte',
+    'Chicago Fire FC': 'Chicago',
+    'Colorado Rapids': 'Colorado',
+    'Columbus Crew': 'Columbus',
+    'D.C. United': 'DC United',
+    'FC Cincinnati': 'Cincinnati',
     'FC Dallas': 'FC Dallas',
-    'Houston Dynamo FC': 'Houston Dynamo FC',
-    'Inter Miami CF': 'Inter Miami CF',
+    'Houston Dynamo FC': 'Houston',
+    'Inter Miami CF': 'Inter Miami',
     'LA Galaxy': 'LA Galaxy',
     LAFC: 'LAFC',
-    'Minnesota United FC': 'Minn United FC',
-    'Nashville SC': 'Nashville SC',
-    'New England Revolution': 'New England Rev',
-    'New York City FC': 'NY City FC',
-    'Orlando City SC': 'Orlando City SC',
-    'Philadelphia Union': 'Philadelphia Un',
-    'Portland Timbers': 'Portland Timbers',
-    'Real Salt Lake': 'Real Salt Lake',
+    'Minnesota United FC': 'Minnesota',
+    'Nashville SC': 'Nashville',
+    'New England Revolution': 'New England',
+    'New York City FC': 'NYCFC',
+    'Orlando City SC': 'Orlando',
+    'Philadelphia Union': 'Philadelphia',
+    'Portland Timbers': 'Portland',
+    'Real Salt Lake': 'Real SL',
     'Red Bull New York': 'NY Red Bulls',
-    'San Diego FC': 'San Diego FC',
-    'San Jose Earthquakes': 'SJ Earthquakes',
-    'Seattle Sounders FC': 'Seattle Sounders FC',
+    'San Diego FC': 'San Diego',
+    'San Jose Earthquakes': 'San Jose',
+    'Seattle Sounders FC': 'Seattle',
     'Sporting Kansas City': 'Sporting KC',
-    'St. Louis City SC': 'St Louis City SC',
-    'St. Louis CITY SC': 'St Louis City SC',
-    'Toronto FC': 'Toronto FC',
-    'Vancouver Whitecaps': 'Vancouver WC',
+    'St. Louis City SC': 'St. Louis',
+    'St. Louis CITY SC': 'St. Louis',
+    'Toronto FC': 'Toronto',
+    'Vancouver Whitecaps': 'Vancouver',
   }
 
   function fixtureTeamName(name: string): string {
@@ -614,14 +614,18 @@
       })
   })
 
-  function fixtureDate(iso: string): string {
+  function fixtureDate(iso: string): { weekday: string; date: string } {
     const d = new Date(iso)
-    return d.toLocaleDateString('en-US', {
+    const weekday = d.toLocaleDateString('en-US', {
       weekday: 'short',
+      timeZone: iana.value,
+    })
+    const date = d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       timeZone: iana.value,
     })
+    return { weekday, date }
   }
 
   function fixtureTime(iso: string): string {
@@ -717,10 +721,10 @@
             </button>
             <button
               class="modal-tab"
-              :class="{ active: activeTab === 'squads' }"
-              @click="setTab('squads')"
+              :class="{ active: activeTab === 'lineups' }"
+              @click="setTab('lineups')"
             >
-              Squads
+              Lineups
             </button>
             <button
               class="modal-tab"
@@ -862,8 +866,8 @@
                   </div>
                 </template>
 
-                <!-- ── SQUADS TAB ───────────────────────────────────────── -->
-                <template v-else-if="activeTab === 'squads'">
+                <!-- ── LINEUPS TAB ──────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'lineups'">
                   <div
                     v-if="teamDetailLoading || fallbackSquadLoading"
                     class="schedule-loading"
@@ -941,11 +945,11 @@
                       </div>
                     </div>
                     <p class="squads-fallback-note">
-                      *last squad chosen on {{ fallbackSquadDateLabel }}
+                      *last lineup from {{ fallbackSquadDateLabel }}
                     </p>
                   </div>
                   <div v-else class="schedule-empty">
-                    Squad not yet available.
+                    Lineup not yet available.
                   </div>
                 </template>
 
@@ -982,10 +986,18 @@
                           >
                             <!-- Date -->
                             <div class="fx-date">
-                              {{ fixtureDate(evt.date) }}
+                              <span class="fx-date-weekday">{{
+                                fixtureDate(evt.date).weekday
+                              }}</span>
+                              <span class="fx-date-md">{{
+                                fixtureDate(evt.date).date
+                              }}</span>
                             </div>
                             <!-- Home team -->
-                            <div class="fx-home">
+                            <button
+                              class="fx-home fx-team-btn"
+                              @click.stop="emit('select-team', evt.homeTeam)"
+                            >
                               <img
                                 v-if="TEAM_LOGO[evt.homeTeam]"
                                 :src="TEAM_LOGO[evt.homeTeam]"
@@ -999,7 +1011,7 @@
                                 }"
                                 >{{ fixtureTeamName(evt.homeTeam) }}</span
                               >
-                            </div>
+                            </button>
                             <!-- Score or time (center) -->
                             <div class="fx-center">
                               <template
@@ -1033,7 +1045,10 @@
                               </template>
                             </div>
                             <!-- Away team -->
-                            <div class="fx-away">
+                            <button
+                              class="fx-away fx-team-btn"
+                              @click.stop="emit('select-team', evt.awayTeam)"
+                            >
                               <img
                                 v-if="TEAM_LOGO[evt.awayTeam]"
                                 :src="TEAM_LOGO[evt.awayTeam]"
@@ -1047,7 +1062,7 @@
                                 }"
                                 >{{ fixtureTeamName(evt.awayTeam) }}</span
                               >
-                            </div>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1086,8 +1101,8 @@
     position: relative;
     width: 100%;
     max-width: 36rem;
-    margin-top: auto;
-    margin-bottom: auto;
+    margin-top: 0;
+    margin-bottom: 0;
     background: color-mix(
       in oklab,
       var(--app-bg, #0f172a) 85%,
@@ -1351,6 +1366,52 @@
     grid-template-columns: 1fr;
   }
 
+  /* ── Featured next-game card (full-width single) ──────────────────────── */
+  .schedule-list--single :deep(.game-block) {
+    padding: 0.875rem 1rem;
+    gap: 0.45rem 0.75rem;
+  }
+
+  .schedule-list--single :deep(.team-name-text) {
+    font-size: 1.5rem;
+    font-weight: 200;
+  }
+
+  .schedule-list--single :deep(.team-rec) {
+    font-size: 0.9rem;
+  }
+
+  .schedule-list--single :deep(.team-logo) {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .schedule-list--single :deep(.logo-slot) {
+    width: 1.75rem;
+  }
+
+  .schedule-list--single :deep(.status-col) {
+    width: 5rem;
+    padding-left: 1.5rem;
+  }
+
+  .schedule-list--single :deep(.status-time) {
+    font-size: 1.3rem;
+    letter-spacing: 0.02em;
+  }
+
+  .schedule-list--single :deep(.status-date) {
+    font-size: 1.3rem;
+  }
+
+  .schedule-list--single :deep(.team-score) {
+    font-size: 1.5rem;
+  }
+
+  .schedule-list--single :deep(.badge) {
+    font-size: 1rem;
+  }
+
   @media (max-width: 480px) {
     .schedule-list {
       grid-template-columns: 1fr;
@@ -1582,7 +1643,6 @@
 
   .squads-sub {
     display: flex;
-    align-items: center;
     justify-content: center;
   }
 
@@ -1669,14 +1729,11 @@
     font-weight: 400;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-theme-primary, oklab(100% 0 0));
+    text-align: center;
+    color: color-mix(in oklab, var(--color-theme-300, #93c5fd) 70%, white 30%);
     padding-bottom: 0.3rem;
     border-bottom: 1px solid
-      color-mix(
-        in oklab,
-        var(--color-theme-primary, oklab(100% 0 0)) 30%,
-        transparent
-      );
+      color-mix(in oklab, var(--color-theme-primary, #60a5fa) 30%, transparent);
   }
 
   .fixtures-table {
@@ -1709,33 +1766,58 @@
 
   .fixtures-row {
     display: grid;
-    grid-template-columns: 9ch 1fr 4.5rem 1fr;
+    grid-template-columns: 1fr 4.5rem 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'date date date'
+      'home center away';
     align-items: center;
-    padding: 0.2rem 0;
+    padding: 0.3rem 0;
     border-radius: 0.25rem;
   }
 
   .fx-date {
+    grid-area: date;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    white-space: nowrap;
+    padding-right: 0;
+    padding-bottom: 0.15rem;
+  }
+
+  .fx-date-weekday {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.4);
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+
+  .fx-date-md {
     font-size: var(--modal-copy-size);
     font-weight: 200;
     color: oklab(100% 0 0 / 0.55);
     letter-spacing: 0.02em;
-    white-space: nowrap;
-    padding-right: 0.5rem;
+    line-height: 1.2;
   }
 
   .fx-home {
+    grid-area: home;
     display: flex;
     align-items: center;
     gap: 0.3rem;
     min-width: 0;
     overflow: hidden;
-    justify-content: flex-start;
+    justify-content: flex-end;
     padding-right: 0.4rem;
-    flex-direction: row-reverse;
+    flex-direction: row;
   }
 
   .fx-away {
+    grid-area: away;
     display: flex;
     align-items: center;
     gap: 0.3rem;
@@ -1743,6 +1825,28 @@
     overflow: hidden;
     justify-content: flex-start;
     padding-left: 0.4rem;
+  }
+
+  /* Reset button styles for team clickable areas */
+  .fx-team-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: inherit;
+    border-radius: 0.2rem;
+    transition: opacity 0.12s;
+  }
+  .fx-team-btn:hover .fx-team {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-color: oklab(100% 0 0 / 0.45);
+  }
+  .fx-team-btn:focus-visible {
+    outline: 1px solid oklab(100% 0 0 / 0.4);
+    outline-offset: 1px;
   }
 
   .fx-center {

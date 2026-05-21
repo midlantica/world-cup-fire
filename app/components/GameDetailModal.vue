@@ -153,8 +153,8 @@
   onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
   // ── Tab state ─────────────────────────────────────────────────────────────────
-  type ModalTab = 'overview' | 'leaders' | 'squad' | 'h2h'
-  const TAB_ORDER: ModalTab[] = ['overview', 'leaders', 'squad', 'h2h']
+  type ModalTab = 'overview' | 'leaders' | 'lineups' | 'h2h'
+  const TAB_ORDER: ModalTab[] = ['overview', 'leaders', 'lineups', 'h2h']
   const activeTab = ref<ModalTab>('overview')
   const slideDir = ref<'left' | 'right'>('left')
 
@@ -379,14 +379,18 @@
     return 'h2h-draw'
   }
 
-  function h2hDate(dateStr: string): string {
+  function h2hDate(dateStr: string): { weekday: string; date: string } {
     const d = new Date(dateStr)
-    return d.toLocaleDateString('en-US', {
+    const weekday = d.toLocaleDateString('en-US', {
       weekday: 'short',
+      timeZone: 'UTC',
+    })
+    const date = d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       timeZone: 'UTC',
     })
+    return { weekday, date }
   }
 
   // Parse "homeScore-awayScore" from ESPN's perspective for that game,
@@ -694,17 +698,18 @@
             </button>
             <button
               class="modal-tab"
-              :class="{ active: activeTab === 'squad' }"
-              @click="setTab('squad')"
+              :class="{ active: activeTab === 'lineups' }"
+              @click="setTab('lineups')"
             >
-              Squads
+              Lineups
             </button>
             <button
               class="modal-tab"
               :class="{ active: activeTab === 'h2h' }"
               @click="setTab('h2h')"
             >
-              Head to Head
+              <span class="tab-label-desktop">Head to Head</span>
+              <span class="tab-label-mobile">H2H</span>
             </button>
           </div>
 
@@ -866,8 +871,8 @@
                   <div v-else class="no-data">Leaders not yet available</div>
                 </template>
 
-                <!-- ── SQUAD TAB ───────────────────────────────────────────── -->
-                <template v-else-if="activeTab === 'squad' && detail">
+                <!-- ── LINEUPS TAB ─────────────────────────────────────────── -->
+                <template v-else-if="activeTab === 'lineups' && detail">
                   <div class="squads-table">
                     <!-- Header row: home abbr | pos | away abbr -->
                     <div class="squads-head">
@@ -984,35 +989,52 @@
                         :class="{ 'row-stripe': gi % 2 === 1 }"
                       >
                         <!-- Date -->
-                        <div class="h2h-fx-date">{{ h2hDate(game.date) }}</div>
+                        <div class="h2h-fx-date">
+                          <span class="h2h-fx-date-weekday">{{
+                            h2hDate(game.date).weekday
+                          }}</span>
+                          <span class="h2h-fx-date-md">{{
+                            h2hDate(game.date).date
+                          }}</span>
+                        </div>
                         <!-- Home side (left team): name flush-right, logo inner -->
                         <div class="h2h-fx-home">
-                          <span
-                            class="h2h-fx-team h2h-fx-team-full"
-                            :class="{
-                              'h2h-fx-team-win':
-                                h2hScoreClass(
-                                  h2hScores(game.score, game.atVs).left,
-                                  h2hScores(game.score, game.atVs).right
-                                ) === 'h2h-win',
-                            }"
-                            >{{
-                              game.atVs === 'vs' ? homeTeam : awayTeam
-                            }}</span
+                          <button
+                            class="h2h-fx-team-btn"
+                            @click.stop="
+                              emit(
+                                'select-team',
+                                game.atVs === 'vs' ? homeTeam : awayTeam
+                              )
+                            "
                           >
-                          <span
-                            class="h2h-fx-team h2h-fx-team-abbr"
-                            :class="{
-                              'h2h-fx-team-win':
-                                h2hScoreClass(
-                                  h2hScores(game.score, game.atVs).left,
-                                  h2hScores(game.score, game.atVs).right
-                                ) === 'h2h-win',
-                            }"
-                            >{{
-                              game.atVs === 'vs' ? homeAbbr : awayAbbr
-                            }}</span
-                          >
+                            <span
+                              class="h2h-fx-team h2h-fx-team-full"
+                              :class="{
+                                'h2h-fx-team-win':
+                                  h2hScoreClass(
+                                    h2hScores(game.score, game.atVs).left,
+                                    h2hScores(game.score, game.atVs).right
+                                  ) === 'h2h-win',
+                              }"
+                              >{{
+                                game.atVs === 'vs' ? homeTeam : awayTeam
+                              }}</span
+                            >
+                            <span
+                              class="h2h-fx-team h2h-fx-team-abbr"
+                              :class="{
+                                'h2h-fx-team-win':
+                                  h2hScoreClass(
+                                    h2hScores(game.score, game.atVs).left,
+                                    h2hScores(game.score, game.atVs).right
+                                  ) === 'h2h-win',
+                              }"
+                              >{{
+                                game.atVs === 'vs' ? homeAbbr : awayAbbr
+                              }}</span
+                            >
+                          </button>
                           <img
                             v-if="
                               TEAM_LOGO[
@@ -1070,32 +1092,42 @@
                             :alt="game.atVs === 'vs' ? awayTeam : homeTeam"
                             class="h2h-fx-logo"
                           />
-                          <span
-                            class="h2h-fx-team h2h-fx-team-full"
-                            :class="{
-                              'h2h-fx-team-win':
-                                h2hScoreClass(
-                                  h2hScores(game.score, game.atVs).right,
-                                  h2hScores(game.score, game.atVs).left
-                                ) === 'h2h-win',
-                            }"
-                            >{{
-                              game.atVs === 'vs' ? awayTeam : homeTeam
-                            }}</span
+                          <button
+                            class="h2h-fx-team-btn"
+                            @click.stop="
+                              emit(
+                                'select-team',
+                                game.atVs === 'vs' ? awayTeam : homeTeam
+                              )
+                            "
                           >
-                          <span
-                            class="h2h-fx-team h2h-fx-team-abbr"
-                            :class="{
-                              'h2h-fx-team-win':
-                                h2hScoreClass(
-                                  h2hScores(game.score, game.atVs).right,
-                                  h2hScores(game.score, game.atVs).left
-                                ) === 'h2h-win',
-                            }"
-                            >{{
-                              game.atVs === 'vs' ? awayAbbr : homeAbbr
-                            }}</span
-                          >
+                            <span
+                              class="h2h-fx-team h2h-fx-team-full"
+                              :class="{
+                                'h2h-fx-team-win':
+                                  h2hScoreClass(
+                                    h2hScores(game.score, game.atVs).right,
+                                    h2hScores(game.score, game.atVs).left
+                                  ) === 'h2h-win',
+                              }"
+                              >{{
+                                game.atVs === 'vs' ? awayTeam : homeTeam
+                              }}</span
+                            >
+                            <span
+                              class="h2h-fx-team h2h-fx-team-abbr"
+                              :class="{
+                                'h2h-fx-team-win':
+                                  h2hScoreClass(
+                                    h2hScores(game.score, game.atVs).right,
+                                    h2hScores(game.score, game.atVs).left
+                                  ) === 'h2h-win',
+                              }"
+                              >{{
+                                game.atVs === 'vs' ? awayAbbr : homeAbbr
+                              }}</span
+                            >
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1288,8 +1320,8 @@
   .modal-header {
     background: linear-gradient(
       180deg,
-      var(--color-theme-950) 0%,
-      var(--color-theme-900) 100%
+      oklch(12% 0.01 260) 0%,
+      oklch(16% 0.01 260) 100%
     );
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     position: relative;
@@ -1351,7 +1383,7 @@
   .header-team-info {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0.3rem;
   }
 
   .header-team-info-home {
@@ -1584,6 +1616,20 @@
 
   .modal-tab:hover:not(.active) {
     color: oklab(100% 0 0 / 0.75);
+  }
+
+  /* Tab label responsive visibility */
+  .tab-label-mobile {
+    display: none;
+  }
+
+  @media (max-width: 599px) {
+    .tab-label-desktop {
+      display: none;
+    }
+    .tab-label-mobile {
+      display: inline;
+    }
   }
 
   /* ── Body ─────────────────────────────────────────────────────────────────── */
@@ -1917,7 +1963,7 @@
   .leaders-cat-col {
     font-size: var(--modal-copy-size);
     font-weight: 100;
-    color: oklab(100% 0 0 / 0.55);
+    color: oklab(100% 0 0 / 1);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     text-align: center;
@@ -2036,28 +2082,101 @@
     flex-direction: column;
   }
 
-  /* date | home | score | away — date is fixed, home/away are equal 1fr */
+  /* date stacked above home | score | away */
   .h2h-fx-row {
     display: grid;
-    grid-template-columns: 9ch 1fr 4rem 1fr;
+    grid-template-columns: 1fr 4rem 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'date date date'
+      'home center away';
     align-items: center;
-    padding: 0.2rem 0;
+    padding: 0.3rem 0;
     border-radius: 0.25rem;
+  }
+
+  .h2h-fx-date {
+    grid-area: date;
+    text-align: center;
+    padding-right: 0;
+    padding-bottom: 0.15rem;
+  }
+
+  .h2h-fx-home {
+    grid-area: home;
+    justify-content: center;
+    padding-right: 0;
+  }
+
+  .h2h-fx-center {
+    grid-area: center;
+  }
+
+  .h2h-fx-away {
+    grid-area: away;
+    justify-content: center;
+    padding-left: 0;
   }
 
   @media (max-width: 599px) {
     .h2h-fx-row {
-      grid-template-columns: 8ch 1fr 3.5rem 1fr;
+      grid-template-columns: 1fr 3.5rem 1fr;
+      grid-template-rows: auto auto;
+      grid-template-areas:
+        'date date date'
+        'home center away';
+      padding: 0.3rem 0;
+    }
+
+    .h2h-fx-date {
+      grid-area: date;
+      text-align: center;
+      padding-right: 0;
+      padding-bottom: 0.15rem;
+    }
+
+    .h2h-fx-home {
+      grid-area: home;
+      justify-content: center;
+      padding-right: 0;
+    }
+
+    .h2h-fx-center {
+      grid-area: center;
+    }
+
+    .h2h-fx-away {
+      grid-area: away;
+      justify-content: center;
+      padding-left: 0;
     }
   }
 
   .h2h-fx-date {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    padding-right: 0;
+  }
+
+  .h2h-fx-date-weekday {
+    font-size: var(--modal-copy-size);
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.5);
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+
+  .h2h-fx-date-md {
     font-size: var(--modal-copy-size);
     font-weight: 200;
     color: oklab(100% 0 0 / 0.85);
     letter-spacing: 0.02em;
-    white-space: nowrap;
-    padding-right: 0.25rem;
+    line-height: 1.2;
   }
 
   .h2h-fx-home {
@@ -2101,6 +2220,30 @@
   .h2h-fx-team-win {
     font-weight: 600;
     color: oklab(100% 0 0);
+  }
+
+  .h2h-fx-team-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: inherit;
+    border-radius: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .h2h-fx-team-btn:hover .h2h-fx-team {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-color: oklab(100% 0 0 / 0.45);
+  }
+
+  .h2h-fx-team-btn:focus-visible {
+    outline: 1px solid oklab(100% 0 0 / 0.4);
+    outline-offset: 1px;
   }
 
   /* Full name on desktop, abbreviation on mobile */

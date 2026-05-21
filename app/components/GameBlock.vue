@@ -389,7 +389,7 @@
   }
 
   .team-name-text {
-    font-size: 0.8125rem;
+    font-size: var(--modal-copy-size);
     font-weight: 200;
     color: var(--color-text-primary);
     white-space: nowrap;

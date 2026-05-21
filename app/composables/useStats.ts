@@ -1,5 +1,6 @@
 /**
- * useStats — fetch and cache season leaders (Goals / Assists / Yellow Cards / Red Cards)
+ * useStats — fetch and cache season leaders
+ * (Goals / Assists / Accurate Passes / Saves / Yellow Cards / Red Cards)
  */
 
 export interface LeaderEntry {
@@ -14,6 +15,8 @@ export interface LeaderEntry {
 export interface StatsData {
   goals: LeaderEntry[]
   assists: LeaderEntry[]
+  accuratePasses: LeaderEntry[]
+  saves: LeaderEntry[]
   yellowCards: LeaderEntry[]
   redCards: LeaderEntry[]
 }

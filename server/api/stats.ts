@@ -1,7 +1,8 @@
 /**
  * GET /api/stats
  *
- * Returns top-10 MLS season leaders for Goals and Assists.
+ * Returns top-10 MLS season leaders for Goals, Assists, Accurate Passes, Saves,
+ * Yellow Cards, and Red Cards.
  * Fetches ESPN Core API, resolves athlete $ref links in parallel,
  * and caches the result for 1 hour.
  */
@@ -18,6 +19,8 @@ interface LeaderEntry {
 interface StatsResponse {
   goals: LeaderEntry[]
   assists: LeaderEntry[]
+  accuratePasses: LeaderEntry[]
+  saves: LeaderEntry[]
   yellowCards: LeaderEntry[]
   redCards: LeaderEntry[]
 }
@@ -87,7 +90,7 @@ export default defineEventHandler(async () => {
   const categories =
     (leadersRaw.categories as Array<Record<string, unknown>>) ?? []
 
-  // ── 2. Extract top-10 for goals and assists ───────────────────────────────
+  // ── 2. Extract top-10 for each category ──────────────────────────────────
   type RawLeader = {
     value: number
     athleteRef: string
@@ -109,6 +112,8 @@ export default defineEventHandler(async () => {
 
   const rawGoals = extractCategory('goals')
   const rawAssists = extractCategory('assists')
+  const rawAccuratePasses = extractCategory('accuratepasses')
+  const rawSaves = extractCategory('saves')
   const rawYellowCards = extractCategory('yellowcards')
   const rawRedCards = extractCategory('redcards')
 
@@ -117,6 +122,8 @@ export default defineEventHandler(async () => {
   for (const l of [
     ...rawGoals,
     ...rawAssists,
+    ...rawAccuratePasses,
+    ...rawSaves,
     ...rawYellowCards,
     ...rawRedCards,
   ]) {
@@ -124,44 +131,54 @@ export default defineEventHandler(async () => {
   }
 
   // ── 4. Fetch all athlete refs in parallel ─────────────────────────────────
+  // The leaders endpoint returns season-scoped athlete refs like:
+  //   /seasons/2026/athletes/12345
+  // These return no headshot and no team data. Strip the season scope to get
+  // the full athlete profile which includes headshot.
+  function toBaseAthleteUrl(seasonRef: string): string {
+    return seasonRef.replace(/\/seasons\/\d+\/athletes\//, '/athletes/')
+  }
+
+  // Wikipedia REST summary API — free, no key, returns thumbnail for most players
+  async function fetchWikipediaHeadshot(name: string): Promise<string> {
+    try {
+      // Convert "First Last" → "First_Last" for Wikipedia URL
+      const slug = name.trim().replace(/\s+/g, '_')
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(slug)}`
+      const wiki = await $fetch<Record<string, unknown>>(url)
+      const thumb = (wiki.thumbnail as Record<string, unknown> | null)
+        ?.source as string | undefined
+      return thumb ?? ''
+    } catch {
+      return ''
+    }
+  }
+
   const athleteCache = new Map<
     string,
-    { displayName: string; team: string; headshot: string }
+    { displayName: string; headshot: string }
   >()
 
   await Promise.all(
     Array.from(allRefs).map(async (ref) => {
+      const baseUrl = toBaseAthleteUrl(ref)
       try {
-        const data = await $fetch<Record<string, unknown>>(ref)
+        const data = await $fetch<Record<string, unknown>>(baseUrl)
         const displayName = (data.displayName as string) ?? 'Unknown'
-
-        // Read headshot directly from the API response (null if ESPN has no photo)
         const headshotObj = data.headshot as
           | Record<string, unknown>
           | null
           | undefined
-        const headshot = (headshotObj?.href as string) ?? ''
+        let headshot = (headshotObj?.href as string) ?? ''
 
-        // Try to get team from the athlete's team ref
-        let team = 'MLS'
-        const teamLinks = (data.teams as Array<Record<string, unknown>>) ?? []
-        if (teamLinks.length > 0) {
-          const teamRef = teamLinks[0]?.['$ref'] as string | undefined
-          if (teamRef) {
-            const teamId = extractId(teamRef, 'teams')
-            if (teamId && ESPN_TEAM_ID_TO_NAME[teamId]) {
-              team = ESPN_TEAM_ID_TO_NAME[teamId]
-            }
-          }
+        // If ESPN has no headshot, try Wikipedia
+        if (!headshot && displayName && displayName !== 'Unknown') {
+          headshot = await fetchWikipediaHeadshot(displayName)
         }
 
-        athleteCache.set(ref, { displayName, team, headshot })
+        athleteCache.set(ref, { displayName, headshot })
       } catch {
-        athleteCache.set(ref, {
-          displayName: 'Unknown',
-          team: 'MLS',
-          headshot: '',
-        })
+        athleteCache.set(ref, { displayName: 'Unknown', headshot: '' })
       }
     })
   )
@@ -173,9 +190,8 @@ export default defineEventHandler(async () => {
       const teamId = extractId(l.teamRef, 'teams') ?? ''
       const resolved = athleteCache.get(l.athleteRef)
 
-      // Prefer team from teamRef (season-specific) over athlete profile
-      const team =
-        (teamId && ESPN_TEAM_ID_TO_NAME[teamId]) || resolved?.team || 'MLS'
+      // Resolve team from the season-specific teamRef in the leaders data
+      const team = (teamId && ESPN_TEAM_ID_TO_NAME[teamId]) || 'MLS'
 
       return {
         rank: i + 1,
@@ -191,6 +207,8 @@ export default defineEventHandler(async () => {
   const result: StatsResponse = {
     goals: resolveLeaders(rawGoals),
     assists: resolveLeaders(rawAssists),
+    accuratePasses: resolveLeaders(rawAccuratePasses),
+    saves: resolveLeaders(rawSaves),
     yellowCards: resolveLeaders(rawYellowCards),
     redCards: resolveLeaders(rawRedCards),
   }
