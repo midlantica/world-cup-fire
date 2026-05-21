@@ -9,6 +9,14 @@ import { createHash } from 'node:crypto'
 // Skip tracking for API routes, static assets, and admin page
 const SKIP_PREFIXES = ['/api/', '/_nuxt/', '/__nuxt', '/favicon', '/admin']
 
+// IPs to exclude from analytics (comma-separated in ANALYTICS_EXCLUDE_IPS env var)
+function getExcludedIps(): string[] {
+  return (process.env.ANALYTICS_EXCLUDE_IPS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
 function hashIp(ip: string): string {
   return createHash('sha256')
     .update(ip + 'mls-salt-2026')
@@ -51,6 +59,10 @@ export default defineEventHandler(async (event) => {
     const ip =
       (event.headers?.get?.('x-forwarded-for') ?? '').split(',')[0]?.trim() ||
       (event.node?.req?.socket?.remoteAddress ?? 'unknown')
+
+    // Skip excluded IPs (e.g. the site owner's IP set via ANALYTICS_EXCLUDE_IPS)
+    if (getExcludedIps().includes(ip)) return
+
     const visitorId = hashIp(ip)
 
     // Session: use a cookie or treat each request as a session hit
