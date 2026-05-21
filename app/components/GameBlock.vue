@@ -349,6 +349,12 @@
     position: relative; /* needed for winner-caret ::after positioning */
   }
 
+  @media (max-width: 530px) {
+    .team-row {
+      padding: 0rem 0;
+    }
+  }
+
   .team-row-home {
     grid-area: home;
   }

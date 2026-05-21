@@ -45,8 +45,8 @@
 
   .header-left {
     display: flex;
-    align-items: center;
-    gap: 0.625rem;
+    align-items: flex-end;
+    gap: 0.5rem;
     user-select: none;
     min-width: 0;
     flex-shrink: 1;
@@ -62,7 +62,7 @@
 
   .site-title {
     font-size: 2rem;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.05em;
     color: var(--color-theme-300);
     cursor: pointer;
@@ -78,8 +78,13 @@
   }
 
   @media (max-width: 420px) {
+    .header-left {
+      margin-top: -0.1rem;
+    }
     .mls-logo {
       width: 1.5rem;
+      margin-top: 0.2rem;
+      position: relative;
     }
     .site-title {
       font-size: 1.25rem;

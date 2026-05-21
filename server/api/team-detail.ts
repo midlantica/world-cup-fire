@@ -3,13 +3,15 @@
  *
  * Returns:
  *   - roster: full squad list with position, jersey, nationality
- *   - leaders: season-long stat leaders for this team
- *     (goals, assists, yellowCards, tackles, dribbles, saves)
+ *   - leaders: season-long stat leaders for this team, filtered from the
+ *     MLS-wide Core API leaders endpoint (goals, assists, saves, shots, etc.)
  *
- * Caches for 10 minutes.
+ * Caches per-team for 10 minutes; the league-wide leaders blob is cached
+ * for 1 hour in a module-level variable.
  */
 
 const CACHE_TTL_MS = 10 * 60_000
+const LEADERS_TTL_MS = 60 * 60_000
 
 interface CacheEntry {
   data: TeamDetailResponse
@@ -17,6 +19,21 @@ interface CacheEntry {
 }
 
 const cache = new Map<string, CacheEntry>()
+
+// ── Shared league-wide leaders cache ─────────────────────────────────────────
+interface RawLeader {
+  value: number
+  displayValue: string
+  athleteRef: string
+  teamId: string // extracted from team.$ref
+}
+interface RawCategory {
+  name: string
+  displayName: string
+  leaders: RawLeader[]
+}
+let leadersBlobCache: RawCategory[] | null = null
+let leadersBlobFetchedAt = 0
 
 export interface RosterPlayer {
   id: string
@@ -51,17 +68,66 @@ export interface TeamDetailResponse {
   leaders: StatCategory[]
 }
 
-const STAT_NAMES = [
+// Categories we want to show in the Leaders tab
+const WANTED_CATS = [
   'goals',
   'assists',
+  'saves',
+  'shotsOnTarget',
+  'totalShots',
+  'accuratePasses',
   'yellowCards',
   'redCards',
-  'saves',
-  'tackles',
-  'successfulDribbles',
-  'totalShots',
-  'shotsOnTarget',
 ]
+
+function extractTeamId(ref: string): string {
+  const m = /\/teams\/(\d+)/.exec(ref)
+  return m?.[1] ?? ''
+}
+
+function extractAthleteId(ref: string): string {
+  const m = /\/athletes\/(\d+)/.exec(ref)
+  return m?.[1] ?? ''
+}
+
+function toBaseAthleteUrl(seasonRef: string): string {
+  return seasonRef.replace(/\/seasons\/\d+\/athletes\//, '/athletes/')
+}
+
+async function fetchLeadersBlob(): Promise<RawCategory[]> {
+  const now = Date.now()
+  if (leadersBlobCache && now - leadersBlobFetchedAt < LEADERS_TTL_MS) {
+    return leadersBlobCache
+  }
+
+  const url =
+    'https://sports.core.api.espn.com/v2/sports/soccer/leagues/usa.1/seasons/2026/types/1/leaders'
+  const raw = await $fetch<Record<string, unknown>>(url)
+  const categories = (raw.categories as Array<Record<string, unknown>>) ?? []
+
+  leadersBlobCache = categories
+    .filter((c) => WANTED_CATS.includes(c.name as string))
+    .map((c) => {
+      const leaders = (c.leaders as Array<Record<string, unknown>>) ?? []
+      return {
+        name: c.name as string,
+        displayName: (c.displayName as string) ?? (c.name as string),
+        leaders: leaders.map((l) => ({
+          value: l.value as number,
+          displayValue: (l.displayValue as string) ?? String(l.value),
+          athleteRef: (l.athlete as Record<string, unknown>)?.[
+            '$ref'
+          ] as string,
+          teamId: extractTeamId(
+            ((l.team as Record<string, unknown>)?.['$ref'] as string) ?? ''
+          ),
+        })),
+      }
+    })
+
+  leadersBlobFetchedAt = now
+  return leadersBlobCache
+}
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -77,14 +143,12 @@ export default defineEventHandler(async (event) => {
     return cached.data
   }
 
-  // ── Fetch roster + season stats in parallel ───────────────────────────────
-  const [rosterResult, statsResult] = await Promise.allSettled([
+  // ── Fetch roster + league leaders in parallel ─────────────────────────────
+  const [rosterResult, leadersBlob] = await Promise.allSettled([
     $fetch<Record<string, unknown>>(
       `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/teams/${teamId}/roster`
     ),
-    $fetch<Record<string, unknown>>(
-      `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/teams/${teamId}/statistics`
-    ),
+    fetchLeadersBlob(),
   ])
 
   // ── Parse roster ──────────────────────────────────────────────────────────
@@ -99,7 +163,6 @@ export default defineEventHandler(async (event) => {
       for (const p of items) {
         const pos = p.position as Record<string, unknown> | undefined
         const headshots = p.headshot as Record<string, unknown> | undefined
-        const links = (p.links as Array<Record<string, unknown>>) ?? []
         const flag = p.flag as Record<string, unknown> | undefined
 
         roster.push({
@@ -117,44 +180,82 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // ── Parse season leaders ──────────────────────────────────────────────────
+  // ── Build per-team leaders from the league blob ───────────────────────────
   const leaders: StatCategory[] = []
 
-  if (statsResult.status === 'fulfilled') {
-    const raw = statsResult.value
-    const splits = raw.splits as Record<string, unknown> | undefined
-    const categories =
-      (splits?.categories as Array<Record<string, unknown>>) ?? []
+  if (leadersBlob.status === 'fulfilled') {
+    const blob = leadersBlob.value
 
-    for (const cat of categories) {
-      const catName = (cat.name as string) ?? ''
-      const stats = (cat.stats as Array<Record<string, unknown>>) ?? []
+    // Collect unique athlete refs that belong to this team
+    const athleteRefs = new Set<string>()
+    for (const cat of blob) {
+      for (const l of cat.leaders) {
+        if (l.teamId === teamId && l.athleteRef) {
+          athleteRefs.add(l.athleteRef)
+        }
+      }
+    }
 
-      for (const stat of stats) {
-        const statName = stat.name as string
-        if (!STAT_NAMES.includes(statName)) continue
+    // Resolve athlete names + jerseys in parallel
+    const athleteCache = new Map<
+      string,
+      {
+        athleteId: string
+        displayName: string
+        jersey: string
+        headshot: string
+      }
+    >()
 
-        const leaders_raw =
-          (stat.leaders as Array<Record<string, unknown>>) ?? []
-        if (!leaders_raw.length) continue
+    await Promise.all(
+      Array.from(athleteRefs).map(async (ref) => {
+        const baseUrl = toBaseAthleteUrl(ref)
+        const athleteId = extractAthleteId(ref)
+        try {
+          const data = await $fetch<Record<string, unknown>>(baseUrl)
+          const headshotObj = data.headshot as
+            | Record<string, unknown>
+            | null
+            | undefined
+          athleteCache.set(ref, {
+            athleteId,
+            displayName: (data.displayName as string) ?? 'Unknown',
+            jersey: (data.jersey as string) ?? '',
+            headshot: (headshotObj?.href as string) ?? '',
+          })
+        } catch {
+          athleteCache.set(ref, {
+            athleteId,
+            displayName: 'Unknown',
+            jersey: '',
+            headshot: '',
+          })
+        }
+      })
+    )
 
-        const statLeaders: StatLeader[] = leaders_raw.slice(0, 5).map((l) => {
-          const ath = l.athlete as Record<string, unknown> | undefined
-          const headshots = ath?.headshot as Record<string, unknown> | undefined
+    // Build filtered categories
+    for (const cat of blob) {
+      const teamLeaders: StatLeader[] = cat.leaders
+        .filter((l) => l.teamId === teamId && l.athleteRef)
+        .slice(0, 5)
+        .map((l) => {
+          const resolved = athleteCache.get(l.athleteRef)
           return {
-            athleteId: (ath?.id as string) ?? '',
-            displayName: (ath?.displayName as string) ?? 'Unknown',
-            jersey: (ath?.jersey as string) ?? '',
-            headshot: (headshots?.href as string) ?? '',
-            value: (l.value as number) ?? 0,
-            displayValue: (l.displayValue as string) ?? String(l.value ?? 0),
+            athleteId: resolved?.athleteId ?? '',
+            displayName: resolved?.displayName ?? 'Unknown',
+            jersey: resolved?.jersey ?? '',
+            headshot: resolved?.headshot ?? '',
+            value: Math.round(l.value),
+            displayValue: l.displayValue,
           }
         })
 
+      if (teamLeaders.length > 0) {
         leaders.push({
-          name: statName,
-          displayName: stat.displayName as string,
-          leaders: statLeaders,
+          name: cat.name,
+          displayName: cat.displayName,
+          leaders: teamLeaders,
         })
       }
     }

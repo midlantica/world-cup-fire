@@ -112,7 +112,7 @@ export const TEAM_SHORT_NAME: Record<string, string> = {
   'New England Revolution': 'NE Revs',
   'New York City FC': 'NYCFC',
   'Orlando City SC': 'Orlando',
-  'Philadelphia Union': 'Philly',
+  'Philadelphia Union': 'Phil Union',
   'Portland Timbers': 'Portland',
   'Real Salt Lake': 'RSL',
   'Red Bull New York': 'NY Red Bulls',

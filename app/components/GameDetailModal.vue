@@ -1898,6 +1898,12 @@
     margin-bottom: 0.1rem;
   }
 
+  @media (max-width: 420px) {
+    .leaders-head {
+      grid-template-columns: 1fr 2rem 3.5rem 2rem 1fr;
+    }
+  }
+
   .leaders-th {
     font-size: var(--modal-copy-size);
     font-weight: 400;
@@ -1928,6 +1934,12 @@
     align-items: center;
     padding: 0.2rem 0;
     min-height: 2rem;
+  }
+
+  @media (max-width: 420px) {
+    .leaders-row {
+      grid-template-columns: 1fr 2rem 3.5rem 2rem 1fr;
+    }
   }
 
   /* Player name — home side flush right */

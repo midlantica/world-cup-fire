@@ -145,24 +145,34 @@
     text-align: left;
   }
 
+  .standings-table thead th.col-rank {
+    padding-left: 0.4rem;
+  }
+
+  .standings-table thead th:last-child,
+  .standings-table tbody td:last-child {
+    padding-right: 0.4rem;
+  }
   .entry-row {
     border-bottom: 1px solid oklab(100% 0 0 / 0.04);
     transition: background 0.1s;
   }
   .entry-row:nth-child(even) {
-    background: oklab(100% 0 0 / 0.025);
+    background: oklab(100% 0 0 / 0.07);
   }
   .entry-row:hover {
-    background: oklab(100% 0 0 / 0.06);
+    background: oklab(100% 0 0 / 0.12);
   }
   .entry-row:last-child {
     border-bottom: none;
   }
 
   .standings-table td {
-    padding: 0.3rem 0 0rem;
+    padding: 0.3rem 0;
     color: var(--color-text-secondary);
     text-align: right;
+    vertical-align: middle;
+    min-width: 1.2rem;
   }
 
   .col-rank {
@@ -175,6 +185,7 @@
   .rank-num {
     display: inline-block;
     min-width: 1rem;
+    padding: 0 0 0 0.4rem;
   }
 
   .rank-change {
@@ -198,7 +209,7 @@
 
   @media (max-width: 420px) {
     .col-team {
-      min-width: 7rem;
+      min-width: 8rem;
     }
     .col-num {
       width: 1.75rem;
@@ -309,8 +320,10 @@
 
   .gd-pos {
     color: var(--color-text-accent) !important;
+    padding: 0 0.4rem 0 0 !important;
   }
   .gd-neg {
     color: oklab(68.5% 0.13 0.048) !important;
+    padding: 0 0.4rem 0 0 !important;
   }
 </style>

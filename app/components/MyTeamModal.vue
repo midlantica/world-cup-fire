@@ -297,8 +297,17 @@
   })
 
   const showMoreGames = ref(false)
+  // Short-name version of toMatch for the featured single card on mobile
+  function toMatchShort(evt: ScheduleEvent): Match {
+    return {
+      ...toMatch(evt),
+      home: TEAM_SHORT_NAME[evt.homeTeam] ?? evt.homeTeam,
+      away: TEAM_SHORT_NAME[evt.awayTeam] ?? evt.awayTeam,
+    }
+  }
+
   const nextGame = computed(() =>
-    upcomingEvents.value.length ? toMatch(upcomingEvents.value[0]!) : null
+    upcomingEvents.value.length ? toMatchShort(upcomingEvents.value[0]!) : null
   )
   const moreUpcomingMatches = computed(() =>
     upcomingEvents.value.slice(1).map(toMatch)
@@ -528,23 +537,21 @@
   const STAT_DISPLAY: Record<string, string> = {
     goals: 'Goals',
     assists: 'Assists',
+    saves: 'Saves',
+    shotsOnTarget: 'Shots on Target',
+    totalShots: 'Total Shots',
+    accuratePasses: 'Accurate Passes',
     yellowCards: 'Yellow Cards',
     redCards: 'Red Cards',
-    saves: 'Saves',
-    tackles: 'Tackles Won',
-    successfulDribbles: 'Dribbles',
-    totalShots: 'Shots',
-    shotsOnTarget: 'On Target',
   }
 
   const STAT_ORDER = [
     'goals',
     'assists',
     'saves',
-    'tackles',
-    'successfulDribbles',
-    'totalShots',
     'shotsOnTarget',
+    'totalShots',
+    'accuratePasses',
     'yellowCards',
     'redCards',
   ]
@@ -783,7 +790,12 @@
                         <div class="schedule-list schedule-list--single">
                           <GameBlock
                             :match="nextGame"
-                            @open-game-detail="emit('open-game-detail', $event)"
+                            @open-game-detail="
+                              emit(
+                                'open-game-detail',
+                                toMatch(upcomingEvents[0]!)
+                              )
+                            "
                           />
                         </div>
                       </div>
@@ -1198,12 +1210,6 @@
     .modal-team-name {
       font-size: 1.35rem;
     }
-    .name-full {
-      display: none;
-    }
-    .name-short {
-      display: inline;
-    }
   }
 
   .modal-venue {
@@ -1211,7 +1217,7 @@
     font-size: 0.85rem;
     font-weight: 200;
     color: white;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     line-height: 1.38;
   }
 
@@ -1292,6 +1298,17 @@
     white-space: nowrap;
   }
 
+  @media (max-width: 400px) {
+    .modal-tabs {
+      padding: 0 0.25rem;
+    }
+    .modal-tab {
+      font-size: 0.6875rem;
+      letter-spacing: 0.07em;
+      padding: 0.5rem 0.4rem;
+    }
+  }
+
   .modal-tab.active {
     color: oklab(100% 0 0);
     border-bottom-color: var(--color-theme-primary, oklab(100% 0 0));
@@ -1370,6 +1387,7 @@
   .schedule-list--single :deep(.game-block) {
     padding: 0.875rem 1rem;
     gap: 0.45rem 0.75rem;
+    box-shadow: 0 0 0 1px oklab(100% 0 0 / 0.12);
   }
 
   .schedule-list--single :deep(.team-name-text) {
@@ -1410,6 +1428,22 @@
 
   .schedule-list--single :deep(.badge) {
     font-size: 1rem;
+  }
+
+  /* Tighten the featured card on mobile */
+  @media (max-width: 530px) {
+    .schedule-list--single :deep(.game-block) {
+      padding: 0.475rem 0.7rem;
+      gap: 0rem 0.55rem;
+      box-shadow: 0 0 0 1px oklab(100% 0 0 / 0.2);
+      grid-template-columns: 5fr 2fr;
+    }
+    .schedule-list--single :deep(.status-time) {
+      font-size: 1rem;
+    }
+    .schedule-list--single :deep(.status-date) {
+      font-size: 1rem;
+    }
   }
 
   @media (max-width: 480px) {
@@ -1496,7 +1530,11 @@
     font-weight: 400;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-theme-primary, oklab(100% 0 0));
+    color: color-mix(
+      in oklab,
+      var(--color-theme-300, oklab(100% 0 0)) 80%,
+      white 20%
+    );
     padding-bottom: 0.25rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.08);
   }
@@ -1544,7 +1582,7 @@
   .leaders-value {
     font-size: var(--modal-copy-size);
     font-weight: 400;
-    color: var(--color-theme-primary, oklab(100% 0 0));
+    color: oklab(100% 0 0);
     text-align: right;
     letter-spacing: 0.02em;
   }
