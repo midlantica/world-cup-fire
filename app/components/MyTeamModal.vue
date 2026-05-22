@@ -247,14 +247,12 @@
     }
   }
 
-  watch(
-    () => props.open,
-    (isOpen) => {
-      if (isOpen && displayTeam.value) loadSchedule(displayTeam.value)
-    }
-  )
-  watch(displayTeam, (team) => {
-    if (props.open && team) loadSchedule(team)
+  // Load schedule whenever the modal opens OR the displayed team changes.
+  // Using a combined watcher avoids a race condition where open and viewTeam
+  // are set in the same tick (e.g. via route navigation) and neither individual
+  // watcher sees both conditions met simultaneously.
+  watch([() => props.open, displayTeam], ([isOpen, team]) => {
+    if (isOpen && team) loadSchedule(team)
   })
 
   function toMatch(evt: ScheduleEvent): Match {
