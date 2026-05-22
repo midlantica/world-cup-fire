@@ -1409,8 +1409,8 @@
   }
 
   .schedule-list--single :deep(.status-col) {
-    width: 5rem;
-    padding-left: 1.5rem;
+    width: 5.5rem;
+    padding-left: 1rem;
   }
 
   .schedule-list--single :deep(.status-time) {
