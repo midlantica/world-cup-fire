@@ -102,11 +102,12 @@
 
   .conf-title {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-theme-500);
+    margin-top: 1rem;
     margin-bottom: 0.5rem;
     text-align: center;
   }

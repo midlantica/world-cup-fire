@@ -89,13 +89,30 @@
             <div class="col-header">
               <span class="col-stat-label">Goals</span>
             </div>
-            <ol class="leaders-list">
+            <ol class="leaders-wrap">
               <li
                 v-for="player in data.goals"
                 :key="player.athleteId"
-                class="leader-row"
+                class="leaders-row"
               >
                 <span class="rank">{{ player.rank }}</span>
+                <div class="player-info">
+                  <span class="player-name">{{ player.displayName }}</span>
+                  <span class="player-team">
+                    <img
+                      v-if="TEAM_LOGO[player.team]"
+                      :src="TEAM_LOGO[player.team]"
+                      :alt="player.team"
+                      class="team-logo"
+                    />
+                    <button
+                      class="team-link"
+                      @click="emit('select-team', player.team)"
+                    >
+                      {{ player.team }}
+                    </button>
+                  </span>
+                </div>
                 <div class="headshot-wrap">
                   <img
                     v-if="player.headshot"
@@ -120,23 +137,6 @@
                   >
                     {{ initials(player.displayName) }}
                   </div>
-                </div>
-                <div class="player-info">
-                  <span class="player-name">{{ player.displayName }}</span>
-                  <span class="player-team">
-                    <img
-                      v-if="TEAM_LOGO[player.team]"
-                      :src="TEAM_LOGO[player.team]"
-                      :alt="player.team"
-                      class="team-logo"
-                    />
-                    <button
-                      class="team-link"
-                      @click="emit('select-team', player.team)"
-                    >
-                      {{ player.team }}
-                    </button>
-                  </span>
                 </div>
                 <span class="stat-value">{{ player.value }}</span>
               </li>
@@ -147,13 +147,30 @@
             <div class="col-header">
               <span class="col-stat-label">Assists</span>
             </div>
-            <ol class="leaders-list">
+            <ol class="leaders-wrap">
               <li
                 v-for="player in data.assists"
                 :key="player.athleteId"
-                class="leader-row"
+                class="leaders-row"
               >
                 <span class="rank">{{ player.rank }}</span>
+                <div class="player-info">
+                  <span class="player-name">{{ player.displayName }}</span>
+                  <span class="player-team">
+                    <img
+                      v-if="TEAM_LOGO[player.team]"
+                      :src="TEAM_LOGO[player.team]"
+                      :alt="player.team"
+                      class="team-logo"
+                    />
+                    <button
+                      class="team-link"
+                      @click="emit('select-team', player.team)"
+                    >
+                      {{ player.team }}
+                    </button>
+                  </span>
+                </div>
                 <div class="headshot-wrap">
                   <img
                     v-if="player.headshot"
@@ -178,23 +195,6 @@
                   >
                     {{ initials(player.displayName) }}
                   </div>
-                </div>
-                <div class="player-info">
-                  <span class="player-name">{{ player.displayName }}</span>
-                  <span class="player-team">
-                    <img
-                      v-if="TEAM_LOGO[player.team]"
-                      :src="TEAM_LOGO[player.team]"
-                      :alt="player.team"
-                      class="team-logo"
-                    />
-                    <button
-                      class="team-link"
-                      @click="emit('select-team', player.team)"
-                    >
-                      {{ player.team }}
-                    </button>
-                  </span>
                 </div>
                 <span class="stat-value">{{ player.value }}</span>
               </li>
@@ -208,13 +208,30 @@
             <div class="col-header">
               <span class="col-stat-label">Accurate Passes</span>
             </div>
-            <ol class="leaders-list">
+            <ol class="leaders-wrap">
               <li
                 v-for="player in data.accuratePasses"
                 :key="player.athleteId"
-                class="leader-row"
+                class="leaders-row"
               >
                 <span class="rank">{{ player.rank }}</span>
+                <div class="player-info">
+                  <span class="player-name">{{ player.displayName }}</span>
+                  <span class="player-team">
+                    <img
+                      v-if="TEAM_LOGO[player.team]"
+                      :src="TEAM_LOGO[player.team]"
+                      :alt="player.team"
+                      class="team-logo"
+                    />
+                    <button
+                      class="team-link"
+                      @click="emit('select-team', player.team)"
+                    >
+                      {{ player.team }}
+                    </button>
+                  </span>
+                </div>
                 <div class="headshot-wrap">
                   <img
                     v-if="player.headshot"
@@ -239,23 +256,6 @@
                   >
                     {{ initials(player.displayName) }}
                   </div>
-                </div>
-                <div class="player-info">
-                  <span class="player-name">{{ player.displayName }}</span>
-                  <span class="player-team">
-                    <img
-                      v-if="TEAM_LOGO[player.team]"
-                      :src="TEAM_LOGO[player.team]"
-                      :alt="player.team"
-                      class="team-logo"
-                    />
-                    <button
-                      class="team-link"
-                      @click="emit('select-team', player.team)"
-                    >
-                      {{ player.team }}
-                    </button>
-                  </span>
                 </div>
                 <span class="stat-value">{{ player.value }}</span>
               </li>
@@ -266,13 +266,30 @@
             <div class="col-header">
               <span class="col-stat-label">Saves</span>
             </div>
-            <ol class="leaders-list">
+            <ol class="leaders-wrap">
               <li
                 v-for="player in data.saves"
                 :key="player.athleteId"
-                class="leader-row"
+                class="leaders-row"
               >
                 <span class="rank">{{ player.rank }}</span>
+                <div class="player-info">
+                  <span class="player-name">{{ player.displayName }}</span>
+                  <span class="player-team">
+                    <img
+                      v-if="TEAM_LOGO[player.team]"
+                      :src="TEAM_LOGO[player.team]"
+                      :alt="player.team"
+                      class="team-logo"
+                    />
+                    <button
+                      class="team-link"
+                      @click="emit('select-team', player.team)"
+                    >
+                      {{ player.team }}
+                    </button>
+                  </span>
+                </div>
                 <div class="headshot-wrap">
                   <img
                     v-if="player.headshot"
@@ -297,23 +314,6 @@
                   >
                     {{ initials(player.displayName) }}
                   </div>
-                </div>
-                <div class="player-info">
-                  <span class="player-name">{{ player.displayName }}</span>
-                  <span class="player-team">
-                    <img
-                      v-if="TEAM_LOGO[player.team]"
-                      :src="TEAM_LOGO[player.team]"
-                      :alt="player.team"
-                      class="team-logo"
-                    />
-                    <button
-                      class="team-link"
-                      @click="emit('select-team', player.team)"
-                    >
-                      {{ player.team }}
-                    </button>
-                  </span>
                 </div>
                 <span class="stat-value">{{ player.value }}</span>
               </li>
@@ -327,13 +327,30 @@
             <div class="col-header">
               <span class="col-stat-label">🟨 Yellow Cards</span>
             </div>
-            <ol class="leaders-list">
+            <ol class="leaders-wrap">
               <li
                 v-for="player in data.yellowCards"
                 :key="player.athleteId"
-                class="leader-row"
+                class="leaders-row"
               >
                 <span class="rank">{{ player.rank }}</span>
+                <div class="player-info">
+                  <span class="player-name">{{ player.displayName }}</span>
+                  <span class="player-team">
+                    <img
+                      v-if="TEAM_LOGO[player.team]"
+                      :src="TEAM_LOGO[player.team]"
+                      :alt="player.team"
+                      class="team-logo"
+                    />
+                    <button
+                      class="team-link"
+                      @click="emit('select-team', player.team)"
+                    >
+                      {{ player.team }}
+                    </button>
+                  </span>
+                </div>
                 <div class="headshot-wrap">
                   <img
                     v-if="player.headshot"
@@ -358,23 +375,6 @@
                   >
                     {{ initials(player.displayName) }}
                   </div>
-                </div>
-                <div class="player-info">
-                  <span class="player-name">{{ player.displayName }}</span>
-                  <span class="player-team">
-                    <img
-                      v-if="TEAM_LOGO[player.team]"
-                      :src="TEAM_LOGO[player.team]"
-                      :alt="player.team"
-                      class="team-logo"
-                    />
-                    <button
-                      class="team-link"
-                      @click="emit('select-team', player.team)"
-                    >
-                      {{ player.team }}
-                    </button>
-                  </span>
                 </div>
                 <span class="stat-value">{{ player.value }}</span>
               </li>
@@ -385,13 +385,30 @@
             <div class="col-header">
               <span class="col-stat-label">🟥 Red Cards</span>
             </div>
-            <ol class="leaders-list">
+            <ol class="leaders-wrap">
               <li
                 v-for="player in data.redCards"
                 :key="player.athleteId"
-                class="leader-row"
+                class="leaders-row"
               >
                 <span class="rank">{{ player.rank }}</span>
+                <div class="player-info">
+                  <span class="player-name">{{ player.displayName }}</span>
+                  <span class="player-team">
+                    <img
+                      v-if="TEAM_LOGO[player.team]"
+                      :src="TEAM_LOGO[player.team]"
+                      :alt="player.team"
+                      class="team-logo"
+                    />
+                    <button
+                      class="team-link"
+                      @click="emit('select-team', player.team)"
+                    >
+                      {{ player.team }}
+                    </button>
+                  </span>
+                </div>
                 <div class="headshot-wrap">
                   <img
                     v-if="player.headshot"
@@ -416,23 +433,6 @@
                   >
                     {{ initials(player.displayName) }}
                   </div>
-                </div>
-                <div class="player-info">
-                  <span class="player-name">{{ player.displayName }}</span>
-                  <span class="player-team">
-                    <img
-                      v-if="TEAM_LOGO[player.team]"
-                      :src="TEAM_LOGO[player.team]"
-                      :alt="player.team"
-                      class="team-logo"
-                    />
-                    <button
-                      class="team-link"
-                      @click="emit('select-team', player.team)"
-                    >
-                      {{ player.team }}
-                    </button>
-                  </span>
                 </div>
                 <span class="stat-value">{{ player.value }}</span>
               </li>
@@ -465,13 +465,30 @@
           <div class="col-header">
             <span class="col-stat-label">{{ mobileStatLabel }}</span>
           </div>
-          <ol class="leaders-list">
+          <ol class="leaders-wrap">
             <li
               v-for="player in mobileLeaders"
               :key="player.athleteId"
-              class="leader-row"
+              class="leaders-row"
             >
               <span class="rank">{{ player.rank }}</span>
+              <div class="player-info">
+                <span class="player-name">{{ player.displayName }}</span>
+                <span class="player-team">
+                  <img
+                    v-if="TEAM_LOGO[player.team]"
+                    :src="TEAM_LOGO[player.team]"
+                    :alt="player.team"
+                    class="team-logo"
+                  />
+                  <button
+                    class="team-link"
+                    @click="emit('select-team', player.team)"
+                  >
+                    {{ player.team }}
+                  </button>
+                </span>
+              </div>
               <div class="headshot-wrap">
                 <img
                   v-if="player.headshot"
@@ -496,23 +513,6 @@
                 >
                   {{ initials(player.displayName) }}
                 </div>
-              </div>
-              <div class="player-info">
-                <span class="player-name">{{ player.displayName }}</span>
-                <span class="player-team">
-                  <img
-                    v-if="TEAM_LOGO[player.team]"
-                    :src="TEAM_LOGO[player.team]"
-                    :alt="player.team"
-                    class="team-logo"
-                  />
-                  <button
-                    class="team-link"
-                    @click="emit('select-team', player.team)"
-                  >
-                    {{ player.team }}
-                  </button>
-                </span>
               </div>
               <span class="stat-value">{{ player.value }}</span>
             </li>
@@ -546,13 +546,30 @@
               {{ cardTab === 'yellowCards' ? 'Yellow Cards' : 'Red Cards' }}
             </span>
           </div>
-          <ol class="leaders-list">
+          <ol class="leaders-wrap">
             <li
               v-for="player in data[cardTab]"
               :key="player.athleteId"
-              class="leader-row"
+              class="leaders-row"
             >
               <span class="rank">{{ player.rank }}</span>
+              <div class="player-info">
+                <span class="player-name">{{ player.displayName }}</span>
+                <span class="player-team">
+                  <img
+                    v-if="TEAM_LOGO[player.team]"
+                    :src="TEAM_LOGO[player.team]"
+                    :alt="player.team"
+                    class="team-logo"
+                  />
+                  <button
+                    class="team-link"
+                    @click="emit('select-team', player.team)"
+                  >
+                    {{ player.team }}
+                  </button>
+                </span>
+              </div>
               <div class="headshot-wrap">
                 <img
                   v-if="player.headshot"
@@ -577,23 +594,6 @@
                 >
                   {{ initials(player.displayName) }}
                 </div>
-              </div>
-              <div class="player-info">
-                <span class="player-name">{{ player.displayName }}</span>
-                <span class="player-team">
-                  <img
-                    v-if="TEAM_LOGO[player.team]"
-                    :src="TEAM_LOGO[player.team]"
-                    :alt="player.team"
-                    class="team-logo"
-                  />
-                  <button
-                    class="team-link"
-                    @click="emit('select-team', player.team)"
-                  >
-                    {{ player.team }}
-                  </button>
-                </span>
               </div>
               <span class="stat-value">{{ player.value }}</span>
             </li>
@@ -703,22 +703,25 @@
   }
 
   /* ── Leaders list ─────────────────────────────────────────────────────────── */
-  .leaders-list {
+  .leaders-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .leader-row {
-    display: flex;
+  .leaders-row {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr 2.5rem 2rem;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0.5rem;
+    padding: 0.3rem 0rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.05);
     transition: background 0.12s;
   }
 
-  .leader-row:hover {
+  .leaders-row:hover {
     background: oklab(100% 0 0 / 0.04);
   }
 
@@ -727,9 +730,7 @@
     font-size: 1rem;
     font-weight: 500;
     color: oklab(70% 0 0);
-    width: 1.25rem;
     text-align: center;
-    flex-shrink: 0;
   }
 
   /* ── Headshot ─────────────────────────────────────────────────────────────── */
@@ -738,7 +739,6 @@
     height: 2.5rem;
     border-radius: 50%;
     overflow: hidden;
-    flex-shrink: 0;
     background: oklab(100% 0 0 / 0.08);
     position: relative;
   }
@@ -766,7 +766,6 @@
 
   /* ── Player info ──────────────────────────────────────────────────────────── */
   .player-info {
-    flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -830,8 +829,6 @@
     font-weight: 400;
     letter-spacing: 0.01em;
     color: var(--color-text-primary);
-    flex-shrink: 0;
-    min-width: 2rem;
     text-align: right;
   }
 

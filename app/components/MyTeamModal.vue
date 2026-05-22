@@ -298,17 +298,9 @@
   })
 
   const showMoreGames = ref(false)
-  // Short-name version of toMatch for the featured single card on mobile
-  function toMatchShort(evt: ScheduleEvent): Match {
-    return {
-      ...toMatch(evt),
-      home: TEAM_SHORT_NAME[evt.homeTeam] ?? evt.homeTeam,
-      away: TEAM_SHORT_NAME[evt.awayTeam] ?? evt.awayTeam,
-    }
-  }
 
   const nextGame = computed(() =>
-    upcomingEvents.value.length ? toMatchShort(upcomingEvents.value[0]!) : null
+    upcomingEvents.value.length ? toMatch(upcomingEvents.value[0]!) : null
   )
   const moreUpcomingMatches = computed(() =>
     upcomingEvents.value.slice(1).map(toMatch)
@@ -1454,6 +1446,13 @@
     }
     .schedule-list--single :deep(.team-name-text) {
       font-size: 1.2rem;
+    }
+  }
+
+  /* At 425px+ the card is wide enough for full long team names */
+  @media (min-width: 425px) {
+    .schedule-list--single :deep(.team-name-text) {
+      font-size: 1.3rem;
     }
   }
 

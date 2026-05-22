@@ -72,7 +72,10 @@
     // not in the scoreboard weeks cache (e.g. opened from team schedule).
     gameDetailMatch.value = match
     gameDetailOpen.value = true
-    router.push({ path: '/game', query: { id: match.id } })
+    // Use replace so this supersedes any in-flight navigation (e.g. the
+    // router.push('/') from a just-closed modal) and avoids a race where
+    // the route watcher fires for '/' after the modal is already open.
+    router.replace({ path: '/game', query: { id: match.id } })
   }
 
   // Called from MyTeamModal when a game card is clicked.
@@ -140,7 +143,12 @@
     gameDetailMatch.value = null
     teamModalOpen.value = false
     viewTeam.value = null
-    router.push({ path: `/${mainTab.value === 'scores' ? '' : mainTab.value}` })
+    // Use replace (not push) so that if the user immediately clicks a game card,
+    // the openGameDetail router.replace('/game') can supersede this navigation
+    // and prevent the route watcher's else-branch from closing the modal again.
+    router.replace({
+      path: `/${mainTab.value === 'scores' ? '' : mainTab.value}`,
+    })
   }
 
   async function goToStandings(conferenceName: string) {
@@ -554,7 +562,7 @@
   .conf-tabs {
     display: flex;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .conf-tab {

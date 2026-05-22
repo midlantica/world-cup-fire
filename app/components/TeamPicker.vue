@@ -58,9 +58,14 @@
         <span v-else class="team-logo-placeholder">?</span>
       </span>
       <span class="my-team-label">
-        {{
+        <span class="label-abbrev">{{
           selectedTeam ? (TEAM_ABBREV[selectedTeam] ?? selectedTeam) : 'My Team'
-        }}
+        }}</span>
+        <span class="label-short">{{
+          selectedTeam
+            ? (TEAM_SHORT_NAME[selectedTeam] ?? selectedTeam)
+            : 'My Team'
+        }}</span>
       </span>
     </button>
 
@@ -88,7 +93,7 @@
           :class="{ selected: selectedTeam === team }"
           @click="choose(team)"
         >
-          {{ TEAM_SHORT_NAME[team] ?? team }}
+          {{ team }}
         </button>
       </div>
     </div>
@@ -157,14 +162,27 @@
     font-weight: 100;
     letter-spacing: 0.04em;
     color: var(--color-theme-300);
-    max-width: 8rem;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  @media (max-width: 420px) {
-    .my-team-label {
-      max-width: 5rem;
+  /* Below 375px: show short abbreviation only */
+  .label-abbrev {
+    display: inline;
+  }
+
+  .label-short {
+    display: none;
+  }
+
+  /* 375px+: show medium short name instead */
+  @media (min-width: 375px) {
+    .label-abbrev {
+      display: none;
+    }
+
+    .label-short {
+      display: inline;
     }
   }
 
@@ -201,9 +219,9 @@
     border: 1px solid var(--color-theme-800);
     border-radius: 0.5rem;
     box-shadow: 0 8px 24px oklab(0% 0 0 / 0.5);
-    min-width: 14rem;
     max-height: 22rem;
     overflow: hidden;
+    width: max-content;
   }
 
   .team-dropdown-inner {
