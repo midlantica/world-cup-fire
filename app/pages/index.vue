@@ -4,26 +4,31 @@
   import { useStats } from '~/composables/useStats'
   import type { Match } from '~/composables/useScores'
 
+  // Register all app routes on this single page component
+  definePageMeta({
+    alias: ['/scores', '/standings', '/stats', '/team', '/game'],
+  })
+
+  const router = useRouter()
+  const route = useRoute()
+
   // ── Main tab ──────────────────────────────────────────────────────────────────
   type MainTab = 'scores' | 'standings' | 'stats'
   const VALID_TABS: MainTab[] = ['scores', 'standings', 'stats']
 
-  function tabFromHash(): MainTab {
-    if (import.meta.server) return 'scores'
-    const hash = window.location.hash.replace('#', '') as MainTab
-    return VALID_TABS.includes(hash) ? hash : 'scores'
+  function tabFromPath(): MainTab {
+    const p = route.path.replace(/^\//, '') as MainTab
+    return VALID_TABS.includes(p) ? p : 'scores'
   }
 
-  const mainTab = ref<MainTab>('scores')
+  const mainTab = ref<MainTab>(tabFromPath())
 
   // ── Scores composable ─────────────────────────────────────────────────────────
   const { weeks, activeTab, lastUpdated, fetchWeek, selectTab } = useScores()
 
-  // ── SSR pre-fetch: seed "this week" data before first paint ──────────────────Lineup not yet available
-  // Runs on the server (and once on the client for hydration). Populates the
-  // shared useState so ScoresSection renders immediately without a loading gap.
+  // ── SSR pre-fetch: seed "this week" data before first paint ──────────────────
   await useAsyncData('scores-this', async () => {
-    if (weeks.this.loaded) return null // already seeded (client re-run)
+    if (weeks.this.loaded) return null
     try {
       const data = await $fetch<Record<string, unknown>>(
         '/api/scores?week=this'
@@ -65,42 +70,13 @@
   function openGameDetail(match: Match) {
     gameDetailMatch.value = match
     gameDetailOpen.value = true
-    pushModalHash('game', match.id)
+    router.push({ path: '/game', query: { id: match.id } })
   }
 
   function closeGameDetail() {
-    // If the current history entry is this modal, pop it so back/forward stays in sync.
-    // onPopState will handle the actual state update.
-    const state = window.history.state as { modal?: string } | null
-    if (state?.modal === 'game') {
-      window.history.back()
-    } else {
-      gameDetailOpen.value = false
-      gameDetailMatch.value = null
-    }
-  }
-
-  // Silent close — used when transitioning directly to another modal so we
-  // replace the current history entry rather than popping it asynchronously.
-  function closeGameDetailSilent() {
     gameDetailOpen.value = false
     gameDetailMatch.value = null
-  }
-
-  // Close ALL modals immediately and return to the main view (no history.back()).
-  // Used when the user clicks the backdrop — we want instant dismissal regardless
-  // of how many modal history entries are stacked.
-  function closeAllModals() {
-    gameDetailOpen.value = false
-    gameDetailMatch.value = null
-    teamModalOpen.value = false
-    viewTeam.value = null
-    // Replace the current history entry with a clean no-modal state so the
-    // back button doesn't re-open a stale modal entry.
-    const tab = mainTab.value
-    const tabHash = tab === 'scores' ? '' : `#${tab}`
-    const url = window.location.pathname + window.location.search + tabHash
-    window.history.replaceState({ tab }, '', url)
+    router.push({ path: `/${mainTab.value === 'scores' ? '' : mainTab.value}` })
   }
 
   // ── Team modal state ──────────────────────────────────────────────────────────
@@ -109,52 +85,39 @@
 
   function openTeamModal() {
     teamModalOpen.value = true
-    pushModalHash('team', '__myteam__')
+    viewTeam.value = null
+    router.push({ path: '/team' })
   }
 
   function openTeamModalFor(teamName: string) {
     viewTeam.value = teamName
     teamModalOpen.value = true
-    pushModalHash('team', teamName)
+    router.push({ path: '/team', query: { name: teamName } })
   }
 
-  // Open a different team modal from within an existing team modal.
-  // Replaces the current history entry so back goes to the previous state
-  // (one back-press returns to whatever was open before the team modal).
   function switchTeamModal(teamName: string) {
     viewTeam.value = teamName
     teamModalOpen.value = true
-    const tab = mainTab.value
-    const tabHash = tab === 'scores' ? '' : `#${tab}`
-    const url = window.location.pathname + window.location.search + tabHash
-    window.history.replaceState(
-      { tab, modal: 'team', modalId: teamName },
-      '',
-      url
-    )
+    router.replace({ path: '/team', query: { name: teamName } })
   }
 
   function closeTeamModal() {
-    // If the current history entry is this modal, pop it so back/forward stays in sync.
-    // onPopState will handle the actual state update.
-    const state = window.history.state as { modal?: string } | null
-    if (state?.modal === 'team') {
-      window.history.back()
-    } else {
-      teamModalOpen.value = false
-      viewTeam.value = null
-    }
-  }
-
-  // Silent close — used internally when we're about to push a new history entry
-  // (e.g. switching from team modal → standings tab) so we don't double-pop.
-  function closeTeamModalSilent() {
     teamModalOpen.value = false
     viewTeam.value = null
+    router.push({ path: `/${mainTab.value === 'scores' ? '' : mainTab.value}` })
+  }
+
+  function closeAllModals() {
+    gameDetailOpen.value = false
+    gameDetailMatch.value = null
+    teamModalOpen.value = false
+    viewTeam.value = null
+    router.push({ path: `/${mainTab.value === 'scores' ? '' : mainTab.value}` })
   }
 
   async function goToStandings(conferenceName: string) {
-    closeTeamModalSilent()
+    teamModalOpen.value = false
+    viewTeam.value = null
     await switchMainTab('standings')
     await nextTick()
     const headings = document.querySelectorAll('.conf-title')
@@ -171,81 +134,7 @@
     }
   }
 
-  // ── Modal history helpers ─────────────────────────────────────────────────────
-  // Push a history entry for an open modal so the back button closes it.
-  // State shape: { tab, modal: 'game' | 'team', modalId: string }
-  function pushModalHash(kind: 'game' | 'team', id: string) {
-    const tab = mainTab.value
-    const tabHash = tab === 'scores' ? '' : `#${tab}`
-    const url = window.location.pathname + window.location.search + tabHash
-    window.history.pushState({ tab, modal: kind, modalId: id }, '', url)
-  }
-
-  // ── Hash-based navigation (back/forward support) ──────────────────────────────
-  function pushHash(tab: MainTab) {
-    const hash = tab === 'scores' ? '' : `#${tab}`
-    const url = window.location.pathname + window.location.search + hash
-    window.history.pushState({ tab }, '', url)
-  }
-
-  function onPopState(e: PopStateEvent) {
-    const state = e.state as {
-      tab?: MainTab
-      modal?: 'game' | 'team'
-      modalId?: string
-    } | null
-
-    // ── Forward into a game modal state ───────────────────────────────────────
-    if (state?.modal === 'game' && state.modalId) {
-      // Close team modal if open (navigating forward to a game modal)
-      teamModalOpen.value = false
-      viewTeam.value = null
-      // Re-open the game detail modal if we have the match cached
-      const allMatches = [
-        ...weeks.this.matches,
-        ...weeks.last.matches,
-        ...weeks.next.matches,
-      ]
-      const match = allMatches.find((m) => m.id === state.modalId)
-      if (match) {
-        gameDetailOpen.value = true
-        gameDetailMatch.value = match
-      }
-      applyTab(state.tab ?? 'scores')
-      return
-    }
-
-    // ── Forward into a team modal state ───────────────────────────────────────
-    if (state?.modal === 'team' && state.modalId) {
-      // Close game modal if open (navigating forward to a team modal)
-      gameDetailOpen.value = false
-      gameDetailMatch.value = null
-      // Re-open the team modal (or switch to a different team)
-      if (state.modalId === '__myteam__') {
-        viewTeam.value = null
-      } else {
-        viewTeam.value = state.modalId
-      }
-      teamModalOpen.value = true
-      applyTab(state.tab ?? 'scores')
-      return
-    }
-
-    // ── Back from a modal — close whichever is open ───────────────────────────
-    if (gameDetailOpen.value) {
-      gameDetailOpen.value = false
-      gameDetailMatch.value = null
-    }
-    if (teamModalOpen.value) {
-      teamModalOpen.value = false
-      viewTeam.value = null
-    }
-
-    const tab = state?.tab ?? tabFromHash()
-    applyTab(tab)
-  }
-
-  // Apply a tab without pushing history (used for popstate / initial load)
+  // ── Apply tab (load data if needed) ──────────────────────────────────────────
   async function applyTab(tab: MainTab) {
     mainTab.value = tab
     if (tab === 'standings' && !standingsLoaded.value) {
@@ -260,13 +149,50 @@
   function goHome() {
     mainTab.value = 'scores'
     selectTab('this')
-    pushHash('scores')
+    router.push('/')
   }
 
   async function switchMainTab(tab: MainTab) {
     await applyTab(tab)
-    pushHash(tab)
+    router.push(tab === 'scores' ? '/' : `/${tab}`)
   }
+
+  // ── Watch route changes (back/forward, direct URL entry) ─────────────────────
+  watch(
+    () => route.path,
+    async (path) => {
+      if (path === '/team') {
+        const name = route.query.name as string | undefined
+        viewTeam.value = name ?? null
+        teamModalOpen.value = true
+      } else if (path === '/game') {
+        const id = route.query.id as string | undefined
+        // Try to find the match in cached weeks
+        if (id) {
+          const allMatches = [
+            ...weeks.this.matches,
+            ...weeks.last.matches,
+            ...weeks.next.matches,
+          ]
+          const match = allMatches.find((m) => m.id === id)
+          if (match) {
+            gameDetailMatch.value = match
+            gameDetailOpen.value = true
+          }
+        } else {
+          gameDetailOpen.value = true
+        }
+      } else {
+        // Close modals when navigating away
+        gameDetailOpen.value = false
+        gameDetailMatch.value = null
+        teamModalOpen.value = false
+        viewTeam.value = null
+        const tab = path.replace(/^\//, '') as MainTab
+        await applyTab(VALID_TABS.includes(tab) ? tab : 'scores')
+      }
+    }
+  )
 
   // ── Auto-poll every 30 s when live matches are on screen ──────────────────────
   watch(lastUpdated, (val) => {
@@ -298,15 +224,11 @@
   }
 
   // ── Initial load (client-side) ────────────────────────────────────────────────
-  // SSR already seeded "this week" via useAsyncData above. This runs on mount
-  // to apply the tab-selection logic (redirect to last/next if needed) and
-  // to refresh stale data.
   async function initialLoad() {
     await fetchWeek('this')
 
     const thisMatches = weeks.this.matches
     if (thisMatches.length === 0) {
-      // No games at all this week — show last week
       activeTab.value = 'last'
       await fetchWeek('last')
     } else {
@@ -314,26 +236,31 @@
       const hasLive = thisMatches.some(
         (m) => m.status.code === 'live' || m.status.code === 'ht'
       )
-      // NOTE: .every() returns true on empty arrays — guard with length check
       const allDone =
         thisMatches.length > 0 &&
         thisMatches.every((m) => m.status.code === 'ft')
       if (allDone && !hasUpcoming && !hasLive) {
-        // Every game this week is finished and nothing is pending — show next week
         activeTab.value = 'next'
         await fetchWeek('next')
       }
-      // Otherwise stay on "this week" — upcoming/live games are still to show
     }
   }
 
   onMounted(async () => {
-    // Seed the initial history state so popstate works from the very first entry
-    const initialTab = tabFromHash()
-    window.history.replaceState({ tab: initialTab }, '', window.location.href)
-    await applyTab(initialTab)
-
-    window.addEventListener('popstate', onPopState)
+    // Apply initial route state
+    const path = route.path
+    if (path === '/team') {
+      const name = route.query.name as string | undefined
+      viewTeam.value = name ?? null
+      teamModalOpen.value = true
+      await applyTab('scores')
+    } else if (path === '/game') {
+      gameDetailOpen.value = true
+      await applyTab('scores')
+    } else {
+      const tab = path.replace(/^\//, '') as MainTab
+      await applyTab(VALID_TABS.includes(tab) ? tab : 'scores')
+    }
 
     await initialLoad()
     startPoll()
@@ -341,7 +268,6 @@
 
   onUnmounted(() => {
     stopPoll()
-    window.removeEventListener('popstate', onPopState)
   })
 </script>
 
@@ -352,7 +278,7 @@
       <AppHeader @go-home="goHome" @open-team-modal="openTeamModal" />
     </ClientOnly>
 
-    <!-- ── Main tabs: Scores / Standings ────────────────────────────────── -->
+    <!-- ── Main tabs: Scores / Standings / Stats ────────────────────────── -->
     <div class="main-tabs">
       <button
         class="main-tab"
@@ -382,7 +308,7 @@
       </ClientOnly>
     </div>
 
-    <!-- ── Content area (grows to fill viewport, keeps footer at bottom) ── -->
+    <!-- ── Content area ──────────────────────────────────────────────────── -->
     <div class="content-area">
       <!-- ── Scores tab ────────────────────────────────────────────────── -->
       <section v-if="mainTab === 'scores'" class="tab-section">
@@ -472,7 +398,8 @@
         @view-standings="goToStandings"
         @open-game-detail="
           (match) => {
-            closeTeamModalSilent()
+            teamModalOpen = false
+            viewTeam = null
             openGameDetail(match)
           }
         "
@@ -487,7 +414,8 @@
         @close="closeAllModals"
         @select-team="
           (team) => {
-            closeGameDetailSilent()
+            gameDetailOpen = false
+            gameDetailMatch = null
             openTeamModalFor(team)
           }
         "
