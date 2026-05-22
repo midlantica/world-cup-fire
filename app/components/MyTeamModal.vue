@@ -883,41 +883,19 @@
                     {{ teamDetailError }}
                   </div>
                   <!-- API roster available -->
-                  <div v-else-if="sortedRoster.length" class="squads-table">
-                    <div class="squads-head">
-                      <div class="squads-th-num">#</div>
-                      <div class="squads-th-pos">Pos</div>
-                      <div class="squads-th-name">Player</div>
-                      <div class="squads-th-nat">Nat</div>
-                    </div>
-                    <div
-                      v-for="(player, pi) in sortedRoster"
-                      :key="player.id"
-                      class="squads-row"
-                      :class="{ 'row-stripe': pi % 2 === 1 }"
-                    >
-                      <div class="squads-num">{{ player.jersey }}</div>
-                      <div class="squads-pos">
-                        <span class="pos-badge">{{ player.position }}</span>
-                      </div>
-                      <div class="squads-name">{{ player.displayName }}</div>
-                      <div class="squads-nat">{{ player.nationality }}</div>
-                    </div>
-                  </div>
-                  <!-- Fallback: last game's lineup -->
                   <div
-                    v-else-if="usingFallbackSquad"
-                    class="squads-fallback-wrap"
+                    v-else-if="sortedRoster.length"
+                    class="squads-wrap squads-wrap--roster"
                   >
                     <div class="squads-table">
                       <div class="squads-head">
                         <div class="squads-th-num">#</div>
                         <div class="squads-th-pos">Pos</div>
                         <div class="squads-th-name">Player</div>
-                        <div class="squads-th-sub">Sub</div>
+                        <div class="squads-th-nat">Nat</div>
                       </div>
                       <div
-                        v-for="(player, pi) in sortedFallbackSquad"
+                        v-for="(player, pi) in sortedRoster"
                         :key="player.id"
                         class="squads-row"
                         :class="{ 'row-stripe': pi % 2 === 1 }"
@@ -927,25 +905,35 @@
                           <span class="pos-badge">{{ player.position }}</span>
                         </div>
                         <div class="squads-name">{{ player.displayName }}</div>
-                        <div class="squads-sub">
-                          <span
-                            v-if="player.subbedIn"
-                            class="sub-badge sub-in"
-                            title="Subbed in"
-                            >↑</span
-                          >
-                          <span
-                            v-else-if="player.subbedOut"
-                            class="sub-badge sub-out"
-                            title="Subbed out"
-                            >↓</span
-                          >
-                          <span
-                            v-else-if="player.starter"
-                            class="sub-badge sub-starter"
-                            title="Starter"
-                            >●</span
-                          >
+                        <div class="squads-nat">{{ player.nationality }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Fallback: last game's lineup -->
+                  <div
+                    v-else-if="usingFallbackSquad"
+                    class="squads-fallback-wrap"
+                  >
+                    <div class="squads-wrap">
+                      <div class="squads-table">
+                        <div class="squads-head">
+                          <div class="squads-th-num">#</div>
+                          <div class="squads-th-pos">Pos</div>
+                          <div class="squads-th-name">Player</div>
+                        </div>
+                        <div
+                          v-for="(player, pi) in sortedFallbackSquad"
+                          :key="player.id"
+                          class="squads-row"
+                          :class="{ 'row-stripe': pi % 2 === 1 }"
+                        >
+                          <div class="squads-num">{{ player.jersey }}</div>
+                          <div class="squads-pos">
+                            <span class="pos-badge">{{ player.position }}</span>
+                          </div>
+                          <div class="squads-name">
+                            {{ player.displayName }}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1129,7 +1117,7 @@
     right: 0.35rem;
     background: transparent;
     border: none;
-    color: oklab(100% 0 0 / 0.75);
+    color: oklab(100% 0 0 / 0.5);
     cursor: pointer;
     padding: 0.375rem;
     border-radius: 0.25rem;
@@ -1598,18 +1586,26 @@
   }
 
   /* ── Squads tab ───────────────────────────────────────────────────────────── */
+
+  /* Left-indent wrapper — # sits ~3rem in from the left */
+  .squads-wrap {
+    /* no padding here — indent is handled per-row via padding-left */
+  }
+
   .squads-table {
     display: flex;
     flex-direction: column;
+    width: 100%;
   }
 
+  /* Grid: # (2.5rem right-aligned) | Pos (4rem) | Player (auto) */
   .squads-head {
     display: grid;
-    grid-template-columns: 2rem 3rem 1fr 3rem;
+    grid-template-columns: 2.5rem 4rem 1fr;
     align-items: baseline;
-    padding: 0.25rem 0.4rem 0.4rem;
+    padding: 0.25rem 0.4rem 0.4rem 3rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .squads-th-num,
@@ -1624,24 +1620,30 @@
   }
 
   .squads-th-num {
-    text-align: center;
+    text-align: right;
   }
 
   .squads-row {
     display: grid;
-    grid-template-columns: 2rem 3rem 1fr 3rem;
+    grid-template-columns: 2.5rem 4rem 1fr;
     align-items: center;
-    padding: 0.3rem 0.4rem;
+    padding: 0.3rem 0.4rem 0.3rem 3rem;
     border-radius: 0.25rem;
-    gap: 0.5rem;
+    gap: 0.75rem;
     min-height: 2rem;
+  }
+
+  /* API roster: has Nat column — 4 cols */
+  .squads-wrap--roster .squads-head,
+  .squads-wrap--roster .squads-row {
+    grid-template-columns: 2.5rem 4rem 1fr 2.5rem;
   }
 
   .squads-num {
     font-size: var(--modal-copy-size);
     font-weight: 300;
     color: oklab(100% 0 0 / 0.5);
-    text-align: center;
+    text-align: right;
   }
 
   .squads-pos {
@@ -1679,40 +1681,6 @@
     text-overflow: ellipsis;
   }
 
-  /* Fallback squad sub column header (reuses same style as nat) */
-  .squads-th-sub {
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: oklab(100% 0 0 / 0.45);
-    text-align: center;
-  }
-
-  .squads-sub {
-    display: flex;
-    justify-content: center;
-  }
-
-  .sub-badge {
-    font-size: var(--modal-copy-size);
-    font-weight: 400;
-    line-height: 1;
-  }
-
-  .sub-in {
-    color: #4ade80;
-  }
-
-  .sub-out {
-    color: #f87171;
-  }
-
-  .sub-starter {
-    color: oklab(100% 0 0 / 0.25);
-    font-size: 0.5rem;
-  }
-
   /* Fallback note */
   .squads-fallback-wrap {
     display: flex;
@@ -1727,7 +1695,41 @@
     color: oklab(100% 0 0 / 0.35);
     letter-spacing: 0.02em;
     margin: 0;
-    padding: 0.25rem 0.4rem 0;
+    padding: 0.25rem 0 0 3rem;
+    text-align: left;
+  }
+
+  /* Mobile: fully flush left, minimal gaps */
+  @media (max-width: 540px) {
+    /* Pull the squads table out to the modal-body edges */
+    .squads-wrap,
+    .squads-fallback-wrap {
+      margin-left: -1.25rem;
+      margin-right: -1.25rem;
+    }
+
+    .squads-head {
+      padding: 0.25rem 1rem 0.4rem 1rem;
+      grid-template-columns: 1.75rem 2.75rem 1fr;
+      gap: 0.35rem;
+    }
+
+    .squads-row {
+      padding: 0.3rem 1rem;
+      grid-template-columns: 1.75rem 2.75rem 1fr;
+      gap: 0.35rem;
+      border-radius: 0;
+    }
+
+    /* API roster on mobile: tighten Nat col too */
+    .squads-wrap--roster .squads-head,
+    .squads-wrap--roster .squads-row {
+      grid-template-columns: 1.75rem 2.75rem 1fr 1.75rem;
+    }
+
+    .squads-fallback-note {
+      padding: 0.25rem 1rem 0;
+    }
   }
 
   /* Show all fixtures link row */
