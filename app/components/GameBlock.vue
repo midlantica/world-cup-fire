@@ -284,8 +284,8 @@
     grid-template-columns: 1fr auto;
     grid-template-rows: auto auto;
     grid-template-areas:
-      'home status'
-      'away status';
+      'home home status'
+      'away away status';
     align-items: center;
     gap: 0.3rem 0.5rem;
     padding: 0.625rem 0.75rem;
