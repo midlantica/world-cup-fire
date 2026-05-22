@@ -75,6 +75,16 @@
     router.push({ path: '/game', query: { id: match.id } })
   }
 
+  // Called specifically from MyTeamModal to avoid route-watcher timing issues.
+  // Closes the team modal state first, then opens game detail directly.
+  function openGameDetailFromTeamModal(match: Match) {
+    teamModalOpen.value = false
+    viewTeam.value = null
+    gameDetailMatch.value = match
+    gameDetailOpen.value = true
+    router.replace({ path: '/game', query: { id: match.id } })
+  }
+
   function closeGameDetail() {
     gameDetailOpen.value = false
     gameDetailMatch.value = null
@@ -168,25 +178,27 @@
         viewTeam.value = name ?? null
         teamModalOpen.value = true
       } else if (path === '/game') {
-        const id = route.query.id as string | undefined
-        // If gameDetailMatch is already set (e.g. opened via openGameDetail),
-        // just show it — don't overwrite with a potentially-missing cache lookup.
-        if (gameDetailMatch.value && gameDetailMatch.value.id === id) {
-          gameDetailOpen.value = true
-        } else if (id) {
+        // If gameDetailOpen is already true and match is set, this navigation
+        // was triggered programmatically by openGameDetail — nothing to do.
+        if (gameDetailOpen.value && gameDetailMatch.value) {
+          // already open, no-op
+        } else {
           // Back/forward navigation: try to find match in scoreboard cache
-          const allMatches = [
-            ...weeks.this.matches,
-            ...weeks.last.matches,
-            ...weeks.next.matches,
-          ]
-          const match = allMatches.find((m) => m.id === id)
-          if (match) {
-            gameDetailMatch.value = match
+          const id = route.query.id as string | undefined
+          if (id) {
+            const allMatches = [
+              ...weeks.this.matches,
+              ...weeks.last.matches,
+              ...weeks.next.matches,
+            ]
+            const match = allMatches.find((m) => m.id === id)
+            if (match) {
+              gameDetailMatch.value = match
+              gameDetailOpen.value = true
+            }
+          } else {
             gameDetailOpen.value = true
           }
-        } else {
-          gameDetailOpen.value = true
         }
       } else {
         // Close modals when navigating away
@@ -402,13 +414,7 @@
         @close="closeAllModals"
         @select-team="switchTeamModal"
         @view-standings="goToStandings"
-        @open-game-detail="
-          (match) => {
-            teamModalOpen = false
-            viewTeam = null
-            openGameDetail(match)
-          }
-        "
+        @open-game-detail="openGameDetailFromTeamModal"
       />
     </ClientOnly>
 
