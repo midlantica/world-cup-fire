@@ -132,6 +132,62 @@ function weekRange(
   return { from: toDateStr(monday), to: toDateStr(sunday), label }
 }
 
+// ── WC 2026 final winner cache ────────────────────────────────────────────────
+// After July 19 2026, we try to fetch the WC final result from ESPN once and
+// cache it. undefined = not yet fetched, null = fetched but no winner yet
+// (game not completed), string = winner display name.
+const WC_FINAL_DATE = '20260719'
+const WC_FINAL_RESUME_DATE = new Date('2026-07-20') // first day after the final
+const WC_FINAL_ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${WC_FINAL_DATE}`
+const WC_WINNER_CACHE_TTL_MS = 10 * 60_000 // 10 min — retry if no winner yet
+
+let wcWinnerName: string | null | undefined = undefined // undefined = never fetched
+let wcWinnerFetchedAt = 0
+
+async function getWcWinner(): Promise<string | null> {
+  const now = Date.now()
+  // Return cached winner name if we already have one (no need to re-fetch)
+  if (typeof wcWinnerName === 'string') return wcWinnerName
+  // If we fetched recently and still got null, don't hammer ESPN
+  if (wcWinnerName === null && now - wcWinnerFetchedAt < WC_WINNER_CACHE_TTL_MS)
+    return null
+
+  try {
+    const data = await $fetch<Record<string, unknown>>(WC_FINAL_ESPN_URL)
+    const events = (data.events as Array<Record<string, unknown>>) ?? []
+    for (const evt of events) {
+      const competitions =
+        (evt.competitions as Array<Record<string, unknown>>) ?? []
+      for (const comp of competitions) {
+        const competitors =
+          (comp.competitors as Array<Record<string, unknown>>) ?? []
+        const winner = competitors.find((c) => c.winner === true)
+        if (winner) {
+          const team = winner.team as Record<string, unknown> | undefined
+          const name =
+            (team?.displayName as string) ??
+            (winner.displayName as string) ??
+            null
+          if (name) {
+            wcWinnerName = name
+            wcWinnerFetchedAt = now
+            return name
+          }
+        }
+      }
+    }
+    // Game not completed yet or no winner flag
+    wcWinnerName = null
+    wcWinnerFetchedAt = now
+    return null
+  } catch {
+    // ESPN call failed — treat as no winner yet, will retry next request
+    wcWinnerName = null
+    wcWinnerFetchedAt = now
+    return null
+  }
+}
+
 // ── In-memory cache ───────────────────────────────────────────────────────────
 // Use a short TTL when there are live events, longer when nothing is in-play.
 // This keeps the clock tight during matches without hammering ESPN at off-hours.
@@ -180,12 +236,30 @@ export default defineEventHandler(async (event) => {
     if (range.hiatus) {
       // This week is inside a hiatus — return immediately with the message.
       // No need to hit ESPN since there are no MLS games this week.
+
+      // Special case: if today is on or after July 20 (day after WC final),
+      // try to show a congratulations message with the WC winner.
+      let hiatusMessage = range.hiatus
+      const ctDateStr = new Date().toLocaleDateString('en-CA', {
+        timeZone: 'America/Chicago',
+      })
+      const todayCT = new Date(ctDateStr)
+      if (
+        todayCT >= WC_FINAL_RESUME_DATE &&
+        range.hiatus.includes('World Cup')
+      ) {
+        const winner = await getWcWinner()
+        if (winner) {
+          hiatusMessage = `The World Cup is over! Congratulations ${winner}! The MLS continues! MLS play resumes July 22, 2026.`
+        }
+      }
+
       return {
         events: [],
         _weekLabel: label,
         _from: from,
         _to: to,
-        _hiatus: range.hiatus,
+        _hiatus: hiatusMessage,
       }
     }
   }
