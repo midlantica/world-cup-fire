@@ -81,11 +81,20 @@
   // a flag so it doesn't close the freshly-opened game detail modal.
   let _skipNextRouteWatcher = false
   function openGameDetailFromTeamModal(match: Match) {
+    console.log(
+      '[DEBUG] openGameDetailFromTeamModal called, match.id=',
+      match.id
+    )
     teamModalOpen.value = false
     viewTeam.value = null
     gameDetailMatch.value = match
     gameDetailOpen.value = true
     _skipNextRouteWatcher = true
+    console.log(
+      '[DEBUG] state set: gameDetailOpen=true, gameDetailMatch=',
+      match.id,
+      'skip=true'
+    )
     router.replace({ path: '/game', query: { id: match.id } })
   }
 
@@ -177,9 +186,16 @@
   watch(
     () => route.path,
     async (path) => {
+      console.log(
+        '[DEBUG] route watcher fired, path=',
+        path,
+        'skip=',
+        _skipNextRouteWatcher
+      )
       // Skip if a programmatic navigation already set the correct state
       if (_skipNextRouteWatcher) {
         _skipNextRouteWatcher = false
+        console.log('[DEBUG] route watcher skipped')
         return
       }
       if (path === '/team') {
