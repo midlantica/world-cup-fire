@@ -662,7 +662,7 @@
       <div
         v-if="open && displayTeam"
         class="modal-backdrop"
-        @click.self="emit('close')"
+        @mousedown.self="emit('close')"
       >
         <div
           class="modal-card"

@@ -67,15 +67,17 @@
   const gameDetailOpen = ref(false)
   const gameDetailMatch = ref<Match | null>(null)
 
+  // Flag to suppress the route watcher when we're doing our own navigation.
+  // Set to true before any programmatic router call that should not trigger
+  // modal close logic, cleared after the watcher fires.
+  let suppressRouteWatch = false
+
   function openGameDetail(match: Match) {
-    // Store the match first so the route watcher can find it even if it's
-    // not in the scoreboard weeks cache (e.g. opened from team schedule).
     gameDetailMatch.value = match
     gameDetailOpen.value = true
-    // Use replace so this supersedes any in-flight navigation (e.g. the
-    // router.push('/') from a just-closed modal) and avoids a race where
-    // the route watcher fires for '/' after the modal is already open.
-    router.replace({ path: '/game', query: { id: match.id } })
+    // Update the URL directly without going through Vue Router,
+    // so the route watcher never fires and can't interfere.
+    history.replaceState(history.state, '', `/game?id=${match.id}`)
   }
 
   // Called from MyTeamModal when a game card is clicked.
@@ -143,12 +145,10 @@
     gameDetailMatch.value = null
     teamModalOpen.value = false
     viewTeam.value = null
-    // Use replace (not push) so that if the user immediately clicks a game card,
-    // the openGameDetail router.replace('/game') can supersede this navigation
-    // and prevent the route watcher's else-branch from closing the modal again.
-    router.replace({
-      path: `/${mainTab.value === 'scores' ? '' : mainTab.value}`,
-    })
+    // Use history.replaceState directly so the route watcher never fires
+    // and can't race with an immediately-following openGameDetail call.
+    const closePath = `/${mainTab.value === 'scores' ? '' : mainTab.value}`
+    history.replaceState(history.state, '', closePath)
   }
 
   async function goToStandings(conferenceName: string) {
@@ -197,35 +197,42 @@
   watch(
     () => route.path,
     async (path) => {
+      // If this navigation was triggered by our own code (openGameDetail,
+      // closeAllModals, etc.), skip all modal logic — the caller already
+      // set the correct state directly.
+      if (suppressRouteWatch) {
+        suppressRouteWatch = false
+        // Still update the main tab if we landed on a non-modal path
+        if (path !== '/game' && path !== '/team') {
+          const tab = path.replace(/^\//, '') as MainTab
+          await applyTab(VALID_TABS.includes(tab) ? tab : 'scores')
+        }
+        return
+      }
+
       if (path === '/team') {
         const name = route.query.name as string | undefined
         viewTeam.value = name ?? null
         teamModalOpen.value = true
       } else if (path === '/game') {
-        // If gameDetailOpen is already true and match is set, this navigation
-        // was triggered programmatically by openGameDetail — nothing to do.
-        if (gameDetailOpen.value && gameDetailMatch.value) {
-          // already open, no-op
-        } else {
-          // Back/forward navigation: try to find match in scoreboard cache
-          const id = route.query.id as string | undefined
-          if (id) {
-            const allMatches = [
-              ...weeks.this.matches,
-              ...weeks.last.matches,
-              ...weeks.next.matches,
-            ]
-            const match = allMatches.find((m) => m.id === id)
-            if (match) {
-              gameDetailMatch.value = match
-              gameDetailOpen.value = true
-            }
-          } else {
+        // Back/forward navigation: try to find match in scoreboard cache
+        const id = route.query.id as string | undefined
+        if (id) {
+          const allMatches = [
+            ...weeks.this.matches,
+            ...weeks.last.matches,
+            ...weeks.next.matches,
+          ]
+          const match = allMatches.find((m) => m.id === id)
+          if (match) {
+            gameDetailMatch.value = match
             gameDetailOpen.value = true
           }
+        } else {
+          gameDetailOpen.value = true
         }
       } else {
-        // Close modals when navigating away
+        // Genuine navigation away — close any open modals
         gameDetailOpen.value = false
         gameDetailMatch.value = null
         teamModalOpen.value = false

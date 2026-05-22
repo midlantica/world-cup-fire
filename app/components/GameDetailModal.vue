@@ -487,7 +487,7 @@
         class="modal-backdrop"
         role="dialog"
         aria-modal="true"
-        @click.self="emit('close')"
+        @mousedown.self="emit('close')"
       >
         <div class="modal-panel">
           <!-- ── Header ──────────────────────────────────────────────────────── -->
