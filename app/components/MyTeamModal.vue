@@ -1452,6 +1452,9 @@
     .schedule-list--single :deep(.status-date) {
       font-size: 1rem;
     }
+    .schedule-list--single :deep(.team-name-text) {
+      font-size: 1.2rem;
+    }
   }
 
   @media (max-width: 480px) {
