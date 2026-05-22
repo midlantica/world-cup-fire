@@ -81,20 +81,11 @@
   // a flag so it doesn't close the freshly-opened game detail modal.
   let _skipNextRouteWatcher = false
   function openGameDetailFromTeamModal(match: Match) {
-    console.log(
-      '[DEBUG] openGameDetailFromTeamModal called, match.id=',
-      match.id
-    )
     teamModalOpen.value = false
     viewTeam.value = null
     gameDetailMatch.value = match
     gameDetailOpen.value = true
     _skipNextRouteWatcher = true
-    console.log(
-      '[DEBUG] state set: gameDetailOpen=true, gameDetailMatch=',
-      match.id,
-      'skip=true'
-    )
     router.replace({ path: '/game', query: { id: match.id } })
   }
 
@@ -102,6 +93,14 @@
     gameDetailOpen.value = false
     gameDetailMatch.value = null
     router.push({ path: `/${mainTab.value === 'scores' ? '' : mainTab.value}` })
+  }
+
+  // Called when user clicks a team name inside GameDetailModal.
+  // Must properly close game detail (using .value) before opening team modal.
+  function openTeamModalFromGameDetail(teamName: string) {
+    gameDetailOpen.value = false
+    gameDetailMatch.value = null
+    openTeamModalFor(teamName)
   }
 
   // ── Team modal state ──────────────────────────────────────────────────────────
@@ -186,16 +185,9 @@
   watch(
     () => route.path,
     async (path) => {
-      console.log(
-        '[DEBUG] route watcher fired, path=',
-        path,
-        'skip=',
-        _skipNextRouteWatcher
-      )
       // Skip if a programmatic navigation already set the correct state
       if (_skipNextRouteWatcher) {
         _skipNextRouteWatcher = false
-        console.log('[DEBUG] route watcher skipped')
         return
       }
       if (path === '/team') {
@@ -449,13 +441,7 @@
         :open="gameDetailOpen"
         :match="gameDetailMatch"
         @close="closeAllModals"
-        @select-team="
-          (team) => {
-            gameDetailOpen = false
-            gameDetailMatch = null
-            openTeamModalFor(team)
-          }
-        "
+        @select-team="openTeamModalFromGameDetail"
       />
     </ClientOnly>
   </main>
