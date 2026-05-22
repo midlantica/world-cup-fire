@@ -80,12 +80,26 @@
   // next tick so the click event that triggered this doesn't bubble through
   // to the new GameDetailModal backdrop and immediately close it.
   async function openGameDetailFromTeamModal(match: Match) {
+    console.log('[DBG] openGameDetailFromTeamModal', match.id)
     teamModalOpen.value = false
     viewTeam.value = null
     await nextTick()
+    console.log('[DBG] after nextTick — setting gameDetail open')
     gameDetailMatch.value = match
     gameDetailOpen.value = true
-    router.push({ path: '/game', query: { id: match.id } })
+    console.log(
+      '[DBG] gameDetailOpen=',
+      gameDetailOpen.value,
+      'match=',
+      gameDetailMatch.value?.id
+    )
+    await router.push({ path: '/game', query: { id: match.id } })
+    console.log(
+      '[DBG] after router.push — open=',
+      gameDetailOpen.value,
+      'match=',
+      gameDetailMatch.value?.id
+    )
   }
 
   function closeGameDetail() {
@@ -184,6 +198,14 @@
   watch(
     () => route.path,
     async (path) => {
+      console.log(
+        '[DBG] route watcher fired path=',
+        path,
+        'gameDetailOpen=',
+        gameDetailOpen.value,
+        'match=',
+        gameDetailMatch.value?.id
+      )
       if (path === '/team') {
         const name = route.query.name as string | undefined
         viewTeam.value = name ?? null
@@ -192,6 +214,7 @@
         // If gameDetailOpen is already true and match is set, this navigation
         // was triggered programmatically by openGameDetail — nothing to do.
         if (gameDetailOpen.value && gameDetailMatch.value) {
+          console.log('[DBG] route watcher /game — already open, no-op')
           // already open, no-op
         } else {
           // Back/forward navigation: try to find match in scoreboard cache
