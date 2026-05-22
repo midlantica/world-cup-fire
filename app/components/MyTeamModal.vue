@@ -1279,6 +1279,12 @@
     flex-shrink: 0;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     background: oklab(0% 0 0 / 0.2);
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  .modal-tabs::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
   }
 
   .modal-tab {
@@ -1297,6 +1303,7 @@
       color 0.15s,
       border-color 0.15s;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   @media (max-width: 400px) {
@@ -1306,7 +1313,7 @@
     .modal-tab {
       font-size: 0.6875rem;
       letter-spacing: 0.07em;
-      padding: 0.5rem 0.4rem;
+      padding: 0.5rem 0.5rem;
     }
   }
 
