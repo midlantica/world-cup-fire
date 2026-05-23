@@ -6,7 +6,12 @@
     fractionalToMoneyline,
     type MatchEvent,
   } from '../composables/useMatchDetail'
-  import { TEAM_LOGO, TEAM_VENUE, TEAM_ESPN_ID } from '../composables/useMyTeam'
+  import {
+    TEAM_LOGO,
+    TEAM_VENUE,
+    TEAM_ESPN_ID,
+    TEAM_ABBREV,
+  } from '../composables/useMyTeam'
   import { useTimezone } from '../composables/useTimezone'
 
   // ── Club history / founding year ─────────────────────────────────────────────
@@ -465,6 +470,16 @@
     () => TEAM_SHORT_NAME[awayTeam.value] ?? awayTeam.value
   )
 
+  // Short 3-5 char abbreviations for the events row (STL, ATX, etc.)
+  const homeTeamAbbrev = computed(
+    () =>
+      TEAM_ABBREV[homeTeam.value] ?? homeTeam.value.slice(0, 4).toUpperCase()
+  )
+  const awayTeamAbbrev = computed(
+    () =>
+      TEAM_ABBREV[awayTeam.value] ?? awayTeam.value.slice(0, 4).toUpperCase()
+  )
+
   // ── Match events filtered by home/away team ───────────────────────────────
   // Use the ESPN team IDs from the detail.teams array (matched by homeAway flag)
   // rather than TEAM_ESPN_ID lookup, so we don't depend on name-matching.
@@ -698,46 +713,147 @@
               </div>
             </div>
 
-            <!-- Scorers / cards row — below the score grid, desktop only -->
+            <!-- Scorers / cards row — desktop: two 50/50 columns; mobile: stacked -->
             <div
               v-if="detail?.matchEvents?.length && match.status.code !== 'ns'"
               class="header-events-row"
             >
-              <!-- Home events: right-aligned -->
-              <div class="header-events-home">
-                <template v-for="(ev, i) in homeMatchEvents" :key="i">
-                  <span class="event-item">
-                    <span v-if="ev.type === 'goal'" class="event-icon">⚽</span>
-                    <span
-                      v-else-if="ev.type === 'yellow'"
-                      class="event-card event-card-yellow"
-                    />
-                    <span
-                      v-else-if="ev.type === 'red'"
-                      class="event-card event-card-red"
-                    />
+              <!-- Home team column -->
+              <div class="header-events-col header-events-col-home">
+                <!-- Goals row -->
+                <div
+                  v-if="homeMatchEvents.some((e) => e.type === 'goal')"
+                  class="events-line"
+                >
+                  <!-- Mobile only: team label -->
+                  <span class="events-team-label">{{ homeTeamAbbrev }}:</span>
+                  <span
+                    v-for="(ev, i) in homeMatchEvents.filter(
+                      (e) => e.type === 'goal'
+                    )"
+                    :key="i"
+                    class="event-goal-item"
+                  >
+                    <span class="event-icon">⚽</span>
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span class="event-clock">{{ ev.clock }}</span>
+                    <span
+                      v-if="
+                        i <
+                        homeMatchEvents.filter((e) => e.type === 'goal')
+                          .length -
+                          1
+                      "
+                      class="event-sep"
+                      >,</span
+                    >
                   </span>
-                </template>
+                </div>
+                <!-- Cards row -->
+                <div
+                  v-if="
+                    homeMatchEvents.some(
+                      (e) => e.type === 'yellow' || e.type === 'red'
+                    )
+                  "
+                  class="events-line"
+                >
+                  <span
+                    v-for="(ev, i) in homeMatchEvents.filter(
+                      (e) => e.type === 'yellow' || e.type === 'red'
+                    )"
+                    :key="i"
+                    class="event-card-item"
+                  >
+                    <span
+                      v-if="ev.type === 'yellow'"
+                      class="event-card event-card-yellow"
+                    />
+                    <span v-else class="event-card event-card-red" />
+                    <span class="event-name">{{ ev.lastName }}</span>
+                    <span class="event-clock">{{ ev.clock }}</span>
+                    <span
+                      v-if="
+                        i <
+                        homeMatchEvents.filter(
+                          (e) => e.type === 'yellow' || e.type === 'red'
+                        ).length -
+                          1
+                      "
+                      class="event-sep"
+                      >,</span
+                    >
+                  </span>
+                </div>
               </div>
-              <!-- Away events: left-aligned -->
-              <div class="header-events-away">
-                <template v-for="(ev, i) in awayMatchEvents" :key="i">
-                  <span class="event-item">
-                    <span v-if="ev.type === 'goal'" class="event-icon">⚽</span>
-                    <span
-                      v-else-if="ev.type === 'yellow'"
-                      class="event-card event-card-yellow"
-                    />
-                    <span
-                      v-else-if="ev.type === 'red'"
-                      class="event-card event-card-red"
-                    />
+
+              <!-- Away team column -->
+              <div class="header-events-col header-events-col-away">
+                <!-- Goals row -->
+                <div
+                  v-if="awayMatchEvents.some((e) => e.type === 'goal')"
+                  class="events-line"
+                >
+                  <!-- Mobile only: team label -->
+                  <span class="events-team-label">{{ awayTeamAbbrev }}:</span>
+                  <span
+                    v-for="(ev, i) in awayMatchEvents.filter(
+                      (e) => e.type === 'goal'
+                    )"
+                    :key="i"
+                    class="event-goal-item"
+                  >
+                    <span class="event-icon">⚽</span>
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span class="event-clock">{{ ev.clock }}</span>
+                    <span
+                      v-if="
+                        i <
+                        awayMatchEvents.filter((e) => e.type === 'goal')
+                          .length -
+                          1
+                      "
+                      class="event-sep"
+                      >,</span
+                    >
                   </span>
-                </template>
+                </div>
+                <!-- Cards row -->
+                <div
+                  v-if="
+                    awayMatchEvents.some(
+                      (e) => e.type === 'yellow' || e.type === 'red'
+                    )
+                  "
+                  class="events-line"
+                >
+                  <span
+                    v-for="(ev, i) in awayMatchEvents.filter(
+                      (e) => e.type === 'yellow' || e.type === 'red'
+                    )"
+                    :key="i"
+                    class="event-card-item"
+                  >
+                    <span
+                      v-if="ev.type === 'yellow'"
+                      class="event-card event-card-yellow"
+                    />
+                    <span v-else class="event-card event-card-red" />
+                    <span class="event-name">{{ ev.lastName }}</span>
+                    <span class="event-clock">{{ ev.clock }}</span>
+                    <span
+                      v-if="
+                        i <
+                        awayMatchEvents.filter(
+                          (e) => e.type === 'yellow' || e.type === 'red'
+                        ).length -
+                          1
+                      "
+                      class="event-sep"
+                      >,</span
+                    >
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1602,44 +1718,74 @@
 
   /* ── Scorers / cards row ──────────────────────────────────────────────────── */
   .header-events-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     width: 100%;
     margin-top: 0.4rem;
     padding-top: 0.3rem;
     border-top: 1px solid oklab(100% 0 0 / 0.07);
-    gap: 0.5rem;
+    gap: 4rem;
   }
 
   @media (max-width: 599px) {
     .header-events-row {
-      display: none;
+      flex-direction: column;
+      gap: 0;
     }
   }
 
-  .header-events-home {
+  .header-events-col {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
     gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
   }
 
-  .header-events-away {
+  @media (max-width: 599px) {
+    .header-events-col-home {
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid oklab(100% 0 0 / 0.08);
+      margin-bottom: 0.3rem;
+    }
+  }
+
+  .events-line {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
-  }
-
-  .event-item {
-    display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.1rem 0.3rem;
     font-size: 0.75rem;
     font-weight: 200;
     color: oklab(100% 0 0 / 0.85);
     letter-spacing: 0.03em;
+  }
+
+  /* Mobile: show team abbreviation label; hidden on desktop */
+  .events-team-label {
+    display: none;
+    font-weight: 400;
+    color: oklab(100% 0 0 / 0.55);
+    letter-spacing: 0.08em;
+    margin-right: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 599px) {
+    .events-team-label {
+      display: inline;
+    }
+  }
+
+  .event-goal-item,
+  .event-card-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
     white-space: nowrap;
+  }
+
+  .event-sep {
+    color: oklab(100% 0 0 / 0.35);
   }
 
   .event-icon {
