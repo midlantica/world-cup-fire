@@ -1940,7 +1940,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
-    padding: 0.5rem 0.85rem 1rem;
+    padding: 0rem 0.85rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
