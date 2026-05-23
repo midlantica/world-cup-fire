@@ -121,8 +121,8 @@
     width: 100%;
     border-collapse: collapse;
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-    font-size: calc(0.8125rem * 1.05);
-    font-weight: 300;
+    font-size: 0.85rem;
+    font-weight: 200;
     letter-spacing: 0.05em;
     white-space: nowrap;
   }
@@ -179,7 +179,7 @@
   .col-rank {
     text-align: left !important;
     color: var(--color-text-secondary) !important;
-    font-size: 0.6875rem;
+    font-size: 0.85rem;
     white-space: nowrap;
   }
 
@@ -204,7 +204,7 @@
   .col-team {
     text-align: left !important;
     color: var(--color-text-primary) !important;
-    font-weight: 500;
+    font-weight: 200;
     min-width: 10rem;
   }
 
@@ -254,7 +254,7 @@
     margin-right: 0.375rem;
     flex-shrink: 0;
     position: relative;
-    top: -0.05em;
+    top: 0.05em;
   }
 
   .team-logo-img {
@@ -297,8 +297,8 @@
   }
 
   .col-rec {
-    font-size: 0.8rem;
-    font-weight: 300;
+    font-size: 0.85rem;
+    font-weight: 200;
     color: var(--color-text-secondary);
     text-align: right;
     padding-right: 0.5rem;

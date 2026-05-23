@@ -13,7 +13,7 @@
  */
 
 import { formatHex, oklch, parse, wcagContrast } from 'culori'
-import { TEAM_COLORS } from '~/composables/useTeamColors'
+import { TEAM_COLOR_PAIRS, TEAM_COLORS } from '~/composables/useTeamColors'
 
 // ── Team → logo filename map ──────────────────────────────────────────────────
 // Keys match TEAM_COLORS keys exactly.
@@ -177,30 +177,45 @@ const SLATE_PALETTE: Record<string, string> = {
   '950': 'oklch(12.9% 0.042 264.3)',
 }
 
-// ── Derive a 10-stop oklch palette from a single hex color ───────────────────
-export function buildPalette(hex: string): Record<string, string> {
-  const base = oklch(parse(hex))
+// ── Derive a 10-stop palette using primary (accent) + secondary (bg base) ────
+// Light stops (50–500) are tinted from the primary accent color.
+// Dark stops (600–950) are derived from the secondary background color.
+// This keeps the accent color vivid and distinct from the dark backgrounds.
+export function buildPalette(
+  primaryHex: string,
+  secondaryHex?: string
+): Record<string, string> {
+  const base = oklch(parse(primaryHex))
   if (!base) return SLATE_PALETTE
 
-  const { h = 0, c: baseC = 0 } = base
+  const { h: pH = 0, c: pC = 0 } = base
 
-  // Lightness stops from 50 (near-white) → 950 (near-black)
-  const stops: [string, number, number][] = [
-    ['50', 0.97, baseC * 0.18],
-    ['100', 0.94, baseC * 0.28],
-    ['200', 0.88, baseC * 0.45],
-    ['300', 0.8, baseC * 0.62],
-    ['400', 0.7, baseC * 0.8],
-    ['500', 0.6, baseC * 0.95],
-    ['600', 0.5, baseC * 0.9],
-    ['700', 0.4, baseC * 0.8],
-    ['800', 0.3, baseC * 0.65],
-    ['900', 0.2, baseC * 0.45],
-    ['950', 0.14, baseC * 0.32],
+  // For dark stops, use the secondary color if provided, else fall back to
+  // a very desaturated version of the primary hue (near-black).
+  const bgBase = secondaryHex ? oklch(parse(secondaryHex)) : null
+  const { h: sH = pH, c: sC = 0 } = bgBase ?? { h: pH, c: pC * 0.08 }
+
+  // Light stops: tinted from primary accent
+  const lightStops: [string, number, number, number][] = [
+    ['50', 0.97, pC * 0.12, pH],
+    ['100', 0.94, pC * 0.22, pH],
+    ['200', 0.88, pC * 0.38, pH],
+    ['300', 0.8, pC * 0.58, pH],
+    ['400', 0.7, pC * 0.78, pH],
+    ['500', 0.6, pC * 0.92, pH],
+  ]
+
+  // Dark stops: derived from secondary background color
+  const darkStops: [string, number, number, number][] = [
+    ['600', 0.42, sC * 0.85, sH],
+    ['700', 0.32, sC * 0.75, sH],
+    ['800', 0.22, sC * 0.6, sH],
+    ['900', 0.15, sC * 0.45, sH],
+    ['950', 0.1, sC * 0.3, sH],
   ]
 
   const result: Record<string, string> = {}
-  for (const [stop, l, c] of stops) {
+  for (const [stop, l, c, h] of [...lightStops, ...darkStops]) {
     const color = oklch({ mode: 'oklch', l, c, h })
     result[stop] = formatHex(color) ?? '#888'
   }
@@ -217,7 +232,11 @@ function contrastColor(bgHex: string): string {
 }
 
 // ── Inject CSS custom properties onto <html> ─────────────────────────────────
-function applyTheme(palette: Record<string, string>, primaryHex: string) {
+function applyTheme(
+  palette: Record<string, string>,
+  primaryHex: string,
+  secondaryHex?: string
+) {
   if (typeof document === 'undefined') return
   const root = document.documentElement
 
@@ -229,7 +248,13 @@ function applyTheme(palette: Record<string, string>, primaryHex: string) {
   root.style.setProperty('--color-theme-primary', primaryHex)
   root.style.setProperty('--color-theme-on-primary', contrastColor(primaryHex))
 
-  // Body background = theme-950
+  // Secondary color for header background
+  root.style.setProperty(
+    '--color-theme-secondary',
+    secondaryHex ?? palette['950'] ?? '#0f172a'
+  )
+
+  // Body background = theme-950 (derived from secondary)
   root.style.setProperty('--app-bg', palette['950'] ?? '#0f172a')
   document.body.style.backgroundColor = palette['950'] ?? '#0f172a'
 }
@@ -255,6 +280,7 @@ function clearTheme() {
   }
   root.style.removeProperty('--color-theme-primary')
   root.style.removeProperty('--color-theme-on-primary')
+  root.style.removeProperty('--color-theme-secondary')
   root.style.removeProperty('--app-bg')
   document.body.style.backgroundColor = ''
 }
@@ -345,8 +371,10 @@ export function useMyTeam() {
     const saved = localStorage.getItem(MY_TEAM_KEY)
     if (saved && TEAM_LOGO[saved]) {
       selectedTeam.value = saved
-      const hex = TEAM_COLORS[saved] ?? '#6b7280'
-      applyTheme(buildPalette(hex), hex)
+      const pair = TEAM_COLOR_PAIRS[saved]
+      const primary = pair?.primary ?? '#6b7280'
+      const secondary = pair?.secondary
+      applyTheme(buildPalette(primary, secondary), primary, secondary)
     }
   })
 
@@ -354,8 +382,10 @@ export function useMyTeam() {
     selectedTeam.value = name
     if (name) {
       localStorage.setItem(MY_TEAM_KEY, name)
-      const hex = TEAM_COLORS[name] ?? '#6b7280'
-      applyTheme(buildPalette(hex), hex)
+      const pair = TEAM_COLOR_PAIRS[name]
+      const primary = pair?.primary ?? '#6b7280'
+      const secondary = pair?.secondary
+      applyTheme(buildPalette(primary, secondary), primary, secondary)
     } else {
       localStorage.removeItem(MY_TEAM_KEY)
       clearTheme()

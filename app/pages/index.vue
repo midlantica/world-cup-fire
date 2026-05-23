@@ -115,29 +115,52 @@
   // ── Team modal state ──────────────────────────────────────────────────────────
   const teamModalOpen = ref(false)
   const viewTeam = ref<string | null>(null)
+  // Remember which main tab was active when the team modal was opened,
+  // so we can restore it when the modal closes.
+  let tabBeforeTeamModal: MainTab = 'scores'
 
   function openTeamModal() {
+    tabBeforeTeamModal = mainTab.value
     teamModalOpen.value = true
     viewTeam.value = null
-    router.push({ path: '/team' })
+    // Use history API directly so the route watcher never fires and
+    // can't reset mainTab (e.g. from 'standings' back to 'scores').
+    history.pushState(history.state, '', '/team')
   }
 
   function openTeamModalFor(teamName: string) {
+    tabBeforeTeamModal = mainTab.value
     viewTeam.value = teamName
     teamModalOpen.value = true
-    router.push({ path: '/team', query: { name: teamName } })
+    // Use history API directly so the route watcher never fires.
+    history.pushState(
+      history.state,
+      '',
+      `/team?name=${encodeURIComponent(teamName)}`
+    )
   }
 
   function switchTeamModal(teamName: string) {
     viewTeam.value = teamName
     teamModalOpen.value = true
-    router.replace({ path: '/team', query: { name: teamName } })
+    history.replaceState(
+      history.state,
+      '',
+      `/team?name=${encodeURIComponent(teamName)}`
+    )
   }
 
   function closeTeamModal() {
     teamModalOpen.value = false
     viewTeam.value = null
-    router.push({ path: `/${mainTab.value === 'scores' ? '' : mainTab.value}` })
+    const returnTab = tabBeforeTeamModal
+    tabBeforeTeamModal = 'scores'
+    mainTab.value = returnTab
+    history.replaceState(
+      history.state,
+      '',
+      `/${returnTab === 'scores' ? '' : returnTab}`
+    )
   }
 
   function closeAllModals() {
@@ -145,9 +168,13 @@
     gameDetailMatch.value = null
     teamModalOpen.value = false
     viewTeam.value = null
+    // Restore the tab that was active before the modal was opened.
+    const returnTab = tabBeforeTeamModal
+    tabBeforeTeamModal = 'scores'
+    mainTab.value = returnTab
     // Use history.replaceState directly so the route watcher never fires
     // and can't race with an immediately-following openGameDetail call.
-    const closePath = `/${mainTab.value === 'scores' ? '' : mainTab.value}`
+    const closePath = `/${returnTab === 'scores' ? '' : returnTab}`
     history.replaceState(history.state, '', closePath)
   }
 

@@ -288,7 +288,7 @@
       'away away status';
     align-items: center;
     gap: 0.3rem 0.5rem;
-    padding: 0.625rem 0.75rem;
+    padding: 0.425rem 0.5rem;
     border-radius: 0.375rem;
     background: oklab(100% 0 0 / 0.06);
     transition: border-color 0.15s;
@@ -406,7 +406,7 @@
   }
 
   .team-rec {
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 300;
     color: oklab(80% 0 0);
     white-space: nowrap;
@@ -460,7 +460,7 @@
     gap: 0.075rem;
     padding-left: 0.5rem;
     border-left: 1px solid oklab(100% 0 0 / 0.07);
-    width: 3.5rem;
+    /* width: 3.5rem; */
     flex-shrink: 0;
     text-align: center;
     position: relative;
@@ -486,7 +486,7 @@
   }
 
   .status-time {
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 100;
     color: var(--color-text-primary);
     white-space: nowrap;
@@ -495,11 +495,11 @@
   }
 
   .status-time :deep(.ampm) {
-    font-size: 0.85em;
+    font-size: 1em;
   }
 
   .status-date {
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 100;
     color: oklab(90% 0 0);
     white-space: nowrap;
@@ -508,7 +508,7 @@
 
   /* Shared badge base */
   .badge {
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 200;
     letter-spacing: 0.12em;
     color: white;

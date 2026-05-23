@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { wcagContrast } from 'culori'
   import {
     useMyTeam,
     TEAM_SHORT_NAME,
@@ -9,7 +10,7 @@
     TEAM_VENUE_SHORT,
     buildPalette,
   } from '~/composables/useMyTeam'
-  import { TEAM_COLORS } from '~/composables/useTeamColors'
+  import { TEAM_COLORS, TEAM_COLOR_PAIRS } from '~/composables/useTeamColors'
   import { useTimezone } from '~/composables/useTimezone'
   import type { Match } from '~/composables/useScores'
   import { calcQuality, calcBadge } from '~/composables/useScores'
@@ -39,14 +40,22 @@
   const modalCardStyle = computed(() => {
     const team = displayTeam.value
     if (!team) return {}
-    const hex = TEAM_COLORS[team] ?? '#6b7280'
-    const palette = buildPalette(hex)
+    const pair = TEAM_COLOR_PAIRS[team]
+    const primary = pair?.primary ?? TEAM_COLORS[team] ?? '#6b7280'
+    const secondary = pair?.secondary
+    const palette = buildPalette(primary, secondary)
     const vars: Record<string, string> = {}
     for (const [stop, value] of Object.entries(palette)) {
       vars[`--color-theme-${stop}`] = value
     }
-    vars['--color-theme-primary'] = hex
+    vars['--color-theme-primary'] = primary
+    vars['--color-theme-secondary'] = secondary ?? palette['950'] ?? '#0f172a'
     vars['--app-bg'] = palette['950'] ?? '#0f172a'
+    // Compute on-primary contrast color for text on the primary header background
+    const white = '#ffffff'
+    const dark = '#0f172a'
+    vars['--color-theme-on-primary'] =
+      wcagContrast(primary, white) >= wcagContrast(primary, dark) ? white : dark
     return vars
   })
 
@@ -1096,13 +1105,20 @@
     max-width: 36rem;
     margin-top: 0;
     margin-bottom: 0;
-    background: color-mix(
-      in oklab,
-      var(--app-bg, #0f172a) 85%,
-      var(--color-theme-950, #0f172a)
-    );
-    border: 1px solid var(--team-border, var(--color-theme-700, #374151));
-    border-bottom: 3px solid var(--team-border, var(--color-theme-700, #374151));
+    /* Body uses the dark stops derived from the secondary color */
+    background: var(--color-theme-950, #0f172a);
+    border: 1px solid
+      color-mix(
+        in oklab,
+        var(--color-theme-primary, #6b7280) 25%,
+        var(--color-theme-700, #374151) 75%
+      );
+    border-bottom: 3px solid
+      color-mix(
+        in oklab,
+        var(--color-theme-primary, #6b7280) 40%,
+        var(--color-theme-700, #374151) 60%
+      );
     border-radius: 0.5rem;
     box-shadow: 0 8px 24px oklab(0% 0 0 / 1);
     display: flex;
@@ -1117,7 +1133,11 @@
     right: 0.35rem;
     background: transparent;
     border: none;
-    color: oklab(100% 0 0 / 0.5);
+    color: color-mix(
+      in oklab,
+      var(--color-theme-on-primary, white) 60%,
+      transparent
+    );
     cursor: pointer;
     padding: 0.375rem;
     border-radius: 0.25rem;
@@ -1129,12 +1149,12 @@
   }
   .modal-close:hover,
   .modal-close:focus-visible {
-    color: white;
+    color: var(--color-theme-on-primary, white);
     outline: none;
   }
   .modal-close:hover :deep(svg),
   .modal-close:focus-visible :deep(svg) {
-    stroke: white;
+    stroke: var(--color-theme-on-primary, white);
   }
 
   /* ── Header ───────────────────────────────────────────────────────────────── */
@@ -1145,11 +1165,8 @@
     padding: 1.25rem 1.25rem 0.75rem;
     padding-right: 2rem;
     flex-shrink: 0;
-    background: linear-gradient(
-      180deg,
-      var(--color-theme-950) 0%,
-      var(--color-theme-900) 100%
-    );
+    /* Use the team's primary accent color as the header background */
+    background: var(--color-theme-primary, #334155);
   }
 
   .modal-logo {
@@ -1172,7 +1189,7 @@
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     font-size: 1.65rem;
     font-weight: 400;
-    color: var(--color-text-primary);
+    color: var(--color-theme-on-primary, white);
     line-height: 1.2;
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -1196,8 +1213,12 @@
   .modal-venue {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     font-size: 0.85rem;
-    font-weight: 200;
-    color: white;
+    font-weight: 400;
+    color: color-mix(
+      in oklab,
+      var(--color-theme-on-primary, white) 80%,
+      transparent
+    );
     letter-spacing: 0.04em;
     line-height: 1.38;
   }
@@ -1221,9 +1242,14 @@
   .schedule-conference-heading {
     font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     font-size: 0.85rem;
-    font-weight: 200;
+    font-weight: 500;
     letter-spacing: 0.1em;
-    color: white;
+    text-transform: uppercase;
+    color: color-mix(
+      in oklab,
+      var(--color-theme-on-primary, white) 80%,
+      transparent
+    );
     background: none;
     border: none;
     padding: 0;
@@ -1236,7 +1262,7 @@
     text-align: left;
   }
   .schedule-conference-heading:hover {
-    color: oklab(100% 0 0 / 0.7);
+    color: var(--color-theme-on-primary, white);
   }
   .conf-standings-arrow {
     font-size: 1.1em;
