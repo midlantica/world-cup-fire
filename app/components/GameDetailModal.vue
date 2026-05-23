@@ -465,6 +465,24 @@
     () => TEAM_SHORT_NAME[awayTeam.value] ?? awayTeam.value
   )
 
+  // ── Match events filtered by home/away team ───────────────────────────────
+  // Use the ESPN team IDs from the detail.teams array (matched by homeAway flag)
+  // rather than TEAM_ESPN_ID lookup, so we don't depend on name-matching.
+  const homeMatchEvents = computed<MatchEvent[]>(() => {
+    if (!detail.value?.matchEvents) return []
+    // Find the home team's ESPN ID from the detail teams array
+    const homeTeamDetail = detail.value.teams.find((t) => t.homeAway === 'home')
+    const homeId = homeTeamDetail?.id ?? homeEspnId.value ?? ''
+    return detail.value.matchEvents.filter((e) => e.teamId === homeId)
+  })
+
+  const awayMatchEvents = computed<MatchEvent[]>(() => {
+    if (!detail.value?.matchEvents) return []
+    const awayTeamDetail = detail.value.teams.find((t) => t.homeAway === 'away')
+    const awayId = awayTeamDetail?.id ?? awayEspnId.value ?? ''
+    return detail.value.matchEvents.filter((e) => e.teamId === awayId)
+  })
+
   const homeLeaders = computed(() => {
     if (!detail.value) return null
     const homeId = homeEspnId.value
@@ -687,12 +705,7 @@
             >
               <!-- Home events: right-aligned -->
               <div class="header-events-home">
-                <template
-                  v-for="(ev, i) in detail.matchEvents.filter(
-                    (e) => e.teamId === (detail?.teams[0]?.id ?? '')
-                  )"
-                  :key="i"
-                >
+                <template v-for="(ev, i) in homeMatchEvents" :key="i">
                   <span class="event-item">
                     <span v-if="ev.type === 'goal'" class="event-icon">⚽</span>
                     <span
@@ -710,12 +723,7 @@
               </div>
               <!-- Away events: left-aligned -->
               <div class="header-events-away">
-                <template
-                  v-for="(ev, i) in detail.matchEvents.filter(
-                    (e) => e.teamId === (detail?.teams[1]?.id ?? '')
-                  )"
-                  :key="i"
-                >
+                <template v-for="(ev, i) in awayMatchEvents" :key="i">
                   <span class="event-item">
                     <span v-if="ev.type === 'goal'" class="event-icon">⚽</span>
                     <span

@@ -331,12 +331,18 @@
   onMounted(async () => {
     // Apply initial route state
     const path = route.path
+    const isGameRoute = path === '/game'
+    const gameId = isGameRoute
+      ? (route.query.id as string | undefined)
+      : undefined
+
     if (path === '/team') {
       const name = route.query.name as string | undefined
       viewTeam.value = name ?? null
       teamModalOpen.value = true
       await applyTab('scores')
-    } else if (path === '/game') {
+    } else if (isGameRoute) {
+      // Open modal immediately — match data will be set after initialLoad
       gameDetailOpen.value = true
       await applyTab('scores')
     } else {
@@ -345,6 +351,37 @@
     }
 
     await initialLoad()
+
+    // After scores are loaded, resolve the match for a /game?id= refresh
+    if (isGameRoute && gameId) {
+      // Search all loaded weeks
+      let allMatches = [
+        ...weeks.this.matches,
+        ...weeks.last.matches,
+        ...weeks.next.matches,
+      ]
+      let match = allMatches.find((m) => m.id === gameId)
+
+      // If not found, eagerly fetch last + next weeks and try again
+      if (!match) {
+        await Promise.all([fetchWeek('last'), fetchWeek('next')])
+        allMatches = [
+          ...weeks.this.matches,
+          ...weeks.last.matches,
+          ...weeks.next.matches,
+        ]
+        match = allMatches.find((m) => m.id === gameId)
+      }
+
+      if (match) {
+        gameDetailMatch.value = match
+      } else {
+        // Game not found in any week — close the modal gracefully
+        gameDetailOpen.value = false
+        history.replaceState(history.state, '', '/')
+      }
+    }
+
     startPoll()
   })
 
