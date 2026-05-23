@@ -165,31 +165,87 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    // ── Goal leaders derived from keyEvents ──────────────────────────────────
-    // ESPN's leaders endpoint doesn't include a "goals" category, so we
-    // count goals per player per team from the keyEvents scoring plays.
+    // ── Key events: goals + cards ─────────────────────────────────────────────
+    // Parse keyEvents into a structured list for the scorers row in the header.
+    // Each entry: { teamId, type: 'goal'|'yellow'|'red', lastName, clock }
     const keyEvents = (raw.keyEvents as Array<Record<string, unknown>>) ?? []
+
+    interface MatchEvent {
+      teamId: string
+      type: 'goal' | 'yellow' | 'red'
+      lastName: string
+      clock: string
+    }
+
+    const matchEvents: MatchEvent[] = []
+
     // Map: teamId → Map<athleteName, goalCount>
     const goalsByTeam = new Map<string, Map<string, number>>()
-    // Also need teamId from keyEvents — use team.id if present
+
     for (const ke of keyEvents) {
-      const typeText =
-        ((ke.type as Record<string, unknown>)?.text as string)?.toLowerCase() ??
-        ''
-      if (!typeText.startsWith('goal')) continue
+      // ke.type is an object: { id, text, type }
+      // Use the machine-readable slug (.type.type) for reliable matching:
+      //   "goal", "own-goal", "yellow-card", "red-card"
+      const typeObj = ke.type as Record<string, unknown> | undefined
+      const typeSlug =
+        (typeObj?.type as string | undefined)?.toLowerCase() ?? ''
       const keTeam = ke.team as Record<string, unknown> | undefined
       const teamId = keTeam?.id as string | undefined
       if (!teamId) continue
+
       const participants =
         (ke.participants as Array<Record<string, unknown>>) ?? []
       const ath = participants[0]?.athlete as
         | Record<string, unknown>
         | undefined
-      const athleteName = ath?.displayName as string | undefined
-      if (!athleteName) continue
-      if (!goalsByTeam.has(teamId)) goalsByTeam.set(teamId, new Map())
-      const teamGoals = goalsByTeam.get(teamId)!
-      teamGoals.set(athleteName, (teamGoals.get(athleteName) ?? 0) + 1)
+      const athleteName = (ath?.displayName as string | undefined) ?? ''
+      // Use last name only (last word of display name)
+      const lastName = athleteName.split(' ').pop() ?? athleteName
+
+      // Clock: ESPN provides clock.displayValue like "22'" or "45+2'"
+      const clockObj = ke.clock as Record<string, unknown> | undefined
+      const clock = (clockObj?.displayValue as string | undefined) ?? ''
+
+      if (typeSlug === 'goal') {
+        // Regular goal — credit to the scoring team
+        if (!goalsByTeam.has(teamId)) goalsByTeam.set(teamId, new Map())
+        const teamGoals = goalsByTeam.get(teamId)!
+        teamGoals.set(athleteName, (teamGoals.get(athleteName) ?? 0) + 1)
+
+        if (lastName) {
+          matchEvents.push({ teamId, type: 'goal', lastName, clock })
+        }
+      } else if (typeSlug === 'own-goal') {
+        // Own goal — ESPN's teamId is the team whose player scored it (conceding team).
+        // The goal counts for the OTHER team (the benefiting team).
+        // Find the opponent's teamId from the competitors list.
+        const opponentId = competitors.find(
+          (c) => (c.team as Record<string, unknown>)?.id !== teamId
+        )
+          ? ((
+              competitors.find(
+                (c) => (c.team as Record<string, unknown>)?.id !== teamId
+              )?.team as Record<string, unknown>
+            )?.id as string | undefined)
+          : undefined
+        const ogLastName = lastName ? `${lastName} (og)` : ''
+        if (ogLastName && opponentId) {
+          matchEvents.push({
+            teamId: opponentId,
+            type: 'goal',
+            lastName: ogLastName,
+            clock,
+          })
+        }
+      } else if (typeSlug === 'yellow-card') {
+        if (lastName) {
+          matchEvents.push({ teamId, type: 'yellow', lastName, clock })
+        }
+      } else if (typeSlug === 'red-card') {
+        if (lastName) {
+          matchEvents.push({ teamId, type: 'red', lastName, clock })
+        }
+      }
     }
 
     // Leaders
@@ -282,6 +338,7 @@ export default defineEventHandler(async (event) => {
       leaders,
       headToHead,
       info,
+      matchEvents,
       hasOdds: raw.hasOdds as boolean | undefined,
     }
 
