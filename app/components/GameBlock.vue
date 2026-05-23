@@ -190,7 +190,7 @@
           />
         </span>
         <span class="team-name-text">{{ match.home }}</span>
-        <span v-if="!isFT" class="team-rec">{{ match.homeRec }}</span>
+        <span v-if="isNS" class="team-rec">{{ match.homeRec }}</span>
       </div>
       <div v-if="!isNS" class="score-cell">
         <span
@@ -221,7 +221,7 @@
           />
         </span>
         <span class="team-name-text">{{ match.away }}</span>
-        <span v-if="!isFT" class="team-rec">{{ match.awayRec }}</span>
+        <span v-if="isNS" class="team-rec">{{ match.awayRec }}</span>
       </div>
       <div v-if="!isNS" class="score-cell">
         <span
