@@ -272,6 +272,7 @@
     line-height: 1;
     pointer-events: none;
     user-select: none;
+    z-index: 1;
   }
 
   .game-block-fire {
