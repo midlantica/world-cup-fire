@@ -175,6 +175,7 @@ export default defineEventHandler(async (event) => {
       type: 'goal' | 'yellow' | 'red'
       lastName: string
       clock: string
+      isOG?: boolean
     }
 
     const matchEvents: MatchEvent[] = []
@@ -228,13 +229,13 @@ export default defineEventHandler(async (event) => {
               )?.team as Record<string, unknown>
             )?.id as string | undefined)
           : undefined
-        const ogLastName = lastName ? `${lastName} (og)` : ''
-        if (ogLastName && opponentId) {
+        if (lastName && opponentId) {
           matchEvents.push({
             teamId: opponentId,
             type: 'goal',
-            lastName: ogLastName,
+            lastName,
             clock,
+            isOG: true,
           })
         }
       } else if (typeSlug === 'yellow-card') {

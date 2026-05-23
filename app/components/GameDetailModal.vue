@@ -758,6 +758,7 @@
                   >
                     <span class="event-icon">⚽</span>
                     <span class="event-name">{{ ev.lastName }}</span>
+                    <span v-if="ev.isOG" class="event-og">OG</span>
                     <span class="event-clock">{{ ev.clock }}</span>
                     <span
                       v-if="
@@ -831,6 +832,7 @@
                   >
                     <span class="event-icon">⚽</span>
                     <span class="event-name">{{ ev.lastName }}</span>
+                    <span v-if="ev.isOG" class="event-og">OG</span>
                     <span class="event-clock">{{ ev.clock }}</span>
                     <span
                       v-if="
@@ -1793,7 +1795,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.1rem 0.3rem;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 200;
     color: oklab(100% 0 0 / 0.85);
     letter-spacing: 0.03em;
@@ -1828,7 +1830,7 @@
   }
 
   .event-icon {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     line-height: 1;
   }
 
@@ -1853,8 +1855,16 @@
     font-weight: 300;
   }
 
-  .event-clock {
+  .event-og {
     font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: oklab(100% 0 0 / 0.5);
+    text-transform: uppercase;
+  }
+
+  .event-clock {
+    font-size: 0.85rem;
     color: oklab(100% 0 0 / 0.5);
   }
 

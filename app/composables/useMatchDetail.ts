@@ -84,6 +84,14 @@ export interface MatchInfo {
   country?: string
 }
 
+export interface MatchEvent {
+  teamId: string
+  type: 'goal' | 'yellow' | 'red'
+  lastName: string
+  clock: string
+  isOG?: boolean
+}
+
 export interface MatchDetail {
   eventId: string
   teams: MatchDetailTeam[]
@@ -93,6 +101,7 @@ export interface MatchDetail {
   leaders: TeamLeaders[]
   headToHead: H2HGame[]
   info: MatchInfo
+  matchEvents?: MatchEvent[]
   hasOdds?: boolean
 }
 
