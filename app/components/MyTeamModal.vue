@@ -56,7 +56,49 @@
     const dark = '#0f172a'
     vars['--color-theme-on-primary'] =
       wcagContrast(primary, white) >= wcagContrast(primary, dark) ? white : dark
+    // Scrollbar thumb: whichever of primary/secondary has the highest contrast against black
+    const black = '#000000'
+    const sec = secondary ?? palette['950'] ?? primary
+    vars['--color-theme-scrollbar'] =
+      wcagContrast(primary, black) >= wcagContrast(sec, black) ? primary : sec
     return vars
+  })
+
+  // CSS custom properties only cascade DOWN the DOM tree. The backdrop is the
+  // PARENT of modal-card, so it cannot read vars set on modal-card. We need to
+  // set --color-theme-scrollbar directly on the backdrop element too.
+  const backdropStyle = computed(() => {
+    const team = displayTeam.value
+    if (!team) return {}
+    const pair = TEAM_COLOR_PAIRS[team]
+    const primary = pair?.primary ?? TEAM_COLORS[team] ?? '#6b7280'
+    const secondary = pair?.secondary
+    const palette = buildPalette(primary, secondary)
+    const black = '#000000'
+    const sec = secondary ?? palette['950'] ?? primary
+    const scrollbar =
+      wcagContrast(primary, black) >= wcagContrast(sec, black) ? primary : sec
+    return { '--color-theme-scrollbar': scrollbar }
+  })
+
+  // ── Body scroll lock ──────────────────────────────────────────────────────
+  // Prevent the page from scrolling (and showing its scrollbar) while the
+  // modal is open. We add a class to <html> so we can use !important in CSS,
+  // which is more reliable than inline styles competing with other rules.
+  watchEffect(() => {
+    if (import.meta.client) {
+      if (props.open) {
+        document.documentElement.classList.add('modal-open')
+      } else {
+        document.documentElement.classList.remove('modal-open')
+      }
+    }
+  })
+
+  onUnmounted(() => {
+    if (import.meta.client) {
+      document.documentElement.classList.remove('modal-open')
+    }
   })
 
   // ── Tab state ─────────────────────────────────────────────────────────────
@@ -671,6 +713,7 @@
       <div
         v-if="open && displayTeam"
         class="modal-backdrop"
+        :style="backdropStyle"
         @mousedown.self="emit('close')"
       >
         <div
@@ -1096,6 +1139,11 @@
     padding: 1rem;
     padding-bottom: 3rem;
     overflow-y: auto;
+    /* Hide the backdrop's own scrollbar — the modal-body has its own scrollbar */
+    scrollbar-width: none;
+  }
+  .modal-backdrop::-webkit-scrollbar {
+    display: none;
   }
 
   /* ── Card ─────────────────────────────────────────────────────────────────── */
@@ -1338,7 +1386,16 @@
     overflow-x: hidden;
     flex: 1;
     max-height: 70dvh;
-    padding: 0.75rem 1.25rem 1.25rem;
+    padding: 0.5rem 0.85rem 1rem;
+    /* --color-theme-scrollbar cascades from .modal-card via :style binding;
+       the global scrollbar.css picks it up automatically */
+    scrollbar-width: thin;
+  }
+  .modal-body::-webkit-scrollbar {
+    width: 4px;
+  }
+  .modal-body::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   /* ── Tab slide transitions ────────────────────────────────────────────────── */
@@ -1730,18 +1787,18 @@
     /* Pull the squads table out to the modal-body edges */
     .squads-wrap,
     .squads-fallback-wrap {
-      margin-left: -1.25rem;
-      margin-right: -1.25rem;
+      margin-left: -0.85rem;
+      margin-right: -0.85rem;
     }
 
     .squads-head {
-      padding: 0.25rem 1rem 0.4rem 1rem;
+      padding: 0.25rem 0.85rem 0.4rem 0.85rem;
       grid-template-columns: 1.75rem 2.75rem 1fr;
       gap: 0.35rem;
     }
 
     .squads-row {
-      padding: 0.3rem 1rem;
+      padding: 0.3rem 0.85rem;
       grid-template-columns: 1.75rem 2.75rem 1fr;
       gap: 0.35rem;
       border-radius: 0;
@@ -1754,7 +1811,7 @@
     }
 
     .squads-fallback-note {
-      padding: 0.25rem 1rem 0;
+      padding: 0.25rem 0.85rem 0;
     }
   }
 

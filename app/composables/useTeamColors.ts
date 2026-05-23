@@ -20,7 +20,7 @@ export const TEAM_COLOR_PAIRS: Record<string, TeamColorPair> = {
   'D.C. United': { primary: '#d61018', secondary: '#0a0a0a' }, // red / black
   'FC Cincinnati': { primary: '#f05323', secondary: '#001a57' }, // orange / navy
   'FC Dallas': { primary: '#c6093b', secondary: '#0d1117' }, // red / dark
-  'Houston Dynamo FC': { primary: '#f4911e', secondary: '#0a0a0a' }, // orange / black
+  'Houston Dynamo FC': { primary: '#ff6b03', secondary: '#0a0a0a' }, // orange / black
   'Inter Miami CF': { primary: '#f7b5cd', secondary: '#0a0a0a' }, // pink / black
   'LA Galaxy': { primary: '#ffd700', secondary: '#00235d' }, // gold / navy
   LAFC: { primary: '#c7a36f', secondary: '#0a0a0a' }, // gold / black

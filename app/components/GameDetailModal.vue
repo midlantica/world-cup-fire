@@ -440,7 +440,7 @@
     'Orlando City SC': 'Orlando City',
     'Philadelphia Union': 'Philadelphia',
     'Portland Timbers': 'Portland',
-    'Real Salt Lake': 'Real Salt Lake',
+    'Real Salt Lake': 'RSL',
     'Red Bull New York': 'NY Red Bulls',
     'San Diego FC': 'San Diego FC',
     'San Jose Earthquakes': 'San Jose',
@@ -516,7 +516,7 @@
                   class="header-mobile-name header-mobile-name-btn"
                   @click.stop="emit('select-team', homeTeam)"
                 >
-                  {{ homeTeam }}
+                  {{ homeAbbr }}
                 </button>
                 <span class="header-mobile-rec">{{ match.homeRec }}</span>
                 <span class="header-mobile-spacer" />
@@ -548,7 +548,7 @@
                   class="header-mobile-name header-mobile-name-btn"
                   @click.stop="emit('select-team', awayTeam)"
                 >
-                  {{ awayTeam }}
+                  {{ awayAbbr }}
                 </button>
                 <span class="header-mobile-rec">{{ match.awayRec }}</span>
                 <span class="header-mobile-spacer" />
@@ -1283,9 +1283,9 @@
   }
 
   .header-mobile-rec {
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: oklab(100% 0 0 / 0.6);
+    font-size: 1rem;
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.85);
     letter-spacing: 0.06em;
     flex-shrink: 0;
   }
@@ -1637,7 +1637,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
-    padding: 0.5rem 0.7rem 0.75rem;
+    padding: 0.5rem 0.85rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;

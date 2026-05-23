@@ -1,3 +1,16 @@
+/* ── Modal open: hide page scrollbar behind the modal ────────────────────── */
+/* When MyTeamModal is open, we add .modal-open to <html> to prevent the page
+   scrollbar from showing (and inheriting the team's bright color). Using
+   !important ensures this wins over any other overflow rules. */
+html.modal-open {
+  overflow: hidden !important;
+}
+
+/* When the modal is open, also hide the body scrollbar thumb */
+html.modal-open body {
+  overflow: hidden !important;
+}
+
 /* ── Custom scrollbar — themed to match the app ───────────────────────────── */
 /* Webkit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
@@ -11,13 +24,22 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-theme-700, oklch(37.2% 0.044 257.9));
+  /* --color-theme-scrollbar is set on modal elements to show the team color.
+     Falls back to the default app theme color for all other scrollbars. */
+  background: var(
+    --color-theme-scrollbar,
+    var(--color-theme-700, oklch(37.2% 0.044 257.9))
+  );
   border-radius: 3px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-theme-600, oklch(44.6% 0.043 257.1));
+  background: var(
+    --color-theme-scrollbar,
+    var(--color-theme-600, oklch(44.6% 0.043 257.1))
+  );
+  filter: brightness(1.1);
 }
 
 ::-webkit-scrollbar-corner {
@@ -27,6 +49,9 @@
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-theme-700, oklch(37.2% 0.044 257.9))
+  scrollbar-color: var(
+      --color-theme-scrollbar,
+      var(--color-theme-700, oklch(37.2% 0.044 257.9))
+    )
     oklab(100% 0 0 / 0.04);
 }
