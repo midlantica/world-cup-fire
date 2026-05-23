@@ -4,6 +4,7 @@
     useMatchDetail,
     normaliseOdds,
     fractionalToMoneyline,
+    type MatchEvent,
   } from '../composables/useMatchDetail'
   import { TEAM_LOGO, TEAM_VENUE, TEAM_ESPN_ID } from '../composables/useMyTeam'
   import { useTimezone } from '../composables/useTimezone'
@@ -268,6 +269,12 @@
   function getStat(teamId: string, statName: string): string {
     const ts = detail.value?.teamStats.find((t) => t.teamId === teamId)
     return ts?.stats.find((s) => s.name === statName)?.displayValue ?? '–'
+  }
+
+  function getStatDisplay(teamId: string, statName: string): string {
+    const val = getStat(teamId, statName)
+    if (statName === 'possessionPct' && val !== '–') return val + '%'
+    return val
   }
 
   function statBarWidth(
@@ -569,6 +576,14 @@
               </div>
             </div>
 
+            <!-- Venue line — topmost, desktop only -->
+            <div
+              v-if="matchVenueAttendance"
+              class="header-venue-line header-venue-line-top"
+            >
+              {{ matchVenueAttendance }}
+            </div>
+
             <!-- Desktop header (hidden on mobile) -->
             <div class="header-row">
               <!-- Home team: info (right-aligned) + logo -->
@@ -665,9 +680,57 @@
               </div>
             </div>
 
-            <!-- Venue + attendance — full-width line below the grid (desktop only) -->
-            <div v-if="matchVenueAttendance" class="header-venue-line">
-              {{ matchVenueAttendance }}
+            <!-- Scorers / cards row — below the score grid, desktop only -->
+            <div
+              v-if="detail?.matchEvents?.length && match.status.code !== 'ns'"
+              class="header-events-row"
+            >
+              <!-- Home events: right-aligned -->
+              <div class="header-events-home">
+                <template
+                  v-for="(ev, i) in detail.matchEvents.filter(
+                    (e) => e.teamId === (detail?.teams[0]?.id ?? '')
+                  )"
+                  :key="i"
+                >
+                  <span class="event-item">
+                    <span v-if="ev.type === 'goal'" class="event-icon">⚽</span>
+                    <span
+                      v-else-if="ev.type === 'yellow'"
+                      class="event-card event-card-yellow"
+                    />
+                    <span
+                      v-else-if="ev.type === 'red'"
+                      class="event-card event-card-red"
+                    />
+                    <span class="event-name">{{ ev.lastName }}</span>
+                    <span class="event-clock">{{ ev.clock }}</span>
+                  </span>
+                </template>
+              </div>
+              <!-- Away events: left-aligned -->
+              <div class="header-events-away">
+                <template
+                  v-for="(ev, i) in detail.matchEvents.filter(
+                    (e) => e.teamId === (detail?.teams[1]?.id ?? '')
+                  )"
+                  :key="i"
+                >
+                  <span class="event-item">
+                    <span v-if="ev.type === 'goal'" class="event-icon">⚽</span>
+                    <span
+                      v-else-if="ev.type === 'yellow'"
+                      class="event-card event-card-yellow"
+                    />
+                    <span
+                      v-else-if="ev.type === 'red'"
+                      class="event-card event-card-red"
+                    />
+                    <span class="event-name">{{ ev.lastName }}</span>
+                    <span class="event-clock">{{ ev.clock }}</span>
+                  </span>
+                </template>
+              </div>
             </div>
 
             <!-- Close button -->
@@ -763,7 +826,7 @@
                                 : '',
                             ]"
                             >{{
-                              getStat(
+                              getStatDisplay(
                                 detail.teamStats[0]?.teamId ?? '',
                                 statName
                               )
@@ -793,7 +856,7 @@
                                 : '',
                             ]"
                             >{{
-                              getStat(
+                              getStatDisplay(
                                 detail.teamStats[1]?.teamId ?? '',
                                 statName
                               )
@@ -1511,8 +1574,8 @@
     color: oklab(100% 0 0 / 0.5);
   }
 
-  /* Venue + attendance — full-width line below the 3-col grid (desktop only) */
-  .header-venue-line {
+  /* Venue line — topmost position (before header-row), desktop only */
+  .header-venue-line-top {
     font-size: 0.8rem;
     font-weight: 400;
     color: oklab(100% 0 0 / 0.5);
@@ -1520,13 +1583,86 @@
     letter-spacing: 0.05em;
     line-height: 1.35;
     width: 100%;
-    margin-top: 0.3rem;
+    margin-bottom: 0.4rem;
   }
 
   @media (max-width: 599px) {
-    .header-venue-line {
+    .header-venue-line-top {
       display: none;
     }
+  }
+
+  /* ── Scorers / cards row ──────────────────────────────────────────────────── */
+  .header-events-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    margin-top: 0.4rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid oklab(100% 0 0 / 0.07);
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 599px) {
+    .header-events-row {
+      display: none;
+    }
+  }
+
+  .header-events-home {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+
+  .header-events-away {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .event-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 200;
+    color: oklab(100% 0 0 / 0.85);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .event-icon {
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  /* Tiny coloured card square */
+  .event-card {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.65rem;
+    border-radius: 0.075rem;
+    flex-shrink: 0;
+  }
+
+  .event-card-yellow {
+    background: #f5c518;
+  }
+
+  .event-card-red {
+    background: #e03030;
+  }
+
+  .event-name {
+    font-weight: 300;
+  }
+
+  .event-clock {
+    font-size: 0.7rem;
+    color: oklab(100% 0 0 / 0.5);
   }
 
   /* Badges */

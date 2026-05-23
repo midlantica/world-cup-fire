@@ -275,11 +275,17 @@
     if (val) console.log(`[MLS Scores] Updated ${val}`)
   })
 
-  const hasLiveMatches = computed(() =>
-    weeks[activeTab.value].matches.some(
-      (m) => m.status.code === 'live' || m.status.code === 'ht'
+  // Poll when there are live/HT matches, OR when there are "not started" matches
+  // whose kickoff time has already passed (they may have gone live since last fetch).
+  const hasLiveMatches = computed(() => {
+    const now = Date.now()
+    return weeks[activeTab.value].matches.some(
+      (m) =>
+        m.status.code === 'live' ||
+        m.status.code === 'ht' ||
+        (m.status.code === 'ns' && new Date(m.date).getTime() <= now)
     )
-  )
+  })
 
   let pollTimer: ReturnType<typeof setInterval> | null = null
 
