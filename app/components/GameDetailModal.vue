@@ -1741,11 +1741,24 @@
     min-width: 0;
   }
 
+  .header-events-col-home {
+    align-items: flex-end;
+  }
+
+  .header-events-col-away {
+    align-items: flex-start;
+  }
+
   @media (max-width: 599px) {
     .header-events-col-home {
+      align-items: center;
       padding-bottom: 0.3rem;
       border-bottom: 1px solid oklab(100% 0 0 / 0.08);
       margin-bottom: 0.3rem;
+    }
+
+    .header-events-col-away {
+      align-items: center;
     }
   }
 
