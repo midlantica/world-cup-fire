@@ -277,10 +277,14 @@ export default defineEventHandler(async (event) => {
   const now = Date.now()
   const cached = cache.get(cacheKey)
 
+  // If the client sent a cache-buster (_t param), skip the server cache entirely
+  // so we always fetch fresh data from ESPN on force-refresh calls.
+  const bustCache = !!query._t
+
   // Return cached data if still fresh.
   // Use the short TTL only when the cached data contains live/HT events so we
   // don't hammer ESPN during off-hours or between match days.
-  if (cached) {
+  if (!bustCache && cached) {
     const ttl = hasLiveEvents(cached.data)
       ? CACHE_TTL_LIVE_MS
       : CACHE_TTL_IDLE_MS

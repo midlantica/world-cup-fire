@@ -318,9 +318,12 @@ export function useScores() {
     w.loading = true
     w.error = null
     try {
-      const data = await $fetch<Record<string, unknown>>(
-        `/api/scores?week=${tab}`
-      )
+      // Append a cache-buster on force-refresh so the server bypasses its
+      // in-memory cache and fetches fresh data from ESPN.
+      const url = force
+        ? `/api/scores?week=${tab}&_t=${Date.now()}`
+        : `/api/scores?week=${tab}`
+      const data = await $fetch<Record<string, unknown>>(url)
       // Server returns _error:true when ESPN is down and no cache exists
       // In that case keep existing matches (stale) rather than clearing them
       if (!data._error) {
