@@ -207,7 +207,10 @@ export default defineEventHandler(async (event) => {
       const clockObj = ke.clock as Record<string, unknown> | undefined
       const clock = (clockObj?.displayValue as string | undefined) ?? ''
 
-      if (typeSlug.includes('goal') && typeSlug !== 'own-goal') {
+      if (
+        (typeSlug.includes('goal') || typeSlug === 'penalty---scored') &&
+        typeSlug !== 'own-goal'
+      ) {
         // Regular goal (covers "goal", "penalty-goal", "header-goal", etc.)
         // Credit to the scoring team
         if (!goalsByTeam.has(teamId)) goalsByTeam.set(teamId, new Map())
