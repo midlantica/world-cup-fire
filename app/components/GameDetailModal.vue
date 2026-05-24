@@ -1825,6 +1825,7 @@
     font-weight: 200;
     color: oklab(100% 0 0 / 0.85);
     letter-spacing: 0.03em;
+    justify-content: flex-start;
   }
 
   /* Mobile: show team abbreviation label; hidden on desktop */
