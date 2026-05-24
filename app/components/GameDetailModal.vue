@@ -125,13 +125,29 @@
   }>()
 
   // ── Data fetching ─────────────────────────────────────────────────────────────
-  const { detail, loading, error, fetchDetail, clear } = useMatchDetail()
+  const {
+    detail,
+    loading,
+    error,
+    fetchDetail,
+    startPolling,
+    stopPolling,
+    clear,
+  } = useMatchDetail()
   const { iana } = useTimezone()
+
+  function isLiveOrHT(m: Match | null) {
+    return m?.status.code === 'live' || m?.status.code === 'ht'
+  }
 
   watch(
     () => props.match,
     (m) => {
-      if (m && props.open) fetchDetail(m.id)
+      if (m && props.open) {
+        fetchDetail(m.id)
+        if (isLiveOrHT(m)) startPolling(m.id)
+        else stopPolling()
+      }
     }
   )
 
@@ -141,14 +157,19 @@
       if (open && props.match) {
         fetchDetail(props.match.id)
         document.body.style.overflow = 'hidden'
+        if (isLiveOrHT(props.match)) startPolling(props.match.id)
       } else {
         document.body.style.overflow = ''
-        if (!open) clear()
+        if (!open) {
+          stopPolling()
+          clear()
+        }
       }
     }
   )
 
   onUnmounted(() => {
+    stopPolling()
     document.body.style.overflow = ''
   })
 
@@ -206,12 +227,14 @@
   const matchMeta = computed(() => {
     if (!props.match?.date) return ''
     const d = new Date(props.match.date)
-    const day = d.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      timeZone: iana.value,
-    })
+    const day = d
+      .toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        timeZone: iana.value,
+      })
+      .toUpperCase()
     const time = d.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -768,8 +791,7 @@
                           1
                       "
                       class="event-sep"
-                      >,</span
-                    >
+                    />
                   </span>
                 </div>
                 <!-- Cards row -->
@@ -804,8 +826,7 @@
                           1
                       "
                       class="event-sep"
-                      >,</span
-                    >
+                    />
                   </span>
                 </div>
               </div>
@@ -842,8 +863,7 @@
                           1
                       "
                       class="event-sep"
-                      >,</span
-                    >
+                    />
                   </span>
                 </div>
                 <!-- Cards row -->
@@ -878,8 +898,7 @@
                           1
                       "
                       class="event-sep"
-                      >,</span
-                    >
+                    />
                   </span>
                 </div>
               </div>
@@ -944,11 +963,29 @@
                 <!-- ── STATS TAB ───────────────────────────────────────────── -->
                 <template v-if="activeTab === 'overview' && detail">
                   <div v-if="detail.teamStats.length >= 2" class="stats-table">
-                    <!-- Header: home name | Team Stats | away name -->
+                    <!-- Header: [logo home-name] | center | [logo away-name] centered above columns -->
                     <div class="stats-head">
-                      <div class="stats-th stats-th-home">{{ homeAbbr }}</div>
+                      <div class="stats-th stats-th-home">
+                        <img
+                          v-if="homeLogo"
+                          :src="homeLogo"
+                          :alt="homeTeam"
+                          class="head-logo"
+                        />
+                        <span class="name-short">{{ homeAbbr }}</span>
+                        <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
+                      </div>
                       <div class="stats-th-center"></div>
-                      <div class="stats-th stats-th-away">{{ awayAbbr }}</div>
+                      <div class="stats-th stats-th-away">
+                        <img
+                          v-if="awayLogo"
+                          :src="awayLogo"
+                          :alt="awayTeam"
+                          class="head-logo"
+                        />
+                        <span class="name-short">{{ awayAbbr }}</span>
+                        <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
+                      </div>
                     </div>
                     <template
                       v-for="(statName, idx) in FEATURED_STATS"
@@ -1024,16 +1061,33 @@
                 <!-- ── LEADERS TAB ─────────────────────────────────────────── -->
                 <template v-else-if="activeTab === 'leaders' && detail">
                   <div v-if="homeLeaders || awayLeaders" class="leaders-table">
-                    <!-- Header: home name | home-val | category | away-val | away name -->
-                    <div class="leaders-head">
+                    <!-- Header: [home name + logo] | · | category | · | [logo + away name] -->
+                    <div
+                      class="leaders-head"
+                      style="grid-template-columns: 1fr 2.5rem 5rem 2.5rem 1fr"
+                    >
                       <div class="leaders-th leaders-th-home">
-                        {{ homeAbbr }}
+                        <span class="name-short">{{ homeAbbr }}</span>
+                        <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
+                        <img
+                          v-if="homeLogo"
+                          :src="homeLogo"
+                          :alt="homeTeam"
+                          class="head-logo"
+                        />
                       </div>
-                      <div></div>
                       <div class="leaders-th-center"></div>
-                      <div></div>
+                      <div class="leaders-th-center"></div>
+                      <div class="leaders-th-center"></div>
                       <div class="leaders-th leaders-th-away">
-                        {{ awayAbbr }}
+                        <img
+                          v-if="awayLogo"
+                          :src="awayLogo"
+                          :alt="awayTeam"
+                          class="head-logo"
+                        />
+                        <span class="name-short">{{ awayAbbr }}</span>
+                        <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
                       </div>
                     </div>
                     <!-- Rows: player-name | home-val | category | away-val | player-name -->
@@ -1089,11 +1143,33 @@
                 <!-- ── LINEUPS TAB ─────────────────────────────────────────── -->
                 <template v-else-if="activeTab === 'lineups' && detail">
                   <div class="squads-table">
-                    <!-- Header row: home abbr | pos | away abbr -->
+                    <!-- Header row: [logo + name centered] | pos | [logo + name centered] -->
                     <div class="squads-head">
-                      <div class="squads-th squads-th-home">{{ homeAbbr }}</div>
+                      <div class="squads-th squads-th-home">
+                        <img
+                          v-if="homeLogo"
+                          :src="homeLogo"
+                          :alt="homeTeam"
+                          class="squads-th-logo"
+                        />
+                        <span>
+                          <span class="name-short">{{ homeAbbr }}</span>
+                          <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
+                        </span>
+                      </div>
                       <div class="squads-th-center"></div>
-                      <div class="squads-th squads-th-away">{{ awayAbbr }}</div>
+                      <div class="squads-th squads-th-away">
+                        <img
+                          v-if="awayLogo"
+                          :src="awayLogo"
+                          :alt="awayTeam"
+                          class="squads-th-logo"
+                        />
+                        <span>
+                          <span class="name-short">{{ awayAbbr }}</span>
+                          <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
+                        </span>
+                      </div>
                     </div>
                     <template
                       v-for="(_, rowIdx) in Array(
@@ -1111,15 +1187,19 @@
                         <!-- Home player: [sub-icon] [jersey] [name] → flush right -->
                         <div class="squads-player squads-player-home">
                           <span
-                            v-if="sortedPlayers(homeRoster)[rowIdx]?.subbedIn"
+                            v-if="
+                              match.status.code !== 'ns' &&
+                              sortedPlayers(homeRoster)[rowIdx]?.subbedIn
+                            "
                             class="sub-icon sub-in"
-                            >⯅</span
-                          >
+                          />
                           <span
-                            v-if="sortedPlayers(homeRoster)[rowIdx]?.subbedOut"
+                            v-if="
+                              match.status.code !== 'ns' &&
+                              sortedPlayers(homeRoster)[rowIdx]?.subbedOut
+                            "
                             class="sub-icon sub-out"
-                            >⯆</span
-                          >
+                          />
                           <span
                             v-if="sortedPlayers(homeRoster)[rowIdx]"
                             class="squad-jersey"
@@ -1169,15 +1249,19 @@
                             }}</span
                           >
                           <span
-                            v-if="sortedPlayers(awayRoster)[rowIdx]?.subbedIn"
+                            v-if="
+                              match.status.code !== 'ns' &&
+                              sortedPlayers(awayRoster)[rowIdx]?.subbedIn
+                            "
                             class="sub-icon sub-in"
-                            >⯅</span
-                          >
+                          />
                           <span
-                            v-if="sortedPlayers(awayRoster)[rowIdx]?.subbedOut"
+                            v-if="
+                              match.status.code !== 'ns' &&
+                              sortedPlayers(awayRoster)[rowIdx]?.subbedOut
+                            "
                             class="sub-icon sub-out"
-                            >⯆</span
-                          >
+                          />
                         </div>
                       </div>
                     </template>
@@ -1199,7 +1283,7 @@
                     <div class="h2h-fixtures-table">
                       <div
                         v-for="(game, gi) in h2h"
-                        :key="game.id"
+                        :ey="game.id"
                         class="h2h-fx-row"
                         :class="{ 'row-stripe': gi % 2 === 1 }"
                       >
@@ -1763,30 +1847,34 @@
 
   .header-events-col {
     display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 0.1rem 0.4rem;
     flex: 1;
     min-width: 0;
   }
 
   .header-events-col-home {
-    align-items: flex-end;
+    justify-content: flex-end;
+    align-items: center;
   }
 
   .header-events-col-away {
-    align-items: flex-start;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   @media (max-width: 599px) {
     .header-events-col-home {
-      align-items: center;
+      justify-content: center;
       padding-bottom: 0.3rem;
       border-bottom: 1px solid oklab(100% 0 0 / 0.08);
       margin-bottom: 0.3rem;
     }
 
     .header-events-col-away {
-      align-items: center;
+      justify-content: center;
     }
   }
 
@@ -1826,7 +1914,8 @@
   }
 
   .event-sep {
-    color: oklab(100% 0 0 / 0.35);
+    display: inline-block;
+    width: 1rem;
   }
 
   .event-icon {
@@ -1870,28 +1959,25 @@
 
   /* Badges */
   .badge {
-    font-size: 0.6875rem;
-    font-weight: 400;
+    font-size: 1rem;
+    font-weight: 300;
     letter-spacing: 0.08em;
     padding: 0.15rem 0.4rem;
-    border-radius: 0.25rem;
+    border-radius: 0.2rem;
   }
 
   .badge-live {
-    background: oklab(34.8% -0.072 0.028 / 0.7);
     color: var(--color-text-accent);
-    border: 1px solid
-      color-mix(in oklab, var(--color-text-accent) 20%, transparent);
   }
 
   .badge-ht {
-    background: oklab(33.2% 0.028 0.062 / 0.7);
-    color: oklab(82.1% 0.022 0.082);
+    background: #3a2a10;
+    color: #c8a060;
   }
 
   .badge-ft {
-    background: oklab(100% 0 0 / 0.08);
-    color: oklab(100% 0 0);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
   }
 
   /* Close button — plain X in top-right corner, no circle */
@@ -2152,9 +2238,10 @@
 
   .stats-head {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: baseline;
-    padding: 0.4rem 0.5rem 0.5rem;
+    grid-template-columns: 1fr 7rem 1fr;
+    gap: 0;
+    align-items: center;
+    padding: 0.2rem 0 0.4rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     margin-bottom: 0.1rem;
   }
@@ -2164,29 +2251,28 @@
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: oklab(100% 0 0);
+    color: oklab(100% 0 0 / 0.85);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 
   .stats-th-home {
-    text-align: center;
+    justify-content: flex-end;
   }
 
   .stats-th-away {
-    text-align: center;
+    justify-content: flex-start;
   }
 
   .stats-th-center {
-    font-size: var(--modal-copy-size);
-    font-weight: 400;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: oklab(100% 0 0 / 0.5);
-    text-align: center;
+    /* empty center column — auto width, no content */
   }
 
   .stats-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 7rem 1fr;
+    gap: 0;
     align-items: center;
     padding: 0.2rem 0;
     min-height: 2rem;
@@ -2194,8 +2280,15 @@
 
   .stats-val-cell {
     display: flex;
-    justify-content: center;
     align-items: center;
+  }
+
+  .stats-val-home {
+    justify-content: flex-end;
+  }
+
+  .stats-val-away {
+    justify-content: flex-start;
   }
 
   .stats-num {
@@ -2231,7 +2324,7 @@
   .leaders-head {
     display: grid;
     grid-template-columns: 1fr 2.5rem 5rem 2.5rem 1fr;
-    align-items: baseline;
+    align-items: center;
     padding: 0.2rem 0 0.4rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     margin-bottom: 0.1rem;
@@ -2248,23 +2341,43 @@
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: oklab(100% 0 0);
+    color: oklab(100% 0 0 / 0.85);
   }
 
-  /* Home header sits above the name column only (col 1) */
+  /* Home header: [logo] [name] flush-right */
   .leaders-th-home {
-    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: flex-end;
     grid-column: 1;
   }
 
-  /* Away header sits above the name column only (col 5) */
+  /* Away header: [logo] [name] flush-left */
   .leaders-th-away {
-    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: flex-start;
     grid-column: 5;
   }
 
   .leaders-th-center {
     /* empty center cell in header */
+  }
+
+  .leaders-head-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Shared logo size for Stats and Leaders tab headers */
+  .head-logo {
+    width: 1.375rem;
+    height: 1.375rem;
+    object-fit: contain;
+    flex-shrink: 0;
   }
 
   .leaders-row {
@@ -2341,19 +2454,29 @@
     font-weight: 400;
     letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: oklab(100% 0 0);
+    color: oklab(100% 0 0 / 0.85);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 
   .squads-th-home {
-    text-align: right;
+    justify-content: flex-end;
   }
 
   .squads-th-away {
-    text-align: left;
+    justify-content: flex-start;
   }
 
   .squads-th-center {
     /* empty */
+  }
+
+  .squads-th-logo {
+    width: 1.375rem;
+    height: 1.375rem;
+    object-fit: contain;
+    flex-shrink: 0;
   }
 
   .squads-row {
@@ -2745,15 +2868,23 @@
   }
 
   .sub-icon {
-    font-size: 1.25rem;
+    display: inline-block;
     flex-shrink: 0;
-    line-height: 1;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
   }
   .sub-in {
-    color: oklab(0.86 -0.27 0.15);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 8px solid oklab(0.86 -0.27 0.15);
   }
   .sub-out {
-    color: oklab(0.6 0.21 0.11);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid oklab(0.6 0.21 0.11);
   }
 
   /* ── Clubs ────────────────────────────────────────────────────────────────── */
@@ -2863,6 +2994,20 @@
   .club-bio-empty {
     opacity: 0.5;
     font-style: italic;
+  }
+
+  /* ── Responsive team name: short on >425px, abbrev on ≤425px ─────────────── */
+  .name-abbrev {
+    display: none;
+  }
+
+  @media (max-width: 425px) {
+    .name-short {
+      display: none;
+    }
+    .name-abbrev {
+      display: inline;
+    }
   }
 
   /* ── No data ──────────────────────────────────────────────────────────────── */

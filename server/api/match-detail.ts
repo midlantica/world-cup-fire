@@ -207,15 +207,22 @@ export default defineEventHandler(async (event) => {
       const clockObj = ke.clock as Record<string, unknown> | undefined
       const clock = (clockObj?.displayValue as string | undefined) ?? ''
 
-      if (typeSlug === 'goal') {
-        // Regular goal — credit to the scoring team
+      if (typeSlug.includes('goal') && typeSlug !== 'own-goal') {
+        // Regular goal (covers "goal", "penalty-goal", "header-goal", etc.)
+        // Credit to the scoring team
         if (!goalsByTeam.has(teamId)) goalsByTeam.set(teamId, new Map())
         const teamGoals = goalsByTeam.get(teamId)!
-        teamGoals.set(athleteName, (teamGoals.get(athleteName) ?? 0) + 1)
+        if (athleteName)
+          teamGoals.set(athleteName, (teamGoals.get(athleteName) ?? 0) + 1)
 
-        if (lastName) {
-          matchEvents.push({ teamId, type: 'goal', lastName, clock })
-        }
+        // Always push goal events — even if ESPN provides no participant name
+        // (will render as ⚽ 25' with no name, better than showing nothing)
+        matchEvents.push({
+          teamId,
+          type: 'goal',
+          lastName: lastName || '',
+          clock,
+        })
       } else if (typeSlug === 'own-goal') {
         // Own goal — ESPN's teamId is the team whose player scored it (conceding team).
         // The goal counts for the OTHER team (the benefiting team).
@@ -229,11 +236,12 @@ export default defineEventHandler(async (event) => {
               )?.team as Record<string, unknown>
             )?.id as string | undefined)
           : undefined
-        if (lastName && opponentId) {
+        // Always push own-goal events even without a player name
+        if (opponentId) {
           matchEvents.push({
             teamId: opponentId,
             type: 'goal',
-            lastName,
+            lastName: lastName || '',
             clock,
             isOG: true,
           })
@@ -268,30 +276,39 @@ export default defineEventHandler(async (event) => {
         }
       })
 
-      // Inject goals leader if we have data and it's not already present
-      if (
-        teamId &&
-        goalsByTeam.has(teamId) &&
-        !categories.some((c) => c.name === 'goals')
-      ) {
+      // Augment or inject goals leader using in-match keyEvents data
+      if (teamId && goalsByTeam.has(teamId)) {
         const teamGoals = goalsByTeam.get(teamId)!
-        // Find top scorer
-        let topAthlete = ''
-        let topCount = 0
-        for (const [name, count] of teamGoals) {
-          if (count > topCount) {
-            topCount = count
-            topAthlete = name
+        const existingGoals = categories.find((c) => c.name === 'goals')
+
+        if (existingGoals) {
+          // ESPN leaders already has a goals entry — add in-match goals to it
+          // if the top scorer in this match is the same athlete
+          const existingAthlete = existingGoals.athlete ?? ''
+          const inMatchCount = teamGoals.get(existingAthlete) ?? 0
+          if (inMatchCount > 0) {
+            const base = parseInt(existingGoals.value ?? '0') || 0
+            existingGoals.value = String(base + inMatchCount)
           }
-        }
-        if (topAthlete) {
-          categories.unshift({
-            name: 'goals',
-            displayName: 'Goals',
-            shortDisplayName: 'Goals',
-            athlete: topAthlete,
-            value: String(topCount),
-          })
+        } else {
+          // No goals entry from ESPN — inject one from keyEvents
+          let topAthlete = ''
+          let topCount = 0
+          for (const [name, count] of teamGoals) {
+            if (count > topCount) {
+              topCount = count
+              topAthlete = name
+            }
+          }
+          if (topAthlete) {
+            categories.unshift({
+              name: 'goals',
+              displayName: 'Goals',
+              shortDisplayName: 'Goals',
+              athlete: topAthlete,
+              value: String(topCount),
+            })
+          }
         }
       }
 
