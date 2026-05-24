@@ -1929,12 +1929,12 @@
   }
 
   /* Penalty badge — small square box with a "P" cap */
-  .event-pen {
+  .event-goal-item .event-pen {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 0.6rem;
-    font-weight: 600;
+    font-weight: 600 !important;
     letter-spacing: 0.04em;
     line-height: 1;
     color: oklab(100% 0 0 / 0.75);
