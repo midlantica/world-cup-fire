@@ -1453,7 +1453,7 @@
   }
 
   .modal-panel {
-    margin-top: 3rem;
+    margin-top: 1rem;
     font-family: var(--font-condensed);
     font-weight: 100;
     letter-spacing: 0.03rem;
