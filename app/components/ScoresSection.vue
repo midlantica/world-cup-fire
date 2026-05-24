@@ -37,19 +37,68 @@
   // Keys: day key (e.g. "2026-05-13") and slot label (e.g. "6:30PM").
   // Past days are auto-collapsed. Time slots stay open unless the user
   // manually closes them (user intent is remembered).
+  //
+  // User-toggled state is persisted to localStorage keyed by today's CT date
+  // (e.g. "mls-collapse-2026-05-23") so it survives page refreshes for the
+  // rest of the day. The key changes at midnight CT, so state resets daily.
   const collapsedDays = ref<Set<string>>(new Set())
   const collapsedSlots = ref<Set<string>>(new Set())
-  // Track which slots were manually toggled by the user (vs auto-collapsed)
+  // Track which items were manually toggled by the user (vs auto-collapsed)
+  const manuallyToggledDays = ref<Set<string>>(new Set())
   const manuallyToggledSlots = ref<Set<string>>(new Set())
 
+  // ── localStorage persistence ──────────────────────────────────────────────
+  function todayCTKey(): string {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+  }
+
+  function storageKey(): string {
+    return `mls-collapse-${todayCTKey()}`
+  }
+
+  interface CollapseStorage {
+    days: string[]
+    slots: string[]
+  }
+
+  function loadSavedCollapse(): CollapseStorage {
+    if (typeof localStorage === 'undefined') return { days: [], slots: [] }
+    try {
+      const raw = localStorage.getItem(storageKey())
+      if (!raw) return { days: [], slots: [] }
+      return JSON.parse(raw) as CollapseStorage
+    } catch {
+      return { days: [], slots: [] }
+    }
+  }
+
+  function saveCollapse() {
+    if (typeof localStorage === 'undefined') return
+    const payload: CollapseStorage = {
+      days: [...manuallyToggledDays.value].filter((k) =>
+        collapsedDays.value.has(k)
+      ).concat(
+        // Also save days that were manually OPENED (toggled but not collapsed)
+        [...manuallyToggledDays.value].filter((k) => !collapsedDays.value.has(k)).map((k) => `open:${k}`)
+      ),
+      slots: [...manuallyToggledSlots.value].filter((k) =>
+        collapsedSlots.value.has(k)
+      ).concat(
+        [...manuallyToggledSlots.value].filter((k) => !collapsedSlots.value.has(k)).map((k) => `open:${k}`)
+      ),
+    }
+    localStorage.setItem(storageKey(), JSON.stringify(payload))
+  }
+
   function toggleDay(key: string) {
+    manuallyToggledDays.value.add(key)
     if (collapsedDays.value.has(key)) {
       collapsedDays.value.delete(key)
     } else {
       collapsedDays.value.add(key)
     }
-    // trigger reactivity
     collapsedDays.value = new Set(collapsedDays.value)
+    saveCollapse()
   }
 
   function toggleSlot(key: string) {
@@ -61,14 +110,14 @@
       collapsedSlots.value.add(key)
     }
     collapsedSlots.value = new Set(collapsedSlots.value)
+    saveCollapse()
   }
 
   // ── Auto-collapse past days/slots ─────────────────────────────────────────
   // Only applies to "This Week" — last/next week show everything open.
   // Rule: past days collapse, but the LAST day with games stays fully open
   // until midnight (so the final game of the week is always visible until 12:01am).
-  // Time slots: only auto-collapse if ALL games in the slot are FT AND the
-  // user has NOT manually toggled that slot open.
+  // User-toggled state (from localStorage) always wins over auto-collapse.
   function buildInitialCollapse() {
     if (activeTab.value !== 'this') {
       collapsedDays.value = new Set()
@@ -76,28 +125,46 @@
       return
     }
 
-    const todayKey = new Date().toLocaleDateString('en-CA', {
-      timeZone: 'America/Chicago',
-    })
-    const days = new Set<string>()
-    // Preserve any manually-toggled slot states
-    const slots = new Set<string>(
-      [...collapsedSlots.value].filter((k) => manuallyToggledSlots.value.has(k))
-    )
+    const todayKey = todayCTKey()
+
+    // Load any user-toggled state saved earlier today
+    const saved = loadSavedCollapse()
+    const savedCollapsedDays = new Set(saved.days.filter((k) => !k.startsWith('open:')))
+    const savedOpenDays = new Set(saved.days.filter((k) => k.startsWith('open:')).map((k) => k.slice(5)))
+    const savedCollapsedSlots = new Set(saved.slots.filter((k) => !k.startsWith('open:')))
+    const savedOpenSlots = new Set(saved.slots.filter((k) => k.startsWith('open:')).map((k) => k.slice(5)))
+
+    // Restore manually-toggled tracking sets from saved state
+    for (const k of savedCollapsedDays) manuallyToggledDays.value.add(k)
+    for (const k of savedOpenDays) manuallyToggledDays.value.add(k)
+    for (const k of savedCollapsedSlots) manuallyToggledSlots.value.add(k)
+    for (const k of savedOpenSlots) manuallyToggledSlots.value.add(k)
 
     // Find the last day that has any matches this week
     const allDayKeys = weekByDayGroups.value.map(({ day }) => day.key)
     const lastMatchDayKey =
       allDayKeys.length > 0 ? allDayKeys[allDayKeys.length - 1] : null
 
+    const days = new Set<string>()
     for (const { day } of weekByDayGroups.value) {
-      if (day.key < todayKey) {
-        // Past day — collapse it, UNLESS it's the last match day of the week
-        if (day.key !== lastMatchDayKey) {
-          days.add(day.key)
-        }
+      if (manuallyToggledDays.value.has(day.key)) {
+        // User explicitly toggled this day — honour their choice
+        if (savedCollapsedDays.has(day.key)) days.add(day.key)
+        // (if savedOpenDays, leave it out of collapsed set = open)
+      } else if (day.key < todayKey && day.key !== lastMatchDayKey) {
+        // Auto-collapse past days (except the last match day)
+        days.add(day.key)
       }
-      // Time slots are NOT auto-collapsed — they stay open until user closes them
+    }
+
+    // Slots: start from saved collapsed state, honour saved open overrides
+    const slots = new Set<string>(savedCollapsedSlots)
+    for (const k of savedOpenSlots) slots.delete(k)
+    // Also preserve any in-memory manually-toggled slots not yet in saved state
+    for (const k of manuallyToggledSlots.value) {
+      if (!savedCollapsedSlots.has(k) && !savedOpenSlots.has(k)) {
+        if (collapsedSlots.value.has(k)) slots.add(k)
+      }
     }
 
     collapsedDays.value = days
