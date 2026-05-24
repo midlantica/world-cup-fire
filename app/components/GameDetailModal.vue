@@ -783,15 +783,6 @@
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span v-if="ev.isOG" class="event-og">OG</span>
                     <span class="event-clock">{{ ev.clock }}</span>
-                    <span
-                      v-if="
-                        i <
-                        homeMatchEvents.filter((e) => e.type === 'goal')
-                          .length -
-                          1
-                      "
-                      class="event-sep"
-                    />
                   </span>
                 </div>
                 <!-- Cards row -->
@@ -817,16 +808,6 @@
                     <span v-else class="event-card event-card-red" />
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span class="event-clock">{{ ev.clock }}</span>
-                    <span
-                      v-if="
-                        i <
-                        homeMatchEvents.filter(
-                          (e) => e.type === 'yellow' || e.type === 'red'
-                        ).length -
-                          1
-                      "
-                      class="event-sep"
-                    />
                   </span>
                 </div>
               </div>
@@ -855,15 +836,6 @@
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span v-if="ev.isOG" class="event-og">OG</span>
                     <span class="event-clock">{{ ev.clock }}</span>
-                    <span
-                      v-if="
-                        i <
-                        awayMatchEvents.filter((e) => e.type === 'goal')
-                          .length -
-                          1
-                      "
-                      class="event-sep"
-                    />
                   </span>
                 </div>
                 <!-- Cards row -->
@@ -889,16 +861,6 @@
                     <span v-else class="event-card event-card-red" />
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span class="event-clock">{{ ev.clock }}</span>
-                    <span
-                      v-if="
-                        i <
-                        awayMatchEvents.filter(
-                          (e) => e.type === 'yellow' || e.type === 'red'
-                        ).length -
-                          1
-                      "
-                      class="event-sep"
-                    />
                   </span>
                 </div>
               </div>
@@ -1911,11 +1873,6 @@
     align-items: center;
     gap: 0.2rem;
     white-space: nowrap;
-  }
-
-  .event-sep {
-    display: inline-block;
-    width: 1rem;
   }
 
   .event-icon {
