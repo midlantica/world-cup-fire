@@ -245,11 +245,9 @@
     <div class="status-col">
       <template v-if="isLive">
         <span class="badge badge-live">{{ displayClock }}</span>
-        <span class="status-date">{{ dateTimeLabel.day }}</span>
       </template>
       <template v-else-if="isHT">
         <span class="badge badge-ht">HT</span>
-        <span class="status-date">{{ dateTimeLabel.day }}</span>
       </template>
       <template v-else-if="isFT">
         <span class="badge badge-ft">FT</span>
@@ -436,6 +434,12 @@
     line-height: 1;
     min-width: 1ch;
     text-align: right;
+  }
+
+  /* Live/HT scores: bolder so they read as a live scoreline */
+  .game-block-live .team-score {
+    font-weight: 400;
+    font-size: 1.05rem;
   }
 
   /* FT winner: hard white */
