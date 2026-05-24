@@ -311,9 +311,10 @@ export function useScores() {
   const activeTab = useState<WeekTab>('scores-activeTab', () => 'this')
   const lastUpdated = useState<string | null>('scores-lastUpdated', () => null)
 
-  async function fetchWeek(tab: WeekTab) {
+  async function fetchWeek(tab: WeekTab, force = false) {
     const w = weeks.value[tab]
     if (w.loading) return
+    if (!force && w.loaded) return
     w.loading = true
     w.error = null
     try {
@@ -347,5 +348,19 @@ export function useScores() {
     if (!weeks.value[tab].loaded) await fetchWeek(tab)
   }
 
-  return { weeks: weeks.value, activeTab, lastUpdated, fetchWeek, selectTab }
+  /** Returns true if any match in the given tab is currently live or at HT */
+  function hasLiveGames(tab: WeekTab): boolean {
+    return weeks.value[tab].matches.some(
+      (m) => m.status.code === 'live' || m.status.code === 'ht'
+    )
+  }
+
+  return {
+    weeks: weeks.value,
+    activeTab,
+    lastUpdated,
+    fetchWeek,
+    selectTab,
+    hasLiveGames,
+  }
 }

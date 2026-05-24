@@ -35,9 +35,12 @@
   // ── Collapse state ────────────────────────────────────────────────────────
   // Track open/closed state for each day and each time slot.
   // Keys: day key (e.g. "2026-05-13") and slot label (e.g. "6:30PM").
-  // Past days and past time slots are auto-collapsed.
+  // Past days are auto-collapsed. Time slots stay open unless the user
+  // manually closes them (user intent is remembered).
   const collapsedDays = ref<Set<string>>(new Set())
   const collapsedSlots = ref<Set<string>>(new Set())
+  // Track which slots were manually toggled by the user (vs auto-collapsed)
+  const manuallyToggledSlots = ref<Set<string>>(new Set())
 
   function toggleDay(key: string) {
     if (collapsedDays.value.has(key)) {
@@ -50,6 +53,8 @@
   }
 
   function toggleSlot(key: string) {
+    // Mark as manually toggled so auto-collapse won't override user intent
+    manuallyToggledSlots.value.add(key)
     if (collapsedSlots.value.has(key)) {
       collapsedSlots.value.delete(key)
     } else {
@@ -62,6 +67,8 @@
   // Only applies to "This Week" — last/next week show everything open.
   // Rule: past days collapse, but the LAST day with games stays fully open
   // until midnight (so the final game of the week is always visible until 12:01am).
+  // Time slots: only auto-collapse if ALL games in the slot are FT AND the
+  // user has NOT manually toggled that slot open.
   function buildInitialCollapse() {
     if (activeTab.value !== 'this') {
       collapsedDays.value = new Set()
@@ -69,38 +76,28 @@
       return
     }
 
-    const now = Date.now()
     const todayKey = new Date().toLocaleDateString('en-CA', {
       timeZone: 'America/Chicago',
     })
     const days = new Set<string>()
-    const slots = new Set<string>()
+    // Preserve any manually-toggled slot states
+    const slots = new Set<string>(
+      [...collapsedSlots.value].filter((k) => manuallyToggledSlots.value.has(k))
+    )
 
     // Find the last day that has any matches this week
     const allDayKeys = weekByDayGroups.value.map(({ day }) => day.key)
     const lastMatchDayKey =
       allDayKeys.length > 0 ? allDayKeys[allDayKeys.length - 1] : null
 
-    for (const { day, slots: daySlots } of weekByDayGroups.value) {
+    for (const { day } of weekByDayGroups.value) {
       if (day.key < todayKey) {
         // Past day — collapse it, UNLESS it's the last match day of the week
-        // and it's still today (i.e. today IS the last match day — keep open until midnight)
         if (day.key !== lastMatchDayKey) {
           days.add(day.key)
         }
-      } else if (day.key === todayKey) {
-        // Today — only collapse slots where kickoff was more than 2h ago,
-        // BUT only if this is NOT the last match day of the week.
-        // On the last match day, keep everything open until midnight.
-        if (day.key !== lastMatchDayKey) {
-          for (const [slotLabel, slotMatches] of daySlots) {
-            const slotTime = slotMatches[0]?.kickoffSlot ?? 0
-            if (slotTime > 0 && slotTime + 2 * 60 * 60 * 1000 < now) {
-              slots.add(day.key + slotLabel)
-            }
-          }
-        }
       }
+      // Time slots are NOT auto-collapsed — they stay open until user closes them
     }
 
     collapsedDays.value = days
@@ -207,12 +204,9 @@
   .week-tabs {
     display: flex;
     width: 100%;
-    border-left: 1px solid oklab(100% 0 0 / 0.1);
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
-    border-right: 1px solid oklab(100% 0 0 / 0.1);
-    border-radius: 0 0 0.5rem 0.5rem;
-    overflow: hidden;
     margin-bottom: 1rem;
+    margin-top: 0rem;
   }
 
   .week-tab {
@@ -223,28 +217,28 @@
     justify-content: center;
     padding: 0.4rem 0.5rem;
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: 400;
     color: var(--color-text-secondary);
     background: transparent;
     border: none;
+    border-bottom: 2px solid transparent;
     cursor: pointer;
     transition:
       color 0.15s,
-      background 0.15s;
-  }
-
-  .week-tab + .week-tab {
-    border-left: 1px solid oklab(100% 0 0 / 0.08);
+      border-color 0.15s;
+    position: relative;
+    bottom: -1px;
+    white-space: nowrap;
   }
 
   .week-tab:hover:not(.active) {
-    color: var(--color-text-secondary);
-    background: oklab(100% 0 0 / 0.04);
+    color: var(--color-text-primary);
   }
 
   .week-tab.active {
     color: var(--color-theme-300);
-    background: var(--color-theme-900);
+    border-bottom-color: var(--color-theme-400);
+    font-weight: 500;
   }
 
   .week-label {

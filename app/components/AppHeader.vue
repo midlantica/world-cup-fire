@@ -50,6 +50,8 @@
     user-select: none;
     min-width: 0;
     flex-shrink: 1;
+    margin-top: 0.1rem;
+    margin-bottom: -0.3rem;
   }
 
   .mls-logo {

@@ -63,7 +63,9 @@
   let clockTimer: ReturnType<typeof setInterval> | null = null
 
   function parseClock(clock: string): number {
-    const [m = '0', s = '0'] = clock.split(':')
+    // Strip trailing prime/apostrophe (e.g. "35'" → "35")
+    const cleaned = clock.replace(/['''′`]/g, '')
+    const [m = '0', s = '0'] = cleaned.split(':')
     return parseInt(m, 10) * 60 + parseInt(s, 10)
   }
 
@@ -78,7 +80,7 @@
     if (!isLive.value || !props.match.status.clock) return
     clockBase = parseClock(props.match.status.clock)
     clockTickedAt = Date.now()
-    localClock.value = props.match.status.clock
+    localClock.value = formatClock(clockBase)
 
     clockTimer = setInterval(() => {
       if (!isLive.value) {
@@ -190,7 +192,9 @@
           />
         </span>
         <span class="team-name-text">{{ match.home }}</span>
-        <span v-if="isNS" class="team-rec">{{ match.homeRec }}</span>
+        <span v-if="isNS || isLive || isHT" class="team-rec">{{
+          match.homeRec
+        }}</span>
       </div>
       <div v-if="!isNS" class="score-cell">
         <span
@@ -221,7 +225,9 @@
           />
         </span>
         <span class="team-name-text">{{ match.away }}</span>
-        <span v-if="isNS" class="team-rec">{{ match.awayRec }}</span>
+        <span v-if="isNS || isLive || isHT" class="team-rec">{{
+          match.awayRec
+        }}</span>
       </div>
       <div v-if="!isNS" class="score-cell">
         <span

@@ -105,8 +105,8 @@
     position: relative;
     display: flex;
     align-items: stretch;
-    gap: 2px;
-    margin-bottom: 6px;
+    gap: 1px;
+    margin-bottom: -4px;
   }
 
   .my-team-btn {
@@ -114,9 +114,10 @@
     align-items: center;
     gap: 0.3rem;
     padding: 0.2rem 0.4rem;
-    border-radius: 0.3rem 0 0 0.3rem;
+    border-radius: 0.4rem 0rem 0rem 0rem;
     border: 1px solid oklab(100% 0 0 / 0.1);
     border-right: none;
+    border-bottom: none;
     background: var(--color-theme-900);
     cursor: pointer;
     transition: background 0.15s;
@@ -191,8 +192,10 @@
     align-items: center;
     justify-content: center;
     padding: 0.2rem 0.3rem;
-    border-radius: 0 0.3rem 0.3rem 0;
+    border-radius: 0rem 0.3rem 0rem 0rem;
     border: 1px solid oklab(100% 0 0 / 0.1);
+    border-left: none;
+    border-bottom: none;
     background: var(--color-theme-900);
     cursor: pointer;
     transition: background 0.15s;

@@ -152,13 +152,14 @@ export function useMatchDetail() {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const currentEventId = ref<string | null>(null)
+  let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  async function fetchDetail(eventId: string) {
-    if (currentEventId.value === eventId && detail.value) return
-    loading.value = true
+  async function fetchDetail(eventId: string, force = false) {
+    if (!force && currentEventId.value === eventId && detail.value) return
+    // Only show full loading spinner on first load, not on background polls
+    if (!detail.value) loading.value = true
     error.value = null
     currentEventId.value = eventId
-    detail.value = null
     try {
       const data = await $fetch<MatchDetail>(
         `/api/match-detail?eventId=${eventId}`
@@ -172,11 +173,35 @@ export function useMatchDetail() {
     }
   }
 
+  /** Start polling every `intervalMs` ms (default 30 s). Call when modal opens for a live game. */
+  function startPolling(eventId: string, intervalMs = 30_000) {
+    stopPolling()
+    pollTimer = setInterval(() => {
+      fetchDetail(eventId, true)
+    }, intervalMs)
+  }
+
+  function stopPolling() {
+    if (pollTimer !== null) {
+      clearInterval(pollTimer)
+      pollTimer = null
+    }
+  }
+
   function clear() {
+    stopPolling()
     detail.value = null
     currentEventId.value = null
     error.value = null
   }
 
-  return { detail, loading, error, fetchDetail, clear }
+  return {
+    detail,
+    loading,
+    error,
+    fetchDetail,
+    startPolling,
+    stopPolling,
+    clear,
+  }
 }

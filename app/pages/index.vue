@@ -24,7 +24,8 @@
   const mainTab = ref<MainTab>(tabFromPath())
 
   // ── Scores composable ─────────────────────────────────────────────────────────
-  const { weeks, activeTab, lastUpdated, fetchWeek, selectTab } = useScores()
+  const { weeks, activeTab, lastUpdated, fetchWeek, selectTab, hasLiveGames } =
+    useScores()
 
   // ── SSR pre-fetch: seed "this week" data before first paint ──────────────────
   await useAsyncData('scores-this', async () => {
@@ -217,7 +218,10 @@
 
   async function switchMainTab(tab: MainTab) {
     await applyTab(tab)
-    router.push(tab === 'scores' ? '/' : `/${tab}`)
+    // router.push silently no-ops on aliased routes (same component), so use
+    // history.pushState directly to keep the URL in sync.
+    const path = tab === 'scores' ? '/' : `/${tab}`
+    history.pushState(history.state, '', path)
   }
 
   // ── Watch route changes (back/forward, direct URL entry) ─────────────────────
@@ -292,8 +296,17 @@
   function startPoll() {
     if (pollTimer) return
     pollTimer = setInterval(() => {
-      if (hasLiveMatches.value && mainTab.value === 'scores') {
-        fetchWeek(activeTab.value)
+      if (!hasLiveMatches.value || mainTab.value !== 'scores') return
+      // Force-refresh the active tab so scores + W-T-L update live
+      fetchWeek(activeTab.value, true)
+      // Also refresh the 'next' tab if 'this' week has live games —
+      // so next week's game cards show updated W-T-L after games complete.
+      if (
+        activeTab.value === 'this' &&
+        hasLiveGames('this') &&
+        weeks.next.loaded
+      ) {
+        fetchWeek('next', true)
       }
     }, 30_000)
   }
@@ -564,8 +577,8 @@
   /* ── Main tabs ──────────────────────────────────────────────────────────── */
   .main-tabs {
     display: flex;
-    align-items: stretch;
-    gap: 0.25rem;
+    align-items: flex-end;
+    gap: 0;
     border-bottom: 1px solid oklab(100% 0 0 / 0.08);
   }
 
@@ -575,6 +588,7 @@
 
   .team-picker-in-tabs {
     align-self: flex-end;
+    padding-bottom: 4px;
   }
 
   .main-tab {
@@ -582,28 +596,28 @@
     font-size: 0.9375rem;
     font-weight: 300;
     letter-spacing: 0.06em;
-    padding: 0.4rem 0.625rem;
-    border-radius: 0.375rem 0.375rem 0 0;
+    padding: 0.4rem 0.5rem;
     color: var(--color-text-secondary);
     background: transparent;
     border: none;
+    border-bottom: 2px solid transparent;
     cursor: pointer;
     transition:
       color 0.15s,
-      background 0.15s;
+      border-color 0.15s;
     position: relative;
     bottom: -1px;
+    white-space: nowrap;
   }
 
   .main-tab:hover:not(.active) {
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
   }
 
   .main-tab.active {
     color: var(--color-theme-300);
-    border: 1px solid oklab(100% 0 0 / 0.1);
-    border-bottom-color: var(--app-bg, oklch(12.9% 0.042 264.3));
-    background: var(--color-theme-900);
+    border-bottom-color: var(--color-theme-400);
+    font-weight: 500;
   }
 
   /* ── Standings ──────────────────────────────────────────────────────────── */
@@ -670,7 +684,8 @@
   .conf-tab.active {
     color: var(--color-text-primary);
     border-bottom-color: var(--color-theme-400, #60a5fa);
-    font-weight: 600;
+    font-weight: 200;
+    letter-spacing: 0.1rem;
   }
 
   .conf-tab-short {
