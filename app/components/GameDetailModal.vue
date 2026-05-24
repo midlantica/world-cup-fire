@@ -539,6 +539,62 @@
     return detail.value.matchEvents.filter((e) => e.teamId === awayId)
   })
 
+  // ── Grouped events (same player + type → one item with multiple clocks) ───
+  interface GroupedEvent {
+    type: MatchEvent['type']
+    lastName: string
+    clocks: string[]
+    isOG?: boolean
+    isPenalty?: boolean
+  }
+
+  function groupEvents(events: MatchEvent[]): GroupedEvent[] {
+    const result: GroupedEvent[] = []
+    for (const ev of events) {
+      const existing = result.find(
+        (g) =>
+          g.type === ev.type &&
+          g.lastName === ev.lastName &&
+          !!g.isOG === !!ev.isOG
+      )
+      if (existing) {
+        existing.clocks.push(ev.clock)
+        // If any occurrence is a penalty, mark the group
+        if (ev.isPenalty) existing.isPenalty = true
+      } else {
+        result.push({
+          type: ev.type,
+          lastName: ev.lastName,
+          clocks: [ev.clock],
+          isOG: ev.isOG,
+          isPenalty: ev.isPenalty,
+        })
+      }
+    }
+    return result
+  }
+
+  const homeGroupedGoals = computed(() =>
+    groupEvents(homeMatchEvents.value.filter((e) => e.type === 'goal'))
+  )
+  const homeGroupedCards = computed(() =>
+    groupEvents(
+      homeMatchEvents.value.filter(
+        (e) => e.type === 'yellow' || e.type === 'red'
+      )
+    )
+  )
+  const awayGroupedGoals = computed(() =>
+    groupEvents(awayMatchEvents.value.filter((e) => e.type === 'goal'))
+  )
+  const awayGroupedCards = computed(() =>
+    groupEvents(
+      awayMatchEvents.value.filter(
+        (e) => e.type === 'yellow' || e.type === 'red'
+      )
+    )
+  )
+
   const homeLeaders = computed(() => {
     if (!detail.value) return null
     const homeId = homeEspnId.value
@@ -770,22 +826,18 @@
                     >{{ homeTeamAbbrev }}:</span
                   >
                   <span
-                    v-for="(ev, i) in homeMatchEvents.filter(
-                      (e) => e.type === 'goal'
-                    )"
+                    v-for="(ev, i) in homeGroupedGoals"
                     :key="`hg-${i}`"
                     class="event-goal-item"
                   >
                     <span class="event-icon">⚽</span>
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span v-if="ev.isOG" class="event-og">OG</span>
-                    <span class="event-clock">{{ ev.clock }}</span>
+                    <span v-for="(clk, ci) in ev.clocks" :key="ci" class="event-clock">{{ clk }}</span>
                     <span v-if="ev.isPenalty" class="event-pen">P</span>
                   </span>
                   <span
-                    v-for="(ev, i) in homeMatchEvents.filter(
-                      (e) => e.type === 'yellow' || e.type === 'red'
-                    )"
+                    v-for="(ev, i) in homeGroupedCards"
                     :key="`hc-${i}`"
                     class="event-card-item"
                   >
@@ -795,7 +847,7 @@
                     />
                     <span v-else class="event-card event-card-red" />
                     <span class="event-name">{{ ev.lastName }}</span>
-                    <span class="event-clock">{{ ev.clock }}</span>
+                    <span v-for="(clk, ci) in ev.clocks" :key="ci" class="event-clock">{{ clk }}</span>
                   </span>
                 </div>
               </div>
@@ -811,22 +863,18 @@
                     >{{ awayTeamAbbrev }}:</span
                   >
                   <span
-                    v-for="(ev, i) in awayMatchEvents.filter(
-                      (e) => e.type === 'goal'
-                    )"
+                    v-for="(ev, i) in awayGroupedGoals"
                     :key="`ag-${i}`"
                     class="event-goal-item"
                   >
                     <span class="event-icon">⚽</span>
                     <span class="event-name">{{ ev.lastName }}</span>
                     <span v-if="ev.isOG" class="event-og">OG</span>
-                    <span class="event-clock">{{ ev.clock }}</span>
+                    <span v-for="(clk, ci) in ev.clocks" :key="ci" class="event-clock">{{ clk }}</span>
                     <span v-if="ev.isPenalty" class="event-pen">P</span>
                   </span>
                   <span
-                    v-for="(ev, i) in awayMatchEvents.filter(
-                      (e) => e.type === 'yellow' || e.type === 'red'
-                    )"
+                    v-for="(ev, i) in awayGroupedCards"
                     :key="`ac-${i}`"
                     class="event-card-item"
                   >
@@ -836,7 +884,7 @@
                     />
                     <span v-else class="event-card event-card-red" />
                     <span class="event-name">{{ ev.lastName }}</span>
-                    <span class="event-clock">{{ ev.clock }}</span>
+                    <span v-for="(clk, ci) in ev.clocks" :key="ci" class="event-clock">{{ clk }}</span>
                   </span>
                 </div>
               </div>
