@@ -794,6 +794,12 @@
                   "
                   class="events-line"
                 >
+                  <!-- Mobile only: team label -->
+                  <span
+                    class="events-team-label"
+                    :style="{ color: homeLabelColor }"
+                    >{{ homeTeamAbbrev }}:</span
+                  >
                   <span
                     v-for="(ev, i) in homeMatchEvents.filter(
                       (e) => e.type === 'yellow' || e.type === 'red'
@@ -847,6 +853,12 @@
                   "
                   class="events-line"
                 >
+                  <!-- Mobile only: team label -->
+                  <span
+                    class="events-team-label"
+                    :style="{ color: awayLabelColor }"
+                    >{{ awayTeamAbbrev }}:</span
+                  >
                   <span
                     v-for="(ev, i) in awayMatchEvents.filter(
                       (e) => e.type === 'yellow' || e.type === 'red'
