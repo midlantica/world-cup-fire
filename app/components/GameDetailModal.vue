@@ -1805,14 +1805,14 @@
 
   @media (max-width: 599px) {
     .header-events-col-home {
-      justify-content: center;
+      justify-content: flex-start;
       padding-bottom: 0.3rem;
       border-bottom: 1px solid oklab(100% 0 0 / 0.08);
       margin-bottom: 0.3rem;
     }
 
     .header-events-col-away {
-      justify-content: center;
+      justify-content: flex-start;
     }
   }
 
