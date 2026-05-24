@@ -1820,7 +1820,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.1rem 0.25rem !important;
+    gap: 0 0.35rem;
     font-size: 0.85rem;
     font-weight: 200;
     color: oklab(100% 0 0 / 0.85);
