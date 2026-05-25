@@ -1229,33 +1229,32 @@
                 <!-- ── LEADERS TAB ─────────────────────────────────────────── -->
                 <template v-else-if="activeTab === 'leaders' && detail">
                   <div v-if="homeLeaders || awayLeaders" class="leaders-table">
-                    <!-- Header: [home name + logo] | · | category | · | [logo + away name] -->
-                    <div
-                      class="leaders-head"
-                      style="grid-template-columns: 1fr 2.5rem 5rem 2.5rem 1fr"
-                    >
+                    <!-- Header: [logo + name] | center | [logo + name] — matches Lineups style -->
+                    <div class="leaders-head">
                       <div class="leaders-th leaders-th-home">
-                        <span class="name-short">{{ homeAbbr }}</span>
-                        <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
                         <img
                           v-if="homeLogo"
                           :src="homeLogo"
                           :alt="homeTeam"
-                          class="head-logo"
+                          class="squads-th-logo"
                         />
+                        <span>
+                          <span class="name-short">{{ homeAbbr }}</span>
+                          <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
+                        </span>
                       </div>
-                      <div class="leaders-th-center"></div>
-                      <div class="leaders-th-center"></div>
                       <div class="leaders-th-center"></div>
                       <div class="leaders-th leaders-th-away">
                         <img
                           v-if="awayLogo"
                           :src="awayLogo"
                           :alt="awayTeam"
-                          class="head-logo"
+                          class="squads-th-logo"
                         />
-                        <span class="name-short">{{ awayAbbr }}</span>
-                        <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
+                        <span>
+                          <span class="name-short">{{ awayAbbr }}</span>
+                          <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
+                        </span>
                       </div>
                     </div>
                     <!-- Rows: player-name | home-val | category | away-val | player-name -->
@@ -1900,7 +1899,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.85rem 0.7rem 0.625rem;
+    padding: 0.6rem 0.7rem 0.625rem;
   }
 
   @media (max-width: 599px) {
@@ -2610,19 +2609,19 @@
     flex-direction: column;
   }
 
-  /* 5-column grid: name | home-val | category | away-val | name */
+  /* 3-column grid matching Lineups: [home team] [center] [away team] */
   .leaders-head {
     display: grid;
-    grid-template-columns: 1fr 2.5rem 5rem 2.5rem 1fr;
+    grid-template-columns: 1fr 3.5rem 1fr;
     align-items: center;
     padding: 0.2rem 0 0.4rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     margin-bottom: 0.1rem;
   }
 
-  @media (max-width: 420px) {
+  @media (min-width: 600px) {
     .leaders-head {
-      grid-template-columns: 1fr 2rem 3.5rem 2rem 1fr;
+      grid-template-columns: 1fr 6.4rem 1fr;
     }
   }
 
@@ -2632,24 +2631,19 @@
     letter-spacing: 0.13em;
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.85);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 
   /* Home header: [logo] [name] flush-right */
   .leaders-th-home {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
     justify-content: flex-end;
-    grid-column: 1;
   }
 
   /* Away header: [logo] [name] flush-left */
   .leaders-th-away {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
     justify-content: flex-start;
-    grid-column: 5;
   }
 
   .leaders-th-center {
@@ -2733,7 +2727,7 @@
   .squads-head {
     display: grid;
     grid-template-columns: 1fr 3.5rem 1fr;
-    align-items: baseline;
+    align-items: center;
     padding: 0.2rem 0 0.4rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     margin-bottom: 0.1rem;
@@ -2930,7 +2924,7 @@
   .h2h-fx-date-weekday {
     font-size: var(--modal-copy-size);
     font-weight: 200;
-    color: oklab(100% 0 0 / 0.5);
+    color: oklab(100% 0 0 / 0.85);
     letter-spacing: 0.02em;
     line-height: 1.2;
   }
