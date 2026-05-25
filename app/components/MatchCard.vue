@@ -55,28 +55,24 @@
     :class="[`q-${qClass}`, { live: isLive || isHT }]"
     @click="emit('click', match)"
   >
-    <!-- Top bar: Group left, badge + venue right -->
+    <!-- Top bar: darker row, group pill flush-left, venue flush-right -->
     <div class="match-card__top">
       <span v-if="match.group" class="match-card__group">
         Group {{ match.group }}
       </span>
       <span v-else class="match-card__group match-card__group--ko">KO</span>
-
-      <div class="match-card__top-right">
-        <span v-if="match.venue" class="match-card__venue">{{
-          match.venue
-        }}</span>
-        <span v-if="showFire" class="match-card__badge" title="Fire match!"
-          >🔥</span
-        >
-        <span
-          v-else-if="showWild"
-          class="match-card__badge"
-          title="Could be good"
-          >🎲</span
-        >
-      </div>
+      <span v-if="match.venue" class="match-card__venue">{{
+        match.venue
+      }}</span>
     </div>
+
+    <!-- Fire / wild badge — absolute top-right of card -->
+    <span v-if="showFire" class="match-card__badge" title="Fire match!"
+      >🔥</span
+    >
+    <span v-else-if="showWild" class="match-card__badge" title="Could be good"
+      >🎲</span
+    >
 
     <!-- Teams + score/time -->
     <div class="match-card__body">
@@ -136,7 +132,7 @@
 
   /* ── Card shell ──────────────────────────────────────────────────────────── */
   .match-card {
-    @apply relative cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-all duration-200 hover:bg-white/10 hover:shadow-lg;
+    @apply relative cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all duration-200 hover:bg-white/10 hover:shadow-lg;
   }
 
   .match-card.live {
@@ -144,40 +140,42 @@
   }
 
   .match-card.q-high {
-    @apply border-orange-400/25;
+    @apply border-white/15;
   }
 
-  /* ── Top bar ─────────────────────────────────────────────────────────────── */
+  /* ── Top bar — darker strip across full width ────────────────────────────── */
   .match-card__top {
-    @apply mb-2.5 flex items-center justify-between gap-2;
+    @apply flex items-stretch justify-between bg-black/30;
   }
 
+  /* Group pill: flush to left edge, only top-left corner rounded (card clips the rest) */
   .match-card__group {
-    @apply inline-block rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold tracking-wider text-white/50 uppercase;
+    @apply px-3 py-1 text-xs font-bold tracking-wider text-white/50 uppercase;
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
+    /* only round the top-left — card's overflow:hidden handles top-right */
+    border-radius: 0.75rem 0 0 0;
+    background: oklch(0.18 0 0);
   }
 
   .match-card__group--ko {
-    @apply bg-orange-500/15 text-orange-400/70;
-  }
-
-  .match-card__top-right {
-    @apply flex items-center gap-1.5;
+    @apply text-orange-400/60;
+    background: oklch(0.18 0 0);
   }
 
   .match-card__venue {
-    @apply max-w-[10rem] truncate text-xs text-white/30;
+    @apply flex-1 self-center truncate px-3 text-right text-xs text-white/25;
   }
 
+  /* Fire/wild badge — absolute top-right corner of the whole card */
   .match-card__badge {
-    @apply text-base leading-none;
+    @apply absolute top-0 right-2 -translate-y-1/2 text-lg leading-none;
   }
 
   /* ── Body: teams + time ──────────────────────────────────────────────────── */
   .match-card__body {
-    @apply flex items-center gap-3;
+    @apply flex items-center gap-3 px-4 py-3;
   }
 
   /* ── Teams column ────────────────────────────────────────────────────────── */
