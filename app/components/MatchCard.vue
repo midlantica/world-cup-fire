@@ -11,9 +11,8 @@
 
   const { formatTimeHtml } = useTimezone()
 
-  const isHot = computed(() => props.match.qualityScore >= 50)
   const showFire = computed(
-    () => props.match.status.code !== 'ft' && isHot.value
+    () => props.match.status.code !== 'ft' && props.match.badge === 'fire'
   )
   const showWild = computed(
     () => props.match.status.code !== 'ft' && props.match.badge === 'wild'
@@ -56,82 +55,88 @@
     :class="[`q-${qClass}`, { live: isLive || isHT }]"
     @click="emit('click', match)"
   >
-    <!-- Date header (optional) -->
-    <div v-if="showDate" class="match-card__date">{{ dayDateLabel }}</div>
+    <!-- Top bar: Group left, badge + venue right -->
+    <div class="match-card__top">
+      <span v-if="match.group" class="match-card__group">
+        Group {{ match.group }}
+      </span>
+      <span v-else class="match-card__group match-card__group--ko">KO</span>
 
-    <!-- Group badge -->
-    <div v-if="match.group" class="match-card__group">
-      Group {{ match.group }}
+      <div class="match-card__top-right">
+        <span v-if="match.venue" class="match-card__venue">{{
+          match.venue
+        }}</span>
+        <span v-if="showFire" class="match-card__badge" title="Fire match!"
+          >🔥</span
+        >
+        <span
+          v-else-if="showWild"
+          class="match-card__badge"
+          title="Could be good"
+          >🎲</span
+        >
+      </div>
     </div>
 
-    <!-- Teams row -->
-    <div class="match-card__teams">
-      <!-- Home -->
-      <div class="match-card__team match-card__team--home">
-        <CountryFlag
-          :iso2="match.homeIso2"
-          :size="36"
-          class="match-card__flag"
-        />
-        <span class="match-card__name">{{ match.home }}</span>
+    <!-- Teams + score/time -->
+    <div class="match-card__body">
+      <!-- Left: two team rows -->
+      <div class="match-card__teams">
+        <!-- Home -->
+        <div class="match-card__team">
+          <CountryFlag
+            :iso2="match.homeIso2"
+            :size="22"
+            class="match-card__flag"
+          />
+          <span class="match-card__name">{{ match.home }}</span>
+          <span v-if="!isNS" class="match-card__score">{{
+            match.homeScore
+          }}</span>
+        </div>
+        <!-- Away -->
+        <div class="match-card__team">
+          <CountryFlag
+            :iso2="match.awayIso2"
+            :size="22"
+            class="match-card__flag"
+          />
+          <span class="match-card__name">{{ match.away }}</span>
+          <span v-if="!isNS" class="match-card__score">{{
+            match.awayScore
+          }}</span>
+        </div>
       </div>
 
-      <!-- Score / time -->
-      <div class="match-card__centre">
+      <!-- Right: time/status -->
+      <div class="match-card__time-block">
         <template v-if="!isNS">
-          <span class="match-card__score">
-            {{ match.homeScore }} – {{ match.awayScore }}
-          </span>
           <span
-            v-if="statusLabel"
             class="match-card__status"
-            :class="{ 'match-card__status--live': isLive || isHT }"
+            :class="{
+              'match-card__status--live': isLive || isHT,
+              'match-card__status--ft': isFT,
+            }"
           >
             {{ statusLabel }}
           </span>
         </template>
         <template v-else>
           <!-- eslint-disable-next-line vue/no-v-html -->
-          <span class="match-card__time" v-html="kickoffLabel" />
+          <span class="match-card__kickoff" v-html="kickoffLabel" />
+          <span class="match-card__date-label">{{ dayDateLabel }}</span>
         </template>
       </div>
-
-      <!-- Away -->
-      <div class="match-card__team match-card__team--away">
-        <span class="match-card__name">{{ match.away }}</span>
-        <CountryFlag
-          :iso2="match.awayIso2"
-          :size="36"
-          class="match-card__flag"
-        />
-      </div>
-    </div>
-
-    <!-- Badges -->
-    <div class="match-card__badges">
-      <span
-        v-if="showFire"
-        class="match-card__badge match-card__badge--fire"
-        title="Fire match!"
-        >🔥</span
-      >
-      <span
-        v-else-if="showWild"
-        class="match-card__badge match-card__badge--wild"
-        title="Could be good"
-        >🎲</span
-      >
-      <span v-if="match.venue" class="match-card__venue">{{
-        match.venue
-      }}</span>
     </div>
   </article>
 </template>
 
 <style scoped>
   @reference "~/assets/css/main.css";
+
+  /* ── Card shell ──────────────────────────────────────────────────────────── */
   .match-card {
-    @apply relative cursor-pointer rounded-xl border border-white/10 bg-white/5 p-4 transition-all duration-200 hover:bg-white/10 hover:shadow-lg;
+    @apply relative cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-all duration-200 hover:bg-white/10 hover:shadow-lg;
   }
 
   .match-card.live {
@@ -139,31 +144,49 @@
   }
 
   .match-card.q-high {
-    @apply border-orange-400/30;
+    @apply border-orange-400/25;
   }
 
-  .match-card__date {
-    @apply mb-2 text-xs font-semibold tracking-wider text-white/40 uppercase;
+  /* ── Top bar ─────────────────────────────────────────────────────────────── */
+  .match-card__top {
+    @apply mb-2.5 flex items-center justify-between gap-2;
   }
 
   .match-card__group {
-    @apply mb-2 inline-block rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold tracking-wider text-white/60 uppercase;
+    @apply inline-block rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold tracking-wider text-white/50 uppercase;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
   }
 
-  .match-card__teams {
+  .match-card__group--ko {
+    @apply bg-orange-500/15 text-orange-400/70;
+  }
+
+  .match-card__top-right {
+    @apply flex items-center gap-1.5;
+  }
+
+  .match-card__venue {
+    @apply max-w-[10rem] truncate text-xs text-white/30;
+  }
+
+  .match-card__badge {
+    @apply text-base leading-none;
+  }
+
+  /* ── Body: teams + time ──────────────────────────────────────────────────── */
+  .match-card__body {
     @apply flex items-center gap-3;
   }
 
+  /* ── Teams column ────────────────────────────────────────────────────────── */
+  .match-card__teams {
+    @apply flex min-w-0 flex-1 flex-col gap-1.5;
+  }
+
   .match-card__team {
-    @apply flex min-w-0 flex-1 items-center gap-2;
-  }
-
-  .match-card__team--home {
-    @apply justify-start;
-  }
-
-  .match-card__team--away {
-    @apply justify-end;
+    @apply flex items-center gap-2;
   }
 
   .match-card__flag {
@@ -171,38 +194,50 @@
   }
 
   .match-card__name {
-    @apply truncate text-sm font-semibold text-white;
-  }
-
-  .match-card__centre {
-    @apply flex shrink-0 flex-col items-center gap-0.5;
+    @apply min-w-0 flex-1 truncate text-sm font-semibold text-white;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
   }
 
   .match-card__score {
-    @apply text-xl font-bold text-white tabular-nums;
+    @apply shrink-0 text-sm font-bold text-white/80 tabular-nums;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
   }
 
-  .match-card__time {
-    @apply text-sm font-medium text-white/70;
+  /* ── Time / status block ─────────────────────────────────────────────────── */
+  .match-card__time-block {
+    @apply flex shrink-0 flex-col items-end gap-0.5;
+  }
+
+  .match-card__kickoff {
+    @apply text-sm font-semibold text-white/80 tabular-nums;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+  }
+
+  .match-card__date-label {
+    @apply text-xs text-white/40;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 300;
   }
 
   .match-card__status {
-    @apply rounded px-1.5 py-0.5 text-xs font-bold text-white/60 uppercase;
+    @apply rounded px-2 py-0.5 text-xs font-bold text-white/50 uppercase tabular-nums;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
   }
 
   .match-card__status--live {
     @apply animate-pulse bg-green-500/20 text-green-400;
   }
 
-  .match-card__badges {
-    @apply mt-2 flex items-center gap-2;
-  }
-
-  .match-card__badge {
-    @apply text-lg leading-none;
-  }
-
-  .match-card__venue {
-    @apply ml-auto truncate text-xs text-white/30;
+  .match-card__status--ft {
+    @apply text-white/30;
   }
 </style>

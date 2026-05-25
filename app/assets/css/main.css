@@ -56,6 +56,7 @@ html {
   font-variation-settings:
     'wdth' 87.5,
     'wght' 300;
+  letter-spacing: 0.06rem;
 }
 
 /* Headings — Width 100, Weight 500 */
@@ -66,6 +67,7 @@ h4,
 h5,
 h6 {
   font-family: 'Anybody', 'Arial Narrow', sans-serif;
+  letter-spacing: 0.06rem;
   font-variation-settings:
     'wdth' 100,
     'wght' 500;
@@ -81,6 +83,7 @@ span {
   font-variation-settings:
     'wdth' 87.5,
     'wght' 300;
+  letter-spacing: 0.06rem;
 }
 
 /* Utility classes for Anybody font variations */
@@ -89,6 +92,7 @@ span {
   font-variation-settings:
     'wdth' 100,
     'wght' 500;
+  letter-spacing: 0.06rem;
 }
 
 .font-anybody-copy {
@@ -96,6 +100,7 @@ span {
   font-variation-settings:
     'wdth' 87.5,
     'wght' 300;
+  letter-spacing: 0.06rem;
 }
 
 .font-anybody-logo {
@@ -117,6 +122,7 @@ span {
   font-variation-settings:
     'wdth' 100,
     'wght' 900;
+  letter-spacing: 0.06rem;
 }
 
 /* Smooth all theme color transitions */
