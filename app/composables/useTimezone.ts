@@ -96,7 +96,7 @@ export function useTimezone() {
   /** Format an ISO date string as HTML with AM/PM in a smaller span */
   function formatTimeHtml(iso: string): string {
     const [time, ampm] = splitAmPm(formatTime(iso))
-    return ampm ? `${time}<span class="ampm">${ampm}</span>` : time
+    return ampm ? `${time}&thinsp;<span class="ampm">${ampm}</span>` : time
   }
 
   /** Round ISO date to nearest 30-min slot label in the selected timezone */

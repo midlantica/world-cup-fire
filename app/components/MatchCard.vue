@@ -150,7 +150,11 @@
 
   /* Group pill: flush to left edge, only top-left corner rounded (card clips the rest) */
   .match-card__group {
-    @apply px-3 py-1 text-xs font-bold tracking-wider text-white/50 uppercase;
+    @apply text-xs font-bold uppercase;
+    padding-inline: 0.6rem 0.5rem;
+    padding-block: 0.3rem 0.2rem;
+    letter-spacing: 0.1em;
+    color: color-mix(in oklab, #fff 50%, transparent);
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
@@ -160,17 +164,19 @@
   }
 
   .match-card__group--ko {
-    @apply text-orange-400/60;
+    color: color-mix(in oklab, theme(colors.orange.400) 60%, transparent);
     background: oklch(0.18 0 0);
   }
 
   .match-card__venue {
-    @apply flex-1 self-center truncate px-3 text-right text-xs text-white/25;
+    @apply flex-1 self-center truncate px-3 text-right text-xs;
+    color: color-mix(in oklab, #fff 25%, transparent);
   }
 
   /* Fire/wild badge — absolute top-right corner of the whole card */
   .match-card__badge {
-    @apply absolute top-0 right-2 -translate-y-1/2 text-lg leading-none;
+    @apply absolute right-2 text-lg leading-none;
+    top: -0.6rem;
   }
 
   /* ── Body: teams + time ──────────────────────────────────────────────────── */
@@ -207,18 +213,20 @@
 
   /* ── Time / status block ─────────────────────────────────────────────────── */
   .match-card__time-block {
-    @apply flex shrink-0 flex-col items-end gap-0.5;
+    @apply flex shrink-0 flex-col items-center gap-0.5;
   }
 
   .match-card__kickoff {
-    @apply text-sm font-semibold text-white/80 tabular-nums;
+    @apply text-sm font-semibold tabular-nums;
+    color: color-mix(in oklab, #fff 80%, transparent);
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
   }
 
   .match-card__date-label {
-    @apply text-xs text-white/40;
+    @apply text-xs;
+    color: color-mix(in oklab, #fff 40%, transparent);
     font-variation-settings:
       'wdth' 87.5,
       'wght' 300;
