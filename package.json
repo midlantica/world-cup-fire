@@ -1,5 +1,5 @@
 {
-  "name": "mls-scores-nuxt",
+  "name": "world-cup-fire",
   "private": true,
   "packageManager": "pnpm@10.12.4",
   "scripts": {
@@ -14,6 +14,7 @@
     "@netlify/blobs": "^10.7.8",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.3.0",
+    "country-flag-icons": "^1.6.17",
     "culori": "^4.0.2",
     "nuxt": "^4.4.6",
     "tailwindcss": "^4.3.0"
@@ -23,5 +24,8 @@
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "^6.0.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@parcel/watcher", "esbuild"]
   }
 }

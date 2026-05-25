@@ -1,7 +1,5 @@
-import { $fetch } from 'ofetch'
-import { TEAM_LOGO } from './useMyTeam'
+import { TEAM_BY_NAME, RIVALRY_PAIRS } from '../constants/worldcup'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 export interface MatchStatus {
   code: 'ns' | 'live' | 'ht' | 'ft'
   clock?: string
@@ -11,359 +9,224 @@ export type MatchBadge = 'fire' | 'wild' | null
 
 export interface Match {
   id: string
-  date: string // ISO 8601 — format at display time via useTimezone
+  date: string
   home: string
-  homeRec: string
   homeScore: string | null
-  homeColor: string // hex color for home team swatch
-  homeLogo: string | null // local SVG logo path
+  homeColor: string
+  homeAltColor: string
+  homeIso2: string
+  homeAbbrev: string
   away: string
-  awayRec: string
   awayScore: string | null
-  awayColor: string // hex color for away team swatch
-  awayLogo: string | null // local SVG logo path
+  awayColor: string
+  awayAltColor: string
+  awayIso2: string
+  awayAbbrev: string
+  group: string | null
+  venue: string | null
   status: MatchStatus
-  kickoffSlot: number // UTC epoch ms rounded to nearest 30min — for slot grouping
   qualityScore: number
-  badge: MatchBadge // 🔥 top clash | 🤞 wild card | null
+  badge: MatchBadge
 }
 
 export type WeekTab = 'last' | 'this' | 'next'
 
-// ── Known MLS derbies / rivalries ─────────────────────────────────────────────
-// Each pair is stored as a sorted tuple so order doesn't matter
-const DERBY_PAIRS: [string, string][] = [
-  ['LA Galaxy', 'LAFC'], // El Tráfico
-  ['Seattle Sounders FC', 'Portland Timbers'], // Cascadia Cup
-  ['Seattle Sounders FC', 'Vancouver Whitecaps'], // Cascadia
-  ['Portland Timbers', 'Vancouver Whitecaps'], // Cascadia
-  ['New York City FC', 'Red Bull New York'], // Hudson River Derby
-  ['Atlanta United FC', 'Charlotte FC'], // I-85 Derby
-  ['FC Cincinnati', 'Columbus Crew'], // Hell is Real Derby
-  ['Sporting Kansas City', 'Colorado Rapids'], // Rocky Mountain Cup
-  ['Houston Dynamo FC', 'FC Dallas'], // Texas Derby
-  ['D.C. United', 'New England Revolution'], // Atlantic Cup
-  ['Inter Miami CF', 'Orlando City SC'], // Florida Derby
-  ['Minnesota United FC', 'Sporting Kansas City'], // Midwest rivalry
-  ['Real Salt Lake', 'Colorado Rapids'], // Rocky Mountain
-  ['San Jose Earthquakes', 'LA Galaxy'], // California Clásico
-  ['San Jose Earthquakes', 'LAFC'], // California
-  ['CF Montréal', 'Toronto FC'], // Canadian rivalry
-  ['Vancouver Whitecaps', 'Toronto FC'], // Canadian
-  ['CF Montréal', 'Vancouver Whitecaps'], // Canadian
-]
+// ---------------------------------------------------------------------------
+// Quality scoring
+// ---------------------------------------------------------------------------
 
-function isDerby(home: string, away: string): boolean {
-  return DERBY_PAIRS.some(
-    ([a, b]) => (a === home && b === away) || (a === away && b === home)
-  )
-}
+const RIVALRY_SET = new Set<string>(
+  RIVALRY_PAIRS.map(([a, b]) => [a, b].sort().join('|'))
+)
 
-// ── Game quality score ────────────────────────────────────────────────────────
-// Uses MLS points logic: W=3pts, D=1pt, L=0pts
-function parseRec(summary: string): { w: number; l: number; d: number } {
-  const parts = summary.split('-').map(Number)
-  return { w: parts[0] ?? 0, l: parts[1] ?? 0, d: parts[2] ?? 0 }
-}
-
-export function calcQuality(homeRec: string, awayRec: string): number {
-  if (homeRec === '–' || awayRec === '–') return 0
-  const h = parseRec(homeRec)
-  const a = parseRec(awayRec)
-  const hPts = h.w * 3 + h.d
-  const aPts = a.w * 3 + a.d
-  const total = hPts + aPts
-  const closeness = Math.abs(hPts - aPts) <= 4 ? 3 : 0
-  return total + closeness
+function isRivalry(a: string, b: string): boolean {
+  return RIVALRY_SET.has([a, b].sort().join('|'))
 }
 
 /**
- * Determine the badge tier for a match:
+ * Compute a 0–100 quality score for a WC match.
  *
- * 🔥 "fire"  — Both teams have winning records (W > L) AND are closely matched
- *              (within 5 pts of each other). These are the genuine top clashes.
- *
- * 🤞 "wild"  — Selective underdog/derby interest:
- *   • A known derby where both teams are within 6 pts of each other, OR
- *   • Both teams are evenly humble (neither has a winning record, both have
- *     played ≥6 games, within 3 pts of each other) — a true fight-to-the-death.
- *   NOT every mediocre game — must meet the criteria above.
- *
- * null — everything else
+ * Factors:
+ *  - Average FIFA ranking (lower rank number = better team)
+ *  - Ranking closeness (evenly matched = more exciting)
+ *  - Classic rivalry bonus
  */
-export function calcBadge(
-  homeRec: string,
-  awayRec: string,
-  home: string,
-  away: string
-): MatchBadge {
-  if (homeRec === '–' || awayRec === '–') return null
-  const h = parseRec(homeRec)
-  const a = parseRec(awayRec)
-  const hPts = h.w * 3 + h.d
-  const aPts = a.w * 3 + a.d
-  const ptDiff = Math.abs(hPts - aPts)
-  const hGames = h.w + h.l + h.d
-  const aGames = a.w + a.l + a.d
-  const hWinning = h.w > h.l
-  const aWinning = a.w > a.l
+function computeQuality(home: string, away: string): number {
+  const h = TEAM_BY_NAME.get(home)
+  const a = TEAM_BY_NAME.get(away)
 
-  // 🔥 Both winning records + closely matched
-  if (hWinning && aWinning && ptDiff <= 5) return 'fire'
+  if (!h || !a) return 20
 
-  // 🤞 Derby with close points
-  if (isDerby(home, away) && ptDiff <= 6) return 'wild'
+  const avgRank = (h.fifaRank + a.fifaRank) / 2
+  // Better average rank → higher base score (rank 1 = 100, rank 100 = 0)
+  const rankScore = Math.max(0, 100 - avgRank)
 
-  // 🤞 Both evenly humble (not winning records), enough games played, very close
-  const hHumble = !hWinning && hGames >= 6
-  const aHumble = !aWinning && aGames >= 6
-  if (hHumble && aHumble && ptDiff <= 3) return 'wild'
+  // Closeness bonus: teams within 10 ranks of each other
+  const diff = Math.abs(h.fifaRank - a.fifaRank)
+  const closenessBonus = Math.max(0, 20 - diff)
 
-  return null
+  // Rivalry bonus
+  const rivalryBonus = isRivalry(home, away) ? 20 : 0
+
+  const raw = rankScore * 0.6 + closenessBonus + rivalryBonus
+  return Math.min(100, Math.round(raw))
 }
 
-// ── Team name normalization ───────────────────────────────────────────────────
-// ESPN occasionally returns incorrect casing for some team names
-const TEAM_NAME_MAP: Record<string, string> = {
-  'St. Louis CITY SC': 'St. Louis City SC',
-}
+// ---------------------------------------------------------------------------
+// ESPN event → Match normalisation
+// ---------------------------------------------------------------------------
 
-function normalizeTeamName(name: string): string {
-  return TEAM_NAME_MAP[name] ?? name
-}
-
-// ── Team color ────────────────────────────────────────────────────────────────
-// ESPN provides `color` (primary) and `alternateColor` on each team object.
-// When the primary is pure black (#000000) we fall back to the alternate so the
-// swatch is visible on the dark background.
-function resolveTeamColor(color?: string, alternateColor?: string): string {
-  const primary = color ? `#${color.replace(/^#/, '')}` : ''
-  const alternate = alternateColor ? `#${alternateColor.replace(/^#/, '')}` : ''
-  if (!primary || primary.toLowerCase() === '#000000')
-    return alternate || '#888888'
-  return primary
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-// Times are formatted at display time via useTimezone — we only need a stable
-// 30-min slot key for grouping, stored as UTC epoch ms.
-/** Round ISO date down to nearest 30-min UTC slot, return epoch ms for grouping */
-function toKickoffSlot(iso: string): number {
-  const d = new Date(iso)
-  const mins = d.getUTCMinutes()
-  const rounded = mins < 15 ? 0 : mins < 45 ? 30 : 60
-  const h = rounded === 60 ? d.getUTCHours() + 1 : d.getUTCHours()
-  const m = rounded === 60 ? 0 : rounded
-  const slot = new Date(d)
-  slot.setUTCHours(h, m, 0, 0)
-  return slot.getTime()
-}
-
-function parseRecord(competitor: Record<string, unknown>): string {
-  const records = competitor.records as
-    | Array<Record<string, unknown>>
-    | undefined
-  const rec = records?.find(
-    (r) => r.type === 'total' || r.abbreviation === 'Total'
+function statusCode(espnStatus: string): MatchStatus['code'] {
+  if (espnStatus === 'STATUS_FINAL') return 'ft'
+  if (espnStatus === 'STATUS_HALFTIME') return 'ht'
+  if (
+    espnStatus === 'STATUS_IN_PROGRESS' ||
+    espnStatus === 'STATUS_SECOND_HALF'
   )
-  return rec ? (rec.summary as string) : '–'
+    return 'live'
+  return 'ns'
 }
 
-function parseStatus(evt: Record<string, unknown>): MatchStatus {
-  const status = evt.status as Record<string, unknown> | undefined
-  const type = status?.type as Record<string, unknown> | undefined
-  const name = (type?.name as string) || ''
-  const state = (type?.state as string) || ''
-  const completed = type?.completed as boolean | undefined
-  const clock = (status?.displayClock as string) || ''
-  if (completed === true || state === 'post') return { code: 'ft' }
-  if (name === 'STATUS_HALFTIME') return { code: 'ht' }
-  if (state === 'in') return { code: 'live', clock }
-  return { code: 'ns' }
+function normaliseClock(
+  espnStatus: Record<string, unknown>
+): string | undefined {
+  const detail = espnStatus?.displayClock as string | undefined
+  return detail && detail !== '0:00' ? detail : undefined
 }
 
-export function transformMatches(data: Record<string, unknown>): Match[] {
-  const events = (data.events as Array<Record<string, unknown>>) || []
-  return events
-    .map((evt) => {
-      const comp =
-        (evt.competitions as Array<Record<string, unknown>>)?.[0] || {}
-      const competitors =
-        (comp.competitors as Array<Record<string, unknown>>) || []
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normaliseEvent(ev: any): Match {
+  const comp = ev.competitions?.[0] ?? {}
+  const competitors: unknown[] = comp.competitors ?? []
 
-      // ESPN's event name is always "Away at Home" — use it as a tiebreaker
-      // when homeAway fields are missing or ambiguous.
-      const evtName = (evt.name as string) || ''
-      const nameAwayFirst = evtName.includes(' at ')
-        ? evtName.split(' at ')[0]?.trim()
-        : null
+  // ESPN returns home team first
+  const homeComp = (competitors[0] ?? {}) as Record<string, unknown>
+  const awayComp = (competitors[1] ?? {}) as Record<string, unknown>
 
-      let home =
-        competitors.find((c) => c.homeAway === 'home') ||
-        (nameAwayFirst
-          ? competitors.find(
-              (c) =>
-                (c.team as Record<string, unknown>)?.displayName !==
-                nameAwayFirst
-            )
-          : null) ||
-        competitors[0] ||
-        {}
-      let away =
-        competitors.find((c) => c.homeAway === 'away') ||
-        (nameAwayFirst
-          ? competitors.find(
-              (c) =>
-                (c.team as Record<string, unknown>)?.displayName ===
-                nameAwayFirst
-            )
-          : null) ||
-        competitors[1] ||
-        {}
+  const homeTeam = (homeComp.team as Record<string, unknown>) ?? {}
+  const awayTeam = (awayComp.team as Record<string, unknown>) ?? {}
 
-      // Final sanity check: if both resolved to the same competitor, fall back
-      if (home === away) {
-        home = competitors[0] || {}
-        away = competitors[1] || {}
-      }
-      const homeTeam = home.team as Record<string, unknown> | undefined
-      const awayTeam = away.team as Record<string, unknown> | undefined
-      const homeRec = parseRecord(home)
-      const awayRec = parseRecord(away)
-      return {
-        id: evt.id as string,
-        date: evt.date as string,
-        home: normalizeTeamName((homeTeam?.displayName as string) || '?'),
-        homeRec,
-        homeScore: (home.score as string) ?? null,
-        homeColor: resolveTeamColor(
-          homeTeam?.color as string,
-          homeTeam?.alternateColor as string
-        ),
-        homeLogo:
-          TEAM_LOGO[
-            normalizeTeamName((homeTeam?.displayName as string) || '')
-          ] ?? null,
-        away: normalizeTeamName((awayTeam?.displayName as string) || '?'),
-        awayRec,
-        awayScore: (away.score as string) ?? null,
-        awayColor: resolveTeamColor(
-          awayTeam?.color as string,
-          awayTeam?.alternateColor as string
-        ),
-        awayLogo:
-          TEAM_LOGO[
-            normalizeTeamName((awayTeam?.displayName as string) || '')
-          ] ?? null,
-        status: parseStatus(evt),
-        kickoffSlot: toKickoffSlot(evt.date as string),
-        qualityScore: calcQuality(homeRec, awayRec),
-        badge: calcBadge(
-          homeRec,
-          awayRec,
-          normalizeTeamName((homeTeam?.displayName as string) || '?'),
-          normalizeTeamName((awayTeam?.displayName as string) || '?')
-        ),
-      }
-    })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-}
+  const homeName = (homeTeam.displayName as string) ?? ''
+  const awayName = (awayTeam.displayName as string) ?? ''
 
-// ── Composable ────────────────────────────────────────────────────────────────
-export interface WeekData {
-  matches: Match[]
-  label: string
-  loading: boolean
-  error: string | null
-  loaded: boolean
-  hiatus: string | null // non-null when this week is inside a hiatus window
-}
+  const homeData = TEAM_BY_NAME.get(homeName)
+  const awayData = TEAM_BY_NAME.get(awayName)
 
-export function useScores() {
-  // Use Nuxt's useState so all component instances share the same reactive state
-  const weeks = useState<Record<WeekTab, WeekData>>('scores-weeks', () => ({
-    last: {
-      matches: [],
-      label: 'Last Week',
-      loading: false,
-      error: null,
-      loaded: false,
-      hiatus: null,
-    },
-    this: {
-      matches: [],
-      label: 'This Week',
-      loading: false,
-      error: null,
-      loaded: false,
-      hiatus: null,
-    },
-    next: {
-      matches: [],
-      label: 'Next Week',
-      loading: false,
-      error: null,
-      loaded: false,
-      hiatus: null,
-    },
-  }))
+  const espnStatusName = (
+    (ev.status as Record<string, unknown>)?.type as Record<string, unknown>
+  )?.name as string
 
-  const activeTab = useState<WeekTab>('scores-activeTab', () => 'this')
-  const lastUpdated = useState<string | null>('scores-lastUpdated', () => null)
+  const code = statusCode(espnStatusName)
+  const clock = normaliseClock(
+    (ev.status as Record<string, unknown>)?.type as Record<string, unknown>
+  )
 
-  async function fetchWeek(tab: WeekTab, force = false) {
-    const w = weeks.value[tab]
-    if (w.loading) return
-    if (!force && w.loaded) return
-    w.loading = true
-    w.error = null
-    try {
-      // Append a cache-buster on force-refresh so the server bypasses its
-      // in-memory cache and fetches fresh data from ESPN.
-      const url = force
-        ? `/api/scores?week=${tab}&_t=${Date.now()}`
-        : `/api/scores?week=${tab}`
-      const data = await $fetch<Record<string, unknown>>(url)
-      // Server returns _error:true when ESPN is down and no cache exists
-      // In that case keep existing matches (stale) rather than clearing them
-      if (!data._error) {
-        w.matches = transformMatches(data)
-        w.label = (data._weekLabel as string) || w.label
-        w.hiatus = (data._hiatus as string) ?? null
-        w.loaded = true
-      }
-      // Always update timestamp so user knows we tried
-      lastUpdated.value =
-        new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        }) + (data._stale ? ' ·' : '')
-    } catch {
-      // Network-level failure — always fail silently, never show error screen
-      // If we have no data yet, matches stays empty (shows "No matches found")
-    } finally {
-      w.loading = false
-    }
-  }
+  const homeScore = code !== 'ns' ? ((homeComp.score as string) ?? '0') : null
+  const awayScore = code !== 'ns' ? ((awayComp.score as string) ?? '0') : null
 
-  async function selectTab(tab: WeekTab) {
-    activeTab.value = tab
-    if (!weeks.value[tab].loaded) await fetchWeek(tab)
-  }
+  const quality = computeQuality(homeName, awayName)
+  const badge: MatchBadge =
+    code !== 'ft'
+      ? quality >= 50
+        ? 'fire'
+        : quality >= 35
+          ? 'wild'
+          : null
+      : null
 
-  /** Returns true if any match in the given tab is currently live or at HT */
-  function hasLiveGames(tab: WeekTab): boolean {
-    return weeks.value[tab].matches.some(
-      (m) => m.status.code === 'live' || m.status.code === 'ht'
-    )
-  }
+  // Group from standings data isn't in scoreboard — derive from our constants
+  const group = homeData?.group ?? awayData?.group ?? null
 
   return {
-    weeks: weeks.value,
+    id: String(ev.id ?? ''),
+    date: String(ev.date ?? ''),
+    home: homeName,
+    homeScore,
+    homeColor: homeData?.color ?? '888888',
+    homeAltColor: homeData?.altColor ?? 'ffffff',
+    homeIso2: homeData?.iso2 ?? '',
+    homeAbbrev: homeData?.abbrev ?? homeName.slice(0, 3).toUpperCase(),
+    away: awayName,
+    awayScore,
+    awayColor: awayData?.color ?? '888888',
+    awayAltColor: awayData?.altColor ?? 'ffffff',
+    awayIso2: awayData?.iso2 ?? '',
+    awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
+    group,
+    venue: (comp.venue as Record<string, unknown>)?.fullName as string | null,
+    status: { code, clock },
+    qualityScore: quality,
+    badge,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Date helpers
+// ---------------------------------------------------------------------------
+
+function toYYYYMMDD(d: Date): string {
+  return d.toISOString().slice(0, 10).replace(/-/g, '')
+}
+
+function weekRange(offset: 0 | -1 | 1): string {
+  const now = new Date()
+  // Anchor to Monday of the current week
+  const day = now.getDay() // 0=Sun
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((day + 6) % 7) + offset * 7)
+  monday.setHours(0, 0, 0, 0)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  return `${toYYYYMMDD(monday)}-${toYYYYMMDD(sunday)}`
+}
+
+// ---------------------------------------------------------------------------
+// Composable
+// ---------------------------------------------------------------------------
+
+export function useScores() {
+  const activeTab = useState<WeekTab>('scores-tab', () => 'this')
+
+  const dateRange = computed(() => {
+    if (activeTab.value === 'last') return weekRange(-1)
+    if (activeTab.value === 'next') return weekRange(1)
+    return weekRange(0)
+  })
+
+  const {
+    data: rawEvents,
+    pending,
+    error,
+    refresh,
+  } = useFetch<unknown[]>('/api/schedule', {
+    query: computed(() => ({ dates: dateRange.value })),
+    watch: [dateRange],
+  })
+
+  const matches = computed<Match[]>(() => {
+    if (!rawEvents.value) return []
+    return rawEvents.value
+      .map(normaliseEvent)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  })
+
+  // Group matches by day label for display
+  const matchesByDay = computed(() => {
+    const groups = new Map<string, Match[]>()
+    for (const m of matches.value) {
+      const day = m.date.slice(0, 10)
+      if (!groups.has(day)) groups.set(day, [])
+      groups.get(day)!.push(m)
+    }
+    return groups
+  })
+
+  return {
     activeTab,
-    lastUpdated,
-    fetchWeek,
-    selectTab,
-    hasLiveGames,
+    matches,
+    matchesByDay,
+    pending,
+    error,
+    refresh,
   }
 }

@@ -1,352 +1,109 @@
 <script setup lang="ts">
-  import type { H2HGame } from '~/composables/useMatchDetail'
-  import { TEAM_LOGO } from '~/composables/useMyTeam'
+  import type { Match } from '../../composables/useScores'
 
-  defineProps<{
-    h2h: H2HGame[]
-    loading: boolean
+  const props = defineProps<{
+    detail: Record<string, unknown>
+    match: Match
+  }>()
+
+  interface H2HGame {
+    date: string
     homeTeam: string
     awayTeam: string
-    homeAbbr: string
-    awayAbbr: string
-  }>()
-
-  const emit = defineEmits<{
-    'select-team': [team: string]
-  }>()
-
-  function h2hDate(dateStr: string): { weekday: string; date: string } {
-    const d = new Date(dateStr)
-    return {
-      weekday: d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }),
-      date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
-    }
+    homeScore: string
+    awayScore: string
+    competition: string
   }
 
-  function h2hScoreClass(myScore: string, theirScore: string): string {
-    const a = parseInt(myScore)
-    const b = parseInt(theirScore)
-    if (isNaN(a) || isNaN(b)) return 'h2h-draw'
-    if (a > b) return 'h2h-win'
-    if (a < b) return 'h2h-loss'
-    return 'h2h-draw'
-  }
-
-  function h2hScores(scoreStr: string, atVs: string): { left: string; right: string } {
-    const parts = scoreStr?.split('-') ?? []
-    const gameHome = parts[0]?.trim() ?? '–'
-    const gameAway = parts[1]?.trim() ?? '–'
-    if (atVs === 'vs') return { left: gameHome, right: gameAway }
-    return { left: gameAway, right: gameHome }
-  }
+  const h2hGames = computed<H2HGame[]>(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const h2h = props.detail?.h2h as any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const events = (h2h?.events ?? h2h?.previousEvents ?? []) as any[]
+    return events.slice(0, 10).map((ev) => {
+      const comp = ev.competitions?.[0] ?? {}
+      const competitors = comp.competitors ?? []
+      const home = competitors[0] ?? {}
+      const away = competitors[1] ?? {}
+      return {
+        date: ev.date ?? '',
+        homeTeam: home.team?.displayName ?? '',
+        awayTeam: away.team?.displayName ?? '',
+        homeScore: home.score ?? '—',
+        awayScore: away.score ?? '—',
+        competition: ev.season?.displayName ?? ev.name ?? '',
+      }
+    })
+  })
 </script>
 
 <template>
-  <div v-if="h2h.length" class="h2h-fixtures-wrap">
-    <div class="h2h-fixtures-table">
-      <div
-        v-for="(game, gi) in h2h"
-        :key="game.id"
-        class="h2h-fx-row"
-        :class="{ 'row-stripe': gi % 2 === 1 }"
-      >
-        <div class="h2h-fx-date">
-          <span class="h2h-fx-date-weekday">{{ h2hDate(game.date).weekday }}</span>
-          <span class="h2h-fx-date-md">{{ h2hDate(game.date).date }}</span>
-        </div>
-        <div class="h2h-fx-home">
-          <button
-            class="h2h-fx-team-btn"
-            @click.stop="emit('select-team', game.atVs === 'vs' ? homeTeam : awayTeam)"
+  <div class="h2h-tab">
+    <div v-if="h2hGames.length === 0" class="h2h-tab__empty">
+      <p>No head-to-head history available.</p>
+    </div>
+
+    <div v-else class="h2h-tab__list">
+      <div v-for="(game, idx) in h2hGames" :key="idx" class="h2h-row">
+        <span class="h2h-row__date">
+          {{
+            new Date(game.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })
+          }}
+        </span>
+        <div class="h2h-row__match">
+          <span class="h2h-row__team">{{ game.homeTeam }}</span>
+          <span class="h2h-row__score"
+            >{{ game.homeScore }} – {{ game.awayScore }}</span
           >
-            <span
-              class="h2h-fx-team h2h-fx-team-full"
-              :class="{
-                'h2h-fx-team-win':
-                  h2hScoreClass(
-                    h2hScores(game.score, game.atVs).left,
-                    h2hScores(game.score, game.atVs).right
-                  ) === 'h2h-win',
-              }"
-              >{{ game.atVs === 'vs' ? homeTeam : awayTeam }}</span
-            >
-            <span
-              class="h2h-fx-team h2h-fx-team-abbr"
-              :class="{
-                'h2h-fx-team-win':
-                  h2hScoreClass(
-                    h2hScores(game.score, game.atVs).left,
-                    h2hScores(game.score, game.atVs).right
-                  ) === 'h2h-win',
-              }"
-              >{{ game.atVs === 'vs' ? homeAbbr : awayAbbr }}</span
-            >
-          </button>
-          <img
-            v-if="TEAM_LOGO[game.atVs === 'vs' ? homeTeam : awayTeam]"
-            :src="TEAM_LOGO[game.atVs === 'vs' ? homeTeam : awayTeam]"
-            :alt="game.atVs === 'vs' ? homeTeam : awayTeam"
-            class="h2h-fx-logo"
-          />
+          <span class="h2h-row__team h2h-row__team--away">{{
+            game.awayTeam
+          }}</span>
         </div>
-        <div class="h2h-fx-center">
-          <span class="h2h-fx-score">
-            <span
-              :class="
-                h2hScoreClass(
-                  h2hScores(game.score, game.atVs).left,
-                  h2hScores(game.score, game.atVs).right
-                )
-              "
-              >{{ h2hScores(game.score, game.atVs).left }}</span
-            >
-            <span class="h2h-fx-sep">–</span>
-            <span
-              :class="
-                h2hScoreClass(
-                  h2hScores(game.score, game.atVs).right,
-                  h2hScores(game.score, game.atVs).left
-                )
-              "
-              >{{ h2hScores(game.score, game.atVs).right }}</span
-            >
-          </span>
-        </div>
-        <div class="h2h-fx-away">
-          <img
-            v-if="TEAM_LOGO[game.atVs === 'vs' ? awayTeam : homeTeam]"
-            :src="TEAM_LOGO[game.atVs === 'vs' ? awayTeam : homeTeam]"
-            :alt="game.atVs === 'vs' ? awayTeam : homeTeam"
-            class="h2h-fx-logo"
-          />
-          <button
-            class="h2h-fx-team-btn"
-            @click.stop="emit('select-team', game.atVs === 'vs' ? awayTeam : homeTeam)"
-          >
-            <span
-              class="h2h-fx-team h2h-fx-team-full"
-              :class="{
-                'h2h-fx-team-win':
-                  h2hScoreClass(
-                    h2hScores(game.score, game.atVs).right,
-                    h2hScores(game.score, game.atVs).left
-                  ) === 'h2h-win',
-              }"
-              >{{ game.atVs === 'vs' ? awayTeam : homeTeam }}</span
-            >
-            <span
-              class="h2h-fx-team h2h-fx-team-abbr"
-              :class="{
-                'h2h-fx-team-win':
-                  h2hScoreClass(
-                    h2hScores(game.score, game.atVs).right,
-                    h2hScores(game.score, game.atVs).left
-                  ) === 'h2h-win',
-              }"
-              >{{ game.atVs === 'vs' ? awayAbbr : homeAbbr }}</span
-            >
-          </button>
-        </div>
+        <span class="h2h-row__comp">{{ game.competition }}</span>
       </div>
     </div>
   </div>
-  <div v-else-if="loading" class="skeleton-wrap">
-    <div v-for="i in 4" :key="i" class="skeleton-row" />
-  </div>
-  <div v-else class="no-data">No head-to-head data available</div>
 </template>
 
 <style scoped>
-  .row-stripe {
-    background: oklab(100% 0 0 / 0.035);
+  @reference "~/assets/css/main.css";
+  .h2h-tab__empty {
+    @apply py-12 text-center text-white/40;
   }
 
-  .skeleton-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
+  .h2h-tab__list {
+    @apply space-y-2;
   }
 
-  .skeleton-row {
-    height: 2.25rem;
-    background: oklab(100% 0 0 / 0.06);
-    border-radius: 0.25rem;
-    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  .h2h-row {
+    @apply rounded-lg bg-white/5 px-3 py-2;
   }
 
-  @keyframes skeleton-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+  .h2h-row__date {
+    @apply block text-xs text-white/30;
   }
 
-  .h2h-fixtures-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    width: 100%;
+  .h2h-row__match {
+    @apply flex items-center gap-2 py-1;
   }
 
-  .h2h-fixtures-table {
-    display: flex;
-    flex-direction: column;
+  .h2h-row__team {
+    @apply flex-1 text-sm font-semibold text-white;
   }
 
-  .h2h-fx-row {
-    display: grid;
-    grid-template-columns: 1fr 4rem 1fr;
-    grid-template-rows: auto auto;
-    grid-template-areas:
-      'date date date'
-      'home center away';
-    align-items: center;
-    padding: 0.3rem 0;
-    border-radius: 0.25rem;
+  .h2h-row__team--away {
+    @apply text-right;
   }
 
-  @media (max-width: 599px) {
-    .h2h-fx-row {
-      grid-template-columns: 1fr 3.5rem 1fr;
-    }
+  .h2h-row__score {
+    @apply shrink-0 text-sm font-black text-white tabular-nums;
   }
 
-  .h2h-fx-date {
-    grid-area: date;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3em;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    padding-bottom: 0.15rem;
-  }
-
-  .h2h-fx-date-weekday,
-  .h2h-fx-date-md {
-    font-size: var(--modal-copy-size);
-    font-weight: 200;
-    color: oklab(100% 0 0 / 0.85);
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-  }
-
-  .h2h-fx-home {
-    grid-area: home;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    min-width: 0;
-    overflow: hidden;
-    justify-content: flex-end;
-    padding-right: 0.4rem;
-  }
-
-  .h2h-fx-away {
-    grid-area: away;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    min-width: 0;
-    overflow: hidden;
-    justify-content: flex-start;
-    padding-left: 0.4rem;
-  }
-
-  .h2h-fx-center {
-    grid-area: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .h2h-fx-logo {
-    width: 1rem;
-    height: 1rem;
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-
-  .h2h-fx-team {
-    font-size: var(--modal-copy-size);
-    font-weight: 200;
-    color: oklab(100% 0 0 / 0.75);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-  }
-
-  .h2h-fx-team-win {
-    font-weight: 600;
-    color: oklab(100% 0 0);
-  }
-
-  .h2h-fx-team-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    font: inherit;
-    text-align: inherit;
-    border-radius: 0.2rem;
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .h2h-fx-team-btn:hover .h2h-fx-team {
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-    text-decoration-color: oklab(100% 0 0 / 0.45);
-  }
-
-  .h2h-fx-team-btn:focus-visible {
-    outline: 1px solid oklab(100% 0 0 / 0.4);
-    outline-offset: 1px;
-  }
-
-  .h2h-fx-team-abbr {
-    display: none;
-  }
-
-  @media (max-width: 599px) {
-    .h2h-fx-team-full {
-      display: none;
-    }
-    .h2h-fx-team-abbr {
-      display: inline;
-    }
-  }
-
-  .h2h-fx-score {
-    font-size: var(--modal-copy-size);
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-  }
-
-  .h2h-fx-sep {
-    color: oklab(100% 0 0 / 0.4);
-    font-weight: 100;
-  }
-
-  .h2h-win { color: oklab(100% 0 0); }
-  .h2h-loss { color: oklab(100% 0 0 / 0.45); }
-  .h2h-draw { color: oklab(100% 0 0 / 0.45); }
-
-  .no-data {
-    font-size: var(--modal-copy-size);
-    font-weight: 100;
-    color: oklab(100% 0 0);
-    text-align: center;
-    padding: 2rem 0;
-    letter-spacing: 0.06em;
+  .h2h-row__comp {
+    @apply block text-xs text-white/30;
   }
 </style>

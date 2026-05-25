@@ -1,268 +1,124 @@
 <script setup lang="ts">
-  import type { TeamRoster, RosterPlayer } from '~/composables/useMatchDetail'
+  import type { Match } from '../../composables/useScores'
 
-  defineProps<{
-    homeLogo: string | null
-    awayLogo: string | null
-    homeTeam: string
-    awayTeam: string
-    homeAbbr: string
-    awayAbbr: string
-    homeTeamAbbrev: string
-    awayTeamAbbrev: string
-    homeRoster: TeamRoster | null
-    awayRoster: TeamRoster | null
-    statusCode: string
+  const props = defineProps<{
+    detail: Record<string, unknown>
+    match: Match
   }>()
 
-  const POS_ORDER: Record<string, number> = {
-    G: 0, GK: 0,
-    D: 1, CB: 1, LB: 1, RB: 1, WB: 1,
-    M: 2, CM: 2, DM: 2, AM: 2,
-    F: 3, FW: 3, LW: 3, RW: 3, ST: 3,
+  interface Player {
+    name: string
+    position: string
+    jersey: string
+    starter: boolean
   }
 
-  function sortedPlayers(roster: TeamRoster | null): RosterPlayer[] {
-    if (!roster) return []
-    return [...roster.players].sort((a, b) => {
-      const ao = POS_ORDER[a.position] ?? 9
-      const bo = POS_ORDER[b.position] ?? 9
-      if (ao !== bo) return ao - bo
-      return (a.jersey ? parseInt(a.jersey) : 99) - (b.jersey ? parseInt(b.jersey) : 99)
-    })
+  function extractRoster(teamData: unknown): Player[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const athletes = (teamData as any)?.athletes ?? []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return athletes.map((a: any) => ({
+      name: a.athlete?.displayName ?? a.athlete?.shortName ?? '—',
+      position: a.position?.abbreviation ?? '',
+      jersey: a.athlete?.jersey ?? '',
+      starter: a.starter ?? false,
+    }))
   }
+
+  const homeRoster = computed<Player[]>(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rosters = (props.detail?.rosters as any[]) ?? []
+    return extractRoster(rosters[0])
+  })
+
+  const awayRoster = computed<Player[]>(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rosters = (props.detail?.rosters as any[]) ?? []
+    return extractRoster(rosters[1])
+  })
+
+  const hasData = computed(
+    () => homeRoster.value.length > 0 || awayRoster.value.length > 0
+  )
 </script>
 
 <template>
-  <div class="squads-table">
-    <div class="squads-head">
-      <div class="squads-th squads-th-home">
-        <img v-if="homeLogo" :src="homeLogo" :alt="homeTeam" class="squads-th-logo" />
-        <span>
-          <span class="name-short">{{ homeAbbr }}</span>
-          <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
-        </span>
-      </div>
-      <div class="squads-th-center"></div>
-      <div class="squads-th squads-th-away">
-        <img v-if="awayLogo" :src="awayLogo" :alt="awayTeam" class="squads-th-logo" />
-        <span>
-          <span class="name-short">{{ awayAbbr }}</span>
-          <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
-        </span>
-      </div>
+  <div class="lineups-tab">
+    <div v-if="!hasData" class="lineups-tab__empty">
+      <p>Lineups will be available closer to kick-off.</p>
     </div>
-    <template
-      v-for="(_, rowIdx) in Array(
-        Math.max(sortedPlayers(homeRoster).length, sortedPlayers(awayRoster).length)
-      )"
-      :key="rowIdx"
-    >
-      <div class="squads-row" :class="{ 'row-stripe': rowIdx % 2 === 1 }">
-        <div class="squads-player squads-player-home">
-          <span
-            v-if="statusCode !== 'ns' && sortedPlayers(homeRoster)[rowIdx]?.subbedIn"
-            class="sub-icon sub-in"
-          />
-          <span
-            v-if="statusCode !== 'ns' && sortedPlayers(homeRoster)[rowIdx]?.subbedOut"
-            class="sub-icon sub-out"
-          />
-          <span v-if="sortedPlayers(homeRoster)[rowIdx]" class="squad-jersey">
-            {{ sortedPlayers(homeRoster)[rowIdx]?.jersey ?? '–' }}
-          </span>
-          <span v-if="sortedPlayers(homeRoster)[rowIdx]" class="squad-pname">
-            {{ sortedPlayers(homeRoster)[rowIdx]?.displayName ?? '' }}
-          </span>
+
+    <div v-else class="lineups-tab__cols">
+      <!-- Home -->
+      <div class="lineups-tab__col">
+        <div class="lineups-tab__col-header">
+          <CountryFlag :iso2="match.homeIso2" :size="20" />
+          <span>{{ match.home }}</span>
         </div>
-        <div class="squads-pos-col">
-          <span
-            v-if="sortedPlayers(homeRoster)[rowIdx] || sortedPlayers(awayRoster)[rowIdx]"
-            class="squad-pos"
-          >
-            {{
-              sortedPlayers(homeRoster)[rowIdx]?.position ??
-              sortedPlayers(awayRoster)[rowIdx]?.position ??
-              ''
-            }}
-          </span>
-        </div>
-        <div class="squads-player squads-player-away">
-          <span v-if="sortedPlayers(awayRoster)[rowIdx]" class="squad-pname">
-            {{ sortedPlayers(awayRoster)[rowIdx]?.displayName ?? '' }}
-          </span>
-          <span v-if="sortedPlayers(awayRoster)[rowIdx]" class="squad-jersey">
-            {{ sortedPlayers(awayRoster)[rowIdx]?.jersey ?? '–' }}
-          </span>
-          <span
-            v-if="statusCode !== 'ns' && sortedPlayers(awayRoster)[rowIdx]?.subbedIn"
-            class="sub-icon sub-in"
-          />
-          <span
-            v-if="statusCode !== 'ns' && sortedPlayers(awayRoster)[rowIdx]?.subbedOut"
-            class="sub-icon sub-out"
-          />
+        <div
+          v-for="player in homeRoster"
+          :key="player.name"
+          class="player-row"
+          :class="{ 'player-row--starter': player.starter }"
+        >
+          <span class="player-row__jersey">{{ player.jersey }}</span>
+          <span class="player-row__name">{{ player.name }}</span>
+          <span class="player-row__pos">{{ player.position }}</span>
         </div>
       </div>
-    </template>
-    <div
-      v-if="!sortedPlayers(homeRoster).length && !sortedPlayers(awayRoster).length"
-      class="no-data"
-    >
-      Lineups not yet available
+
+      <!-- Away -->
+      <div class="lineups-tab__col">
+        <div class="lineups-tab__col-header">
+          <CountryFlag :iso2="match.awayIso2" :size="20" />
+          <span>{{ match.away }}</span>
+        </div>
+        <div
+          v-for="player in awayRoster"
+          :key="player.name"
+          class="player-row"
+          :class="{ 'player-row--starter': player.starter }"
+        >
+          <span class="player-row__jersey">{{ player.jersey }}</span>
+          <span class="player-row__name">{{ player.name }}</span>
+          <span class="player-row__pos">{{ player.position }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-  .row-stripe {
-    background: oklab(100% 0 0 / 0.035);
+  @reference "~/assets/css/main.css";
+  .lineups-tab__empty {
+    @apply py-12 text-center text-white/40;
   }
 
-  .name-abbrev {
-    display: none;
+  .lineups-tab__cols {
+    @apply grid grid-cols-2 gap-4;
   }
 
-  @media (max-width: 425px) {
-    .name-short {
-      display: none;
-    }
-    .name-abbrev {
-      display: inline;
-    }
+  .lineups-tab__col-header {
+    @apply mb-2 flex items-center gap-2 text-sm font-bold text-white;
   }
 
-  .squads-table {
-    display: flex;
-    flex-direction: column;
+  .player-row {
+    @apply flex items-center gap-2 border-t border-white/5 py-1.5 text-xs text-white/60;
   }
 
-  .squads-head {
-    display: grid;
-    grid-template-columns: 1fr 3.5rem 1fr;
-    align-items: center;
-    padding: 0.2rem 0 0.4rem;
-    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
-    margin-bottom: 0.1rem;
+  .player-row--starter {
+    @apply text-white;
   }
 
-  .squads-th {
-    font-size: var(--modal-copy-size);
-    font-weight: 400;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: oklab(100% 0 0 / 0.85);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+  .player-row__jersey {
+    @apply w-5 text-center font-bold text-white/30;
   }
 
-  .squads-th-home {
-    justify-content: flex-end;
+  .player-row__name {
+    @apply flex-1 truncate;
   }
 
-  .squads-th-away {
-    justify-content: flex-start;
-  }
-
-  .squads-th-logo {
-    width: 1.375rem;
-    height: 1.375rem;
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-
-  .squads-row {
-    display: grid;
-    grid-template-columns: 1fr 3.5rem 1fr;
-    align-items: center;
-    padding: 0.2rem 0;
-    min-height: 2rem;
-  }
-
-  .squads-player {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    min-width: 0;
-  }
-
-  .squads-player-home {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-
-  .squads-player-away {
-    flex-direction: row;
-    justify-content: flex-start;
-  }
-
-  .squad-jersey {
-    font-size: var(--modal-copy-size);
-    font-weight: 300;
-    color: oklab(100% 0 0 / 0.5);
-    letter-spacing: 0.04em;
-    flex-shrink: 0;
-    min-width: 1.5ch;
-    text-align: center;
-  }
-
-  .squad-pname {
-    font-size: var(--modal-copy-size);
-    font-weight: 100;
-    color: oklab(100% 0 0);
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-  }
-
-  .squads-pos-col {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .squad-pos {
-    font-size: 0.575rem;
-    font-weight: 400;
-    letter-spacing: 0.09em;
-    color: oklab(100% 0 0 / 0.6);
-    text-align: center;
-    background: oklab(100% 0 0 / 0.06);
-    border-radius: 0.15rem;
-    padding: 0.1rem 0.25rem;
-  }
-
-  .sub-icon {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 0;
-    height: 0;
-    vertical-align: middle;
-    position: relative;
-    top: -1px;
-  }
-
-  .sub-in {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-bottom: 8px solid oklab(0.86 -0.27 0.15);
-  }
-
-  .sub-out {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 8px solid oklab(0.6 0.21 0.11);
-  }
-
-  .no-data {
-    font-size: var(--modal-copy-size);
-    font-weight: 100;
-    color: oklab(100% 0 0);
-    text-align: center;
-    padding: 2rem 0;
-    letter-spacing: 0.06em;
+  .player-row__pos {
+    @apply rounded bg-white/10 px-1 py-0.5 text-xs font-bold text-white/40;
   }
 </style>

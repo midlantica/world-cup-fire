@@ -39,35 +39,35 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'MLS Live Scores',
+      title: 'World Cup Fire 🔥',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
           content:
-            'Live MLS scores, schedule, and standings — updated in real time.',
+            'FIFA World Cup 2026 live scores, groups, standings, and schedule — updated in real time.',
         },
         // Open Graph — tagPriority 'critical' forces these before inline styles/scripts
         { property: 'og:type', content: 'website', tagPriority: 'critical' },
         {
           property: 'og:url',
-          content: 'https://mlsscores.netlify.app/',
+          content: 'https://worldcupfire.netlify.app/',
           tagPriority: 'critical',
         },
         {
           property: 'og:title',
-          content: 'MLS Live Scores',
+          content: 'World Cup Fire 🔥',
           tagPriority: 'critical',
         },
         {
           property: 'og:description',
           content:
-            'Live MLS scores, schedule, and standings — updated in real time.',
+            'FIFA World Cup 2026 live scores, groups, standings, and schedule — updated in real time.',
           tagPriority: 'critical',
         },
         {
           property: 'og:image',
-          content: 'https://mlsscores.netlify.app/og-image.png?v=4',
+          content: 'https://worldcupfire.netlify.app/og-image.png',
           tagPriority: 'critical',
         },
         {
@@ -87,7 +87,7 @@ export default defineNuxtConfig({
         },
         {
           property: 'og:site_name',
-          content: 'MLS Scores',
+          content: 'World Cup Fire',
           tagPriority: 'critical',
         },
         // Twitter / X Card
@@ -98,18 +98,18 @@ export default defineNuxtConfig({
         },
         {
           name: 'twitter:title',
-          content: 'MLS Live Scores',
+          content: 'World Cup Fire 🔥',
           tagPriority: 'critical',
         },
         {
           name: 'twitter:description',
           content:
-            'Live MLS scores, schedule, and standings — updated in real time.',
+            'FIFA World Cup 2026 live scores, groups, standings, and schedule — updated in real time.',
           tagPriority: 'critical',
         },
         {
           name: 'twitter:image',
-          content: 'https://mlsscores.netlify.app/og-image.png?v=4',
+          content: 'https://worldcupfire.netlify.app/og-image.png',
           tagPriority: 'critical',
         },
       ],

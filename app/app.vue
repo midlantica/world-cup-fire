@@ -1,45 +1,44 @@
 <script setup lang="ts">
-  import { useAnalytics } from '~/composables/useAnalytics'
-
-  const route = useRoute()
-  const { trackPageview } = useAnalytics()
-
-  // Track SPA route changes for analytics.
-  // We fire-and-forget a POST to /api/analytics/pageview so the server can
-  // record which client-side routes (scores, standings, stats, team, game)
-  // are actually being visited — the server middleware only ever sees '/'.
-  // Modal opens (openGameDetail, openTeamModal) use history.replaceState/pushState
-  // directly and bypass Vue Router, so they call trackPageview() themselves
-  // from index.vue rather than relying on this watcher.
-
-  // Track SPA navigations only — skip the initial '/' load since the server
-  // middleware already records that request. We only want to capture the
-  // client-side route changes that the server never sees.
-  let initialLoad = true
-
-  onMounted(() => {
-    // If the user landed directly on a non-root path (e.g. /standings),
-    // the server middleware recorded '/' (the SSR entry), not the actual path.
-    // So we track it here too.
-    if (route.path !== '/') {
-      trackPageview(route.path)
-    }
-    initialLoad = false
+  useHead({
+    titleTemplate: (title) =>
+      title ? title : 'World Cup Fire 🔥 — 2026 FIFA World Cup',
+    htmlAttrs: { lang: 'en' },
+    meta: [
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'theme-color', content: '#0a0a0a' },
+    ],
+    link: [
+      {
+        rel: 'preconnect',
+        href: 'https://purecatamphetamine.github.io',
+      },
+    ],
   })
-
-  // Track subsequent Vue Router navigations (tab switches: /standings, /stats, etc.)
-  // Modal opens bypass Vue Router and are tracked directly in index.vue.
-  watch(
-    () => route.path,
-    (path) => {
-      if (initialLoad) return
-      trackPageview(path)
-    }
-  )
 </script>
 
 <template>
-  <div class="min-h-screen text-gray-100">
+  <div class="app-root">
+    <AppHeader />
     <NuxtPage />
+    <AppFooter />
   </div>
 </template>
+
+<style>
+  @reference "~/assets/css/main.css";
+  .app-root {
+    @apply min-h-screen bg-zinc-950 text-white;
+    background-image:
+      radial-gradient(
+        ellipse at 20% 0%,
+        rgba(234, 88, 12, 0.08) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 80% 100%,
+        rgba(16, 185, 129, 0.06) 0%,
+        transparent 50%
+      );
+  }
+</style>

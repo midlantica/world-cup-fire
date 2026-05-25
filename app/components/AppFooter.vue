@@ -1,40 +1,35 @@
 <script setup lang="ts">
-  defineProps<{ showScoreLegend?: boolean }>()
+  const year = new Date().getFullYear()
 </script>
 
 <template>
-  <footer class="footer">
-    <span v-if="showScoreLegend" class="footer-info"
-      >🔥 both winning &amp; close · 🎲 derby or equal underdogs</span
-    >
-    <span class="footer-disclaimer"
-      >This is an unofficial fan site and is not affiliated with, endorsed by,
-      or sponsored by MLS. The MLS name, crest, and all team logos are
-      trademarks of their respective owners and are used here for informational
-      and fan purposes only.</span
-    >
+  <footer class="app-footer">
+    <div class="app-footer__inner">
+      <span class="app-footer__text">
+        World Cup Fire 🔥 · {{ year }} · Data via ESPN
+      </span>
+      <span class="app-footer__disclaimer">
+        Not affiliated with FIFA or ESPN
+      </span>
+    </div>
   </footer>
 </template>
 
 <style scoped>
-  .footer {
-    margin-top: 1.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #343434;
-    color: var(--color-text-tertiary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.375rem;
+  @reference "~/assets/css/main.css";
+  .app-footer {
+    @apply mt-12 border-t border-white/5 py-6;
   }
 
-  .footer-info {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
+  .app-footer__inner {
+    @apply mx-auto flex max-w-7xl flex-col items-center gap-1 px-4 text-center;
   }
 
-  .footer-disclaimer {
-    font-size: 0.6rem;
+  .app-footer__text {
+    @apply text-sm text-white/30;
+  }
+
+  .app-footer__disclaimer {
+    @apply text-xs text-white/20;
   }
 </style>

@@ -1,88 +1,83 @@
+import { TEAM_BY_NAME } from '../constants/worldcup'
+
 export interface StandingEntry {
   rank: number
-  rankChange: number
-  team: string
-  gp: number
-  w: number
-  d: number
-  l: number
-  pts: number
-  gf: number
-  ga: number
-  gd: number
-  ppg: number
-  overall: string
+  teamName: string
+  iso2: string
+  abbrev: string
+  color: string
+  played: number
+  wins: number
+  draws: number
+  losses: number
+  goalsFor: number
+  goalsAgainst: number
+  goalDiff: number
+  points: number
 }
 
-export interface ConferenceStandings {
-  name: string
+export interface GroupStanding {
+  group: string // "Group A"
+  letter: string // "A"
   entries: StandingEntry[]
 }
 
-function getStat(
-  stats: Array<{ name: string; value: number }>,
-  name: string
-): number {
-  return stats.find((s) => s.name === name)?.value ?? 0
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function statVal(stats: any[], name: string): number {
+  const s = stats?.find((x: Record<string, unknown>) => x.name === name)
+  return s ? Number(s.value) : 0
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normaliseGroup(raw: any): GroupStanding {
+  const groupName: string = raw.name ?? 'Group ?'
+  const letter = groupName.replace('Group ', '')
+  const entries: StandingEntry[] = (raw.standings?.entries ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((entry: any, idx: number) => {
+      const teamName: string = entry.team?.displayName ?? ''
+      const stats: unknown[] = entry.stats ?? []
+      const teamData = TEAM_BY_NAME.get(teamName)
+
+      return {
+        rank: idx + 1,
+        teamName,
+        iso2: teamData?.iso2 ?? '',
+        abbrev: teamData?.abbrev ?? teamName.slice(0, 3).toUpperCase(),
+        color: teamData?.color ?? '888888',
+        played: statVal(stats as never[], 'gamesPlayed'),
+        wins: statVal(stats as never[], 'wins'),
+        draws: statVal(stats as never[], 'ties'),
+        losses: statVal(stats as never[], 'losses'),
+        goalsFor: statVal(stats as never[], 'pointsFor'),
+        goalsAgainst: statVal(stats as never[], 'pointsAgainst'),
+        goalDiff: statVal(stats as never[], 'pointDifferential'),
+        points: statVal(stats as never[], 'points'),
+      }
+    })
+
+  return { group: groupName, letter, entries }
 }
 
 export function useStandings() {
-  const conferences = ref<ConferenceStandings[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const loaded = ref(false)
+  const {
+    data: rawGroups,
+    pending,
+    error,
+    refresh,
+  } = useFetch<unknown[]>('/api/standings')
 
-  async function fetchStandings() {
-    if (loading.value) return
-    loading.value = true
-    error.value = null
-    try {
-      const data = await $fetch<Record<string, unknown>>('/api/standings')
-      const children = (data.children as Array<Record<string, unknown>>) ?? []
-      conferences.value = children.map((conf) => {
-        const name = conf.name as string
-        const standingsData = conf.standings as Record<string, unknown>
-        const entries =
-          (standingsData?.entries as Array<Record<string, unknown>>) ?? []
-        return {
-          name,
-          entries: entries
-            .map((entry) => {
-              const stats =
-                (entry.stats as Array<{ name: string; value: number }>) ?? []
-              return {
-                rank: getStat(stats, 'rank'),
-                rankChange: getStat(stats, 'rankChange'),
-                team:
-                  ((entry.team as Record<string, unknown>)
-                    ?.displayName as string) ?? '?',
-                gp: getStat(stats, 'gamesPlayed'),
-                w: getStat(stats, 'wins'),
-                d: getStat(stats, 'ties'),
-                l: getStat(stats, 'losses'),
-                pts: getStat(stats, 'points'),
-                gf: getStat(stats, 'pointsFor'),
-                ga: getStat(stats, 'pointsAgainst'),
-                gd: getStat(stats, 'pointDifferential'),
-                ppg: getStat(stats, 'ppg'),
-                overall:
-                  ((
-                    stats.find((s) => s.name === 'overall') as
-                      | Record<string, unknown>
-                      | undefined
-                  )?.summary as string) ?? '',
-              }
-            })
-            .sort((a, b) => a.rank - b.rank),
-        }
-      })
-      loaded.value = true
-    } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Failed to load standings'
-    } finally {
-      loading.value = false
-    }
-  }
+  const groups = computed<GroupStanding[]>(() => {
+    if (!rawGroups.value) return []
+    return rawGroups.value.map(normaliseGroup)
+  })
 
-  return { conferences, loading, error, loaded, fetchStandings }
+  // Quick lookup: group letter → GroupStanding
+  const groupByLetter = computed(() => {
+    const map = new Map<string, GroupStanding>()
+    for (const g of groups.value) map.set(g.letter, g)
+    return map
+  })
+
+  return { groups, groupByLetter, pending, error, refresh }
 }

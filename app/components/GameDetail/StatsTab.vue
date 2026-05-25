@@ -1,212 +1,120 @@
 <script setup lang="ts">
-  import type { MatchDetail } from '~/composables/useMatchDetail'
+  import type { Match } from '../../composables/useScores'
 
   const props = defineProps<{
-    detail: MatchDetail
-    homeLogo: string | null
-    awayLogo: string | null
-    homeTeam: string
-    awayTeam: string
-    homeAbbr: string
-    awayAbbr: string
-    homeTeamAbbrev: string
-    awayTeamAbbrev: string
+    detail: Record<string, unknown>
+    match: Match
   }>()
 
-  const STAT_LABELS: Record<string, string> = {
-    possessionPct: 'Possession',
-    totalShots: 'Shots',
-    shotsOnTarget: 'On Target',
-    saves: 'Saves',
-    wonCorners: 'Corners',
-    foulsCommitted: 'Fouls',
-    yellowCards: 'Yellow Cards',
-    redCards: 'Red Cards',
-    offsides: 'Offsides',
-    accuratePasses: 'Accurate Passes',
-    passPct: 'Pass Accuracy',
-    effectiveTackles: 'Tackles Won',
-    interceptions: 'Interceptions',
-    blockedShots: 'Blocked Shots',
+  interface StatRow {
+    label: string
+    home: string | number
+    away: string | number
+    homeVal: number
+    awayVal: number
   }
 
-  const FEATURED_STATS = [
-    'possessionPct',
-    'totalShots',
-    'shotsOnTarget',
-    'saves',
-    'wonCorners',
-    'foulsCommitted',
-    'yellowCards',
-    'offsides',
-  ]
+  const stats = computed<StatRow[]>(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const boxscore = props.detail?.boxscore as any
+    const teams = boxscore?.teams as unknown[] | undefined
+    if (!teams || teams.length < 2) return []
 
-  function getStat(teamId: string, statName: string): string {
-    const ts = props.detail.teamStats.find((t) => t.teamId === teamId)
-    return ts?.stats.find((s) => s.name === statName)?.displayValue ?? '–'
-  }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const homeStats = (teams[0] as any)?.statistics ?? []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const awayStats = (teams[1] as any)?.statistics ?? []
 
-  function getStatDisplay(teamId: string, statName: string): string {
-    const val = getStat(teamId, statName)
-    if (statName === 'possessionPct' && val !== '–') return val + '%'
-    return val
+    const rows: StatRow[] = []
+    for (let i = 0; i < homeStats.length; i++) {
+      const h = homeStats[i]
+      const a = awayStats[i]
+      if (!h || !a) continue
+      rows.push({
+        label: h.label ?? h.name,
+        home: h.displayValue ?? h.value,
+        away: a.displayValue ?? a.value,
+        homeVal: Number(h.value) || 0,
+        awayVal: Number(a.value) || 0,
+      })
+    }
+    return rows
+  })
+
+  function barWidth(val: number, other: number): string {
+    const total = val + other
+    if (total === 0) return '50%'
+    return `${Math.round((val / total) * 100)}%`
   }
 </script>
 
 <template>
-  <div v-if="detail.teamStats.length >= 2" class="stats-table">
-    <div class="stats-head">
-      <div class="stats-th stats-th-home">
-        <img v-if="homeLogo" :src="homeLogo" :alt="homeTeam" class="head-logo" />
-        <span class="name-short">{{ homeAbbr }}</span>
-        <span class="name-abbrev">{{ homeTeamAbbrev }}</span>
-      </div>
-      <div class="stats-th-center"></div>
-      <div class="stats-th stats-th-away">
-        <img v-if="awayLogo" :src="awayLogo" :alt="awayTeam" class="head-logo" />
-        <span class="name-short">{{ awayAbbr }}</span>
-        <span class="name-abbrev">{{ awayTeamAbbrev }}</span>
+  <div class="stats-tab">
+    <div v-if="stats.length === 0" class="stats-tab__empty">
+      <p>Stats will be available once the match begins.</p>
+    </div>
+
+    <div v-else class="stats-tab__rows">
+      <div v-for="stat in stats" :key="stat.label" class="stat-row">
+        <div class="stat-row__labels">
+          <span class="stat-row__val stat-row__val--home">{{ stat.home }}</span>
+          <span class="stat-row__label">{{ stat.label }}</span>
+          <span class="stat-row__val stat-row__val--away">{{ stat.away }}</span>
+        </div>
+        <div class="stat-row__bar-track">
+          <div
+            class="stat-row__bar stat-row__bar--home"
+            :style="{ width: barWidth(stat.homeVal, stat.awayVal) }"
+          />
+          <div
+            class="stat-row__bar stat-row__bar--away"
+            :style="{ width: barWidth(stat.awayVal, stat.homeVal) }"
+          />
+        </div>
       </div>
     </div>
-    <template v-for="(statName, idx) in FEATURED_STATS" :key="statName">
-      <div class="stats-row" :class="{ 'row-stripe': idx % 2 === 1 }">
-        <div class="stats-val-cell stats-val-home">
-          <span
-            :class="[
-              'stats-num',
-              parseFloat(getStat(detail.teamStats[0]?.teamId ?? '', statName)) >
-              parseFloat(getStat(detail.teamStats[1]?.teamId ?? '', statName))
-                ? 'stats-num-hi'
-                : '',
-            ]"
-            >{{ getStatDisplay(detail.teamStats[0]?.teamId ?? '', statName) }}</span
-          >
-        </div>
-        <div class="stats-label-col">{{ STAT_LABELS[statName] ?? statName }}</div>
-        <div class="stats-val-cell stats-val-away">
-          <span
-            :class="[
-              'stats-num',
-              parseFloat(getStat(detail.teamStats[1]?.teamId ?? '', statName)) >
-              parseFloat(getStat(detail.teamStats[0]?.teamId ?? '', statName))
-                ? 'stats-num-hi'
-                : '',
-            ]"
-            >{{ getStatDisplay(detail.teamStats[1]?.teamId ?? '', statName) }}</span
-          >
-        </div>
-      </div>
-    </template>
   </div>
-  <div v-else class="no-data">Stats not yet available</div>
 </template>
 
 <style scoped>
-  .row-stripe {
-    background: oklab(100% 0 0 / 0.035);
+  @reference "~/assets/css/main.css";
+  .stats-tab__empty {
+    @apply py-12 text-center text-white/40;
   }
 
-  .name-abbrev {
-    display: none;
+  .stats-tab__rows {
+    @apply space-y-4;
   }
 
-  @media (max-width: 425px) {
-    .name-short {
-      display: none;
-    }
-    .name-abbrev {
-      display: inline;
-    }
+  .stat-row__labels {
+    @apply flex items-center justify-between text-sm;
   }
 
-  .head-logo {
-    width: 1.375rem;
-    height: 1.375rem;
-    object-fit: contain;
-    flex-shrink: 0;
+  .stat-row__val {
+    @apply w-12 font-bold text-white;
   }
 
-  .stats-table {
-    display: flex;
-    flex-direction: column;
+  .stat-row__val--home {
+    @apply text-left;
   }
 
-  .stats-head {
-    display: grid;
-    grid-template-columns: 1fr 7rem 1fr;
-    gap: 0;
-    align-items: center;
-    padding: 0.2rem 0 0.4rem;
-    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
-    margin-bottom: 0.1rem;
+  .stat-row__val--away {
+    @apply text-right;
   }
 
-  .stats-th {
-    font-size: var(--modal-copy-size);
-    font-weight: 400;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: oklab(100% 0 0 / 0.85);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+  .stat-row__label {
+    @apply text-xs text-white/50;
   }
 
-  .stats-th-home {
-    justify-content: flex-end;
+  .stat-row__bar-track {
+    @apply mt-1 flex h-1.5 overflow-hidden rounded-full bg-white/10;
   }
 
-  .stats-th-away {
-    justify-content: flex-start;
+  .stat-row__bar--home {
+    @apply h-full rounded-l-full bg-orange-400 transition-all duration-500;
   }
 
-  .stats-row {
-    display: grid;
-    grid-template-columns: 1fr 7rem 1fr;
-    gap: 0;
-    align-items: center;
-    padding: 0.2rem 0;
-    min-height: 2rem;
-  }
-
-  .stats-val-cell {
-    display: flex;
-    align-items: center;
-  }
-
-  .stats-val-home {
-    justify-content: flex-end;
-  }
-
-  .stats-val-away {
-    justify-content: flex-start;
-  }
-
-  .stats-num {
-    font-size: var(--modal-copy-size);
-    font-weight: 300;
-    color: oklab(100% 0 0);
-    letter-spacing: 0.02em;
-    min-width: 2.5ch;
-    text-align: center;
-  }
-
-  .stats-label-col {
-    font-size: var(--modal-copy-size);
-    font-weight: 100;
-    color: oklab(100% 0 0 / 1);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 0 0.25rem;
-  }
-
-  .no-data {
-    font-size: var(--modal-copy-size);
-    font-weight: 100;
-    color: oklab(100% 0 0);
-    text-align: center;
-    padding: 2rem 0;
-    letter-spacing: 0.06em;
+  .stat-row__bar--away {
+    @apply h-full rounded-r-full bg-sky-400 transition-all duration-500;
   }
 </style>

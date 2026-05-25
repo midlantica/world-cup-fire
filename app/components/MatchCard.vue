@@ -4,19 +4,21 @@
 
   const props = defineProps<{
     match: Match
-    showDate?: boolean // show "Sun, May 24" header row (Today's Best / Week's Best)
-    hideTime?: boolean // hide kickoff time from centre (By Time mode — time is in slot heading)
+    showDate?: boolean
   }>()
 
-  const { formatTimeHtml, iana } = useTimezone()
+  const emit = defineEmits<{ (e: 'click', match: Match): void }>()
 
-  // 🔥 shown only when both teams are genuinely elite — top ~15% of matchups
+  const { formatTimeHtml } = useTimezone()
+
   const isHot = computed(() => props.match.qualityScore >= 50)
   const showFire = computed(
     () => props.match.status.code !== 'ft' && isHot.value
   )
+  const showWild = computed(
+    () => props.match.status.code !== 'ft' && props.match.badge === 'wild'
+  )
 
-  // Quality tier class for styling
   const qClass = computed(() => {
     const q = props.match.qualityScore
     if (q >= 50) return 'high'
@@ -24,7 +26,6 @@
     return 'low'
   })
 
-  // Kickoff time formatted in the user's selected timezone (HTML with styled AM/PM)
   const kickoffLabel = computed(() => formatTimeHtml(props.match.date))
 
   const dayDateLabel = computed(() => {
@@ -33,370 +34,175 @@
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-      timeZone: iana.value,
     })
+  })
+
+  const isLive = computed(() => props.match.status.code === 'live')
+  const isHT = computed(() => props.match.status.code === 'ht')
+  const isFT = computed(() => props.match.status.code === 'ft')
+  const isNS = computed(() => props.match.status.code === 'ns')
+
+  const statusLabel = computed(() => {
+    if (isHT.value) return 'HT'
+    if (isFT.value) return 'FT'
+    if (isLive.value) return props.match.status.clock ?? 'LIVE'
+    return null
   })
 </script>
 
 <template>
-  <div class="match-card" :class="`quality-${qClass}`">
-    <!-- Day + date header -->
-    <div v-if="showDate" class="date-row">{{ dayDateLabel }}</div>
+  <article
+    class="match-card"
+    :class="[`q-${qClass}`, { live: isLive || isHT }]"
+    @click="emit('click', match)"
+  >
+    <!-- Date header (optional) -->
+    <div v-if="showDate" class="match-card__date">{{ dayDateLabel }}</div>
 
-    <!-- Main layout: 3 cols desktop, 2 rows mobile -->
-    <div
-      class="match-row"
-      :class="{ 'match-row-vs': match.status.code === 'ns' }"
-    >
-      <!-- Col 1 / Row 1: Home team -->
-      <div class="team team-home">
-        <span
-          class="team-swatch"
-          :style="{ background: match.homeColor }"
-          aria-hidden="true"
+    <!-- Group badge -->
+    <div v-if="match.group" class="match-card__group">
+      Group {{ match.group }}
+    </div>
+
+    <!-- Teams row -->
+    <div class="match-card__teams">
+      <!-- Home -->
+      <div class="match-card__team match-card__team--home">
+        <CountryFlag
+          :iso2="match.homeIso2"
+          :size="36"
+          class="match-card__flag"
         />
-        <span class="team-name">{{ match.home }}</span>
-        <span class="team-rec">{{ match.homeRec }}</span>
-        <!-- Mobile-only inline score -->
-        <span v-if="match.status.code !== 'ns'" class="team-score-inline">{{
-          match.homeScore ?? '0'
-        }}</span>
+        <span class="match-card__name">{{ match.home }}</span>
       </div>
 
-      <!-- Col 2 / Row 2 (desktop only): Scores + badge (flex row) -->
-      <div class="scores-row">
-        <!-- Home score -->
-        <div
-          v-if="match.status.code !== 'ns'"
-          class="score score-active score-home"
-        >
-          {{ match.homeScore ?? '0' }}
-        </div>
-
-        <!-- Centre badge -->
-        <div class="status-badge-wrap">
-          <span
-            v-if="match.status.code === 'ns' && !hideTime"
-            class="status-vs"
-          >
-            <span class="status-dash">—</span>
-            <span class="status-label" v-html="kickoffLabel" />
-            <span class="status-dash">—</span>
+      <!-- Score / time -->
+      <div class="match-card__centre">
+        <template v-if="!isNS">
+          <span class="match-card__score">
+            {{ match.homeScore }} – {{ match.awayScore }}
           </span>
           <span
-            v-else-if="match.status.code === 'ns' && hideTime"
-            class="status-vs"
+            v-if="statusLabel"
+            class="match-card__status"
+            :class="{ 'match-card__status--live': isLive || isHT }"
           >
-            <span class="status-dash">—</span>
-            <span class="status-label">VS</span>
-            <span class="status-dash">—</span>
+            {{ statusLabel }}
           </span>
-          <span
-            v-else-if="match.status.code === 'live'"
-            class="badge badge-live"
-          >
-            {{ match.status.clock || 'LIVE' }}
-          </span>
-          <span v-else-if="match.status.code === 'ht'" class="badge badge-ht"
-            >HT</span
-          >
-          <span v-else-if="match.status.code === 'ft'" class="badge badge-ft"
-            >FT</span
-          >
-        </div>
-
-        <!-- Away score -->
-        <div
-          v-if="match.status.code !== 'ns'"
-          class="score score-active score-away"
-        >
-          {{ match.awayScore ?? '0' }}
-        </div>
+        </template>
+        <template v-else>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span class="match-card__time" v-html="kickoffLabel" />
+        </template>
       </div>
 
-      <!-- Col 3 / Row 2: Away team -->
-      <div class="team team-away">
-        <span
-          class="team-swatch"
-          :style="{ background: match.awayColor }"
-          aria-hidden="true"
+      <!-- Away -->
+      <div class="match-card__team match-card__team--away">
+        <span class="match-card__name">{{ match.away }}</span>
+        <CountryFlag
+          :iso2="match.awayIso2"
+          :size="36"
+          class="match-card__flag"
         />
-        <span class="team-name">{{ match.away }}</span>
-        <span class="team-rec">{{ match.awayRec }}</span>
-        <!-- Mobile-only inline score -->
-        <span v-if="match.status.code !== 'ns'" class="team-score-inline">{{
-          match.awayScore ?? '0'
-        }}</span>
       </div>
     </div>
 
-    <!-- Mobile-only: status badge row for live/ht (not ft, not ns) -->
-    <div
-      v-if="match.status.code === 'live' || match.status.code === 'ht'"
-      class="mobile-status-row"
-    >
-      <span v-if="match.status.code === 'live'" class="badge badge-live">
-        {{ match.status.clock || 'LIVE' }}
-      </span>
-      <span v-else-if="match.status.code === 'ht'" class="badge badge-ht"
-        >HT</span
+    <!-- Badges -->
+    <div class="match-card__badges">
+      <span
+        v-if="showFire"
+        class="match-card__badge match-card__badge--fire"
+        title="Fire match!"
+        >🔥</span
       >
+      <span
+        v-else-if="showWild"
+        class="match-card__badge match-card__badge--wild"
+        title="Could be good"
+        >🎲</span
+      >
+      <span v-if="match.venue" class="match-card__venue">{{
+        match.venue
+      }}</span>
     </div>
-
-    <!-- 🔥 Fire badge for top matchups -->
-    <div v-if="showFire" class="quality-row">
-      <span class="fire-badge">🔥</span>
-    </div>
-  </div>
+  </article>
 </template>
 
 <style scoped>
+  @reference "~/assets/css/main.css";
   .match-card {
-    font-family: var(--font-condensed);
-    border-radius: 0.5rem;
-    border: 1px solid oklab(100% 0 0 / 0.07);
-    padding: 0.5rem 0.75rem;
-    background: oklab(100% 0 0 / 0.03);
-    transition:
-      border-color 0.15s,
-      background 0.15s;
-    position: relative;
-  }
-  .match-card:hover {
-    border-color: oklab(100% 0 0 / 0.14);
-    background: oklab(100% 0 0 / 0.05);
+    @apply relative cursor-pointer rounded-xl border border-white/10 bg-white/5 p-4 transition-all duration-200 hover:bg-white/10 hover:shadow-lg;
   }
 
-  /* Day + date header row */
-  .date-row {
-    font-family: var(--font-condensed);
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-theme-500);
-    text-align: center;
-    margin-bottom: 0.3125rem;
+  .match-card.live {
+    @apply border-green-400/40 bg-green-950/20;
   }
 
-  /* ── Desktop: 3 columns ── */
-  .match-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 0.5rem;
+  .match-card.q-high {
+    @apply border-orange-400/30;
   }
 
-  /* scores-row: flex row, score divs grow to push badge to centre */
-  .scores-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-  }
-  .scores-row .score-home {
-    flex: 1;
-    text-align: right;
-  }
-  .scores-row .score-away {
-    flex: 1;
-    text-align: left;
+  .match-card__date {
+    @apply mb-2 text-xs font-semibold tracking-wider text-white/40 uppercase;
   }
 
-  /* Mobile-only inline score — hidden on desktop */
-  .team-score-inline {
-    display: none;
+  .match-card__group {
+    @apply mb-2 inline-block rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold tracking-wider text-white/60 uppercase;
   }
 
-  /* Mobile-only status row — hidden on desktop */
-  .mobile-status-row {
-    display: none;
+  .match-card__teams {
+    @apply flex items-center gap-3;
   }
 
-  /* ── Mobile: 2 rows (home + away), Google-style ── */
-  @media (max-width: 530px) {
-    .match-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-
-    /* Hide the desktop scores-row entirely when there are scores to show inline */
-    .match-row:not(.match-row-vs) .scores-row {
-      display: none;
-    }
-
-    /* For pre-match (ns): hide team inline scores (none rendered), show scores-row as VS/time */
-    .match-row-vs .scores-row {
-      display: flex;
-      justify-content: center;
-      order: 2; /* between home and away */
-    }
-    .match-row-vs .team-home {
-      order: 1;
-    }
-    .match-row-vs .team-away {
-      order: 3;
-    }
-
-    /* Each team row: swatch + name + rec flush left, score pinned right */
-    .team-home,
-    .team-away {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 0.5rem;
-      width: 100%;
-      justify-content: center;
-    }
-
-    /* Score pushed to far right */
-    .team-score-inline {
-      display: block;
-      font-family: var(--font-condensed);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: var(--color-text-primary);
-      line-height: 1;
-    }
-
-    .team-name {
-      font-size: 0.9375rem;
-    }
-
-    /* status-vs: no extra padding */
-    .status-vs {
-      gap: 0.375rem;
-      padding-inline: 0;
-    }
-    .status-label {
-      padding-inline: 0;
-    }
-
-    /* Live/HT badge shown below the two team rows */
-    .mobile-status-row {
-      display: flex;
-      justify-content: center;
-      margin-top: 0.25rem;
-    }
+  .match-card__team {
+    @apply flex min-w-0 flex-1 items-center gap-2;
   }
 
-  /* ── Teams ── */
-  .team {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
+  .match-card__team--home {
+    @apply justify-start;
   }
 
-  /* Desktop-only alignment */
-  @media (min-width: 531px) {
-    .team-home {
-      justify-content: flex-end;
-      text-align: right;
-    }
-    .team-away {
-      justify-content: flex-start;
-      text-align: left;
-    }
-    /* Pull the W-T-L record to the left of the swatch on the away side */
-    .team-away .team-rec {
-      order: -1;
-    }
-  }
-  .team-swatch {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    border-radius: 0.15em;
-    flex-shrink: 0;
-    align-self: center;
-  }
-  .team-name {
-    font-family: var(--font-condensed);
-    font-size: 1rem;
-    font-weight: 300;
-    letter-spacing: 0.04em;
-    color: var(--color-text-primary);
-  }
-  .team-rec {
-    font-family: var(--font-condensed);
-    font-size: 1rem;
-    font-weight: 300;
-    color: var(--color-text-secondary);
-    white-space: nowrap;
+  .match-card__team--away {
+    @apply justify-end;
   }
 
-  /* ── Scores ── */
-  .score {
-    font-weight: 300;
-    line-height: 1;
-  }
-  .score-active {
-    font-family: var(--font-condensed);
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
+  .match-card__flag {
+    @apply shrink-0;
   }
 
-  /* ── Status badge ── */
-  .status-badge-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  .status-vs {
-    font-family: var(--font-condensed);
-    font-size: 0.875rem;
-    font-weight: 300;
-    letter-spacing: 0.08em;
-    color: oklab(100% 0 0);
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-  }
-  .status-dash {
-    opacity: 0.5;
-  }
-  .status-label {
-    padding-inline: 0.75em;
-  }
-  .status-label :deep(.ampm) {
-    font-size: 0.8em;
-  }
-  .badge {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-  }
-  .badge-live {
-    background: oklab(34.8% -0.072 0.028 / 0.6);
-    color: var(--color-text-accent);
-    border: 1px solid
-      color-mix(in oklab, var(--color-text-accent) 20%, transparent);
-  }
-  .badge-ht {
-    background: oklab(33.2% 0.028 0.062 / 0.6);
-    color: oklab(82.1% 0.022 0.082);
-    border: 1px solid oklab(82.1% 0.022 0.082 / 0.2);
-  }
-  .badge-ft {
-    background: oklab(100% 0 0 / 0.06);
-    color: var(--color-text-secondary);
+  .match-card__name {
+    @apply truncate text-sm font-semibold text-white;
   }
 
-  /* ── Fire badge ── */
-  .quality-row {
-    position: absolute;
-    top: -0.2em;
-    right: -0.2em;
-    line-height: 1;
+  .match-card__centre {
+    @apply flex shrink-0 flex-col items-center gap-0.5;
   }
-  .fire-badge {
-    font-size: 1rem;
-    line-height: 1;
+
+  .match-card__score {
+    @apply text-xl font-bold text-white tabular-nums;
+  }
+
+  .match-card__time {
+    @apply text-sm font-medium text-white/70;
+  }
+
+  .match-card__status {
+    @apply rounded px-1.5 py-0.5 text-xs font-bold text-white/60 uppercase;
+  }
+
+  .match-card__status--live {
+    @apply animate-pulse bg-green-500/20 text-green-400;
+  }
+
+  .match-card__badges {
+    @apply mt-2 flex items-center gap-2;
+  }
+
+  .match-card__badge {
+    @apply text-lg leading-none;
+  }
+
+  .match-card__venue {
+    @apply ml-auto truncate text-xs text-white/30;
   }
 </style>

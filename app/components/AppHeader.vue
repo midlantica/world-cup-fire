@@ -1,102 +1,127 @@
 <script setup lang="ts">
-  import { useMyTeam } from '~/composables/useMyTeam'
+  import { useMyNation } from '../composables/useMyNation'
+  import { useTimezone } from '../composables/useTimezone'
 
-  const emit = defineEmits<{
-    'go-home': []
-    'open-team-modal': []
-  }>()
-
-  const { selectedTeam } = useMyTeam()
+  const { myNation, myTeamData, openModal } = useMyNation()
+  const { selectedTz, setTz } = useTimezone()
 </script>
 
 <template>
-  <!-- ── Site header ──────────────────────────────────────────────────────── -->
-  <header class="header">
-    <div
-      class="header-left"
-      role="button"
-      style="cursor: pointer"
-      @click="emit('go-home')"
-    >
-      <MlsLogo
-        class="mls-logo"
-        :class="{ 'mls-logo--themed': !!selectedTeam }"
-      />
-      <div>
-        <h1 class="site-title">MLS Scores</h1>
-      </div>
-    </div>
+  <header class="app-header">
+    <div class="app-header__inner">
+      <!-- Logo / Brand -->
+      <NuxtLink to="/" class="app-header__brand">
+        <img
+          src="/FIFA-WC-2026.svg"
+          alt="FIFA World Cup 2026"
+          class="app-header__logo"
+        />
+        <div class="app-header__title-block">
+          <span class="app-header__title">World Cup</span>
+          <span class="app-header__fire">🔥 Fire</span>
+        </div>
+      </NuxtLink>
 
-    <div class="header-right">
-      <TzPicker />
+      <!-- Nav -->
+      <nav class="app-header__nav">
+        <NuxtLink
+          to="/"
+          class="app-header__nav-link"
+          active-class="app-header__nav-link--active"
+        >
+          Matches
+        </NuxtLink>
+        <NuxtLink
+          to="/groups"
+          class="app-header__nav-link"
+          active-class="app-header__nav-link--active"
+        >
+          Groups
+        </NuxtLink>
+        <NuxtLink
+          to="/knockout"
+          class="app-header__nav-link"
+          active-class="app-header__nav-link--active"
+        >
+          Knockout
+        </NuxtLink>
+      </nav>
+
+      <!-- Right side: TZ + My Nation -->
+      <div class="app-header__actions">
+        <!-- Timezone picker -->
+        <TzPicker />
+
+        <!-- My Nation button -->
+        <button class="app-header__nation-btn" @click="openModal">
+          <template v-if="myTeamData">
+            <CountryFlag :iso2="myTeamData.iso2" :size="22" />
+            <span class="app-header__nation-name">{{ myTeamData.abbrev }}</span>
+          </template>
+          <template v-else>
+            <span class="app-header__nation-placeholder">🌍 My Nation</span>
+          </template>
+        </button>
+      </div>
     </div>
   </header>
 </template>
 
 <style scoped>
-  /* ── Header ─────────────────────────────────────────────────────────────── */
-  .header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    gap: 0.5rem;
+  @reference "~/assets/css/main.css";
+  .app-header {
+    @apply sticky top-0 z-40 border-b border-white/10 bg-black/60 backdrop-blur-xl;
   }
 
-  .header-left {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
-    user-select: none;
-    min-width: 0;
-    flex-shrink: 1;
-    margin-top: 0.1rem;
-    margin-bottom: -0.3rem;
+  .app-header__inner {
+    @apply mx-auto flex max-w-7xl items-center gap-4 px-4 py-3;
   }
 
-  .mls-logo {
-    width: 1.9rem;
-    height: auto;
-    flex-shrink: 0;
-    color: var(--color-theme-300);
-    transition: color 0.3s;
+  .app-header__brand {
+    @apply flex items-center gap-3 no-underline;
   }
 
-  .site-title {
-    font-size: 2rem;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-    color: var(--color-theme-300);
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.15s;
-    line-height: normal;
-    position: relative;
-    top: -0.2rem;
+  .app-header__logo {
+    @apply h-9 w-auto;
   }
 
-  .header-left:hover .site-title {
-    color: var(--color-theme-200);
+  .app-header__title-block {
+    @apply hidden flex-col leading-tight sm:flex;
   }
 
-  @media (max-width: 420px) {
-    .header-left {
-      margin-top: -0.1rem;
-    }
-    .mls-logo {
-      width: 1.5rem;
-      margin-top: 0.2rem;
-      position: relative;
-    }
-    .site-title {
-      font-size: 1.25rem;
-    }
+  .app-header__title {
+    @apply text-sm font-black tracking-widest text-white uppercase;
   }
 
-  /* ── Header right ───────────────────────────────────────────────────────── */
-  .header-right {
-    display: flex;
-    align-items: flex-start;
-    padding-top: 0.2rem;
+  .app-header__fire {
+    @apply text-xs font-bold text-orange-400;
+  }
+
+  .app-header__nav {
+    @apply ml-4 hidden items-center gap-1 md:flex;
+  }
+
+  .app-header__nav-link {
+    @apply rounded-lg px-3 py-1.5 text-sm font-semibold text-white/60 no-underline transition-colors hover:text-white;
+  }
+
+  .app-header__nav-link--active {
+    @apply bg-white/10 text-white;
+  }
+
+  .app-header__actions {
+    @apply ml-auto flex items-center gap-2;
+  }
+
+  .app-header__nation-btn {
+    @apply flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white transition-all hover:bg-white/10;
+  }
+
+  .app-header__nation-name {
+    @apply text-xs font-bold;
+  }
+
+  .app-header__nation-placeholder {
+    @apply text-sm text-white/60;
   }
 </style>
