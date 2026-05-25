@@ -1,4 +1,11 @@
-import { TEAM_BY_NAME, RIVALRY_PAIRS } from '../constants/worldcup'
+import {
+  TEAM_BY_NAME,
+  RIVALRY_PAIRS,
+  WC_START,
+  WC_GROUP_END,
+  WC_KNOCKOUT_START,
+  WC_FINAL,
+} from '../constants/worldcup'
 
 export interface MatchStatus {
   code: 'ns' | 'live' | 'ht' | 'ft'
@@ -29,7 +36,107 @@ export interface Match {
   badge: MatchBadge
 }
 
-export type WeekTab = 'last' | 'this' | 'next'
+// ---------------------------------------------------------------------------
+// Tournament week definitions
+// ---------------------------------------------------------------------------
+
+export type WeekTab = 'week1' | 'week2' | 'week3' | 'week4' | 'knockout'
+
+export interface TabDef {
+  key: WeekTab
+  label: string
+  /** Short date range label, e.g. "Jun 11 – Jun 17" */
+  dateRange: string
+  start: Date
+  end: Date
+}
+
+/** Format a Date as "Mon D" (e.g. "Jun 11") */
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+/** Add N days to a date (returns new Date) */
+function addDays(d: Date, n: number): Date {
+  const r = new Date(d)
+  r.setDate(r.getDate() + n)
+  return r
+}
+
+// WC 2026 group stage: Jun 11 – Jul 2 (22 days = ~3.1 weeks)
+// We split into 4 roughly equal chunks:
+//   Week 1: Jun 11 – Jun 17  (days 0–6)
+//   Week 2: Jun 18 – Jun 24  (days 7–13)
+//   Week 3: Jun 25 – Jul 1   (days 14–20)
+//   Week 4: Jul 2            (day 21 — final group stage day)
+// Knockout: Jul 4 – Jul 19
+
+// Named date constants to avoid array-index undefined issues
+const W1S = WC_START
+const W1E = addDays(WC_START, 6)
+const W2S = addDays(WC_START, 7)
+const W2E = addDays(WC_START, 13)
+const W3S = addDays(WC_START, 14)
+const W3E = addDays(WC_START, 20)
+const W4S = addDays(WC_START, 21)
+const W4E = WC_GROUP_END
+const KOS = WC_KNOCKOUT_START
+const KOE = WC_FINAL
+
+export const WC_TABS: TabDef[] = [
+  {
+    key: 'week1',
+    label: 'Week 1',
+    dateRange: `${fmtDate(W1S)} – ${fmtDate(W1E)}`,
+    start: W1S,
+    end: W1E,
+  },
+  {
+    key: 'week2',
+    label: 'Week 2',
+    dateRange: `${fmtDate(W2S)} – ${fmtDate(W2E)}`,
+    start: W2S,
+    end: W2E,
+  },
+  {
+    key: 'week3',
+    label: 'Week 3',
+    dateRange: `${fmtDate(W3S)} – ${fmtDate(W3E)}`,
+    start: W3S,
+    end: W3E,
+  },
+  {
+    key: 'week4',
+    label: 'Week 4',
+    dateRange: `${fmtDate(W4S)} – ${fmtDate(W4E)}`,
+    start: W4S,
+    end: W4E,
+  },
+  {
+    key: 'knockout',
+    label: 'Knockout Stage',
+    dateRange: `${fmtDate(KOS)} – ${fmtDate(KOE)}`,
+    start: KOS,
+    end: KOE,
+  },
+]
+
+/**
+ * Determine the default tab:
+ * - If today is within a WC week, return that week's tab
+ * - If WC hasn't started yet, return 'week1'
+ * - If WC is over, return 'knockout'
+ */
+function defaultTab(): WeekTab {
+  const now = new Date()
+  for (const tab of WC_TABS) {
+    if (now >= tab.start && now <= tab.end) return tab.key
+  }
+  // Before tournament starts
+  if (now < WC_START) return 'week1'
+  // After tournament ends
+  return 'knockout'
+}
 
 // ---------------------------------------------------------------------------
 // Quality scoring
@@ -43,14 +150,6 @@ function isRivalry(a: string, b: string): boolean {
   return RIVALRY_SET.has([a, b].sort().join('|'))
 }
 
-/**
- * Compute a 0–100 quality score for a WC match.
- *
- * Factors:
- *  - Average FIFA ranking (lower rank number = better team)
- *  - Ranking closeness (evenly matched = more exciting)
- *  - Classic rivalry bonus
- */
 function computeQuality(home: string, away: string): number {
   const h = TEAM_BY_NAME.get(home)
   const a = TEAM_BY_NAME.get(away)
@@ -58,14 +157,9 @@ function computeQuality(home: string, away: string): number {
   if (!h || !a) return 20
 
   const avgRank = (h.fifaRank + a.fifaRank) / 2
-  // Better average rank → higher base score (rank 1 = 100, rank 100 = 0)
   const rankScore = Math.max(0, 100 - avgRank)
-
-  // Closeness bonus: teams within 10 ranks of each other
   const diff = Math.abs(h.fifaRank - a.fifaRank)
   const closenessBonus = Math.max(0, 20 - diff)
-
-  // Rivalry bonus
   const rivalryBonus = isRivalry(home, away) ? 20 : 0
 
   const raw = rankScore * 0.6 + closenessBonus + rivalryBonus
@@ -99,7 +193,6 @@ function normaliseEvent(ev: any): Match {
   const comp = ev.competitions?.[0] ?? {}
   const competitors: unknown[] = comp.competitors ?? []
 
-  // ESPN returns home team first
   const homeComp = (competitors[0] ?? {}) as Record<string, unknown>
   const awayComp = (competitors[1] ?? {}) as Record<string, unknown>
 
@@ -134,7 +227,6 @@ function normaliseEvent(ev: any): Match {
           : null
       : null
 
-  // Group from standings data isn't in scoreboard — derive from our constants
   const group = homeData?.group ?? awayData?.group ?? null
 
   return {
@@ -168,16 +260,10 @@ function toYYYYMMDD(d: Date): string {
   return d.toISOString().slice(0, 10).replace(/-/g, '')
 }
 
-function weekRange(offset: 0 | -1 | 1): string {
-  const now = new Date()
-  // Anchor to Monday of the current week
-  const day = now.getDay() // 0=Sun
-  const monday = new Date(now)
-  monday.setDate(now.getDate() - ((day + 6) % 7) + offset * 7)
-  monday.setHours(0, 0, 0, 0)
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  return `${toYYYYMMDD(monday)}-${toYYYYMMDD(sunday)}`
+function tabDateRange(tab: WeekTab): string {
+  const def = WC_TABS.find((t) => t.key === tab)
+  if (!def) return ''
+  return `${toYYYYMMDD(def.start)}-${toYYYYMMDD(def.end)}`
 }
 
 // ---------------------------------------------------------------------------
@@ -185,13 +271,9 @@ function weekRange(offset: 0 | -1 | 1): string {
 // ---------------------------------------------------------------------------
 
 export function useScores() {
-  const activeTab = useState<WeekTab>('scores-tab', () => 'this')
+  const activeTab = useState<WeekTab>('scores-tab', () => defaultTab())
 
-  const dateRange = computed(() => {
-    if (activeTab.value === 'last') return weekRange(-1)
-    if (activeTab.value === 'next') return weekRange(1)
-    return weekRange(0)
-  })
+  const dateRange = computed(() => tabDateRange(activeTab.value))
 
   const {
     data: rawEvents,
@@ -210,7 +292,6 @@ export function useScores() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   })
 
-  // Group matches by day label for display
   const matchesByDay = computed(() => {
     const groups = new Map<string, Match[]>()
     for (const m of matches.value) {

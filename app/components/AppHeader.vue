@@ -17,8 +17,7 @@
           class="app-header__logo"
         />
         <div class="app-header__title-block">
-          <span class="app-header__title">World Cup</span>
-          <span class="app-header__fire">🔥 Fire</span>
+          <span class="app-header__title">World Cup Fire 🔥</span>
         </div>
       </NuxtLink>
 
@@ -86,15 +85,18 @@
   }
 
   .app-header__title-block {
-    @apply hidden flex-col leading-tight sm:flex;
+    @apply hidden items-baseline sm:flex;
   }
 
   .app-header__title {
-    @apply text-sm font-black tracking-widest text-white uppercase;
-  }
-
-  .app-header__fire {
-    @apply text-xs font-bold text-orange-400;
+    @apply leading-none text-white uppercase;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 91,
+      'wght' 900;
+    /* Match the height of the trophy SVG (h-9 = 2.25rem) */
+    font-size: 1.35rem;
+    line-height: 2.25rem;
   }
 
   .app-header__nav {
