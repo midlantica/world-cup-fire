@@ -12,6 +12,19 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['culori'],
     },
+    server: {
+      // Auto-open the browser when the dev server starts
+      open: true,
+      hmr: {
+        // Disable the intrusive full-screen error overlay; check the console instead
+        overlay: false,
+      },
+    },
+    build: {
+      // Generate source maps without linking them in the browser —
+      // safe for production and compatible with error-tracking tools like Sentry
+      sourcemap: 'hidden',
+    },
   },
 
   css: ['~/assets/css/main.css', '~/assets/css/scrollbar.css'],

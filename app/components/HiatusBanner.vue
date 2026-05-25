@@ -28,7 +28,7 @@
       aria-label="Dismiss"
       @click="dismissed = true"
     >
-      ✕
+      <CloseIcon />
     </button>
   </div>
 </template>

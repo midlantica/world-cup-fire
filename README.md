@@ -50,18 +50,24 @@ A fast, clean MLS scores app built with **Nuxt 4** and deployed on **Netlify**. 
 app/
 ├── assets/css/          # Global styles (main, scrollbar, theme)
 ├── components/
-│   ├── AppHeader.vue        # Site header + timezone picker
-│   ├── AppFooter.vue        # Footer
-│   ├── GameBlock.vue        # Match card used in schedule lists
-│   ├── GameDetailModal.vue  # Full match detail modal (stats/lineups/H2H)
-│   ├── HiatusBanner.vue     # FIFA World Cup 2026 hiatus notice
-│   ├── MatchCard.vue        # Compact match card for scores wall
-│   ├── MyTeamModal.vue      # Team detail modal (schedule/leaders/fixtures)
-│   ├── ScoresSection.vue    # Main scores wall
-│   ├── StandingsTable.vue   # Conference standings table
-│   ├── StatsSection.vue     # League stat leaders
-│   ├── TeamPicker.vue       # My Team selector widget
-│   └── TzPicker.vue         # Timezone selector
+│   ├── AppHeader.vue              # Site header + timezone picker
+│   ├── AppFooter.vue              # Footer
+│   ├── GameBlock.vue              # Match card used in schedule lists
+│   ├── GameDetailModal.vue        # Full match detail modal (orchestration)
+│   ├── GameDetailStatsTab.vue     # Match stats tab (possession, shots, etc.)
+│   ├── GameDetailLeadersTab.vue   # Player leaders tab
+│   ├── GameDetailLineupsTab.vue   # Lineups / rosters tab
+│   ├── GameDetailH2hTab.vue       # Head-to-head history tab
+│   ├── HiatusBanner.vue           # FIFA World Cup 2026 hiatus notice
+│   ├── MatchCard.vue              # Compact match card for scores wall
+│   ├── MyTeamModal.vue            # Team detail modal (schedule/leaders/fixtures)
+│   ├── ScoresSection.vue          # Main scores wall
+│   ├── StandingsTable.vue         # Conference standings table
+│   ├── StatsSection.vue           # League stat leaders
+│   ├── TeamPicker.vue             # My Team selector widget
+│   └── TzPicker.vue               # Timezone selector
+├── constants/
+│   └── mls.ts               # Shared config (hiatus dates, etc.)
 ├── composables/
 │   ├── useMatchDetail.ts    # Match detail data + odds helpers
 │   ├── useMatchView.ts      # Match display helpers

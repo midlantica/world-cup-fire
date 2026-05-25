@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { useScores } from '~/composables/useScores'
   import { useMatchView } from '~/composables/useMatchView'
+  import { WC_ANNOUNCED, WC_RESUME } from '~/constants/mls'
 
   import type { Match } from '~/composables/useScores'
   const emit = defineEmits<{
@@ -25,9 +26,7 @@
     // Show banner on Next tab any time before MLS resumes (Jul 22 2026),
     // covering both the lead-up to the break and the break itself.
     const today = new Date()
-    const wcResume = new Date('2026-07-22')
-    const wcAnnounced = new Date('2026-05-18')
-    return today >= wcAnnounced && today < wcResume
+    return today >= WC_ANNOUNCED && today < WC_RESUME
   })
 
   const { weekByDayGroups } = useMatchView(allWeekMatches, activeTab)
