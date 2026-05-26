@@ -3,7 +3,7 @@
 @plugin '@tailwindcss/typography';
 
 body {
-  background-color: var(--app-bg, oklch(0.21 0 0));
+  background-color: var(--app-bg, #000);
   transition: background-color 0.4s ease;
 }
 
@@ -34,10 +34,17 @@ body {
 
 /* ── CSS custom properties ─────────────────────────────────────────────────── */
 :root {
-  --app-bg: oklch(0.21 0 0);
+  --app-bg: #000;
   --color-theme-primary: theme(colors.neutral.500);
   --color-theme-on-primary: #ffffff;
   --color-text-accent: theme(colors.neutral.400);
+
+  /* ── Theme accent — overridden by My Nation flag color ────────────────── */
+  /* Default: neutral white. Components should use var(--color-accent) for
+     any colored highlights so the flag theme can swap them all at once.   */
+  --color-accent: rgb(255 255 255 / 0.7);
+  --color-accent-subtle: rgb(255 255 255 / 0.08);
+  --color-accent-border: rgb(255 255 255 / 0.12);
 
   /* ── Modal typography ──────────────────────────────────────────────────── */
   --modal-copy-size: 1rem;
@@ -139,4 +146,15 @@ a,
 input,
 select {
   transition-duration: 0.15s;
+}
+
+/* Anything interactive gets a pointer cursor */
+a,
+button,
+[role='button'],
+[onclick],
+label[for],
+select,
+summary {
+  cursor: pointer;
 }

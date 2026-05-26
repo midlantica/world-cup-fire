@@ -31,7 +31,7 @@
       aria-label="Select time zone"
       @click.stop="open = !open"
     >
-      <span class="tz-picker-label">Time Zone</span>
+      <span class="tz-picker-label">TZ:</span>
       <span class="tz-picker-code">{{ selectedTz }}</span>
     </button>
     <button
@@ -76,7 +76,6 @@
     cursor: pointer;
     transition: background 0.15s;
     white-space: nowrap;
-    min-width: 5.2rem;
   }
 
   .tz-picker-btn:hover {
@@ -94,7 +93,7 @@
   }
 
   .tz-picker-code {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--color-theme-300);

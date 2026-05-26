@@ -1,13 +1,13 @@
 <script setup lang="ts">
   useHead({
-    title: 'Knockout Stage — World Cup Fire 🔥',
+    title: 'Knockout — World Cup Fire 🔥',
   })
 </script>
 
 <template>
   <div class="knockout-page">
     <div class="knockout-page__inner">
-      <h1 class="knockout-page__title">Knockout Stage</h1>
+      <h1 class="knockout-page__title">Knockout</h1>
 
       <div class="knockout-page__coming-soon">
         <div class="knockout-page__icon">🏆</div>

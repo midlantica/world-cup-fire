@@ -74,6 +74,7 @@
 
   .app-header__inner {
     @apply mx-auto flex max-w-7xl items-center gap-4 px-4 py-3;
+    flex-wrap: wrap;
   }
 
   .app-header__brand {
@@ -85,7 +86,7 @@
   }
 
   .app-header__title-block {
-    @apply hidden items-baseline sm:flex;
+    @apply flex items-baseline;
   }
 
   .app-header__title {
@@ -100,11 +101,17 @@
   }
 
   .app-header__nav {
-    @apply ml-4 hidden items-center gap-1 md:flex;
+    @apply flex items-center gap-1;
   }
 
   .app-header__nav-link {
-    @apply rounded-lg px-3 py-1.5 text-sm font-semibold text-white/60 no-underline transition-colors hover:text-white;
+    @apply rounded-lg px-3 py-1.5 text-white/60 no-underline transition-colors hover:text-white;
+    font-size: 1rem;
+    letter-spacing: 0.1rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    text-transform: uppercase;
   }
 
   .app-header__nav-link--active {
@@ -112,7 +119,31 @@
   }
 
   .app-header__actions {
-    @apply ml-auto flex items-center gap-2;
+    @apply flex items-center gap-2;
+    margin-left: auto;
+  }
+
+  /* On small screens, brand takes full width and actions center below */
+  @media (max-width: 600px) {
+    .app-header__inner {
+      justify-content: center;
+    }
+
+    .app-header__brand {
+      flex: 0 0 100%;
+      justify-content: center;
+    }
+
+    .app-header__nav {
+      justify-content: center;
+    }
+
+    .app-header__actions {
+      flex: 0 0 100%;
+      justify-content: center;
+      margin-left: 0;
+      padding-bottom: 0.25rem;
+    }
   }
 
   .app-header__nation-btn {

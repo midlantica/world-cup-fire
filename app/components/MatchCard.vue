@@ -9,7 +9,7 @@
 
   const emit = defineEmits<{ (e: 'click', match: Match): void }>()
 
-  const { formatTimeHtml } = useTimezone()
+  const { formatTimeHtml, iana } = useTimezone()
 
   const showFire = computed(
     () => props.match.status.code !== 'ft' && props.match.badge === 'fire'
@@ -33,6 +33,7 @@
       weekday: 'short',
       month: 'short',
       day: 'numeric',
+      timeZone: iana.value,
     })
   })
 
@@ -132,51 +133,65 @@
 
   /* ── Card shell ──────────────────────────────────────────────────────────── */
   .match-card {
-    @apply relative cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all duration-200 hover:bg-white/10 hover:shadow-lg;
+    @apply relative cursor-pointer rounded-xl transition-all duration-200 hover:shadow-lg;
+    background-color: #1d1d1d;
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .match-card:hover {
+    background-color: #252525;
   }
 
   .match-card.live {
-    @apply border-green-400/40 bg-green-950/20;
+    background-color: oklch(0.16 0.02 160);
   }
 
-  .match-card.q-high {
-    @apply border-white/15;
+  .match-card.live:hover {
+    background-color: oklch(0.2 0.02 160);
   }
 
-  /* ── Top bar — darker strip across full width ────────────────────────────── */
+  /* ── Top bar — semi-transparent darkening overlay ───────────────────────── */
   .match-card__top {
-    @apply flex items-stretch justify-between bg-black/30;
+    @apply flex items-stretch justify-between overflow-hidden rounded-t-xl;
+    background: linear-gradient(
+      180deg,
+      rgb(0 0 0 / 0.45) 0%,
+      rgb(0 0 0 / 0.1) 100%
+    );
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
   }
 
-  /* Group pill: flush to left edge, only top-left corner rounded (card clips the rest) */
+  /* Group pill */
   .match-card__group {
     @apply text-xs font-bold uppercase;
-    padding-inline: 0.6rem 0.5rem;
-    padding-block: 0.3rem 0.2rem;
+    padding-inline: 0.7rem 0.7rem;
+    padding-block: 0.4rem 0.25rem;
     letter-spacing: 0.1em;
-    color: color-mix(in oklab, #fff 50%, transparent);
+    color: color-mix(in oklab, #fff 60%, transparent);
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    /* only round the top-left — card's overflow:hidden handles top-right */
-    border-radius: 0.75rem 0 0 0;
-    background: oklch(0.18 0 0);
   }
 
   .match-card__group--ko {
-    color: color-mix(in oklab, theme(colors.orange.400) 60%, transparent);
-    background: oklch(0.18 0 0);
+    color: color-mix(in oklab, oklch(0.75 0.18 55) 60%, transparent);
   }
 
   .match-card__venue {
-    @apply flex-1 self-center truncate px-3 text-right text-xs;
-    color: color-mix(in oklab, #fff 25%, transparent);
+    @apply flex-1 self-center truncate text-right text-xs;
+    padding-inline: 0.7rem 0.7rem;
+    padding-block: 0.4rem 0.25rem;
+    color: color-mix(in oklab, #fff 60%, transparent);
   }
 
   /* Fire/wild badge — absolute top-right corner of the whole card */
   .match-card__badge {
-    @apply absolute right-2 text-lg leading-none;
-    top: -0.6rem;
+    position: absolute;
+    top: -1.7px;
+    right: -5px;
+    z-index: 10;
+    font-size: 1.1rem;
+    line-height: 1;
   }
 
   /* ── Body: teams + time ──────────────────────────────────────────────────── */
@@ -213,20 +228,26 @@
 
   /* ── Time / status block ─────────────────────────────────────────────────── */
   .match-card__time-block {
-    @apply flex shrink-0 flex-col items-center gap-0.5;
+    @apply flex shrink-0 flex-col items-center;
+    gap: 0;
   }
 
   .match-card__kickoff {
-    @apply text-sm font-semibold tabular-nums;
+    @apply font-semibold tabular-nums;
+    font-size: 1rem;
     color: color-mix(in oklab, #fff 80%, transparent);
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
   }
 
+  .match-card__kickoff :deep(.ampm) {
+    font-size: 85%;
+  }
+
   .match-card__date-label {
-    @apply text-xs;
-    color: color-mix(in oklab, #fff 40%, transparent);
+    font-size: 0.9rem;
+    color: color-mix(in oklab, #fff 75%, transparent);
     font-variation-settings:
       'wdth' 87.5,
       'wght' 300;

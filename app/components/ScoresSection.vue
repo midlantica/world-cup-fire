@@ -4,10 +4,26 @@
   const { activeTab, matches, matchesByDay, pending, error } = useScores()
   const { openMatch } = useMatchDetail()
 
-  // Fire matches (not yet finished)
-  const fireMatches = computed(() =>
-    matches.value.filter((m) => m.badge === 'fire' && m.status.code !== 'ft')
-  )
+  function formatDayHeader(day: string): string {
+    // day is already YYYY-MM-DD in the selected timezone — parse at noon UTC
+    // to avoid any date-boundary issues when converting to display string
+    return new Date(day + 'T12:00:00Z').toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC',
+    })
+  }
+
+  // Track collapsed state per day key; all start expanded
+  const collapsed = ref<Set<string>>(new Set())
+
+  function toggleDay(day: string) {
+    const next = new Set(collapsed.value)
+    if (next.has(day)) next.delete(day)
+    else next.add(day)
+    collapsed.value = next
+  }
 </script>
 
 <template>
@@ -43,45 +59,49 @@
     </div>
 
     <template v-else>
-      <!-- 🔥 Fire games callout -->
-      <div v-if="fireMatches.length > 0" class="scores-section__fire-banner">
-        <span class="text-xl">🔥</span>
-        <span class="font-bold">Fire games this week:</span>
-        <span class="text-white/70">
-          {{ fireMatches.map((m) => `${m.home} vs ${m.away}`).join(' · ') }}
-        </span>
-      </div>
-
       <!-- Matches by day -->
-      <div
-        v-for="[day, dayMatches] in matchesByDay"
-        :key="day"
-        class="scores-section__day"
-      >
-        <h3 class="scores-section__day-label">
-          {{
-            new Date(day + 'T12:00:00').toLocaleDateString('en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-            })
-          }}
-          <span class="scores-section__day-count"
-            >{{ dayMatches.length }} match{{
-              dayMatches.length !== 1 ? 'es' : ''
-            }}</span
-          >
-        </h3>
+      <div class="scores-section__days">
+        <div
+          v-for="[day, dayMatches] in matchesByDay"
+          :key="day"
+          class="scores-section__day"
+        >
+          <button class="scores-section__day-header" @click="toggleDay(day)">
+            <svg
+              class="scores-section__day-caret"
+              :class="{
+                'scores-section__day-caret--collapsed': collapsed.has(day),
+              }"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            <span class="scores-section__day-title">{{
+              formatDayHeader(day)
+            }}</span>
+            <span class="scores-section__day-count"
+              >{{ dayMatches.length }} match{{
+                dayMatches.length !== 1 ? 'es' : ''
+              }}</span
+            >
+          </button>
 
-        <div class="scores-section__grid">
-          <MatchCard
-            v-for="match in dayMatches"
-            :key="match.id"
-            :match="match"
-            @click="openMatch(match)"
-          />
+          <div v-if="!collapsed.has(day)" class="scores-section__grid">
+            <MatchCard
+              v-for="match in dayMatches"
+              :key="match.id"
+              :match="match"
+              @click="openMatch(match)"
+            />
+          </div>
         </div>
       </div>
+      <!-- /.scores-section__days -->
     </template>
   </section>
 </template>
@@ -89,13 +109,21 @@
 <style scoped>
   @reference "~/assets/css/main.css";
   .scores-section {
-    @apply space-y-6;
+    /* space-y handled per-section; tab bar controls its own bottom margin */
   }
 
-  /* ── Tab bar ─────────────────────────────────────────────────────────────── */
+  /* ── Tab bar — hangs from the sticky header ──────────────────────────────── */
   .scores-section__tabs {
-    @apply flex gap-1 overflow-x-auto rounded-xl bg-white/5 p-1;
+    @apply flex gap-1 overflow-x-auto;
+    border-radius: 0.75rem;
+    margin: 0.75rem 0;
     scrollbar-width: none;
+    position: sticky;
+    top: 57px;
+    z-index: 30;
+    background-color: #111;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    padding: 0.3rem 0.5rem 0.25rem;
   }
 
   .scores-section__tabs::-webkit-scrollbar {
@@ -114,7 +142,9 @@
   }
 
   .scores-section__tab-label {
-    @apply text-sm leading-tight font-semibold;
+    @apply leading-tight font-semibold;
+    font-size: 1rem;
+    text-transform: uppercase;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
@@ -145,18 +175,53 @@
     @apply py-16 text-center text-white/40;
   }
 
-  /* ── Fire banner ─────────────────────────────────────────────────────────── */
-  .scores-section__fire-banner {
-    @apply flex flex-wrap items-center gap-2 rounded-xl border border-orange-400/30 bg-orange-950/30 px-4 py-3 text-sm text-white;
-  }
-
   /* ── Day groups ──────────────────────────────────────────────────────────── */
-  .scores-section__day {
-    @apply space-y-3;
+  .scores-section__days {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
-  .scores-section__day-label {
-    @apply flex items-baseline gap-3 text-base font-bold text-white/80;
+  .scores-section__day {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .scores-section__day-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+  }
+
+  .scores-section__day-caret {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: rgb(255 255 255 / 0.5);
+    display: inline-block;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .scores-section__day-caret--collapsed {
+    transform: rotate(-90deg);
+  }
+
+  .scores-section__day-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: rgb(255 255 255 / 0.9);
+    letter-spacing: 0.075em;
+    font-variation-settings:
+      'wdth' 110,
+      'wght' 600;
   }
 
   .scores-section__day-count {

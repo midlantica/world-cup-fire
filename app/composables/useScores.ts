@@ -6,6 +6,7 @@ import {
   WC_KNOCKOUT_START,
   WC_FINAL,
 } from '../constants/worldcup'
+import { useTimezone } from './useTimezone'
 
 export interface MatchStatus {
   code: 'ns' | 'live' | 'ht' | 'ft'
@@ -114,7 +115,7 @@ export const WC_TABS: TabDef[] = [
   },
   {
     key: 'knockout',
-    label: 'Knockout Stage',
+    label: 'Knockout',
     dateRange: `${fmtDate(KOS)} – ${fmtDate(KOE)}`,
     start: KOS,
     end: KOE,
@@ -271,6 +272,7 @@ function tabDateRange(tab: WeekTab): string {
 // ---------------------------------------------------------------------------
 
 export function useScores() {
+  const { iana } = useTimezone()
   const activeTab = useState<WeekTab>('scores-tab', () => defaultTab())
 
   const dateRange = computed(() => tabDateRange(activeTab.value))
@@ -295,7 +297,10 @@ export function useScores() {
   const matchesByDay = computed(() => {
     const groups = new Map<string, Match[]>()
     for (const m of matches.value) {
-      const day = m.date.slice(0, 10)
+      // Use the local date in the selected timezone, not the raw UTC date
+      const day = new Date(m.date).toLocaleDateString('en-CA', {
+        timeZone: iana.value,
+      }) // 'en-CA' gives YYYY-MM-DD format
       if (!groups.has(day)) groups.set(day, [])
       groups.get(day)!.push(m)
     }

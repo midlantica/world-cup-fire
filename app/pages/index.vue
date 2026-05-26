@@ -33,7 +33,9 @@
   }
 
   .home-page__inner {
-    @apply mx-auto max-w-7xl px-4 py-6;
+    @apply mx-auto max-w-7xl px-4;
+    padding-top: 0;
+    padding-bottom: 2rem;
   }
 
   .home-page__main {
