@@ -83,12 +83,14 @@ h6 {
 }
 
 /* Body copy — Width 87.5, Weight 300 */
+/* Note: span is intentionally excluded here so it inherits from its parent
+   rather than resetting font-variation-settings on every child span.
+   The html rule above already sets the default for the whole page. */
 p,
 li,
 td,
 th,
-label,
-span {
+label {
   font-variation-settings:
     'wdth' 87.5,
     'wght' 300;

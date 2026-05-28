@@ -144,6 +144,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
   }
 
   .stats-th-center {

@@ -24,13 +24,14 @@
     <GameDetailModal />
     <MyNationModal />
     <CountryDetailModal />
+    <GroupDetailModal />
   </div>
 </template>
 
 <style scoped>
   @reference "~/assets/css/main.css";
   .home-page {
-    @apply min-h-screen;
+    flex: 1;
     margin-top: 1rem;
   }
 

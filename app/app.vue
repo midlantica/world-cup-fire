@@ -127,8 +127,17 @@
   @reference "~/assets/css/main.css";
   .app-root {
     @apply min-h-screen text-white;
+    display: flex;
+    flex-direction: column;
     background-color: #0c0a09; /* stone-950 */
     transition: filter 0.2s ease;
+  }
+
+  /* Let the page content grow to fill available space, pushing footer down */
+  .app-root > :deep(.nuxt-page),
+  .app-root > :deep([data-v-app]),
+  .app-root > main {
+    flex: 1;
   }
 
   .app-root.modal-blurred {

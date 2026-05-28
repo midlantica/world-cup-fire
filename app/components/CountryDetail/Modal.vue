@@ -5,11 +5,20 @@
   import type { Match } from '~/composables/useScores'
   import { useMatchDetail } from '~/composables/useMatchDetail'
   import { useModalNav } from '~/composables/useModalNav'
+  import { useGroupDetail } from '~/composables/useGroupDetail'
 
   const { selectedCountry, countryData, modalOpen, closeCountry, openCountry } =
     useCountryDetail()
   const { openMatch } = useMatchDetail()
   const { pushHistory, popHistory, clearHistory, canGoBack } = useModalNav()
+  const { openGroup } = useGroupDetail()
+
+  function goToGroup() {
+    const g = countryData.value?.group
+    if (!g) return
+    closeCountry({ silent: true })
+    openGroup(g)
+  }
 
   function goBack() {
     const prev = popHistory()
@@ -540,9 +549,9 @@
               <div class="cd-header__info">
                 <h2 class="cd-header__name">{{ countryData.name }}</h2>
                 <p class="cd-header__meta">
-                  <span class="cd-header__group">
+                  <button class="cd-header__group" @click="goToGroup">
                     Group {{ countryData.group }}
-                  </span>
+                  </button>
                   <span class="cd-header__sep">·</span>
                   <span class="cd-header__rank"
                     >FIFA #{{ countryData.fifaRank }}</span
@@ -588,7 +597,7 @@
               :class="{ active: activeTab === 'results' }"
               @click="setTab('results')"
             >
-              Results
+              Form
             </button>
           </div>
 
@@ -984,7 +993,6 @@
                 </div>
 
                 <template v-else-if="recentResults && recentResults.length">
-                  <div class="cd-results__section-label">Recent Form</div>
                   <div v-for="r in recentResults" :key="r.id" class="cd-result">
                     <!-- Top bar: date + venue -->
                     <div class="cd-result__top">
@@ -1216,7 +1224,7 @@
   .cd-header__info {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0.2rem;
     min-width: 0;
   }
 
@@ -1251,6 +1259,28 @@
       'wdth' 100,
       'wght' 680;
     letter-spacing: 0.05rem;
+  }
+
+  .cd-header__group {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-size: inherit;
+    font-family: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-underline-offset: 2px;
+    transition: opacity 0.12s;
+  }
+
+  .cd-header__group:hover {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    opacity: 1;
   }
 
   .cd-header__sep {

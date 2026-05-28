@@ -91,6 +91,15 @@
     () => TEAM_BY_NAME.get(selectedMatch.value?.away ?? '')?.id ?? null
   )
 
+  const homeAbbrev = computed(() => {
+    const name = selectedMatch.value?.home ?? ''
+    return TEAM_BY_NAME.get(name)?.abbrev ?? name.slice(0, 3).toUpperCase()
+  })
+  const awayAbbrev = computed(() => {
+    const name = selectedMatch.value?.away ?? ''
+    return TEAM_BY_NAME.get(name)?.abbrev ?? name.slice(0, 3).toUpperCase()
+  })
+
   const hasLineupData = computed(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rosters = (detail.value?.rosters as any[]) ?? []
@@ -217,9 +226,14 @@
                 :title="`View ${selectedMatch.home}`"
                 @click="goToCountry(selectedMatch.home)"
               >
-                <span class="gd-header__team-name">{{
-                  selectedMatch.home
-                }}</span>
+                <span class="gd-header__team-name">
+                  <span class="gd-header__team-name-full">{{
+                    selectedMatch.home
+                  }}</span>
+                  <span class="gd-header__team-name-abbrev">{{
+                    homeAbbrev
+                  }}</span>
+                </span>
                 <CountryFlag :iso2="selectedMatch.homeIso2" :size="32" />
               </button>
 
@@ -261,9 +275,14 @@
                 @click="goToCountry(selectedMatch.away)"
               >
                 <CountryFlag :iso2="selectedMatch.awayIso2" :size="32" />
-                <span class="gd-header__team-name">{{
-                  selectedMatch.away
-                }}</span>
+                <span class="gd-header__team-name">
+                  <span class="gd-header__team-name-full">{{
+                    selectedMatch.away
+                  }}</span>
+                  <span class="gd-header__team-name-abbrev">{{
+                    awayAbbrev
+                  }}</span>
+                </span>
               </button>
             </div>
 
@@ -347,7 +366,10 @@
   .gd-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 9000;
+    /* Above GroupDetail (9050) so cards clicked inside a group modal
+       surface the game detail on top; below CountryDetail (9100) so
+       drilling into a team from here still layers correctly. */
+    z-index: 9075;
     background: oklab(0% 0 0 / 0.82);
     display: flex;
     align-items: flex-start;
@@ -460,20 +482,58 @@
   }
 
   .gd-header__team-name {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-variation-settings:
-      'wdth' 90,
-      'wght' 650;
+      'wdth' 100,
+      'wght' 500;
     letter-spacing: 0.06rem;
     color: oklab(100% 0 0);
     white-space: nowrap;
   }
 
-  .gd-header__vs {
-    font-size: 1.25rem;
+  /* Child spans must explicitly override the global span { wdth 87.5, wght 300 } rule */
+  .gd-header__team-name-full,
+  .gd-header__team-name-abbrev {
     font-variation-settings:
-      'wdth' 75,
-      'wght' 900;
+      'wdth' 100,
+      'wght' 500;
+    letter-spacing: inherit;
+  }
+
+  /* By default show full name, hide abbrev */
+  .gd-header__team-name-abbrev {
+    display: none;
+  }
+
+  @media (max-width: 430px) {
+    .gd-header__teams-row {
+      gap: 0.5rem;
+    }
+    .gd-header__side {
+      gap: 0.4rem;
+    }
+    .gd-header__team-name {
+      font-size: 1.1rem;
+      letter-spacing: 0.04rem;
+    }
+    /* Swap to 3-letter abbreviation */
+    .gd-header__team-name-full {
+      display: none;
+    }
+    .gd-header__team-name-abbrev {
+      display: inline;
+    }
+    .gd-header__vs {
+      font-size: 0.95rem;
+      padding: 0 0.2rem;
+    }
+  }
+
+  .gd-header__vs {
+    font-size: 1.15rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
     letter-spacing: 0.1em;
     color: oklab(100% 0 0 / 0.85);
     padding: 0 0.5rem;
@@ -562,9 +622,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition:
-      color 0.15s,
-      background 0.15s;
+    transition: color 0.15s;
   }
 
   .gd-close :deep(svg) {
@@ -574,7 +632,6 @@
 
   .gd-close:hover {
     color: oklab(100% 0 0);
-    background: oklab(100% 0 0 / 0.08);
   }
 
   /* ── Tabs ──────────────────────────────────────────────────────────────────── */

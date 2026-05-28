@@ -30,6 +30,27 @@
 
   const kickoffLabel = computed(() => formatTimeHtml(props.match.date))
 
+  /**
+   * Abbreviate placeholder team names for narrow mobile screens.
+   * e.g. "Group C Winner"          → "Grp C Winner"
+   *      "Group F 2nd Place"        → "Grp F 2nd Plc"
+   *      "Third Place Group A/B/C"  → "3rd Plc Grp A/B/C"
+   * Only used at ≤ 400px via CSS container/media query toggling.
+   */
+  function abbreviateName(name: string): string {
+    return name
+      .replace(/\bThird Place\b/gi, '3rd Plc')
+      .replace(/\bThird\b/gi, '3rd')
+      .replace(/\bGroup\b/gi, 'Grp')
+      .replace(/\b2nd Place\b/gi, '2nd Plc')
+      .replace(/\b1st Place\b/gi, '1st Plc')
+      .replace(/\bWinner\b/gi, 'Win')
+      .replace(/\bPlace\b/gi, 'Plc')
+  }
+
+  const homeShortMobile = computed(() => abbreviateName(props.match.homeShort))
+  const awayShortMobile = computed(() => abbreviateName(props.match.awayShort))
+
   const dayDateLabel = computed(() => {
     if (!props.match.date) return ''
     return new Date(props.match.date).toLocaleDateString('en-US', {
@@ -95,7 +116,10 @@
               class="match-card__flag"
             />
           </button>
-          <span class="match-card__name">{{ match.homeShort }}</span>
+          <span class="match-card__name">
+            <span class="match-card__name-full">{{ match.homeShort }}</span>
+            <span class="match-card__name-short">{{ homeShortMobile }}</span>
+          </span>
           <span v-if="!isNS" class="match-card__score">{{
             match.homeScore
           }}</span>
@@ -113,7 +137,10 @@
               class="match-card__flag"
             />
           </button>
-          <span class="match-card__name">{{ match.awayShort }}</span>
+          <span class="match-card__name">
+            <span class="match-card__name-full">{{ match.awayShort }}</span>
+            <span class="match-card__name-short">{{ awayShortMobile }}</span>
+          </span>
           <span v-if="!isNS" class="match-card__score">{{
             match.awayScore
           }}</span>
@@ -234,6 +261,62 @@
   .match-card__name {
     @apply min-w-0 flex-1 truncate text-sm font-semibold text-white;
     @apply font-anybody-heading;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
+  }
+
+  /* Full name shown by default; short name hidden */
+  /* Must explicitly set font-variation-settings to override the global span rule in main.css */
+  .match-card__name-full,
+  .match-card__name-short {
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
+    letter-spacing: inherit;
+  }
+
+  .match-card__name-full {
+    display: inline;
+  }
+
+  .match-card__name-short {
+    display: none;
+  }
+
+  /* ── Extreme-narrow mobile (≤ 400px): abbreviate + tighten font ─────────── */
+  @media (max-width: 400px) {
+    .match-card__name-full {
+      display: none;
+    }
+
+    .match-card__name-short {
+      display: inline;
+    }
+
+    /* Tighter variable font: narrower width + slightly lighter weight */
+    .match-card__name {
+      font-variation-settings:
+        'wdth' 82,
+        'wght' 450;
+      letter-spacing: 0.02em;
+    }
+
+    /* Tighten the body padding a touch */
+    .match-card__body {
+      padding-inline: 0.65rem;
+      gap: 0.5rem;
+    }
+
+    /* Slightly smaller kickoff time */
+    .match-card__kickoff {
+      font-size: 0.9rem;
+    }
+
+    /* Tighten date label */
+    .match-card__date-label {
+      font-size: 0.75rem;
+    }
   }
 
   .match-card__score {

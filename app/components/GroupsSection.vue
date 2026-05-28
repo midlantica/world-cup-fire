@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { useStandings } from '../composables/useStandings'
   import { useCountryDetail } from '../composables/useCountryDetail'
+  import { useGroupDetail } from '../composables/useGroupDetail'
 
   const { groups, pending } = useStandings()
   const { openCountry } = useCountryDetail()
-
-  const emit = defineEmits<{ (e: 'select-group', letter: string): void }>()
+  const { openGroup } = useGroupDetail()
 </script>
 
 <template>
@@ -27,7 +27,7 @@
         v-for="group in groups"
         :key="group.letter"
         class="group-card"
-        @click="emit('select-group', group.letter)"
+        @click="openGroup(group.letter)"
       >
         <div class="group-card__header">
           <span class="group-card__label">Group {{ group.letter }}</span>
@@ -247,7 +247,7 @@
     @apply min-w-0 truncate text-white;
     font-variation-settings:
       'wdth' 100,
-      'wght' 300;
+      'wght' 500;
     letter-spacing: 0.07em;
   }
 

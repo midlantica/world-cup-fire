@@ -93,6 +93,9 @@
 
   .h2h-row__team {
     @apply flex-1 text-sm font-semibold text-white;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
   }
 
   .h2h-row__team--away {

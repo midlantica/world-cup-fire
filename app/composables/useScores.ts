@@ -210,7 +210,7 @@ function normaliseClock(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normaliseEvent(ev: any): Match {
+export function normaliseEvent(ev: any): Match {
   const comp = ev.competitions?.[0] ?? {}
   const competitors: unknown[] = comp.competitors ?? []
 

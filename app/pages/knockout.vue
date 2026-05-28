@@ -33,7 +33,7 @@
 <style scoped>
   @reference "~/assets/css/main.css";
   .knockout-page {
-    @apply min-h-screen;
+    flex: 1;
   }
 
   .knockout-page__inner {

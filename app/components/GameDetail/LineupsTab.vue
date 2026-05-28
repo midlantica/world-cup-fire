@@ -160,7 +160,7 @@
       <div class="lineups-tab__col">
         <div class="lineups-tab__col-header">
           <CountryFlag :iso2="match.homeIso2" :size="20" />
-          <span>{{ match.homeShort }}</span>
+          <span class="lineups-tab__col-team">{{ match.homeShort }}</span>
           <span
             v-if="isFallback && homeLastMatchLabel"
             class="lineups-tab__last-label"
@@ -190,7 +190,7 @@
       <div class="lineups-tab__col">
         <div class="lineups-tab__col-header">
           <CountryFlag :iso2="match.awayIso2" :size="20" />
-          <span>{{ match.awayShort }}</span>
+          <span class="lineups-tab__col-team">{{ match.awayShort }}</span>
           <span
             v-if="isFallback && awayLastMatchLabel"
             class="lineups-tab__last-label"
@@ -236,6 +236,13 @@
 
   .lineups-tab__col-header {
     @apply mb-2 flex flex-wrap items-center gap-2 text-sm font-bold text-white;
+  }
+
+  /* Must explicitly override the global span rule in main.css */
+  .lineups-tab__col-team {
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
   }
 
   .lineups-tab__last-label {

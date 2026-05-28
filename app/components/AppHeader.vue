@@ -262,7 +262,7 @@
     overflow: hidden;
     background: #1a1817;
     border-radius: 0.75rem;
-    margin: 0 0.75rem 0.75rem;
+    margin: 0 auto 0.75rem;
   }
 
   .app-header__stage-row {
