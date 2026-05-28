@@ -1,0 +1,166 @@
+{
+  "teamId": "2570",
+  "teamName": "Uzbekistan",
+  "matchId": "401861040",
+  "matchDate": "2026-03-30T14:00Z",
+  "opponentName": "Venezuela",
+  "players": [
+    {
+      "name": "Abduvohid Nematov",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Abdukodir Khusanov",
+      "position": "CD",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Jakhongir O'Rozov",
+      "position": "CD-L",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Rustamjon Ashurmatov",
+      "position": "CD-R",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Otabek Shukurov",
+      "position": "CM-L",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Odiljon Xamrobekov",
+      "position": "CM-R",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Sherzod Nasrullaev",
+      "position": "LM",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Behruzjon Karimov",
+      "position": "RM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Eldor Shomurodov",
+      "position": "F",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Oston Urunov",
+      "position": "CF-L",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Azizjon G'aniyev",
+      "position": "CF-R",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Alisher Odilov",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Khojiakbar Alijonov",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Umarbek Eshmurodov",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Jamshid Iskanderov",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Igor Sergeev",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Dostonbek Khamdamov",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Mukhammadrasul Abdumajidov",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Sherzod Temirov",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Farrukh Sayfiev",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Ibrokhim Ibragimov",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Akmal Mozgovoy",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Botirali Ergashev",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Umarali Rakhmonaliev",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Utkir Yusupov",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Muhammadkodir Hamraliev",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:51.960Z"
+}

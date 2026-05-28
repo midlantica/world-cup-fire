@@ -1,0 +1,142 @@
+{
+  "teamId": "4469",
+  "teamName": "Ghana",
+  "matchId": "401861774",
+  "matchDate": "2026-05-23T02:00Z",
+  "opponentName": "Mexico",
+  "players": [
+    {
+      "name": "Benjamin Asare",
+      "position": "G",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Nathaniel Adjei",
+      "position": "CD-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Oscar Naasei Oppong",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Terry Yegbe",
+      "position": "LB",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Jan Gyamerah",
+      "position": "RB",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Daniel Agyei",
+      "position": "CM-L",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Majeed Ashimeru",
+      "position": "CM-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Emmanuel Agyei",
+      "position": "AM",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Ibrahim Osman",
+      "position": "LM",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Jesurun Rak-Sakyi",
+      "position": "RM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Felix Afena-Gyan",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Antwi Dacosta",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Jerry Afriyie",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Razak Simpson",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Ebenezer Adade",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "David Oduro",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Prince Amoako",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Solomon Agbasi",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Joseph Opoku",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Salim Adams",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Ebenezer Abban",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Aziz Issah",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:53.979Z"
+}

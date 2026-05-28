@@ -1,0 +1,154 @@
+{
+  "teamId": "464",
+  "teamName": "Norway",
+  "matchId": "762552",
+  "matchDate": "2026-03-31T16:00Z",
+  "opponentName": "Switzerland",
+  "players": [
+    {
+      "name": "Ørjan Nyland",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Leo Østigard",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Kristoffer Ajer",
+      "position": "CD-R",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Sander Berge",
+      "position": "DM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Fredrik André Bjørkan",
+      "position": "LB",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Marcus Pedersen",
+      "position": "RB",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Morten Thorsby",
+      "position": "CM-L",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Kristian Thorstvedt",
+      "position": "CM-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Antonio Nusa",
+      "position": "LM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Alexander Sørloth",
+      "position": "RM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Erling Haaland",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Odin Bjørtuft",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Henrik Sælebakke Falchener",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Viljar Myhra",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Andreas Schjelderup",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Torbjorn Heggem",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Julian Ryerson",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "David Møller Wolfe",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Felix Horn Myhre",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Jens Petter Hauge",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Oscar Bobb",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Patrick Berg",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Jørgen Strand Larsen",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Egil Selvik",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:47.492Z"
+}

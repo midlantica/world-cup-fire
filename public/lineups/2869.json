@@ -1,0 +1,166 @@
+{
+  "teamId": "2869",
+  "teamName": "Morocco",
+  "matchId": "401860937",
+  "matchDate": "2026-03-31T18:00Z",
+  "opponentName": "Paraguay",
+  "players": [
+    {
+      "name": "Yassine Bounou",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Redouane Halal",
+      "position": "CD-L",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Issa Diop",
+      "position": "CD-R",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Anass Salah-Eddine",
+      "position": "LB",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Achraf Hakimi",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Bilal El Khannouss",
+      "position": "AM",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Samir El Mourabet",
+      "position": "LM",
+      "jersey": "28",
+      "starter": true
+    },
+    {
+      "name": "Neil El Aynaoui",
+      "position": "RM",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Soufiane Rahimi",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Chemsdine Talbi",
+      "position": "AM-L",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Gessime Yassine",
+      "position": "AM-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Noussair Mazraoui",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Yassir Zabiri",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Ismaël Baouf",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Oussama Targhaline",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Abde Ezzalzouli",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Zakaria El Ouahdi",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "El Mehdi Benabid",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Ayoub El Kaabi",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Amine Adli",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Brahim Díaz",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Rayane Bounida",
+      "position": "SUB",
+      "jersey": "29",
+      "starter": false
+    },
+    {
+      "name": "Souffian El Karouani",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Mohamed Hrimat",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Chadi Riad",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Azzedine Ounahi",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:38.765Z"
+}

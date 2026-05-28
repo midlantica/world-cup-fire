@@ -1,0 +1,142 @@
+{
+  "teamId": "2666",
+  "teamName": "New Zealand",
+  "matchId": "401856420",
+  "matchDate": "2026-03-30T06:00Z",
+  "opponentName": "Chile",
+  "players": [
+    {
+      "name": "Alex Paulsen",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Tyler Bindon",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Finn Surman",
+      "position": "CD-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Ben Old",
+      "position": "LB",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Tim Payne",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Marko Stamenic",
+      "position": "CM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Joe Bell",
+      "position": "CM-R",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Jesse Randall",
+      "position": "LM",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Elijah Just",
+      "position": "RM",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Kosta Barbarouses",
+      "position": "CF-L",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Callum McCowatt",
+      "position": "CF-R",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Lachlan Bayliss",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Ryan Thomas",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Andre De Jong",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Ben Waine",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Bill Tuiloma",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Logan Rogerson",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Callan Elliot",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Alex Rufer",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "James McGarry",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Michael Woud",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Max Crocombe",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:45.429Z"
+}

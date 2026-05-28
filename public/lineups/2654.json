@@ -1,0 +1,136 @@
+{
+  "teamId": "2654",
+  "teamName": "Haiti",
+  "matchId": "401856641",
+  "matchDate": "2026-03-31T17:35Z",
+  "opponentName": "Iceland",
+  "players": [
+    {
+      "name": "Alexandre Pierre",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Hannes Delcroix",
+      "position": "CD-L",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Ricardo Adé",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Martin Expérience",
+      "position": "LB",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Jean-Kévin Duverne",
+      "position": "RB",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Leverton Pierre",
+      "position": "CM-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Jean-Ricner Bellegarde",
+      "position": "CM-R",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Ruben Providence",
+      "position": "LM",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Louicius Don Deedson",
+      "position": "RM",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Duckens Nazon",
+      "position": "CF-L",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Wilson Isidor",
+      "position": "CF-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Derrick Etienne Jr.",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Delentz Pierre",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Woobens Pacius",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Duke Lacroix",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Woodensky Pierre",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Carl-Fred Sainte",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Yassine Fortune",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Frantzdy Pierrot",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Wilguens Paugain",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Josue Duverger",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:38.009Z"
+}

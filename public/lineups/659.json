@@ -1,0 +1,166 @@
+{
+  "teamId": "659",
+  "teamName": "Tunisia",
+  "matchId": "401856639",
+  "matchDate": "2026-04-01T01:00Z",
+  "opponentName": "Canada",
+  "players": [
+    {
+      "name": "Abdelmouhib Chamakh",
+      "position": "G",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Omar Rekik",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Alaa Ghram",
+      "position": "CD-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Ali Abdi",
+      "position": "LB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Moutaz Neffati",
+      "position": "RB",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Anis Ben Slimane",
+      "position": "AM",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Ellyes Skhiri",
+      "position": "LM",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Rani Khedira",
+      "position": "RM",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Louey Farhat",
+      "position": "F",
+      "jersey": "29",
+      "starter": true
+    },
+    {
+      "name": "Elias Saad",
+      "position": "AM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Sayfallah Ltaief",
+      "position": "AM-R",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Mortadha Ben Ouanes",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Adem Arous",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Anisse Saidi",
+      "position": "SUB",
+      "jersey": "30",
+      "starter": false
+    },
+    {
+      "name": "Raed Chikhaoui",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Noureddine Farhati",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Rayan Elloumi",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Ismaël Gharbi",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Hadj Mahmoud",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Amine Ben Hamida",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Ghaith Zaalouni",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Aymen Dahmen",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Khalil Ayari",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Omar Ben Ali",
+      "position": "SUB",
+      "jersey": "28",
+      "starter": false
+    },
+    {
+      "name": "Sebastian Tounekti",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Firas Chaouat",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:43.328Z"
+}

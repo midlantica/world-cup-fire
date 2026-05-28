@@ -1,0 +1,148 @@
+{
+  "teamId": "2850",
+  "teamName": "Congo DR",
+  "matchId": "761389",
+  "matchDate": "2026-03-31T21:00Z",
+  "opponentName": "Jamaica",
+  "players": [
+    {
+      "name": "Lionel M'Pasi",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Axel Tuanzebe",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Chancel Mbemba",
+      "position": "CD-R",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Arthur Masuaku",
+      "position": "LB",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Aaron Wan-Bissaka",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Noah Sadiki",
+      "position": "CM-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Samuel Moutoussamy",
+      "position": "CM-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Nathanaël Mbuku",
+      "position": "LM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Meschack Elia",
+      "position": "RM",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Cédric Bakambu",
+      "position": "F",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Yoane Wissa",
+      "position": "RCF",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Théo Bongonda",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Charles Pickel",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Simon Banza",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Rocky Bushiri",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Steve Kapuadi",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Brian Cipenga",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Fiston Mayele",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Timothy Fayulu",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Ngal'ayel Mukau",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Matthieu Epolo",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Edo Kayembe",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Joris Kayembe",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:52.331Z"
+}

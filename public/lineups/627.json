@@ -1,0 +1,166 @@
+{
+  "teamId": "627",
+  "teamName": "Japan",
+  "matchId": "762554",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "England",
+  "players": [
+    {
+      "name": "Zion Suzuki",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Shogo Taniguchi",
+      "position": "CD",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Hiroki Ito",
+      "position": "CD-L",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Tsuyoshi Watanabe",
+      "position": "CD-R",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Daichi Kamada",
+      "position": "CM-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Kaishu Sano",
+      "position": "CM-R",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Keito Nakamura",
+      "position": "LM",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Ritsu Doan",
+      "position": "RM",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Ayase Ueda",
+      "position": "F",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Kaoru Mitoma",
+      "position": "CF-L",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Junya Ito",
+      "position": "CF-R",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Daizen Maeda",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Ayumu Seko",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Daiki Hashioka",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Tomoki Hayakawa",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Yuito Suzuki",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Joel Chima Fujita",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Yukinari Sugawara",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Koki Ogawa",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Shuto Machino",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Keisuke Osako",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Ao Tanaka",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Junnosuke Suzuki",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Ryunosuke Sato",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Kento Shiogai",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Keisuke Goto",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:42.971Z"
+}

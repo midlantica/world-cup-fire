@@ -1,0 +1,160 @@
+{
+  "teamId": "660",
+  "teamName": "United States",
+  "matchId": "762259",
+  "matchDate": "2026-03-31T23:00Z",
+  "opponentName": "Portugal",
+  "players": [
+    {
+      "name": "Matthew Freese",
+      "position": "G",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Auston Trusty",
+      "position": "CD-L",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Chris Richards",
+      "position": "CD-R",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Antonee Robinson",
+      "position": "LB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Alex Freeman",
+      "position": "RB",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Sebastian Berhalter",
+      "position": "CM",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Aidan Morris",
+      "position": "LM",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Weston McKennie",
+      "position": "RM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Christian Pulisic",
+      "position": "F",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Malik Tillman",
+      "position": "LF",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Timothy Weah",
+      "position": "RF",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Brenden Aaronson",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Ricardo Pepi",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Joe Scally",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Cristian Roldan",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Max Arfsten",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Patrick Agyemang",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Tim Ream",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Tanner Tessmann",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Giovanni Reyna",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Folarin Balogun",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Mark McKenzie",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Chris Brady",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Patrick Schulte",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Matt Turner",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:40.302Z"
+}

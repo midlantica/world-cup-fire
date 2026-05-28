@@ -1,0 +1,166 @@
+{
+  "teamId": "208",
+  "teamName": "Colombia",
+  "matchId": "762453",
+  "matchDate": "2026-03-29T19:00Z",
+  "opponentName": "France",
+  "players": [
+    {
+      "name": "Álvaro Montero",
+      "position": "G",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Juan Cabal",
+      "position": "CD-L",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Davinson Sánchez",
+      "position": "CD-R",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Johan Mojica",
+      "position": "LB",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Daniel Muñoz",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "James Rodríguez",
+      "position": "AM",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Jefferson Lerma",
+      "position": "LM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Richard Ríos",
+      "position": "RM",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Luis Suárez",
+      "position": "F",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Luis Díaz",
+      "position": "AM-L",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Jhon Arias",
+      "position": "AM-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Andres Gomez",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Johan Carbonero",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Jhon Lucumí",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Camilo Vargas",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Jhon Córdoba",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Jorge Carrascal",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "David Ospina",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Rafael Borré",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Kevin Castaño",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Jáminton Campaz",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Deiver Machado",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Juan Fernando Quintero",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Santiago Arias",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Gustavo Puerta",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Yerson Mosquera",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:50.887Z"
+}

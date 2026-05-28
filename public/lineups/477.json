@@ -1,0 +1,166 @@
+{
+  "teamId": "477",
+  "teamName": "Croatia",
+  "matchId": "401843261",
+  "matchDate": "2026-04-01T00:00Z",
+  "opponentName": "Brazil",
+  "players": [
+    {
+      "name": "Dominik Livakovic",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Luka Vuskovic",
+      "position": "CD",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Duje Caleta-Car",
+      "position": "CD-L",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Josip Sutalo",
+      "position": "CD-R",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Ivan Perisic",
+      "position": "LB",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Josip Stanisic",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Petar Sucic",
+      "position": "CM-L",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Luka Modric",
+      "position": "CM-R",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Martin Baturina",
+      "position": "LM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Andrej Kramaric",
+      "position": "RM",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Ante Budimir",
+      "position": "F",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Marco Pasalic",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Marin Pongracic",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Lovro Majer",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Nikola Moro",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Ivor Pandur",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Toni Fruk",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Ivan Smolcic",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Petar Musa",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Karlo Letica",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Mario Pasalic",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Luka Sucic",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Martin Erlic",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Igor Matanovic",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Kristijan Jakic",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Nikola Vlasic",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:53.209Z"
+}

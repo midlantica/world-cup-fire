@@ -1,0 +1,160 @@
+{
+  "teamId": "4789",
+  "teamName": "Ivory Coast",
+  "matchId": "401859485",
+  "matchDate": "2026-03-31T18:30Z",
+  "opponentName": "Scotland",
+  "players": [
+    {
+      "name": "Alban Lafont",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Ousmane Diomande",
+      "position": "CD-L",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Odilon Kossounou",
+      "position": "CD-R",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Ghislain Konan",
+      "position": "LB",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Wilfried Singo",
+      "position": "RB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Franck Kessié",
+      "position": "CM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Christ Inao Oulaï",
+      "position": "CM-R",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Bazoumana Touré",
+      "position": "LM",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Nicolas Pépé",
+      "position": "RM",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Bénie Traoré",
+      "position": "CF-L",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Elye Wahi",
+      "position": "CF-R",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Ibrahim Sangaré",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Amad",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Yahia Fofana",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Seko Fofana",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Jean Michaël Seri",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Guela Doué",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Clément Akpa",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Evann Guessand",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Evan Ndicka",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Simon Adingra",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Martial Godo",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Mohamed Koné",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Parfait Guiagon",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Emmanuel Agbadou",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:41.317Z"
+}

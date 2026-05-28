@@ -1,0 +1,154 @@
+{
+  "teamId": "469",
+  "teamName": "Iran",
+  "matchId": "401861778",
+  "matchDate": "2026-03-31T13:00Z",
+  "opponentName": "Costa Rica",
+  "players": [
+    {
+      "name": "Hossein Hosseini",
+      "position": "G",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Ali Nemati",
+      "position": "CD-L",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Shoja Khalilzadeh",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Milad Mohammadi",
+      "position": "LB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Daniel Esmaeilifar",
+      "position": "RB",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Mehdi Taremi",
+      "position": "AM",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Amir Razzaghinia",
+      "position": "LM",
+      "jersey": "28",
+      "starter": true
+    },
+    {
+      "name": "Saman Ghoddos",
+      "position": "RM",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Amirhossein Hosseinzadeh",
+      "position": "F",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Mohammad Mohebbi",
+      "position": "AM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Ali Gholizadeh",
+      "position": "AM-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Alireza Beiranvand",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Saman Fallah",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Mehdi Hashemnejad",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Ramin Rezaeian",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Payam Niazmand",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Omid Norafkan",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Ali Alipour",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Mohammad Ghorbani",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Saleh Hardani",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Alireza Jahanbakhsh",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Ehsan Hajsafi",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Mehdi Ghayedi",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Amirhossein Mahmoudi",
+      "position": "SUB",
+      "jersey": "31",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:44.101Z"
+}

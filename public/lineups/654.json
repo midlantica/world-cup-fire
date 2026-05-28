@@ -1,0 +1,154 @@
+{
+  "teamId": "654",
+  "teamName": "Senegal",
+  "matchId": "401862000",
+  "matchDate": "2026-03-31T19:00Z",
+  "opponentName": "Gambia",
+  "players": [
+    {
+      "name": "Yehvann Diouf",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Mamadou Sarr",
+      "position": "CD",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Nobel Mendy",
+      "position": "CD-L",
+      "jersey": "28",
+      "starter": true
+    },
+    {
+      "name": "Abdoulaye Seck",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Mouhamadou Diarra",
+      "position": "CM-L",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Pathé Ciss",
+      "position": "CM-R",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "El Hadji Malick Diouf",
+      "position": "LM",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Krépin Diatta",
+      "position": "RM",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Cherif Ndiaye",
+      "position": "F",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Ismaïla Sarr",
+      "position": "CF-L",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Assane Diao",
+      "position": "CF-R",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Idrissa Gueye",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Antoine Mendy",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Ismail Jakobs",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Mory Diaw",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Nicolas Jackson",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Boulaye Dia",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Habib Diallo",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Mamadou Diakhon",
+      "position": "SUB",
+      "jersey": "29",
+      "starter": false
+    },
+    {
+      "name": "Pape Gueye",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Ibrahim Mbaye",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Lamine Camara",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Bamba Dieng",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Moussa Niakhaté",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:48.585Z"
+}

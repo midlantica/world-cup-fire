@@ -1,0 +1,148 @@
+{
+  "teamId": "452",
+  "teamName": "Bosnia-Herzegovina",
+  "matchId": "761952",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Italy",
+  "players": [
+    {
+      "name": "Nikola Vasiljev",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Tarik Muharemovic",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Nikola Katic",
+      "position": "CD-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Sead Kolasinac",
+      "position": "LB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Amar Dedic",
+      "position": "RB",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Ivan Sunjic",
+      "position": "CM-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Ivan Basic",
+      "position": "CM-R",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Amar Memic",
+      "position": "LM",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Esmir Bajraktarevic",
+      "position": "RM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Edin Dzeko",
+      "position": "CF-L",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Ermedin Demirovic",
+      "position": "CF-R",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Amir Hadziahmetovic",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Kerim-Sam Alajbegovic",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Martin Zlomislic",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Nihad Mujakic",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Samed Bazdar",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Armin Gigovic",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Stjepan Radeljic",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Osman Hadzikic",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Benjamin Tahirovic",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Haris Tabakovic",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Nidal Celik",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Dzenis Burnic",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:35.979Z"
+}

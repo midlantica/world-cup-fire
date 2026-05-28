@@ -1,0 +1,148 @@
+{
+  "teamId": "450",
+  "teamName": "Czechia",
+  "matchId": "761955",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Denmark",
+  "players": [
+    {
+      "name": "Matej Kovar",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Robin Hranác",
+      "position": "CD",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Ladislav Krejcí",
+      "position": "CD-L",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Stepán Chaloupek",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Vladimír Darida",
+      "position": "CM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Tomás Soucek",
+      "position": "CM-R",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Jaroslav Zeleny",
+      "position": "LM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Vladimír Coufal",
+      "position": "RM",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Patrik Schick",
+      "position": "F",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Pavel Sulc",
+      "position": "CF-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Lukás Provod",
+      "position": "CF-R",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "David Jurásek",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Adam Karabec",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Lukás Cerv",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Denis Višinský",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Tomás Chorý",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Jan Kliment",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Mojmír Chytil",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Martin Vitík",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Tomás Holes",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Martin Jedlicka",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Michal Sadílek",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Lukas Hornicek",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:34.670Z"
+}

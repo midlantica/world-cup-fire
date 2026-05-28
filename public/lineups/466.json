@@ -1,0 +1,148 @@
+{
+  "teamId": "466",
+  "teamName": "Sweden",
+  "matchId": "761954",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Poland",
+  "players": [
+    {
+      "name": "Kristoffer Nordfeldt",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Carl Starfelt",
+      "position": "CD",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Victor Lindelöf",
+      "position": "CD-L",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Gustaf Lagerbielke",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Jesper Karlström",
+      "position": "CM-L",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Yasin Ayari",
+      "position": "CM-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Gabriel Gudmundsson",
+      "position": "LM",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Daniel Svensson",
+      "position": "RM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Viktor Gyökeres",
+      "position": "F",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Benjamin Nygren",
+      "position": "CF-L",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Anthony Elanga",
+      "position": "CF-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Williot Swedberg",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Gustav Lundgren",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Elliot Stroud",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Melker Ellborg",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Gustaf Nilsson",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Hugo Larsson",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Taha Ali",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Noel Törnqvist",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Mattias Svanberg",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Victor Eriksson",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Lucas Bergvall",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Besfort Zeneli",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:42.405Z"
+}

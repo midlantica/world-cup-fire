@@ -1,0 +1,154 @@
+{
+  "teamId": "205",
+  "teamName": "Brazil",
+  "matchId": "401843261",
+  "matchDate": "2026-04-01T00:00Z",
+  "opponentName": "Croatia",
+  "players": [
+    {
+      "name": "Bento",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Léo Pereira",
+      "position": "CD-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Marquinhos",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Douglas Santos",
+      "position": "LB",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Ibañez",
+      "position": "RB",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Casemiro",
+      "position": "CM",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Matheus Cunha",
+      "position": "LM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Danilo",
+      "position": "RM",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "João Pedro",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Vinícius Júnior",
+      "position": "LF",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Luiz Henrique",
+      "position": "RF",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Ederson",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Rayan",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Kaiki",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Igor Thiago",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Hugo Souza",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Fabinho",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Endrick",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Gabriel Sara",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Andrey Santos",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Bremer",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Danilo",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Vitor Reis",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Gabriel Martinelli",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:37.078Z"
+}

@@ -1,0 +1,166 @@
+{
+  "teamId": "202",
+  "teamName": "Argentina",
+  "matchId": "401866132",
+  "matchDate": "2026-03-31T23:30Z",
+  "opponentName": "Zambia",
+  "players": [
+    {
+      "name": "Emiliano Martínez",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Nicolás Otamendi",
+      "position": "CD-L",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Cristian Romero",
+      "position": "CD-R",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Nicolás Tagliafico",
+      "position": "LB",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Nahuel Molina",
+      "position": "RB",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Leandro Paredes",
+      "position": "CM",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Enzo Fernández",
+      "position": "LM",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Alexis Mac Allister",
+      "position": "RM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Julián Álvarez",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Thiago Almada",
+      "position": "LF",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Lionel Messi",
+      "position": "RF",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Gerónimo Rulli",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Giuliano Simeone",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Rodrigo De Paul",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Nicolás González",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Franco Mastantuono",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Agustín Giay",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Lucas Martínez Quarta",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Marcos Acuña",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Nico Paz",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Flaco López",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Exequiel Palacios",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Gianluca Prestianni",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Valentín Barco",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Máximo Perrone",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Juan Musso",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:49.330Z"
+}

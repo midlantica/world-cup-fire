@@ -1,0 +1,160 @@
+{
+  "teamId": "655",
+  "teamName": "Saudi Arabia",
+  "matchId": "401856619",
+  "matchDate": "2026-03-31T16:00Z",
+  "opponentName": "Serbia",
+  "players": [
+    {
+      "name": "Mohammed Al-Owais",
+      "position": "G",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Al Mufarrij",
+      "position": "CD-L",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Rayane Hamidou",
+      "position": "CD-R",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Nawaf Boushal",
+      "position": "LB",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Saud Abdulhamid",
+      "position": "RB",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Mohamed Kanno",
+      "position": "AM",
+      "jersey": "28",
+      "starter": true
+    },
+    {
+      "name": "Ziyad Aljohani",
+      "position": "LM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Naif Masoud",
+      "position": "RM",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Abdullah Al-Hamdan",
+      "position": "F",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Abdulaziz Al-Aliwa",
+      "position": "AM-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Marwan Al-Sahafi",
+      "position": "AM-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Musab Al-Juwayr",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Saleh Al-Shehri",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Mohammed Mater Mohsin Mahzari",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Feras Al-Brikan",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Abdullah Al-Khaibari",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Mohammed Al-Yami",
+      "position": "SUB",
+      "jersey": "30",
+      "starter": false
+    },
+    {
+      "name": "Ahmed Al-Kassar",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Aiman Yahya",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Ali Majrashi",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Khalifah Al-Dawsari",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Khalid Al-Ghannam",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Mohammed Al-Majhad",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Salman Al-Faraj",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Nawaf Al-Aqidi",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:46.799Z"
+}

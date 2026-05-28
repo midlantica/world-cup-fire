@@ -1,0 +1,166 @@
+{
+  "teamId": "482",
+  "teamName": "Portugal",
+  "matchId": "762259",
+  "matchDate": "2026-03-31T23:00Z",
+  "opponentName": "United States",
+  "players": [
+    {
+      "name": "José Sá",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Gonçalo Inacio",
+      "position": "CD-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Tomás Lemos Araújo",
+      "position": "CD-R",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "João Cancelo",
+      "position": "LB",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Diogo Dalot",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Bruno Fernandes",
+      "position": "AM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Vitinha",
+      "position": "LM",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Samú Costa",
+      "position": "RM",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Gonçalo Ramos",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Pedro Neto",
+      "position": "AM-L",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Francisco Trincão",
+      "position": "AM-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Mateus Fernandes",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Francisco Conceição",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Nuno Mendes",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "João Félix",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Gonçalo Guedes",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Ricardo Horta",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "António Silva",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Renato Veiga",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Pedro Gonçalves",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Rúben Neves",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Rui Silva",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "João Neves",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Matheus Nunes",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Paulinho",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Mário Ricardo Silva Velho",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:51.473Z"
+}

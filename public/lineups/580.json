@@ -1,0 +1,160 @@
+{
+  "teamId": "580",
+  "teamName": "Scotland",
+  "matchId": "401859485",
+  "matchDate": "2026-03-31T18:30Z",
+  "opponentName": "Ivory Coast",
+  "players": [
+    {
+      "name": "Liam Kelly",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Dominic Hyam",
+      "position": "CD",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Kieran Tierney",
+      "position": "CD-L",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "John Souttar",
+      "position": "CD-R",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Scott McTominay",
+      "position": "CM-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Ryan Christie",
+      "position": "CM-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Billy Gilmour",
+      "position": "AM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Andrew Robertson",
+      "position": "LM",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Ross McCrorie",
+      "position": "RM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "George Hirst",
+      "position": "CF-L",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Ché Adams",
+      "position": "CF-R",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Findlay Curtis",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Angus Gunn",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Jack Hendry",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Lennon Miller",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Scott McKenna",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Tommy Conway",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Andrew Irving",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "John McGinn",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Kenny McLean",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Scott Bain",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Anthony Ralston",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Nathan Patterson",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Lewis Ferguson",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Lyndon Dykes",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:37.685Z"
+}

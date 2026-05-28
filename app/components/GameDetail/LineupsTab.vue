@@ -6,6 +6,8 @@
     match: Match
     homeLastDetail?: Record<string, unknown>
     awayLastDetail?: Record<string, unknown>
+    homeLastPending?: boolean
+    awayLastPending?: boolean
   }>()
 
   interface Player {
@@ -128,7 +130,7 @@
     () =>
       !hasData.value &&
       !hasFallbackData.value &&
-      (!!props.homeLastDetail || !!props.awayLastDetail)
+      (props.homeLastPending || props.awayLastPending)
   )
 </script>
 

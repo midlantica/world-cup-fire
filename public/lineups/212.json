@@ -1,0 +1,166 @@
+{
+  "teamId": "212",
+  "teamName": "Uruguay",
+  "matchId": "401862321",
+  "matchDate": "2026-03-31T18:30Z",
+  "opponentName": "Algeria",
+  "players": [
+    {
+      "name": "Sergio Rochet",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "José María Giménez",
+      "position": "CD-L",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Ronald Araújo",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Mathías Olivera",
+      "position": "LB",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Gullermo Varela",
+      "position": "RB",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Manuel Ugarte",
+      "position": "CM-L",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Federico Valverde",
+      "position": "CM-R",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Maxi Araújo",
+      "position": "LM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Agustín Canobbio",
+      "position": "RM",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Federico Viñas",
+      "position": "F",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Giorgian de Arrascaeta",
+      "position": "RCF",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Juan Manuel Sanabria",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Fernando Muslera",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Nicolás de la Cruz",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Santiago Bueno",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Agustín Álvarez",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Facundo Torres",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Nicolás Fonseca",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Santiago Mele",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Facundo Pellistri",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Sebastián Cáceres",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Emiliano Martínez",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Brian Rodríguez",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Matías Viña",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Darwin Núñez",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "José Luis Rodríguez",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:46.431Z"
+}

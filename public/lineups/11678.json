@@ -1,0 +1,148 @@
+{
+  "teamId": "11678",
+  "teamName": "Curacao",
+  "matchId": "401856595",
+  "matchDate": "2026-03-31T09:10Z",
+  "opponentName": "Australia",
+  "players": [
+    {
+      "name": "Eloy Room",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Roshon van Eijma",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Juriën Gaari",
+      "position": "CD-R",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Sherel Floranus",
+      "position": "LB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Shurandy Sambo",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Leandro Bacuna",
+      "position": "CM",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Juninho Bacuna",
+      "position": "LM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Livano Comenencia",
+      "position": "RM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Brandley Kuwas",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Jeremy Antonisse",
+      "position": "LF",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Tahith Chong",
+      "position": "RF",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Joshua Brenet",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Jearl Margaritha",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Kevin Felida",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Godfried Roemeratoe",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Trevor Doornbusch",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Sontje Hansen",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Riechedly Bazoer",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Tyrese Noslin",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Ar'jany Martha",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Tyrick Bodak",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Gervane Kastaneer",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Kenji Gorré",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:41.742Z"
+}

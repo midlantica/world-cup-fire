@@ -1,0 +1,166 @@
+{
+  "teamId": "624",
+  "teamName": "Algeria",
+  "matchId": "401862321",
+  "matchDate": "2026-03-31T18:30Z",
+  "opponentName": "Uruguay",
+  "players": [
+    {
+      "name": "Luca Zidane",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Zinéddine",
+      "position": "CD",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Ramy Bensebaini",
+      "position": "CD-L",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Aïssa Mandi",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Farès Chaïbi",
+      "position": "CM-L",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Hicham Boudaoui",
+      "position": "CM-R",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Rayan Aït-Nouri",
+      "position": "LM",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Rafik Belghali",
+      "position": "RM",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Amine Gouiri",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Ibrahim Maza",
+      "position": "CF-L",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Houssem Aouar",
+      "position": "CF-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Amin Chiakha",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Farès Ghedjemis",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Ahmed Benbouali",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Melvin Mastil",
+      "position": "SUB",
+      "jersey": "28",
+      "starter": false
+    },
+    {
+      "name": "Ramiz Zerrouki",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Adil Aouchiche",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Anthony Mandrea",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Riyad Mahrez",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Sohaib Nair",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Emile Dorval",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Adil Boulbina",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Mohamed Amoura",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Yacine Titraoui",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Kilian Belazzoug",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Achref Abada",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:50.058Z"
+}

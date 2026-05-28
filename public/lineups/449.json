@@ -1,0 +1,160 @@
+{
+  "teamId": "449",
+  "teamName": "Netherlands",
+  "matchId": "762551",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Ecuador",
+  "players": [
+    {
+      "name": "Mark Flekken",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Virgil van Dijk",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Stefan de Vrij",
+      "position": "CD-R",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Nathan Aké",
+      "position": "LB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Denzel Dumfries",
+      "position": "RB",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Quinten Timber",
+      "position": "CM",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Xavi Simons",
+      "position": "LM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Jerdy Schouten",
+      "position": "RM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Brian Brobbey",
+      "position": "F",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Cody Gakpo",
+      "position": "LF",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Donyell Malen",
+      "position": "RF",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Justin Bijlow",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Kees Smit",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Micky van de Ven",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Jeremie Frimpong",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Noa Lang",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Wout Weghorst",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Jorrel Hato",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Luciano Valente",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Lutsharel Geertruida",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Tijjani Reijnders",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Teun Koopmeiners",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Bart Verbruggen",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Ryan Gravenberch",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Jan Paul van Hecke",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:42.050Z"
+}

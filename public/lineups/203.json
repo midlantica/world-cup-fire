@@ -1,0 +1,166 @@
+{
+  "teamId": "203",
+  "teamName": "Mexico",
+  "matchId": "401861774",
+  "matchDate": "2026-05-23T02:00Z",
+  "opponentName": "Ghana",
+  "players": [
+    {
+      "name": "Raúl Rangel",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Jesús Gómez",
+      "position": "CD-L",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Luis Romo",
+      "position": "CD-R",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Jesús Gallardo",
+      "position": "LB",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Israel Reyes",
+      "position": "RB",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Erik Lira",
+      "position": "CM",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Gilberto Mora",
+      "position": "LM",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Brian Gutiérrez",
+      "position": "RM",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Armando González",
+      "position": "F",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Alexis Vega",
+      "position": "LF",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Roberto Alvarado",
+      "position": "RF",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Kevin Castañeda",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Oscar García",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Iker Fimbres",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Luis Gabriel Rey",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Guillermo Martínez",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Carlos Acevedo",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Jorge Sánchez",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Edson Álvarez",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Orbelín Pineda",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Guillermo Ochoa",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Eduardo Águila",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Isaías Violante",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "César Montes",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Luis Chávez",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Mateo Chávez",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:33.918Z"
+}

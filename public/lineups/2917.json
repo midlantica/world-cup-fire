@@ -1,0 +1,166 @@
+{
+  "teamId": "2917",
+  "teamName": "Jordan",
+  "matchId": "401862040",
+  "matchDate": "2026-03-31T17:30Z",
+  "opponentName": "Nigeria",
+  "players": [
+    {
+      "name": "Yazeed Abu Laila",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Yazan Al-Arab",
+      "position": "CD",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Mohammad Abualnadi",
+      "position": "CD-L",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Abdallah Nasib",
+      "position": "CD-R",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Mohannad Abu Taha",
+      "position": "LB",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Ahmad Assaf",
+      "position": "RB",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Noor Al-Rawabdeh",
+      "position": "CM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Mahmoud Al-Mardi",
+      "position": "CM-L",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Nizar Al-Rashdan",
+      "position": "CM-R",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Mousa Al-Tamari",
+      "position": "CF-L",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Ibrahim Mohammad Abdallah Sabra",
+      "position": "CF-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Baha' Faisal",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Ibrahim Sadeh",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Abdel Rahman Mohammad Awwad Suleiman",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Abdallah Al-Fakhouri",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Yousef Abualjazar",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Mohammad Abu Hasheesh",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Odeh Burhan Shehade Fakhoury",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Mohammad Ratib Mohammad Al-Daoud",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Ali Ahmad Ali Azaizeh",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Saleem Obaid",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Husam Ali Mohammad Abudahab",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Mohammad Ahmed Mohammad Taha",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Yousef Hussein Abed Qashi",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Amer Rasem Adel Jamous",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Mohammed Abu Zraiq",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:50.532Z"
+}

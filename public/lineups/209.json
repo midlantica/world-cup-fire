@@ -1,0 +1,166 @@
+{
+  "teamId": "209",
+  "teamName": "Ecuador",
+  "matchId": "762551",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Netherlands",
+  "players": [
+    {
+      "name": "Gonzalo Valle",
+      "position": "G",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Félix Torres",
+      "position": "CD",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Willian Pacho",
+      "position": "CD-L",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Joel Ordóñez",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Pedro Vite",
+      "position": "CM-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Moisés Caicedo",
+      "position": "CM-R",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Pervis Estupiñán",
+      "position": "LM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Alan Franco",
+      "position": "RM",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Enner Valencia",
+      "position": "F",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Gonzalo Plata",
+      "position": "CF-L",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "John Yeboah",
+      "position": "CF-R",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Hernán Galíndez",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Jeremy Arévalo",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Alan Minda",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "John Mercado",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Jackson Porozo",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Kendry Páez",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Yaimar Medina",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Anthony Valencia",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "David Cabezas",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "José Hurtado",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Jordy Caicedo",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Jordy Alcivar",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Janner Corozo",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Elias Legendre",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Ángelo Preciado",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:40.649Z"
+}

@@ -28,12 +28,17 @@
     // match → match back not needed currently
   }
 
-  const activeTab = ref<'stats' | 'lineups' | 'h2h' | 'leaders'>('stats')
+  const activeTab = ref<'info' | 'stats' | 'lineups'>('info')
 
-  // Reset tab when match changes
-  watch(selectedMatch, () => {
-    activeTab.value = 'stats'
-  })
+  // Reset tab only when the match ID changes (not on reactive updates to the same match)
+  watch(
+    () => selectedMatch.value?.id,
+    (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        activeTab.value = 'info'
+      }
+    }
+  )
 
   function onBackdrop(e: MouseEvent) {
     if ((e.target as HTMLElement).classList.contains('gd-backdrop')) {
@@ -42,15 +47,16 @@
   }
 
   const tabs = [
+    { key: 'info', label: 'Info' },
     { key: 'stats', label: 'Stats' },
     { key: 'lineups', label: 'Lineups' },
-    { key: 'h2h', label: 'H2H' },
-    { key: 'leaders', label: 'Leaders' },
   ] as const
 
   const kickoffLabel = computed(() => {
     if (!selectedMatch.value?.date) return ''
-    return new Date(selectedMatch.value.date).toLocaleString('en-US', {
+    const d = new Date(selectedMatch.value.date)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -60,8 +66,23 @@
     })
   })
 
-  // ── Fallback lineups ────────────────────────────────────────────────────────
-  // When the WC match has no lineup data yet, fetch each team's last game lineup
+  // ── Fallback lineups — loaded from pre-built static JSON ───────────────────
+  // Static files at /lineups/<teamId>.json are downloaded by scripts/download-lineups.mjs
+  // and only used before the WC starts (once real match rosters are available they take priority)
+
+  interface StaticLineup {
+    teamId: string
+    teamName: string
+    matchId: string
+    matchDate: string
+    opponentName: string
+    players: Array<{
+      name: string
+      position: string
+      jersey: string
+      starter: boolean
+    }>
+  }
 
   const homeTeamId = computed(
     () => TEAM_BY_NAME.get(selectedMatch.value?.home ?? '')?.id ?? null
@@ -79,76 +100,86 @@
     )
   })
 
-  // Step 1: fetch last completed match id for each team
-  const { data: homeLastResults, execute: fetchHomeLastGame } = useLazyFetch(
-    '/api/team-results',
-    {
-      query: computed(() => ({ teamId: homeTeamId.value ?? '', limit: 1 })),
-      watch: false,
-      immediate: false,
-      server: false,
-    }
-  )
-  const { data: awayLastResults, execute: fetchAwayLastGame } = useLazyFetch(
-    '/api/team-results',
-    {
-      query: computed(() => ({ teamId: awayTeamId.value ?? '', limit: 1 })),
-      watch: false,
-      immediate: false,
-      server: false,
-    }
-  )
+  // Fetch static lineup JSON for home team
+  const homeStaticLineup = ref<StaticLineup | null>(null)
+  const homeLastPending = ref(false)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const homeLastEventId = computed(
-    () => (homeLastResults.value as any)?.[0]?.id ?? null
-  )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const awayLastEventId = computed(
-    () => (awayLastResults.value as any)?.[0]?.id ?? null
-  )
+  // Fetch static lineup JSON for away team
+  const awayStaticLineup = ref<StaticLineup | null>(null)
+  const awayLastPending = ref(false)
 
-  // Step 2: fetch match detail for each team's last game
-  const { data: homeLastDetail, execute: fetchHomeLastDetail } = useLazyFetch(
-    '/api/match-detail',
-    {
-      query: computed(() => ({ eventId: homeLastEventId.value ?? '' })),
-      watch: false,
-      immediate: false,
-      server: false,
+  async function fetchStaticLineup(
+    teamId: string,
+    target: typeof homeStaticLineup,
+    pending: typeof homeLastPending
+  ) {
+    if (!teamId) return
+    pending.value = true
+    try {
+      const data = await $fetch<StaticLineup>(`/lineups/${teamId}.json`)
+      target.value = data
+    } catch {
+      // Static file not found — no fallback data
+    } finally {
+      pending.value = false
     }
-  )
-  const { data: awayLastDetail, execute: fetchAwayLastDetail } = useLazyFetch(
-    '/api/match-detail',
-    {
-      query: computed(() => ({ eventId: awayLastEventId.value ?? '' })),
-      watch: false,
-      immediate: false,
-      server: false,
-    }
-  )
+  }
 
-  // Trigger fetches when lineups tab is active and no WC lineup data exists
   watch(
-    [activeTab, homeTeamId, awayTeamId],
-    ([tab]) => {
-      if (tab === 'lineups' && !hasLineupData.value) {
-        if (homeTeamId.value && !homeLastResults.value) fetchHomeLastGame()
-        if (awayTeamId.value && !awayLastResults.value) fetchAwayLastGame()
-      }
+    homeTeamId,
+    (id) => {
+      if (id) fetchStaticLineup(id, homeStaticLineup, homeLastPending)
     },
     { immediate: true }
   )
 
-  watch(homeLastEventId, (id) => {
-    if (id && activeTab.value === 'lineups' && !hasLineupData.value) {
-      fetchHomeLastDetail()
+  watch(
+    awayTeamId,
+    (id) => {
+      if (id) fetchStaticLineup(id, awayStaticLineup, awayLastPending)
+    },
+    { immediate: true }
+  )
+
+  // Convert static lineup to the shape LineupsTab expects (homeLastDetail / awayLastDetail)
+  // We wrap it in a fake "match detail" object with a rosters array
+  const homeLastDetail = computed(() => {
+    if (!homeStaticLineup.value) return undefined
+    return {
+      rosters: [
+        {
+          team: { displayName: homeStaticLineup.value.teamName },
+          roster: homeStaticLineup.value.players.map((p) => ({
+            athlete: { displayName: p.name, jersey: p.jersey },
+            position: { abbreviation: p.position },
+            starter: p.starter,
+          })),
+        },
+        {
+          team: { displayName: homeStaticLineup.value.opponentName },
+          roster: [],
+        },
+      ],
     }
   })
 
-  watch(awayLastEventId, (id) => {
-    if (id && activeTab.value === 'lineups' && !hasLineupData.value) {
-      fetchAwayLastDetail()
+  const awayLastDetail = computed(() => {
+    if (!awayStaticLineup.value) return undefined
+    return {
+      rosters: [
+        {
+          team: { displayName: awayStaticLineup.value.opponentName },
+          roster: [],
+        },
+        {
+          team: { displayName: awayStaticLineup.value.teamName },
+          roster: awayStaticLineup.value.players.map((p) => ({
+            athlete: { displayName: p.name, jersey: p.jersey },
+            position: { abbreviation: p.position },
+            starter: p.starter,
+          })),
+        },
+      ],
     }
   })
 </script>
@@ -237,8 +268,13 @@
             </div>
 
             <!-- Date + Venue -->
-            <div class="gd-header__meta">
-              <span class="gd-header__kickoff">{{ kickoffLabel }}</span>
+            <div
+              v-if="kickoffLabel || selectedMatch.venue"
+              class="gd-header__meta"
+            >
+              <span v-if="kickoffLabel" class="gd-header__kickoff">{{
+                kickoffLabel
+              }}</span>
               <span v-if="selectedMatch.venue" class="gd-header__venue">
                 {{ selectedMatch.venue }}
               </span>
@@ -269,33 +305,34 @@
               <div class="gd-spinner" />
               <span>Loading match data…</span>
             </div>
-            <template v-else-if="detail">
-              <GameDetailStatsTab
-                v-if="activeTab === 'stats'"
-                :detail="detail"
+            <template v-else>
+              <!-- Info tab: static data, always available -->
+              <GameDetailInfoTab
+                v-if="activeTab === 'info'"
                 :match="selectedMatch"
               />
+              <!-- Lineups tab: always render so fallback data can show -->
               <GameDetailLineupsTab
                 v-else-if="activeTab === 'lineups'"
-                :detail="detail"
+                :detail="detail ?? {}"
                 :match="selectedMatch"
                 :home-last-detail="homeLastDetail ?? undefined"
                 :away-last-detail="awayLastDetail ?? undefined"
+                :home-last-pending="homeLastPending"
+                :away-last-pending="awayLastPending"
               />
-              <GameDetailH2hTab
-                v-else-if="activeTab === 'h2h'"
-                :detail="detail"
-                :match="selectedMatch"
-              />
-              <GameDetailLeadersTab
-                v-else-if="activeTab === 'leaders'"
-                :detail="detail"
-                :match="selectedMatch"
-              />
+              <!-- Stats tab: requires live match detail data -->
+              <template v-else-if="activeTab === 'stats'">
+                <GameDetailStatsTab
+                  v-if="detail"
+                  :detail="detail"
+                  :match="selectedMatch"
+                />
+                <div v-else class="gd-empty">
+                  <p>Match data will be available closer to kick-off.</p>
+                </div>
+              </template>
             </template>
-            <div v-else class="gd-empty">
-              <p>Match data will be available closer to kick-off.</p>
-            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,136 @@
+{
+  "teamId": "2659",
+  "teamName": "Panama",
+  "matchId": "401860542",
+  "matchDate": "2026-03-31T17:30Z",
+  "opponentName": "South Africa",
+  "players": [
+    {
+      "name": "Orlando Mosquera",
+      "position": "G",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Jiovany Ramos",
+      "position": "CD",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "José Córdoba",
+      "position": "CD-L",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Carlos Harvey",
+      "position": "CD-R",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Adalberto Carrasquilla",
+      "position": "CM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Aníbal Godoy",
+      "position": "CM-R",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Jorge Gutiérrez",
+      "position": "LM",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Michael Murillo",
+      "position": "RM",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "José Kadir",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Ismael Díaz",
+      "position": "CF-L",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "José Luis Rodríguez",
+      "position": "CF-R",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Éric Davis",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "César Blackman",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Édgar Bárcenas",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Martín Krug",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "César Yanis",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Cecilio Waterman",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "José Fajardo",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "César Samudio",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Roderick Miller",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Christian Martínez",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:53.672Z"
+}

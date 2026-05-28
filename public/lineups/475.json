@@ -1,0 +1,154 @@
+{
+  "teamId": "475",
+  "teamName": "Switzerland",
+  "matchId": "762552",
+  "matchDate": "2026-03-31T16:00Z",
+  "opponentName": "Norway",
+  "players": [
+    {
+      "name": "Yvon Mvogo",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Manuel Akanji",
+      "position": "CD",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Nico Elvedi",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Denis Zakaria",
+      "position": "CD-R",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Ardon Jashari",
+      "position": "CM-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Remo Freuler",
+      "position": "CM-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Fabian Rieder",
+      "position": "LM",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Michel Aebischer",
+      "position": "RM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Breel Embolo",
+      "position": "F",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Rubén Vargas",
+      "position": "CF-L",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Dan Ndoye",
+      "position": "CF-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Silvan Widmer",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Gregor Kobel",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Eray Cömert",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Johan Manzambi",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Luca Jaquez",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Vincent Sierro",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Aurèle Amenda",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Miro Muheim",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Djibril Sow",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Joel Almada Monteiro",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Alvyn Sanches",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Ricardo Rodríguez",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Marvin Keller",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:36.405Z"
+}

@@ -1,0 +1,154 @@
+{
+  "teamId": "4398",
+  "teamName": "Qatar",
+  "matchId": "760915",
+  "matchDate": "2025-11-17T16:30Z",
+  "opponentName": "Zimbabwe",
+  "players": [
+    {
+      "name": "Meshaal Barsham",
+      "position": "G",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Youssef Ayman",
+      "position": "CD-L",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Al Hashmi Al Hussain Mohi Aldin",
+      "position": "CD-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Homam Ahmed",
+      "position": "LB",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Ayoub Al Oui",
+      "position": "RB",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Moustafa Tarek Mashal",
+      "position": "AM",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Assim Madibo",
+      "position": "LM",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Jassem Gaber",
+      "position": "RM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Ahmed Alaaeldin",
+      "position": "F",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Khaled Mohammed",
+      "position": "AM-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Mohamed Khaled Ahmed Gamal Al Deen Gouda",
+      "position": "AM-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Mohammed Muntari",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Yusuf Abdurisag",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Mahmud Ibrahim Abunada",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Shehab Ellethy",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Tahsin Mohammed Jamshid",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Mohamed Naceur Almanai",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Mohammed Waad",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Ahmed Fathi",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Tarek Salman",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Sultan Al-Brake",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Lucas Mendes",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Nabil Irfan",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Ahmed Suhail",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:36.758Z"
+}

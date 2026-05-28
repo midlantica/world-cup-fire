@@ -14,7 +14,7 @@
   function goBack() {
     const prev = popHistory()
     if (!prev) return
-    closeCountry()
+    closeCountry({ silent: true })
     if (prev.type === 'match') {
       openMatch(prev.match)
     }
@@ -241,11 +241,15 @@
   })
 
   // Fetch squad when tab becomes active and we have a match ID
-  watch([() => activeTab.value, firstMatchId], ([tab, id]) => {
-    if (tab === 'squad' && id && !squadDetail.value) {
-      fetchSquad()
-    }
-  })
+  watch(
+    [() => activeTab.value, firstMatchId],
+    ([tab, id]) => {
+      if (tab === 'squad' && id && !squadDetail.value) {
+        fetchSquad()
+      }
+    },
+    { immediate: true }
+  )
 
   function extractSquadPlayers(
     detail: Record<string, unknown> | null | undefined,
@@ -314,61 +318,72 @@
     server: false,
   })
 
-  // Fetch recent results when tab becomes active and we have a team ID
-  watch([() => activeTab.value, teamId], ([tab, id]) => {
-    if (tab === 'results' && id && !recentResults.value) {
-      fetchRecentResults()
-    }
-  })
+  // ── Fallback squad: walk recent matches until one has roster data ─────────
+  // Index into recentResults — advances if a match has no roster data
+  const fallbackMatchIndex = ref(0)
 
-  // Also re-fetch if team changes while on results tab
-  watch(teamId, (id) => {
-    if (activeTab.value === 'results' && id) {
-      recentResults.value = undefined
-      fetchRecentResults()
-    }
-  })
-
-  // ── Fallback squad: last played match ────────────────────────────────────
-  // Reuses recentResults to get the last match ID (limit=1 is fine for squad)
   const lastMatchEventId = computed<string | null>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => (recentResults.value as any)?.[0]?.id ?? null
+    () => (recentResults.value as any)?.[fallbackMatchIndex.value]?.id ?? null
   )
 
-  const { data: lastMatchDetail, execute: fetchLastMatchDetail } = useLazyFetch<
-    Record<string, unknown>
-  >('/api/match-detail', {
+  const {
+    data: lastMatchDetail,
+    pending: lastMatchPending,
+    execute: fetchLastMatchDetail,
+  } = useLazyFetch<Record<string, unknown>>('/api/match-detail', {
     query: computed(() => ({ eventId: lastMatchEventId.value ?? '' })),
     watch: false,
     immediate: false,
     server: false,
   })
 
-  // When squad tab is active and WC squad is empty, kick off the fallback chain
-  watch([() => activeTab.value, teamId], ([tab, id]) => {
-    if (tab === 'squad' && id && !squadPlayers.value.length) {
-      if (!recentResults.value) {
+  // Pre-fetch recentResults as soon as teamId is available (modal open),
+  // so the fallback squad chain is already in flight before the user clicks Squad.
+  watch(
+    teamId,
+    (id) => {
+      if (id && !recentResults.value) {
         fetchRecentResults()
-      } else if (lastMatchEventId.value && !lastMatchDetail.value) {
-        // recentResults already loaded but lastMatchDetail not yet fetched
-        fetchLastMatchDetail()
       }
-    }
-  })
+    },
+    { immediate: true }
+  )
 
-  // Once we have the last match ID, fetch its detail for the fallback squad
+  // Once recentResults loads (or index advances), fetch that match's detail
   watch(lastMatchEventId, (id) => {
-    if (id && !squadPlayers.value.length && !lastMatchDetail.value) {
+    if (id && !squadPlayers.value.length) {
+      lastMatchDetail.value = undefined
       fetchLastMatchDetail()
     }
   })
 
-  // Re-fetch if team changes while on squad tab
-  watch(teamId, (id) => {
-    if (activeTab.value === 'squad' && id && !squadPlayers.value.length) {
+  // After fetching a match detail, if it has no roster data try the next match
+  watch(lastMatchDetail, (detail) => {
+    if (!detail || squadPlayers.value.length) return
+    const players = extractSquadPlayers(detail, selectedCountry.value ?? '')
+    if (
+      players.length === 0 &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fallbackMatchIndex.value < ((recentResults.value as any)?.length ?? 0) - 1
+    ) {
+      fallbackMatchIndex.value++
+    }
+  })
+
+  // Re-fetch if team changes (reset stale data and restart the chain)
+  watch(teamId, (id, oldId) => {
+    if (id && oldId && id !== oldId) {
       recentResults.value = undefined
       lastMatchDetail.value = undefined
+      fallbackMatchIndex.value = 0
+      fetchRecentResults()
+    }
+  })
+
+  // Fetch recent results when results tab becomes active (in case pre-fetch hasn't run yet)
+  watch([() => activeTab.value, teamId], ([tab, id]) => {
+    if (tab === 'results' && id && !recentResults.value) {
       fetchRecentResults()
     }
   })
@@ -377,10 +392,10 @@
     extractSquadPlayers(lastMatchDetail.value, selectedCountry.value ?? '')
   )
 
-  // Label: "vs [opponent] · [date]"
+  // Label: "vs [opponent] · [date]" — uses the actual match that had roster data
   const fallbackSquadLabel = computed<string>(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const last = (recentResults.value as any)?.[0]
+    const last = (recentResults.value as any)?.[fallbackMatchIndex.value]
     if (!last) return 'Last match'
     const id = teamId.value
     const opponent = last.homeTeamId === id ? last.awayTeam : last.homeTeam
@@ -494,7 +509,7 @@
     if (selectedCountry.value) {
       pushHistory({ type: 'country', name: selectedCountry.value })
     }
-    closeCountry()
+    closeCountry({ silent: true })
     openMatch(match)
   }
 </script>
@@ -541,6 +556,9 @@
               <CloseIcon />
             </button>
           </div>
+
+          <!-- ── Bio blurb ─────────────────────────────────────────────── -->
+          <p v-if="countryData.bio" class="cd-bio">{{ countryData.bio }}</p>
 
           <!-- ── Tabs ───────────────────────────────────────────────────── -->
           <div class="cd-tabs" :style="tabsStyle">
@@ -617,20 +635,24 @@
                         <!-- Home -->
                         <div class="cd-match__team">
                           <CountryFlag :iso2="m.homeIso2" :size="20" />
-                          <span
-                            class="cd-match__team-name"
-                            :class="{
-                              'cd-match__team-name--featured': m.isHome,
-                              'cd-match__team-name--link':
-                                m.home !== selectedCountry,
-                            }"
-                            @click.stop="
-                              m.home !== selectedCountry &&
-                              navigateToCountry(m.home)
-                            "
-                          >
-                            {{ TEAM_BY_NAME.get(m.home)?.shortName ?? m.home }}
-                          </span>
+                          <div class="cd-match__team-name-wrap">
+                            <span
+                              class="cd-match__team-name"
+                              :class="{
+                                'cd-match__team-name--featured': m.isHome,
+                                'cd-match__team-name--link':
+                                  m.home !== selectedCountry,
+                              }"
+                              @click.stop="
+                                m.home !== selectedCountry &&
+                                navigateToCountry(m.home)
+                              "
+                            >
+                              {{
+                                TEAM_BY_NAME.get(m.home)?.shortName ?? m.home
+                              }}
+                            </span>
+                          </div>
                           <span
                             v-if="m.statusCode !== 'ns'"
                             class="cd-match__score"
@@ -646,20 +668,24 @@
                         <!-- Away -->
                         <div class="cd-match__team">
                           <CountryFlag :iso2="m.awayIso2" :size="20" />
-                          <span
-                            class="cd-match__team-name"
-                            :class="{
-                              'cd-match__team-name--featured': !m.isHome,
-                              'cd-match__team-name--link':
-                                m.away !== selectedCountry,
-                            }"
-                            @click.stop="
-                              m.away !== selectedCountry &&
-                              navigateToCountry(m.away)
-                            "
-                          >
-                            {{ TEAM_BY_NAME.get(m.away)?.shortName ?? m.away }}
-                          </span>
+                          <div class="cd-match__team-name-wrap">
+                            <span
+                              class="cd-match__team-name"
+                              :class="{
+                                'cd-match__team-name--featured': !m.isHome,
+                                'cd-match__team-name--link':
+                                  m.away !== selectedCountry,
+                              }"
+                              @click.stop="
+                                m.away !== selectedCountry &&
+                                navigateToCountry(m.away)
+                              "
+                            >
+                              {{
+                                TEAM_BY_NAME.get(m.away)?.shortName ?? m.away
+                              }}
+                            </span>
+                          </div>
                           <span
                             v-if="m.statusCode !== 'ns'"
                             class="cd-match__score"
@@ -721,7 +747,10 @@
                 key="squad"
                 class="tab-pane"
               >
-                <div v-if="squadPending" class="cd-loading">
+                <div
+                  v-if="squadPending || recentPending || lastMatchPending"
+                  class="cd-loading"
+                >
                   <div class="cd-spinner" />
                   <span>Loading squad…</span>
                 </div>
@@ -879,20 +908,24 @@
                       <div class="cd-match__teams">
                         <div class="cd-match__team">
                           <CountryFlag :iso2="m.homeIso2" :size="20" />
-                          <span
-                            class="cd-match__team-name"
-                            :class="{
-                              'cd-match__team-name--featured': m.isHome,
-                              'cd-match__team-name--link':
-                                m.home !== selectedCountry,
-                            }"
-                            @click.stop="
-                              m.home !== selectedCountry &&
-                              navigateToCountry(m.home)
-                            "
-                          >
-                            {{ TEAM_BY_NAME.get(m.home)?.shortName ?? m.home }}
-                          </span>
+                          <div class="cd-match__team-name-wrap">
+                            <span
+                              class="cd-match__team-name"
+                              :class="{
+                                'cd-match__team-name--featured': m.isHome,
+                                'cd-match__team-name--link':
+                                  m.home !== selectedCountry,
+                              }"
+                              @click.stop="
+                                m.home !== selectedCountry &&
+                                navigateToCountry(m.home)
+                              "
+                            >
+                              {{
+                                TEAM_BY_NAME.get(m.home)?.shortName ?? m.home
+                              }}
+                            </span>
+                          </div>
                           <span
                             class="cd-match__score"
                             :class="{
@@ -905,20 +938,24 @@
                         </div>
                         <div class="cd-match__team">
                           <CountryFlag :iso2="m.awayIso2" :size="20" />
-                          <span
-                            class="cd-match__team-name"
-                            :class="{
-                              'cd-match__team-name--featured': !m.isHome,
-                              'cd-match__team-name--link':
-                                m.away !== selectedCountry,
-                            }"
-                            @click.stop="
-                              m.away !== selectedCountry &&
-                              navigateToCountry(m.away)
-                            "
-                          >
-                            {{ TEAM_BY_NAME.get(m.away)?.shortName ?? m.away }}
-                          </span>
+                          <div class="cd-match__team-name-wrap">
+                            <span
+                              class="cd-match__team-name"
+                              :class="{
+                                'cd-match__team-name--featured': !m.isHome,
+                                'cd-match__team-name--link':
+                                  m.away !== selectedCountry,
+                              }"
+                              @click.stop="
+                                m.away !== selectedCountry &&
+                                navigateToCountry(m.away)
+                              "
+                            >
+                              {{
+                                TEAM_BY_NAME.get(m.away)?.shortName ?? m.away
+                              }}
+                            </span>
+                          </div>
                           <span
                             class="cd-match__score"
                             :class="{
@@ -967,18 +1004,20 @@
                             :iso2="TEAM_BY_NAME.get(r.homeTeam)?.iso2 ?? ''"
                             :size="20"
                           />
-                          <span
-                            class="cd-match__team-name"
-                            :class="{
-                              'cd-match__team-name--featured':
-                                r.homeTeamId === teamId,
-                            }"
-                          >
-                            {{
-                              TEAM_BY_NAME.get(r.homeTeam)?.shortName ??
-                              r.homeTeam
-                            }}
-                          </span>
+                          <div class="cd-match__team-name-wrap">
+                            <span
+                              class="cd-match__team-name"
+                              :class="{
+                                'cd-match__team-name--featured':
+                                  r.homeTeamId === teamId,
+                              }"
+                            >
+                              {{
+                                TEAM_BY_NAME.get(r.homeTeam)?.shortName ??
+                                r.homeTeam
+                              }}
+                            </span>
+                          </div>
                           <span
                             class="cd-match__score"
                             :class="{
@@ -995,18 +1034,20 @@
                             :iso2="TEAM_BY_NAME.get(r.awayTeam)?.iso2 ?? ''"
                             :size="20"
                           />
-                          <span
-                            class="cd-match__team-name"
-                            :class="{
-                              'cd-match__team-name--featured':
-                                r.awayTeamId === teamId,
-                            }"
-                          >
-                            {{
-                              TEAM_BY_NAME.get(r.awayTeam)?.shortName ??
-                              r.awayTeam
-                            }}
-                          </span>
+                          <div class="cd-match__team-name-wrap">
+                            <span
+                              class="cd-match__team-name"
+                              :class="{
+                                'cd-match__team-name--featured':
+                                  r.awayTeamId === teamId,
+                              }"
+                            >
+                              {{
+                                TEAM_BY_NAME.get(r.awayTeam)?.shortName ??
+                                r.awayTeam
+                              }}
+                            </span>
+                          </div>
                           <span
                             class="cd-match__score"
                             :class="{
@@ -1244,6 +1285,21 @@
     opacity: 1;
   }
 
+  /* ── Bio blurb ─────────────────────────────────────────────────────────── */
+  .cd-bio {
+    margin: 0;
+    padding: 0.7rem 1rem 0.6rem;
+    font-size: 0.85rem;
+    font-variation-settings:
+      'wdth' 90,
+      'wght' 200;
+    line-height: 1.7;
+    letter-spacing: 0.07rem;
+    color: oklab(100% 0 0 / 0.85);
+    background: oklch(11% 0.006 260);
+    border-bottom: 1px solid oklab(100% 0 0 / 0.08);
+  }
+
   /* ── Tabs ──────────────────────────────────────────────────────────────── */
   .cd-tabs {
     display: flex;
@@ -1290,7 +1346,7 @@
     overflow-x: hidden;
     flex: 1;
     max-height: 65dvh;
-    padding: 0.8rem 0.85rem 0.9rem;
+    padding: 0.5rem 0.85rem 0.9rem;
     scrollbar-width: thin;
   }
 
@@ -1342,9 +1398,26 @@
 
   /* ── Tab pane ──────────────────────────────────────────────────────────── */
   .tab-pane {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    align-items: start;
+  }
+
+  /* Section labels and squad groups span full width */
+  .cd-results__section-label,
+  .cd-squad__section-label,
+  .cd-squad__group,
+  .cd-standing,
+  .cd-loading,
+  .cd-empty {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 480px) {
+    .tab-pane {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* ── Match card ────────────────────────────────────────────────────────── */
@@ -1422,13 +1495,17 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    cursor: default;
   }
 
-  .cd-match__team-name {
+  .cd-match__team-name-wrap {
     flex: 1;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
+  }
+
+  .cd-match__team-name {
+    display: inline;
     white-space: nowrap;
     font-size: 0.9rem;
     font-variation-settings:
@@ -1453,8 +1530,9 @@
   .cd-match__team-name--link:hover {
     color: oklab(100% 0 0);
     text-decoration: underline;
-    text-underline-offset: 2px;
-    text-decoration-color: oklab(100% 0 0 / 0.35);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    text-decoration-color: oklab(100% 0 0 / 0.6);
   }
 
   .cd-match__score {
@@ -1689,7 +1767,7 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.35);
-    padding: 0.25rem 0.1rem 0.5rem;
+    padding: 0;
   }
 
   .cd-squad__group {

@@ -1,0 +1,166 @@
+{
+  "teamId": "628",
+  "teamName": "Australia",
+  "matchId": "401856595",
+  "matchDate": "2026-03-31T09:10Z",
+  "opponentName": "Curacao",
+  "players": [
+    {
+      "name": "Mathew Ryan",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Alessandro Circati",
+      "position": "CD",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Kye Rowles",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Lucas Herrington",
+      "position": "CD-R",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Connor Metcalfe",
+      "position": "CM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Aiden O'Neill",
+      "position": "CM-R",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Aziz Behich",
+      "position": "LM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Kai Trewin",
+      "position": "RM",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Deni Juric",
+      "position": "F",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Ajdin Hrustic",
+      "position": "CF-L",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Awer Mabil",
+      "position": "CF-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Patrick Beach",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Riley McGree",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Martin Boyle",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Nishan Velupillay",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Paul Izzo",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Ante Suto",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Jordan Bos",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Patrick Yazbek",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Cameron Burgess",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Nestory Irankunda",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Alex Robertson",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Jacob Italiano",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Jason Geria",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Paul Okon",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Milos Degenek",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:39.874Z"
+}

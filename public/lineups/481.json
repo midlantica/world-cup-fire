@@ -1,0 +1,160 @@
+{
+  "teamId": "481",
+  "teamName": "Germany",
+  "matchId": "762773",
+  "matchDate": "2026-03-30T18:45Z",
+  "opponentName": "Ghana",
+  "players": [
+    {
+      "name": "Alexander Nübel",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Nico Schlotterbeck",
+      "position": "CD-L",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Jonathan Tah",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Nathaniel Brown",
+      "position": "LB",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Joshua Kimmich",
+      "position": "RB",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Serge Gnabry",
+      "position": "AM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Angelo Stiller",
+      "position": "LM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Pascal Gross",
+      "position": "RM",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Nick Woltemade",
+      "position": "F",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Florian Wirtz",
+      "position": "AM-L",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Kai Havertz",
+      "position": "AM-R",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Malick Thiaw",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "David Raum",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Lennart Karl",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Leon Goretzka",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "Oliver Baumann",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Anton Stach",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Chris Führich",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Leroy Sané",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Finn Dahmen",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Deniz Undav",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Waldemar Anton",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Josha Vagnoman",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Kevin Schade",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Antonio Rüdiger",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:41.005Z"
+}

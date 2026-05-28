@@ -1,0 +1,160 @@
+{
+  "teamId": "448",
+  "teamName": "England",
+  "matchId": "762554",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Japan",
+  "players": [
+    {
+      "name": "Jordan Pickford",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Marc Guéhi",
+      "position": "CD-L",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Ezri Konsa",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Nico O'Reilly",
+      "position": "LB",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Ben White",
+      "position": "RB",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Cole Palmer",
+      "position": "AM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Kobbie Mainoo",
+      "position": "LM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Elliot Anderson",
+      "position": "RM",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Phil Foden",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Anthony Gordon",
+      "position": "AM-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Morgan Rogers",
+      "position": "AM-R",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Dean Henderson",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Lewis Hall",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Marcus Rashford",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Jason Steele",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Harvey Barnes",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Harry Maguire",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Dan Burn",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Tino Livramento",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "James Garner",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Dominic Solanke",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "James Trafford",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Jude Bellingham",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Djed Spence",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Jarrod Bowen",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:52.812Z"
+}

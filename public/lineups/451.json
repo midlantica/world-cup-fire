@@ -1,0 +1,160 @@
+{
+  "teamId": "451",
+  "teamName": "South Korea",
+  "matchId": "401856596",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Austria",
+  "players": [
+    {
+      "name": "Kim Seung-Gyu",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Kim Min-Jae",
+      "position": "CD",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Kim Ju-Sung",
+      "position": "CD-L",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Han-Beom Lee",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Paik Seung-Ho",
+      "position": "CM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Jin-Gyu Kim",
+      "position": "CM-R",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Lee Tae-Seok",
+      "position": "LM",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Seol Young-Woo",
+      "position": "RM",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Son Heung-Min",
+      "position": "F",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Lee Jae-Sung",
+      "position": "CF-L",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Lee Kang-in",
+      "position": "CF-R",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Eom Ji-Sung",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Park Jin-Seop",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Oh Hyeon-Gyu",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Hong Hyun-Seok",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Song Bum-Keun",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Bae Jun-Ho",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Yang Hyun-Jun",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Cho Yu-Min",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Kim Moon-Hwan",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Kwon Hyeok-Kyu",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Kim Tae-Hyeon",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Jo Hyeon-Woo",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Hwang Hee-Chan",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Cho Gue-Sung",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:34.235Z"
+}

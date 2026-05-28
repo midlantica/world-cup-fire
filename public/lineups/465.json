@@ -1,0 +1,148 @@
+{
+  "teamId": "465",
+  "teamName": "Türkiye",
+  "matchId": "761953",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "Kosovo",
+  "players": [
+    {
+      "name": "Ugurcan Çakir",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Ozan Kabak",
+      "position": "CD",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Abdülkerim Bardakci",
+      "position": "CD-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Ismail Yüksek",
+      "position": "CD-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Orkun Kökçü",
+      "position": "CM-L",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Hakan Çalhanoglu",
+      "position": "CM-R",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Ferdi Kadioglu",
+      "position": "LM",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Zeki Çelik",
+      "position": "RM",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Kerem Aktürkoglu",
+      "position": "F",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Kenan Yildiz",
+      "position": "CF-L",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Arda Güler",
+      "position": "CF-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Irfan Can Kahveci",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Yunus Akgün",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Kaan Ayhan",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Baris Alper Yilmaz",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Salih Özcan",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Atakan Karazor",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Mert Müldür",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Deniz Gül",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Samet Akaydin",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Altay Bayindir",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Mert Günok",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Eren Elmali",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:39.404Z"
+}

@@ -1,0 +1,160 @@
+{
+  "teamId": "210",
+  "teamName": "Paraguay",
+  "matchId": "401860937",
+  "matchDate": "2026-03-31T18:00Z",
+  "opponentName": "Morocco",
+  "players": [
+    {
+      "name": "Orlando Gil",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Omar Alderete",
+      "position": "CD-L",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Gustavo Gómez",
+      "position": "CD-R",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Júnior Alonso",
+      "position": "LB",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Juan Cáceres",
+      "position": "RB",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Braian Ojeda",
+      "position": "CM-L",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Damián Bobadilla",
+      "position": "CM-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Miguel Almirón",
+      "position": "LM",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Diego Gómez",
+      "position": "RM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Julio Enciso",
+      "position": "CF-L",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Gabriel Ávalos",
+      "position": "CF-R",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Fabián Balbuena",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Antonio Sanabria",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Lucas Romero",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Mauricio",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "José Canale",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Gustavo Velázquez",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Gatito Fernández",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Alexandro Maidana",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Gustavo Caballero",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Gastón Olveira",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Alan Benítez",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Alex Arce",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Ramón Sosa",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Matías Galarza",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:39.070Z"
+}

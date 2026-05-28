@@ -161,8 +161,13 @@
   }
 
   .group-card__table {
-    @apply w-full text-xs;
+    @apply w-full;
     table-layout: fixed;
+    font-size: 0.85rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
+    letter-spacing: 0.08em !important;
   }
 
   /* Column widths — team col fills remaining space, stats are fixed narrow */
@@ -239,7 +244,11 @@
   }
 
   .group-card__team-name {
-    @apply min-w-0 truncate font-semibold text-white;
+    @apply min-w-0 truncate text-white;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 300;
+    letter-spacing: 0.07em;
   }
 
   .group-card__team-name--link {

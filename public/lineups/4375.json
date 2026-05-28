@@ -1,0 +1,148 @@
+{
+  "teamId": "4375",
+  "teamName": "Iraq",
+  "matchId": "761390",
+  "matchDate": "2026-04-01T03:00Z",
+  "opponentName": "Bolivia",
+  "players": [
+    {
+      "name": "Ahmed Basil Al-Fadhli",
+      "position": "G",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Akam Hashim Rahman",
+      "position": "CD-L",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Zaid Tahseen",
+      "position": "CD-R",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Merchas Doski",
+      "position": "LB",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Hussein Ali",
+      "position": "RB",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Amir Al-Ammari",
+      "position": "CM-L",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Aimar Sher",
+      "position": "CM-R",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Ibrahim Bayesh",
+      "position": "LM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Youssef Amyn",
+      "position": "RM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Ali Ibrahim Al-Hamadi",
+      "position": "CF-L",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Aymen Hussein",
+      "position": "CF-R",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Ali Yousif Hashim",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Zidane Iqbal",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Marko Lawk Farji",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Mohannad Ali Kadhim",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Fahad Talib Raheem",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Frans Dhia Haddad",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Kumel Saadi",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Kevin Yakob",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Zaid Ismael Khaleel Al Dulaimi",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Rebin Solaka",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Ali Jasim",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Hasan Abdulkareem",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:49.005Z"
+}

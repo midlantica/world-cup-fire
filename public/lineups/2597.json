@@ -1,0 +1,148 @@
+{
+  "teamId": "2597",
+  "teamName": "Cape Verde",
+  "matchId": "401856602",
+  "matchDate": "2026-03-30T03:00Z",
+  "opponentName": "Finland",
+  "players": [
+    {
+      "name": "Márcio Rosa",
+      "position": "G",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Roberto Lopes",
+      "position": "CD-L",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Kelvin Spencer Pires",
+      "position": "CD-R",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "João Paulo",
+      "position": "LB",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Wagner Pina",
+      "position": "RB",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Laros Duarte",
+      "position": "AM",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Semedo",
+      "position": "LM",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Jordan Mendes",
+      "position": "RM",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Ieltsin Camões",
+      "position": "F",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Willy Semedo",
+      "position": "AM-L",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Garry Rodrigues",
+      "position": "AM-R",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Telmo Arcanjo",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Ryan Mendes",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Dailon Livramento",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Deroy Duarte",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Vozinha",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Jovane Cabral",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Steven Moreira",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Fábio Domingos",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Sidny Cabral",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Nuno da Costa",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Kevin Pina",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Ayoni Santos",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:47.144Z"
+}

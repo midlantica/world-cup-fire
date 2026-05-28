@@ -1,0 +1,166 @@
+{
+  "teamId": "2620",
+  "teamName": "Egypt",
+  "matchId": "401851847",
+  "matchDate": "2026-03-31T19:00Z",
+  "opponentName": "Spain",
+  "players": [
+    {
+      "name": "Mostafa Shobeir",
+      "position": "G",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Hamdy Fathy",
+      "position": "CD-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Yasser Ibrahim",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Ahmed Fatouh",
+      "position": "LB",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Mohamed Hany",
+      "position": "RB",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Emam Ashour",
+      "position": "AM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Marwan Attia",
+      "position": "LM",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Mohanad Lasheen",
+      "position": "RM",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Omar Marmoush",
+      "position": "F",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Islam Eissa Elsayed Mohamed Attia",
+      "position": "AM-L",
+      "jersey": "18",
+      "starter": true
+    },
+    {
+      "name": "Zizo",
+      "position": "AM-R",
+      "jersey": "25",
+      "starter": true
+    },
+    {
+      "name": "Mohamed El Shenawy",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Tarek Alaa",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Mahmoud Saber",
+      "position": "SUB",
+      "jersey": "27",
+      "starter": false
+    },
+    {
+      "name": "Nasser Mansi",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Hossam Abdelmaguid",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Trézéguet",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Ahmed Koka",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Haissem Hassan",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Mohamed Alaa",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Khaled Sobhy",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Mohamed Abdelmonem",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Ibrahim Adel",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Mostafa Mohamed",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Ramy Rabia",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Mahdy Soliman",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:44.784Z"
+}

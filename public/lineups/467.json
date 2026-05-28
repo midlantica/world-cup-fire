@@ -1,0 +1,148 @@
+{
+  "teamId": "467",
+  "teamName": "South Africa",
+  "matchId": "401860542",
+  "matchDate": "2026-03-31T17:30Z",
+  "opponentName": "Panama",
+  "players": [
+    {
+      "name": "Ronwen Williams",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Mbekezeli Mbokazi",
+      "position": "CD-L",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Ime Okon",
+      "position": "CD-R",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Aubrey Modiba",
+      "position": "LB",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Khuliso Mudau",
+      "position": "RB",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Relebohile Mofokeng",
+      "position": "AM",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Jayden Adams",
+      "position": "LM",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Teboho Mokoena",
+      "position": "RM",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Lyle Foster",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Tshepang Moremi",
+      "position": "AM-L",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Bongokuhle Hlongwane",
+      "position": "AM-R",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Ricardo Goss",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Thalente Mbatha",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Khulumani Ndamane",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Nkosinathi Sibisi",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Themba Zwane",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Thapelo Maseko",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Oswin Appollis",
+      "position": "SUB",
+      "jersey": "7",
+      "starter": false
+    },
+    {
+      "name": "Samukelo Kabini",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Tholo Matuludi",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Yaya Sithole",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Renaldo Leaner",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Evidence Makgopa",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:34.994Z"
+}

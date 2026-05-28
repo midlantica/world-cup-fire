@@ -1,0 +1,160 @@
+{
+  "teamId": "474",
+  "teamName": "Austria",
+  "matchId": "401856596",
+  "matchDate": "2026-03-31T18:45Z",
+  "opponentName": "South Korea",
+  "players": [
+    {
+      "name": "Patrick Pentz",
+      "position": "G",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Marco Friedl",
+      "position": "CD-L",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Philipp Lienhart",
+      "position": "CD-R",
+      "jersey": "15",
+      "starter": true
+    },
+    {
+      "name": "Phillipp Mwene",
+      "position": "LB",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Konrad Laimer",
+      "position": "RB",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Christoph Baumgartner",
+      "position": "AM",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Xaver Schlager",
+      "position": "LM",
+      "jersey": "4",
+      "starter": true
+    },
+    {
+      "name": "Paul Wanner",
+      "position": "RM",
+      "jersey": "24",
+      "starter": true
+    },
+    {
+      "name": "Marko Arnautovic",
+      "position": "F",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Marcel Sabitzer",
+      "position": "AM-L",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Patrick Wimmer",
+      "position": "AM-R",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Alexander Schlager",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Florian Wiegele",
+      "position": "SUB",
+      "jersey": "26",
+      "starter": false
+    },
+    {
+      "name": "Carney Chukwuemeka",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Stefan Posch",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Michael Gregoritsch",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Sasa Kalajdzic",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "David Alaba",
+      "position": "SUB",
+      "jersey": "8",
+      "starter": false
+    },
+    {
+      "name": "David Affengruber",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Kevin Danso",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Michael Svoboda",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Florian Grillitsch",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Alexander Prass",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Romano Schmid",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Nicolas Seiwald",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:49.682Z"
+}

@@ -1,0 +1,166 @@
+{
+  "teamId": "164",
+  "teamName": "Spain",
+  "matchId": "401851847",
+  "matchDate": "2026-03-31T19:00Z",
+  "opponentName": "Egypt",
+  "players": [
+    {
+      "name": "David Raya",
+      "position": "G",
+      "jersey": "1",
+      "starter": true
+    },
+    {
+      "name": "Dean Huijsen",
+      "position": "CD-L",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Cristhian Mosquera",
+      "position": "CD-R",
+      "jersey": "2",
+      "starter": true
+    },
+    {
+      "name": "Alejandro Grimaldo",
+      "position": "LB",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Pedro Porro",
+      "position": "RB",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Dani Olmo",
+      "position": "AM",
+      "jersey": "10",
+      "starter": true
+    },
+    {
+      "name": "Carlos Soler",
+      "position": "LM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Pablo Fornals",
+      "position": "RM",
+      "jersey": "17",
+      "starter": true
+    },
+    {
+      "name": "Ferran Torres",
+      "position": "F",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Ander Barrenetxea",
+      "position": "AM-L",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Lamine Yamal",
+      "position": "AM-R",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Fermín López",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Pau Cubarsí",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Álex Baena",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Pedri",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Marcos Llorente",
+      "position": "SUB",
+      "jersey": "5",
+      "starter": false
+    },
+    {
+      "name": "Víctor Muñoz",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Rodri",
+      "position": "SUB",
+      "jersey": "16",
+      "starter": false
+    },
+    {
+      "name": "Unai Simón",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Álex Remiro",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Aymeric Laporte",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Yéremy Pino",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Marc Cucurella",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Borja Iglesias",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Mikel Oyarzabal",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Joan García",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:45.761Z"
+}

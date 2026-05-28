@@ -268,7 +268,8 @@ function normaliseEvent(ev: any): Match {
     awayIso2: awayData?.iso2 ?? '',
     awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
     group,
-    venue: (comp.venue as Record<string, unknown>)?.fullName as string | null,
+    venue:
+      ((comp.venue as Record<string, unknown>)?.fullName as string) ?? null,
     status: { code, clock },
     qualityScore: quality,
     badge,

@@ -27,6 +27,8 @@ export interface WCTeam {
   altColor: string
   /** Text color to use on top of `color` background — chosen for contrast */
   textColor: string
+  /** Short bio shown in the Info tab of the match detail modal */
+  bio?: string
 }
 
 export const WC_TEAMS: WCTeam[] = [
@@ -38,9 +40,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'MX',
     fifaRank: 16,
     group: 'A',
-    color: '006847', // green
+    color: '006847',
     altColor: 'ce1126',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: "El Tri are one of CONCACAF's most storied sides, with seven consecutive World Cup round-of-16 appearances between 1994 and 2018. Powered by creative midfielder Edson Álvarez and striker Raúl Jiménez, Mexico play a high-energy pressing game and will be buoyed by co-hosting the tournament on home soil.",
   },
   {
     id: '451',
@@ -50,9 +53,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'KR',
     fifaRank: 22,
     group: 'A',
-    color: 'c60c30', // red
+    color: 'c60c30',
     altColor: '003478',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: "The Taeguk Warriors are Asia's most consistent World Cup performers, famously reaching the semi-finals on home soil in 2002. Son Heung-min, one of the world's most lethal forwards, leads a disciplined, counter-attacking side capable of upsetting any opponent.",
   },
   {
     id: '450',
@@ -61,9 +65,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CZ',
     fifaRank: 37,
     group: 'A',
-    color: 'd7141a', // red
+    color: 'd7141a',
     altColor: '11457e',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: "Making their first World Cup appearance as Czechia (formerly Czechoslovakia reached the final twice), this technically gifted side is built around Slavia Prague's core and Bundesliga exports. Midfielder Tomáš Souček provides power and goals from deep, while the team relies on compact defending and quick transitions.",
   },
   {
     id: '467',
@@ -73,9 +78,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'ZA',
     fifaRank: 60,
     group: 'A',
-    color: '007a4d', // green
+    color: '007a4d',
     altColor: 'ffb612',
-    textColor: 'ffb612', // gold on green
+    textColor: 'ffb612',
+    bio: 'Bafana Bafana return to the World Cup for the first time since hosting in 2010, riding a wave of national excitement. Known for their physical, direct style, South Africa qualified through a strong AFCON campaign and will look to Percy Tau and Themba Zwane to provide the creative spark.',
   },
   // Group B
   {
@@ -85,9 +91,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CA',
     fifaRank: 47,
     group: 'B',
-    color: 'ff0000', // red
+    color: 'ff0000',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: "Canada's golden generation qualified for their first World Cup in 36 years in 2022 and are back again as co-hosts. Alphonso Davies — one of the fastest players on the planet — anchors a young, athletic squad that presses relentlessly and plays without fear.",
   },
   {
     id: '452',
@@ -97,9 +104,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'BA',
     fifaRank: 65,
     group: 'B',
-    color: '002395', // blue
+    color: '002395',
     altColor: 'fecb00',
-    textColor: 'fecb00', // yellow on blue
+    textColor: 'fecb00',
+    bio: "The Dragons made their only World Cup appearance in 2014, where they showed real quality despite an early exit. Built around a core of Bundesliga and Serie A players, Bosnia rely on physicality and set-piece threat, with Edin Džeko's legacy inspiring a new generation of strikers.",
   },
   {
     id: '475',
@@ -108,9 +116,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CH',
     fifaRank: 19,
     group: 'B',
-    color: 'ff0000', // red
+    color: 'ff0000',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Switzerland are the ultimate overachievers — consistently punching above their weight at major tournaments. Granit Xhaka marshals a disciplined, well-organised midfield, and the Swiss have a knack for grinding out results against bigger nations. They reached the quarter-finals at Euro 2024.',
   },
   {
     id: '4398',
@@ -119,9 +128,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'QA',
     fifaRank: 58,
     group: 'B',
-    color: '8d1b3d', // maroon
+    color: '8d1b3d',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on maroon
+    textColor: 'ffffff',
+    bio: 'Qatar became the first host nation to be eliminated in the group stage at their own 2022 World Cup, but the experience has hardened this young squad. Built through the Aspire Academy system, they play a possession-based game and will be motivated to prove themselves on the bigger stage.',
   },
   // Group C
   {
@@ -131,9 +141,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'BR',
     fifaRank: 5,
     group: 'C',
-    color: '009c3b', // green
+    color: '009c3b',
     altColor: 'ffdf00',
-    textColor: 'ffdf00', // yellow on green
+    textColor: 'ffdf00',
+    bio: 'The Seleção are the most successful nation in World Cup history with five titles, though the trophy has eluded them since 2002. Vinicius Jr. — electric, unpredictable, and devastating in the final third — leads a squad bursting with attacking talent including Rodrygo and Endrick. Brazil play with flair and intensity.',
   },
   {
     id: '580',
@@ -142,9 +153,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'GB-SCT',
     fifaRank: 39,
     group: 'C',
-    color: '003078', // dark blue
+    color: '003078',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on dark blue
+    textColor: 'ffffff',
+    bio: 'Scotland return to the World Cup for the first time since 1998, ending a painful 28-year absence. The Tartan Army are known for their passionate support and a never-say-die attitude. Andy Robertson provides world-class quality at left-back, while Scott McTominay has emerged as a goal-scoring force from midfield.',
   },
   {
     id: '2654',
@@ -153,9 +165,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'HT',
     fifaRank: 83,
     group: 'C',
-    color: '00209f', // blue
+    color: '00209f',
     altColor: 'd21034',
-    textColor: 'ffffff', // white on blue
+    textColor: 'ffffff',
+    bio: 'Haiti are making only their second World Cup appearance, having debuted in 1974. Qualifying through CONCACAF was a remarkable achievement for a nation that has overcome enormous adversity. The Grenadiers play with heart and pace, and their passionate fanbase will make them a crowd favourite.',
   },
   {
     id: '2869',
@@ -164,9 +177,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'MA',
     fifaRank: 14,
     group: 'C',
-    color: 'c1272d', // red
+    color: 'c1272d',
     altColor: '006233',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Morocco stunned the world at the 2022 World Cup, becoming the first African nation to reach the semi-finals. Achraf Hakimi is one of the best right-backs on the planet, and Sofyan Amrabat anchors a ferocious midfield. The Atlas Lions are compact, organised, and dangerous on the counter.',
   },
   // Group D
   {
@@ -176,9 +190,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'PY',
     fifaRank: 62,
     group: 'D',
-    color: 'd52b1e', // red
+    color: 'd52b1e',
     altColor: '0038a8',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Los Guaraníes are a tough, physical South American side with a proud World Cup history — they reached the quarter-finals in 2010. Known for their defensive resilience and set-piece threat, Paraguay qualified through a competitive CONMEBOL campaign and will be difficult to break down.',
   },
   {
     id: '465',
@@ -187,9 +202,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'TR',
     fifaRank: 26,
     group: 'D',
-    color: 'e30a17', // red
+    color: 'e30a17',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: "Turkey are back at the World Cup for the first time since their remarkable third-place finish in 2002. Hakan Çalhanoğlu — one of Europe's best deep-lying playmakers — controls the tempo from midfield, while Arda Güler has emerged as one of the most exciting young talents in world football.",
   },
   {
     id: '628',
@@ -198,9 +214,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'AU',
     fifaRank: 23,
     group: 'D',
-    color: '00843d', // green
+    color: '00843d',
     altColor: 'ffcd00',
-    textColor: 'ffcd00', // gold on green
+    textColor: 'ffcd00',
+    bio: 'The Socceroos reached the quarter-finals at the 2022 World Cup, their best result since 2006, and arrive with growing confidence. Mathew Ryan is a reliable goalkeeper, while the squad blends experienced A-League players with European-based talent. Australia are hard-working, well-organised, and dangerous from set pieces.',
   },
   {
     id: '660',
@@ -210,9 +227,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'US',
     fifaRank: 11,
     group: 'D',
-    color: 'b22234', // red
+    color: 'b22234',
     altColor: '3c3b6e',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'The USMNT are co-hosting the tournament and arrive with their most talented generation in history. Christian Pulisic leads a squad packed with Premier League and Champions League regulars. Weston McKennie, Tyler Adams, and Gio Reyna give the US genuine quality in every area of the pitch.',
   },
   // Group E
   {
@@ -222,9 +240,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'EC',
     fifaRank: 44,
     group: 'E',
-    color: 'ffd100', // yellow
+    color: 'ffd100',
     altColor: '003087',
-    textColor: '003087', // navy on yellow
+    textColor: '003087',
+    bio: "La Tri opened the 2022 World Cup with a win over hosts Qatar and are building on that momentum. Enner Valencia — Ecuador's all-time top scorer — remains a constant threat, and the team plays a direct, physical style that makes them difficult to contain. They qualified comfortably through CONMEBOL.",
   },
   {
     id: '481',
@@ -233,9 +252,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'DE',
     fifaRank: 12,
     group: 'E',
-    color: '000000', // black
+    color: '000000',
     altColor: 'dd0000',
-    textColor: 'ffffff', // white on black
+    textColor: 'ffffff',
+    bio: "Die Mannschaft are four-time world champions hungry to end a recent run of early exits. Florian Wirtz — arguably the most gifted young player in Europe — pulls the strings in a revamped attacking system under Julian Nagelsmann. Jamal Musiala adds electric dribbling, and Germany's depth across the squad is formidable.",
   },
   {
     id: '4789',
@@ -244,9 +264,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CI',
     fifaRank: 29,
     group: 'E',
-    color: 'f77f00', // orange
+    color: 'f77f00',
     altColor: '009a44',
-    textColor: 'ffffff', // white on orange
+    textColor: 'ffffff',
+    bio: "The Elephants are reigning African champions after winning AFCON 2024 on home soil. Sébastien Haller has overcome a serious illness to lead the attack, while Franck Kessié provides power and goals from midfield. Ivory Coast play an expansive, attacking game and are one of Africa's most dangerous sides.",
   },
   {
     id: '11678',
@@ -255,9 +276,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CW',
     fifaRank: 88,
     group: 'E',
-    color: '002b7f', // blue
+    color: '002b7f',
     altColor: 'f9e814',
-    textColor: 'f9e814', // yellow on blue
+    textColor: 'f9e814',
+    bio: 'Curaçao are making their first-ever World Cup appearance, a stunning achievement for the small Caribbean island nation. Leandro Bacuna and Cuco Martina have been stalwarts of the squad, and the team qualified through a spirited CONCACAF campaign. Their debut on the world stage is a historic moment for the island.',
   },
   // Group F
   {
@@ -267,9 +289,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'NL',
     fifaRank: 7,
     group: 'F',
-    color: 'ff6600', // orange
+    color: 'ff6600',
     altColor: '003087',
-    textColor: 'ffffff', // white on orange
+    textColor: 'ffffff',
+    bio: "Three-time World Cup finalists, the Oranje are always dangerous. Virgil van Dijk is one of the world's best defenders, while Cody Gakpo and Memphis Depay provide firepower up front. The Dutch reached the quarter-finals in 2022 and have the quality to go deep in this tournament.",
   },
   {
     id: '466',
@@ -278,9 +301,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'SE',
     fifaRank: 25,
     group: 'F',
-    color: '006aa7', // blue
+    color: '006aa7',
     altColor: 'fecc02',
-    textColor: 'fecc02', // yellow on blue
+    textColor: 'fecc02',
+    bio: "Sweden are a model of consistency — well-organised, physically imposing, and difficult to beat. Alexander Isak has emerged as one of Europe's most clinical strikers at Newcastle United, and Dejan Kulusevski adds creativity from wide areas. Sweden reached the quarter-finals in 2018 and will be competitive again.",
   },
   {
     id: '627',
@@ -289,9 +313,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'JP',
     fifaRank: 15,
     group: 'F',
-    color: 'bc002d', // red
+    color: 'bc002d',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Japan are Asia\'s most exciting team, having topped a group containing Germany and Spain at the 2022 World Cup. Takefusa Kubo — the "Japanese Messi" — dazzles with his dribbling, while Ritsu Doan and Kaoru Mitoma provide pace and goals from wide. The Samurai Blue press relentlessly and play without fear.',
   },
   {
     id: '659',
@@ -300,9 +325,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'TN',
     fifaRank: 30,
     group: 'F',
-    color: 'e70013', // red
+    color: 'e70013',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: "The Eagles of Carthage are one of Africa's most experienced World Cup nations, making their sixth appearance. Youssef Msakni and Wahbi Khazri have been the creative heartbeat of the team, and Tunisia are known for their defensive solidity and ability to frustrate bigger opponents.",
   },
   // Group G
   {
@@ -312,9 +338,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'BE',
     fifaRank: 3,
     group: 'G',
-    color: 'ef3340', // red
+    color: 'ef3340',
     altColor: 'ffd900',
-    textColor: 'ffd900', // yellow on red
+    textColor: 'ffd900',
+    bio: 'Belgium\'s "golden generation" may be fading, but the Red Devils remain a formidable force. Kevin De Bruyne — widely regarded as the best midfielder in the world — can unlock any defence, while Romelu Lukaku\'s physical presence up front is a constant threat. Belgium finished third at the 2018 World Cup.',
   },
   {
     id: '469',
@@ -323,9 +350,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'IR',
     fifaRank: 21,
     group: 'G',
-    color: '239f40', // green
+    color: '239f40',
     altColor: 'da0000',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: 'Team Melli are Asia\'s most consistent qualifiers and have improved significantly under Carlos Queiroz. Sardar Azmoun — the "Iranian Messi" — is a technically gifted striker who plays in Europe\'s top leagues. Iran are defensively disciplined and capable of causing upsets on the counter-attack.',
   },
   {
     id: '2620',
@@ -334,9 +362,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'EG',
     fifaRank: 34,
     group: 'G',
-    color: 'ce1126', // red
+    color: 'ce1126',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: "The Pharaohs are back at the World Cup for the first time since 1990, powered by the brilliance of Mohamed Salah. One of the world's best players, Salah carries enormous responsibility for Egypt's attacking play. The team is defensively solid and will look to Salah to produce moments of magic when it matters most.",
   },
   {
     id: '2666',
@@ -346,9 +375,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'NZ',
     fifaRank: 97,
     group: 'G',
-    color: '000000', // black (All Blacks)
+    color: '000000',
     altColor: 'cc142b',
-    textColor: 'ffffff', // white on black
+    textColor: 'ffffff',
+    bio: 'The All Whites are making only their third World Cup appearance, having famously gone unbeaten in 2010. A compact, hard-working side, New Zealand qualified through the OFC and will look to Chris Wood — a proven Premier League striker — to provide the goals. They will be competitive underdogs in every match.',
   },
   // Group H
   {
@@ -358,9 +388,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'ES',
     fifaRank: 2,
     group: 'H',
-    color: 'aa151b', // red
+    color: 'aa151b',
     altColor: 'f1bf00',
-    textColor: 'f1bf00', // gold on red
+    textColor: 'f1bf00',
+    bio: 'La Roja are reigning European champions after their stunning Euro 2024 triumph, playing some of the most beautiful football in the world. Lamine Yamal — a teenager of extraordinary talent — and Nico Williams terrorise defences from wide, while Pedri and Rodri control the midfield. Spain are genuine title contenders.',
   },
   {
     id: '212',
@@ -369,9 +400,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'UY',
     fifaRank: 17,
     group: 'H',
-    color: '5aaaa8', // sky blue
+    color: '5aaaa8',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on sky blue
+    textColor: 'ffffff',
+    bio: 'La Celeste are two-time world champions with a proud tradition of producing world-class strikers. Darwin Núñez brings explosive pace and power up front, while Federico Valverde is one of the most complete midfielders in world football. Uruguay are always competitive and never easy to beat.',
   },
   {
     id: '655',
@@ -381,9 +413,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'SA',
     fifaRank: 56,
     group: 'H',
-    color: '006c35', // green
+    color: '006c35',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: 'Saudi Arabia produced one of the greatest World Cup upsets in 2022, defeating Argentina in the group stage. The Green Falcons are well-organised and dangerous on the counter, and the influx of world-class players into the Saudi Pro League has raised the profile and quality of the national team.',
   },
   {
     id: '2597',
@@ -392,9 +425,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CV',
     fifaRank: 71,
     group: 'H',
-    color: '003893', // blue
+    color: '003893',
     altColor: 'cf2027',
-    textColor: 'ffffff', // white on blue
+    textColor: 'ffffff',
+    bio: "Cape Verde are making their first World Cup appearance, a remarkable achievement for an island nation of just 600,000 people. The Blue Sharks qualified through a strong AFCON campaign and are known for their energetic, pressing style. Several players ply their trade in Portugal's Primeira Liga.",
   },
   // Group I
   {
@@ -404,9 +438,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'NO',
     fifaRank: 20,
     group: 'I',
-    color: 'ef2b2d', // red
+    color: 'ef2b2d',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Norway return to the World Cup for the first time since 2002, and the reason is simple: Erling Haaland. The Manchester City striker is arguably the most lethal finisher in world football, and his presence alone makes Norway a dangerous proposition. Martin Ødegaard provides the creativity to supply him.',
   },
   {
     id: '478',
@@ -415,9 +450,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'FR',
     fifaRank: 1,
     group: 'I',
-    color: '002395', // blue
+    color: '002395',
     altColor: 'ed2939',
-    textColor: 'ffffff', // white on blue
+    textColor: 'ffffff',
+    bio: "Les Bleus are the reigning world champions and the top-ranked team in the world. Kylian Mbappé — the most expensive player in history — leads an attack of frightening depth, while N'Golo Kanté and Aurélien Tchouaméni provide steel in midfield. France are the team to beat at every major tournament.",
   },
   {
     id: '654',
@@ -426,9 +462,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'SN',
     fifaRank: 18,
     group: 'I',
-    color: '00853f', // green
+    color: '00853f',
     altColor: 'fdef42',
-    textColor: 'fdef42', // yellow on green
+    textColor: 'fdef42',
+    bio: "Senegal are reigning African champions and one of the continent's most complete teams. Sadio Mané — a Champions League winner and African Player of the Year — leads by example, while Kalidou Koulibaly anchors a formidable defence. The Lions of Teranga reached the quarter-finals in 2002 and have the quality to go further.",
   },
   {
     id: '4375',
@@ -437,9 +474,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'IQ',
     fifaRank: 63,
     group: 'I',
-    color: 'ce1126', // red
+    color: 'ce1126',
     altColor: '007a3d',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Iraq are making their second World Cup appearance, having debuted in 1986. The Lions of Mesopotamia qualified through the AFC and have been improving steadily under a new generation of players. Aymen Hussein is their most dangerous attacker, and the team plays with passion and physicality.',
   },
   // Group J
   {
@@ -449,9 +487,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'AR',
     fifaRank: 4,
     group: 'J',
-    color: '74acdf', // sky blue
+    color: '74acdf',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on sky blue
+    textColor: 'ffffff',
+    bio: 'Argentina are the reigning world champions, having ended their 36-year wait for the title in Qatar 2022. Lionel Messi — widely considered the greatest player of all time — leads a squad that also features Julián Álvarez and Rodrigo De Paul. La Albiceleste are defending champions and will be desperate to retain the trophy.',
   },
   {
     id: '474',
@@ -460,9 +499,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'AT',
     fifaRank: 24,
     group: 'J',
-    color: 'ed2939', // red
+    color: 'ed2939',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Austria are making their first World Cup appearance since 1998, ending a long absence. David Alaba — a Champions League winner with Real Madrid — is the heartbeat of the team, while Marcel Sabitzer provides energy and goals from midfield. Austria qualified impressively through UEFA and will be no pushover.',
   },
   {
     id: '624',
@@ -471,9 +511,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'DZ',
     fifaRank: 35,
     group: 'J',
-    color: '006233', // green
+    color: '006233',
     altColor: 'd21034',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: "The Desert Foxes are one of Africa's most talented nations, with a squad packed with Ligue 1 and Serie A players. Riyad Mahrez — a Premier League champion with Manchester City — is their most dangerous player, capable of producing moments of brilliance. Algeria play attractive, attacking football.",
   },
   {
     id: '2917',
@@ -482,9 +523,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'JO',
     fifaRank: 74,
     group: 'J',
-    color: '007a3d', // green
+    color: '007a3d',
     altColor: 'ce1126',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: 'Jordan are making their first-ever World Cup appearance, having qualified through the AFC. The Nashama — meaning "brave ones" — are a disciplined, well-organised side that reached the final of the 2023 Asian Cup. Musa Al-Taamari is their most creative player, and the team will draw on enormous national pride.',
   },
   // Group K
   {
@@ -494,9 +536,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CO',
     fifaRank: 9,
     group: 'K',
-    color: 'fcd116', // yellow
+    color: 'fcd116',
     altColor: '003087',
-    textColor: '003087', // navy on yellow
+    textColor: '003087',
+    bio: "Los Cafeteros are one of South America's most exciting teams, playing fast, attacking football with flair. Luis Díaz — Liverpool's electric winger — is their standout player, while James Rodríguez continues to pull the strings in midfield. Colombia reached the Copa América final in 2024 and are a genuine dark horse.",
   },
   {
     id: '482',
@@ -505,9 +548,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'PT',
     fifaRank: 6,
     group: 'K',
-    color: '006600', // green
+    color: '006600',
     altColor: 'ff0000',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: 'Portugal have never won the World Cup but possess one of the most talented squads in the tournament. Cristiano Ronaldo — the all-time top scorer in international football — leads the attack, while Bruno Fernandes and Bernardo Silva provide world-class quality in midfield. Portugal play attractive, attacking football.',
   },
   {
     id: '2570',
@@ -516,9 +560,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'UZ',
     fifaRank: 69,
     group: 'K',
-    color: '1eb53a', // green
+    color: '1eb53a',
     altColor: 'ffffff',
-    textColor: 'ffffff', // white on green
+    textColor: 'ffffff',
+    bio: "Uzbekistan are making their first World Cup appearance, a historic milestone for Central Asian football. The White Wolves qualified through the AFC and have been one of Asia's most improved sides in recent years. Eldor Shomurodov — who plays in Serie A — is their most dangerous attacker.",
   },
   {
     id: '2850',
@@ -527,9 +572,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'CD',
     fifaRank: 55,
     group: 'K',
-    color: '007fff', // blue
+    color: '007fff',
     altColor: 'f7d618',
-    textColor: 'f7d618', // yellow on blue
+    textColor: 'f7d618',
+    bio: 'The Leopards of DR Congo are making their first World Cup appearance since 1974, when they were known as Zaire. A physically imposing side with pace throughout, Congo DR qualified through a competitive AFCON campaign. Chancel Mbemba provides experience at the back, and the team plays with intensity and directness.',
   },
   // Group L
   {
@@ -539,9 +585,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'GB-ENG',
     fifaRank: 8,
     group: 'L',
-    color: 'ffffff', // white
+    color: 'ffffff',
     altColor: 'cf081f',
-    textColor: 'cf081f', // red on white
+    textColor: 'cf081f',
+    bio: "England reached the final of Euro 2024 and are desperate to end their 60-year wait for a major trophy. Jude Bellingham — one of the most complete midfielders in the world — is the heartbeat of the team, while Harry Kane's goalscoring record is extraordinary. England have the squad depth to win the tournament.",
   },
   {
     id: '477',
@@ -550,9 +597,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'HR',
     fifaRank: 10,
     group: 'L',
-    color: 'ff0000', // red
+    color: 'ff0000',
     altColor: '0000ff',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Croatia are one of the great overachievers in World Cup history — runners-up in 2018 and third place in 2022. Luka Modrić, widely regarded as one of the greatest midfielders of all time, continues to defy age and lead by example. Ivan Perišić and Mateo Kovačić provide quality throughout the squad.',
   },
   {
     id: '2659',
@@ -561,9 +609,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'PA',
     fifaRank: 79,
     group: 'L',
-    color: 'da121a', // red
+    color: 'da121a',
     altColor: '005293',
-    textColor: 'ffffff', // white on red
+    textColor: 'ffffff',
+    bio: 'Panama are making their second World Cup appearance, having debuted memorably in 2018. Los Canaleros are a physical, well-organised side that qualified through CONCACAF with grit and determination. Rolando Blackburn provides pace and goals up front, and Panama will be difficult to beat for any opponent.',
   },
   {
     id: '4469',
@@ -572,9 +621,10 @@ export const WC_TEAMS: WCTeam[] = [
     iso2: 'GH',
     fifaRank: 66,
     group: 'L',
-    color: '006b3f', // green
+    color: '006b3f',
     altColor: 'fcd116',
-    textColor: 'fcd116', // gold on green
+    textColor: 'fcd116',
+    bio: "The Black Stars are one of Africa's most storied World Cup nations, famously reaching the quarter-finals in 2010. Mohammed Kudus — Ajax's dynamic attacking midfielder — is their most exciting player, capable of producing moments of brilliance. Ghana play with energy and flair and are always capable of an upset.",
   },
 ]
 

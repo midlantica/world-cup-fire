@@ -1,0 +1,160 @@
+{
+  "teamId": "206",
+  "teamName": "Canada",
+  "matchId": "401856639",
+  "matchDate": "2026-04-01T01:00Z",
+  "opponentName": "Tunisia",
+  "players": [
+    {
+      "name": "Maxime Crépeau",
+      "position": "G",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Ralph Priso-Mbongue",
+      "position": "CD-L",
+      "jersey": "3",
+      "starter": true
+    },
+    {
+      "name": "Joel Waterman",
+      "position": "CD-R",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Richie Laryea",
+      "position": "LB",
+      "jersey": "22",
+      "starter": true
+    },
+    {
+      "name": "Niko Sigur",
+      "position": "RB",
+      "jersey": "23",
+      "starter": true
+    },
+    {
+      "name": "Nathan Saliba",
+      "position": "CM-L",
+      "jersey": "19",
+      "starter": true
+    },
+    {
+      "name": "Ismaël Koné",
+      "position": "CM-R",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Marcelo Flores",
+      "position": "LM",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Liam Millar",
+      "position": "RM",
+      "jersey": "11",
+      "starter": true
+    },
+    {
+      "name": "Tani Oluwaseyi",
+      "position": "CF-L",
+      "jersey": "12",
+      "starter": true
+    },
+    {
+      "name": "Jonathan David",
+      "position": "CF-R",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Junior Hoilett",
+      "position": "SUB",
+      "jersey": "10",
+      "starter": false
+    },
+    {
+      "name": "Ali Ahmed",
+      "position": "SUB",
+      "jersey": "20",
+      "starter": false
+    },
+    {
+      "name": "Daniel Jebbison",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Jonathan Osorio",
+      "position": "SUB",
+      "jersey": "21",
+      "starter": false
+    },
+    {
+      "name": "Luc Rollet",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Kamal Miller",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    },
+    {
+      "name": "Derek Cornelius",
+      "position": "SUB",
+      "jersey": "13",
+      "starter": false
+    },
+    {
+      "name": "Jahkeele Marshall-Rutty",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Mathieu Choinière",
+      "position": "SUB",
+      "jersey": "6",
+      "starter": false
+    },
+    {
+      "name": "Jacen Russell-Rowe",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Dayne St. Clair",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Cyle Larin",
+      "position": "SUB",
+      "jersey": "9",
+      "starter": false
+    },
+    {
+      "name": "Aribim Pepple",
+      "position": "SUB",
+      "jersey": "14",
+      "starter": false
+    },
+    {
+      "name": "Owen Goodman",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:35.497Z"
+}

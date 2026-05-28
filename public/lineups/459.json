@@ -1,0 +1,160 @@
+{
+  "teamId": "459",
+  "teamName": "Belgium",
+  "matchId": "762264",
+  "matchDate": "2026-04-01T01:00Z",
+  "opponentName": "Mexico",
+  "players": [
+    {
+      "name": "Matz Sels",
+      "position": "G",
+      "jersey": "13",
+      "starter": true
+    },
+    {
+      "name": "Nathan Ngoy",
+      "position": "CD-L",
+      "jersey": "20",
+      "starter": true
+    },
+    {
+      "name": "Koni De Winter",
+      "position": "CD-R",
+      "jersey": "16",
+      "starter": true
+    },
+    {
+      "name": "Maxim De Cuyper",
+      "position": "LB",
+      "jersey": "5",
+      "starter": true
+    },
+    {
+      "name": "Timothy Castagne",
+      "position": "RB",
+      "jersey": "21",
+      "starter": true
+    },
+    {
+      "name": "Kevin De Bruyne",
+      "position": "AM",
+      "jersey": "7",
+      "starter": true
+    },
+    {
+      "name": "Axel Witsel",
+      "position": "LM",
+      "jersey": "6",
+      "starter": true
+    },
+    {
+      "name": "Youri Tielemans",
+      "position": "RM",
+      "jersey": "8",
+      "starter": true
+    },
+    {
+      "name": "Loïs Openda",
+      "position": "F",
+      "jersey": "9",
+      "starter": true
+    },
+    {
+      "name": "Mika Godts",
+      "position": "AM-L",
+      "jersey": "26",
+      "starter": true
+    },
+    {
+      "name": "Dodi Lukebakio",
+      "position": "AM-R",
+      "jersey": "14",
+      "starter": true
+    },
+    {
+      "name": "Thomas Meunier",
+      "position": "SUB",
+      "jersey": "15",
+      "starter": false
+    },
+    {
+      "name": "Amadou Onana",
+      "position": "SUB",
+      "jersey": "24",
+      "starter": false
+    },
+    {
+      "name": "Lucas Stassin",
+      "position": "SUB",
+      "jersey": "19",
+      "starter": false
+    },
+    {
+      "name": "Alexis Saelemaekers",
+      "position": "SUB",
+      "jersey": "22",
+      "starter": false
+    },
+    {
+      "name": "Jérémy Doku",
+      "position": "SUB",
+      "jersey": "11",
+      "starter": false
+    },
+    {
+      "name": "Nicolas Raskin",
+      "position": "SUB",
+      "jersey": "23",
+      "starter": false
+    },
+    {
+      "name": "Maarten Vandevoordt",
+      "position": "SUB",
+      "jersey": "12",
+      "starter": false
+    },
+    {
+      "name": "Senne Lammens",
+      "position": "SUB",
+      "jersey": "1",
+      "starter": false
+    },
+    {
+      "name": "Nathan De Cat",
+      "position": "SUB",
+      "jersey": "25",
+      "starter": false
+    },
+    {
+      "name": "Joaquin Seys",
+      "position": "SUB",
+      "jersey": "18",
+      "starter": false
+    },
+    {
+      "name": "Zeno Debast",
+      "position": "SUB",
+      "jersey": "2",
+      "starter": false
+    },
+    {
+      "name": "Charles De Ketelaere",
+      "position": "SUB",
+      "jersey": "17",
+      "starter": false
+    },
+    {
+      "name": "Arthur Theate",
+      "position": "SUB",
+      "jersey": "3",
+      "starter": false
+    },
+    {
+      "name": "Brandon Mechele",
+      "position": "SUB",
+      "jersey": "4",
+      "starter": false
+    }
+  ],
+  "fetchedAt": "2026-05-28T07:59:43.742Z"
+}
