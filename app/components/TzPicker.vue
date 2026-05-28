@@ -31,15 +31,8 @@
       aria-label="Select time zone"
       @click.stop="open = !open"
     >
-      <span class="tz-picker-label">TZ:</span>
-      <span class="tz-picker-code">{{ selectedTz }}</span>
-    </button>
-    <button
-      class="tz-picker-caret-btn"
-      aria-label="Change time zone"
-      @click.stop="open = !open"
-    >
-      <span class="tz-picker-caret">▾</span>
+      <span class="tz-picker-label">TZ: {{ selectedTz }}</span>
+      <span class="tz-picker-caret">▼</span>
     </button>
     <div v-if="open" class="tz-dropdown">
       <button
@@ -60,91 +53,76 @@
     position: relative;
     display: flex;
     align-items: stretch;
-    gap: 1px;
     flex-shrink: 0;
   }
 
+  /* Single unified pill button — matches My Nation button style */
   .tz-picker-btn {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.3rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.3rem 0 0 0.3rem;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 10px;
     border: none;
-    background: var(--color-theme-900);
+    background: linear-gradient(
+      180deg,
+      rgba(62, 58, 54, 1) 0%,
+      rgba(40, 35, 34, 1) 100%
+    );
     cursor: pointer;
     transition: background 0.15s;
     white-space: nowrap;
+    color: #f3f3f3;
   }
 
   .tz-picker-btn:hover {
-    background: color-mix(in oklab, var(--color-theme-900) 80%, white);
+    background: linear-gradient(
+      180deg,
+      rgba(72, 68, 64, 1) 0%,
+      rgba(50, 45, 44, 1) 100%
+    );
+    color: #ffffff;
   }
 
   .tz-picker-label {
-    font-family: var(--font-condensed);
-    font-size: 0.75rem;
-    font-weight: 400;
-    letter-spacing: 0.04em;
+    font-family: 'Anybody', sans-serif;
+    font-weight: 500;
+    font-size: 1.009rem;
+    line-height: 22.54px;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--color-theme-200);
     white-space: nowrap;
   }
 
-  .tz-picker-code {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--color-theme-300);
-  }
-
-  .tz-picker-caret-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.2rem 0.3rem;
-    border-radius: 0 0.3rem 0.3rem 0;
-    border: none;
-    background: var(--color-theme-900);
-    cursor: pointer;
-    transition: background 0.15s;
-    flex-shrink: 0;
-  }
-
-  .tz-picker-caret-btn:hover {
-    background: color-mix(in oklab, var(--color-theme-900) 80%, white);
-  }
-
   .tz-picker-caret {
-    font-size: 1.1rem;
-    color: var(--color-theme-400);
-    line-height: 1;
-    margin-top: -0.1rem;
+    font-size: 0.5rem;
+    opacity: 0.7;
+    margin-left: 0.1rem;
   }
 
   .tz-dropdown {
     position: absolute;
     top: calc(100% + 0.25rem);
-    right: 0;
+    left: 0;
     z-index: 200;
-    background: oklch(18% 0.025 260);
-    border: 1px solid var(--color-theme-800);
-    border-radius: 0.4rem;
-    box-shadow: 0 6px 18px oklab(0% 0 0 / 0.5);
+    background: #1a1817;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    min-width: 2.8rem;
+    min-width: 5rem;
   }
 
   .tz-option {
     display: block;
     width: 100%;
     text-align: center;
-    padding: 0.25rem 0rem;
-    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    color: oklab(80% 0 0);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -155,16 +133,16 @@
   }
 
   .tz-option + .tz-option {
-    border-top: 1px solid oklab(100% 0 0 / 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .tz-option:hover {
-    background: var(--color-theme-900);
-    color: var(--color-theme-300);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
   }
 
   .tz-option.selected {
-    color: var(--color-theme-400);
-    background: var(--color-theme-950);
+    color: #f3f3f3;
+    background: rgba(255, 255, 255, 0.12);
   }
 </style>

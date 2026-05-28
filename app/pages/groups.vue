@@ -19,15 +19,11 @@
 <template>
   <div class="groups-page">
     <div class="groups-page__inner">
-      <h1 class="groups-page__title">
-        <span>Group Stage</span>
-        <span class="groups-page__subtitle">2026 FIFA World Cup</span>
-      </h1>
-
       <GroupsSection @select-group="onSelectGroup" />
     </div>
 
     <MyNationModal />
+    <CountryDetailModal />
   </div>
 </template>
 
@@ -38,7 +34,8 @@
   }
 
   .groups-page__inner {
-    @apply mx-auto max-w-7xl space-y-6 px-4 py-6;
+    @apply mx-auto max-w-7xl;
+    padding: 1rem 1rem 2rem;
   }
 
   .groups-page__title {

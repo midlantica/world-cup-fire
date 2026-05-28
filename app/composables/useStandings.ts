@@ -3,6 +3,7 @@ import { TEAM_BY_NAME } from '../constants/worldcup'
 export interface StandingEntry {
   rank: number
   teamName: string
+  shortName: string
   iso2: string
   abbrev: string
   color: string
@@ -42,6 +43,7 @@ function normaliseGroup(raw: any): GroupStanding {
       return {
         rank: idx + 1,
         teamName,
+        shortName: teamData?.shortName ?? teamData?.name ?? teamName,
         iso2: teamData?.iso2 ?? '',
         abbrev: teamData?.abbrev ?? teamName.slice(0, 3).toUpperCase(),
         color: teamData?.color ?? '888888',

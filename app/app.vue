@@ -1,4 +1,7 @@
 <script setup lang="ts">
+  import { useMatchDetail } from '~/composables/useMatchDetail'
+  const { modalOpen } = useMatchDetail()
+
   useHead({
     titleTemplate: (title) =>
       title ? title : 'World Cup Fire 🔥 — 2026 FIFA World Cup',
@@ -18,7 +21,7 @@
 </script>
 
 <template>
-  <div class="app-root">
+  <div class="app-root" :class="{ 'modal-blurred': modalOpen }">
     <AppHeader />
     <NuxtPage />
     <AppFooter />
@@ -29,6 +32,11 @@
   @reference "~/assets/css/main.css";
   .app-root {
     @apply min-h-screen text-white;
-    background-color: #000;
+    background-color: #0c0a09; /* stone-950 */
+    transition: filter 0.2s ease;
+  }
+
+  .app-root.modal-blurred {
+    filter: blur(2px);
   }
 </style>

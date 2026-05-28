@@ -1,14 +1,22 @@
 <script setup lang="ts">
   import { useStandings } from '../composables/useStandings'
+  import { useCountryDetail } from '../composables/useCountryDetail'
 
   const { groups, pending } = useStandings()
+  const { openCountry } = useCountryDetail()
 
   const emit = defineEmits<{ (e: 'select-group', letter: string): void }>()
 </script>
 
 <template>
   <section class="groups-section">
-    <h2 class="groups-section__title">Group Stage</h2>
+    <div class="groups-section__heading">
+      <h2 class="groups-section__title">Groups</h2>
+      <p class="groups-section__qualify-note">
+        <span class="groups-section__qualify-dot" />
+        Top 2 advance to Round of 32
+      </p>
+    </div>
 
     <div v-if="pending" class="groups-section__loading">
       <div class="groups-section__spinner" />
@@ -22,19 +30,27 @@
         @click="emit('select-group', group.letter)"
       >
         <div class="group-card__header">
-          <span class="group-card__letter">{{ group.letter }}</span>
           <span class="group-card__label">Group {{ group.letter }}</span>
         </div>
 
         <table class="group-card__table">
+          <colgroup>
+            <col class="group-card__col--team" />
+            <col class="group-card__col--stat" />
+            <col class="group-card__col--stat" />
+            <col class="group-card__col--stat" />
+            <col class="group-card__col--stat" />
+            <col class="group-card__col--gd" />
+            <col class="group-card__col--pts" />
+          </colgroup>
           <thead>
             <tr>
               <th class="group-card__th group-card__th--team">Team</th>
-              <th class="group-card__th">P</th>
-              <th class="group-card__th">W</th>
-              <th class="group-card__th">D</th>
-              <th class="group-card__th">L</th>
-              <th class="group-card__th">GD</th>
+              <th class="group-card__th group-card__th--stat">P</th>
+              <th class="group-card__th group-card__th--stat">W</th>
+              <th class="group-card__th group-card__th--stat">D</th>
+              <th class="group-card__th group-card__th--stat">L</th>
+              <th class="group-card__th group-card__th--stat">GD</th>
               <th class="group-card__th group-card__th--pts">Pts</th>
             </tr>
           </thead>
@@ -47,13 +63,25 @@
             >
               <td class="group-card__td group-card__td--team">
                 <CountryFlag :iso2="entry.iso2" :size="20" class="shrink-0" />
-                <span class="group-card__team-name">{{ entry.abbrev }}</span>
+                <span
+                  class="group-card__team-name group-card__team-name--link"
+                  @click.stop="openCountry(entry.teamName)"
+                  >{{ entry.shortName }}</span
+                >
               </td>
-              <td class="group-card__td">{{ entry.played }}</td>
-              <td class="group-card__td">{{ entry.wins }}</td>
-              <td class="group-card__td">{{ entry.draws }}</td>
-              <td class="group-card__td">{{ entry.losses }}</td>
-              <td class="group-card__td">
+              <td class="group-card__td group-card__td--stat">
+                {{ entry.played }}
+              </td>
+              <td class="group-card__td group-card__td--stat">
+                {{ entry.wins }}
+              </td>
+              <td class="group-card__td group-card__td--stat">
+                {{ entry.draws }}
+              </td>
+              <td class="group-card__td group-card__td--stat">
+                {{ entry.losses }}
+              </td>
+              <td class="group-card__td group-card__td--stat">
                 {{ entry.goalDiff > 0 ? '+' : '' }}{{ entry.goalDiff }}
               </td>
               <td class="group-card__td group-card__td--pts">
@@ -70,11 +98,24 @@
 <style scoped>
   @reference "~/assets/css/main.css";
   .groups-section {
-    @apply space-y-4;
+    @apply space-y-2;
+  }
+
+  .groups-section__heading {
+    @apply flex items-baseline gap-3;
   }
 
   .groups-section__title {
-    @apply text-lg font-bold text-white/80;
+    @apply py-0 text-lg font-bold text-white/80;
+    @apply font-anybody-semi;
+  }
+
+  .groups-section__qualify-note {
+    @apply flex items-center gap-1.5 text-xs text-white/40;
+  }
+
+  .groups-section__qualify-dot {
+    @apply inline-block h-2 w-2 flex-shrink-0 rounded-sm bg-emerald-500/60;
   }
 
   .groups-section__loading {
@@ -91,34 +132,81 @@
 
   .group-card {
     @apply cursor-pointer rounded-xl border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10;
+    padding-bottom: 0.5rem;
   }
 
   .group-card__header {
-    @apply mb-2 flex items-center gap-2;
+    @apply flex items-center gap-2 overflow-hidden rounded-t-xl;
+    padding-inline: 0.7rem;
+    padding-block: 0.4rem 0.25rem;
+    background: linear-gradient(
+      180deg,
+      rgb(0 0 0 / 0.45) 0%,
+      rgb(0 0 0 / 0.1) 100%
+    );
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    margin: -0.75rem -0.75rem 0.5rem;
   }
 
   .group-card__letter {
-    @apply flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-sm font-black text-white;
+    @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-black text-white;
   }
 
   .group-card__label {
-    @apply text-xs font-bold tracking-wider text-white/50 uppercase;
+    @apply font-bold;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: color-mix(in oklab, #fff 90%, transparent);
+    @apply font-anybody-bold;
   }
 
   .group-card__table {
     @apply w-full text-xs;
+    table-layout: fixed;
+  }
+
+  /* Column widths — team col fills remaining space, stats are fixed narrow */
+  .group-card__col--team {
+    /* fills remaining width */
+  }
+
+  .group-card__col--stat {
+    width: 1.5rem;
+  }
+
+  .group-card__col--gd {
+    width: 2rem;
+  }
+
+  .group-card__col--pts {
+    width: 1.75rem;
   }
 
   .group-card__th {
-    @apply pb-1 text-right font-semibold text-white/30;
+    padding-top: 0;
+    padding-bottom: 0.3rem;
+    text-align: center;
+    color: rgb(255 255 255 / 0.7);
+    @apply font-semibold;
+    line-height: 1;
+    vertical-align: bottom;
   }
 
   .group-card__th--team {
     @apply text-left;
+    width: 99%;
+    padding-right: 0.75rem;
+  }
+
+  .group-card__th--stat {
+    text-align: center;
   }
 
   .group-card__th--pts {
-    @apply font-black text-white/50;
+    text-align: right;
+    @apply font-black;
+    color: rgb(255 255 255 / 0.65);
+    @apply font-anybody-semi;
   }
 
   .group-card__row {
@@ -126,22 +214,43 @@
   }
 
   .group-card__row--qualify {
-    @apply bg-emerald-950/20;
+    @apply bg-emerald-900/25;
   }
 
   .group-card__td {
-    @apply py-1 text-right text-white/70;
+    @apply py-1 tabular-nums;
+    text-align: center;
+    color: rgb(255 255 255 / 0.7);
   }
 
   .group-card__td--team {
-    @apply flex items-center gap-1.5 text-left;
+    @apply flex min-w-0 items-center gap-1.5 text-left;
+    padding-right: 0.75rem;
+  }
+
+  .group-card__td--stat {
+    text-align: center;
   }
 
   .group-card__td--pts {
+    text-align: right;
     @apply font-black text-white;
+    @apply font-anybody-semi;
   }
 
   .group-card__team-name {
-    @apply font-semibold text-white;
+    @apply min-w-0 truncate font-semibold text-white;
+  }
+
+  .group-card__team-name--link {
+    cursor: pointer;
+    border-radius: 0.15rem;
+    transition: opacity 0.12s;
+  }
+
+  .group-card__team-name--link:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgb(255 255 255 / 0.4);
   }
 </style>

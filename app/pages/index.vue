@@ -23,6 +23,7 @@
     <!-- Modals -->
     <GameDetailModal />
     <MyNationModal />
+    <CountryDetailModal />
   </div>
 </template>
 
@@ -30,10 +31,11 @@
   @reference "~/assets/css/main.css";
   .home-page {
     @apply min-h-screen;
+    margin-top: 1rem;
   }
 
   .home-page__inner {
-    @apply mx-auto max-w-7xl px-4;
+    @apply mx-auto max-w-7xl px-3;
     padding-top: 0;
     padding-bottom: 2rem;
   }

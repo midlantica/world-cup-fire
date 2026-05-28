@@ -42,8 +42,12 @@
 <template>
   <span
     class="inline-flex shrink-0 overflow-hidden"
-    :class="rounded ? 'rounded-full' : 'rounded-sm'"
-    :style="{ width: `${size}px`, height: `${Math.round(size * 0.667)}px` }"
+    :class="rounded ? 'rounded-sm' : 'rounded-xs'"
+    :style="{
+      width: `${size}px`,
+      height: `${Math.round(size * 0.667)}px`,
+      border: '1px solid #ffffff2b',
+    }"
   >
     <img
       v-if="svgUrl && !imgError"

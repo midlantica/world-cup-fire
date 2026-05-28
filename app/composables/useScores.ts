@@ -2,8 +2,6 @@ import {
   TEAM_BY_NAME,
   RIVALRY_PAIRS,
   WC_START,
-  WC_GROUP_END,
-  WC_KNOCKOUT_START,
   WC_FINAL,
 } from '../constants/worldcup'
 import { useTimezone } from './useTimezone'
@@ -19,12 +17,14 @@ export interface Match {
   id: string
   date: string
   home: string
+  homeShort: string
   homeScore: string | null
   homeColor: string
   homeAltColor: string
   homeIso2: string
   homeAbbrev: string
   away: string
+  awayShort: string
   awayScore: string | null
   awayColor: string
   awayAltColor: string
@@ -41,15 +41,24 @@ export interface Match {
 // Tournament week definitions
 // ---------------------------------------------------------------------------
 
-export type WeekTab = 'week1' | 'week2' | 'week3' | 'week4' | 'knockout'
+export type WeekTab = 'week1' | 'week2' | 'week3' | 'week4' | 'week5' | 'week6'
+
+export type Stage = 'group' | 'knockout'
 
 export interface TabDef {
   key: WeekTab
   label: string
-  /** Short date range label, e.g. "Jun 11 – Jun 17" */
+  /** Short date range label shown under the week label */
   dateRange: string
   start: Date
   end: Date
+  stage: Stage
+}
+
+/** Parse a YYYY-MM-DD string as a local midnight Date (avoids UTC offset issues) */
+function parseDate(s: string): Date {
+  const parts = s.split('-').map(Number)
+  return new Date(parts[0]!, parts[1]! - 1, parts[2]!)
 }
 
 /** Format a Date as "Mon D" (e.g. "Jun 11") */
@@ -57,32 +66,32 @@ function fmtDate(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-/** Add N days to a date (returns new Date) */
-function addDays(d: Date, n: number): Date {
-  const r = new Date(d)
-  r.setDate(r.getDate() + n)
-  return r
-}
+// ---------------------------------------------------------------------------
+// Week boundaries (Mon–Sun, except Week 1 starts on the first match day)
+//
+//  Group Stage
+//   Week 1: Thurs Jun 11 – Sun Jun 14
+//   Week 2: Mon  Jun 15 – Sun Jun 21
+//   Week 3: Mon  Jun 22 – Sat Jun 27   (group stage ends Sat Jun 27)
+//
+//  Knockout Stage
+//   Week 4: Sun  Jun 28 – Sun Jul  5
+//   Week 5: Mon  Jul  6 – Sun Jul 12
+//   Week 6: Mon  Jul 13 – Sun Jul 19   (Final Jul 19)
+// ---------------------------------------------------------------------------
 
-// WC 2026 group stage: Jun 11 – Jul 2 (22 days = ~3.1 weeks)
-// We split into 4 roughly equal chunks:
-//   Week 1: Jun 11 – Jun 17  (days 0–6)
-//   Week 2: Jun 18 – Jun 24  (days 7–13)
-//   Week 3: Jun 25 – Jul 1   (days 14–20)
-//   Week 4: Jul 2            (day 21 — final group stage day)
-// Knockout: Jul 4 – Jul 19
-
-// Named date constants to avoid array-index undefined issues
-const W1S = WC_START
-const W1E = addDays(WC_START, 6)
-const W2S = addDays(WC_START, 7)
-const W2E = addDays(WC_START, 13)
-const W3S = addDays(WC_START, 14)
-const W3E = addDays(WC_START, 20)
-const W4S = addDays(WC_START, 21)
-const W4E = WC_GROUP_END
-const KOS = WC_KNOCKOUT_START
-const KOE = WC_FINAL
+const W1S = parseDate('2026-06-11')
+const W1E = parseDate('2026-06-14')
+const W2S = parseDate('2026-06-15')
+const W2E = parseDate('2026-06-21')
+const W3S = parseDate('2026-06-22')
+const W3E = parseDate('2026-06-27')
+const W4S = parseDate('2026-06-28')
+const W4E = parseDate('2026-07-05')
+const W5S = parseDate('2026-07-06')
+const W5E = parseDate('2026-07-12')
+const W6S = parseDate('2026-07-13')
+const W6E = WC_FINAL
 
 export const WC_TABS: TabDef[] = [
   {
@@ -91,6 +100,7 @@ export const WC_TABS: TabDef[] = [
     dateRange: `${fmtDate(W1S)} – ${fmtDate(W1E)}`,
     start: W1S,
     end: W1E,
+    stage: 'group',
   },
   {
     key: 'week2',
@@ -98,6 +108,7 @@ export const WC_TABS: TabDef[] = [
     dateRange: `${fmtDate(W2S)} – ${fmtDate(W2E)}`,
     start: W2S,
     end: W2E,
+    stage: 'group',
   },
   {
     key: 'week3',
@@ -105,6 +116,7 @@ export const WC_TABS: TabDef[] = [
     dateRange: `${fmtDate(W3S)} – ${fmtDate(W3E)}`,
     start: W3S,
     end: W3E,
+    stage: 'group',
   },
   {
     key: 'week4',
@@ -112,13 +124,23 @@ export const WC_TABS: TabDef[] = [
     dateRange: `${fmtDate(W4S)} – ${fmtDate(W4E)}`,
     start: W4S,
     end: W4E,
+    stage: 'knockout',
   },
   {
-    key: 'knockout',
-    label: 'Knockout',
-    dateRange: `${fmtDate(KOS)} – ${fmtDate(KOE)}`,
-    start: KOS,
-    end: KOE,
+    key: 'week5',
+    label: 'Week 5',
+    dateRange: `${fmtDate(W5S)} – ${fmtDate(W5E)}`,
+    start: W5S,
+    end: W5E,
+    stage: 'knockout',
+  },
+  {
+    key: 'week6',
+    label: 'Week 6',
+    dateRange: `${fmtDate(W6S)} – ${fmtDate(W6E)}`,
+    start: W6S,
+    end: W6E,
+    stage: 'knockout',
   },
 ]
 
@@ -126,17 +148,15 @@ export const WC_TABS: TabDef[] = [
  * Determine the default tab:
  * - If today is within a WC week, return that week's tab
  * - If WC hasn't started yet, return 'week1'
- * - If WC is over, return 'knockout'
+ * - If WC is over, return 'week6'
  */
 function defaultTab(): WeekTab {
   const now = new Date()
   for (const tab of WC_TABS) {
     if (now >= tab.start && now <= tab.end) return tab.key
   }
-  // Before tournament starts
   if (now < WC_START) return 'week1'
-  // After tournament ends
-  return 'knockout'
+  return 'week6'
 }
 
 // ---------------------------------------------------------------------------
@@ -234,12 +254,14 @@ function normaliseEvent(ev: any): Match {
     id: String(ev.id ?? ''),
     date: String(ev.date ?? ''),
     home: homeName,
+    homeShort: homeData?.shortName ?? homeData?.name ?? homeName,
     homeScore,
     homeColor: homeData?.color ?? '888888',
     homeAltColor: homeData?.altColor ?? 'ffffff',
     homeIso2: homeData?.iso2 ?? '',
     homeAbbrev: homeData?.abbrev ?? homeName.slice(0, 3).toUpperCase(),
     away: awayName,
+    awayShort: awayData?.shortName ?? awayData?.name ?? awayName,
     awayScore,
     awayColor: awayData?.color ?? '888888',
     awayAltColor: awayData?.altColor ?? 'ffffff',
@@ -297,10 +319,9 @@ export function useScores() {
   const matchesByDay = computed(() => {
     const groups = new Map<string, Match[]>()
     for (const m of matches.value) {
-      // Use the local date in the selected timezone, not the raw UTC date
       const day = new Date(m.date).toLocaleDateString('en-CA', {
         timeZone: iana.value,
-      }) // 'en-CA' gives YYYY-MM-DD format
+      })
       if (!groups.has(day)) groups.set(day, [])
       groups.get(day)!.push(m)
     }

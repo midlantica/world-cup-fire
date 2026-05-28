@@ -1,8 +1,11 @@
 <script setup lang="ts">
-  import { useScores, WC_TABS } from '../composables/useScores'
+  import { useScores } from '../composables/useScores'
   import { useMatchDetail } from '../composables/useMatchDetail'
-  const { activeTab, matches, matchesByDay, pending, error } = useScores()
+  import { useCountryDetail } from '../composables/useCountryDetail'
+
+  const { matches, matchesByDay, pending, error } = useScores()
   const { openMatch } = useMatchDetail()
+  const { openCountry } = useCountryDetail()
 
   function formatDayHeader(day: string): string {
     // day is already YYYY-MM-DD in the selected timezone — parse at noon UTC
@@ -28,20 +31,6 @@
 
 <template>
   <section class="scores-section">
-    <!-- Tab bar -->
-    <div class="scores-section__tabs">
-      <button
-        v-for="tab in WC_TABS"
-        :key="tab.key"
-        class="scores-section__tab"
-        :class="{ 'scores-section__tab--active': activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        <span class="scores-section__tab-label">{{ tab.label }}</span>
-        <span class="scores-section__tab-dates">{{ tab.dateRange }}</span>
-      </button>
-    </div>
-
     <!-- Loading -->
     <div v-if="pending" class="scores-section__loading">
       <div class="scores-section__spinner" />
@@ -97,6 +86,7 @@
               :key="match.id"
               :match="match"
               @click="openMatch(match)"
+              @click-country="openCountry"
             />
           </div>
         </div>
@@ -108,55 +98,6 @@
 
 <style scoped>
   @reference "~/assets/css/main.css";
-  .scores-section {
-    /* space-y handled per-section; tab bar controls its own bottom margin */
-  }
-
-  /* ── Tab bar — hangs from the sticky header ──────────────────────────────── */
-  .scores-section__tabs {
-    @apply flex gap-1 overflow-x-auto;
-    border-radius: 0.75rem;
-    margin: 0.75rem 0;
-    scrollbar-width: none;
-    position: sticky;
-    top: 57px;
-    z-index: 30;
-    background-color: #111;
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
-    padding: 0.3rem 0.5rem 0.25rem;
-  }
-
-  .scores-section__tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .scores-section__tab {
-    @apply flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-3 py-2 text-center transition-all;
-    @apply text-white/50 hover:text-white/80;
-    /* prevent tabs from getting too narrow on mobile */
-    min-width: 5rem;
-  }
-
-  .scores-section__tab--active {
-    @apply bg-white/15 text-white shadow;
-  }
-
-  .scores-section__tab-label {
-    @apply leading-tight font-semibold;
-    font-size: 1rem;
-    text-transform: uppercase;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 600;
-  }
-
-  .scores-section__tab-dates {
-    @apply text-xs leading-tight opacity-70;
-    font-variation-settings:
-      'wdth' 87.5,
-      'wght' 300;
-    white-space: nowrap;
-  }
 
   /* ── States ──────────────────────────────────────────────────────────────── */
   .scores-section__loading {
@@ -219,9 +160,8 @@
     font-weight: 700;
     color: rgb(255 255 255 / 0.9);
     letter-spacing: 0.075em;
-    font-variation-settings:
-      'wdth' 110,
-      'wght' 600;
+    text-transform: uppercase;
+    @apply font-anybody-wide;
   }
 
   .scores-section__day-count {

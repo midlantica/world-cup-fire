@@ -2,6 +2,7 @@
   import { useStandings } from '../../composables/useStandings'
   import { useScores } from '../../composables/useScores'
   import { useMatchDetail } from '../../composables/useMatchDetail'
+  import { useCountryDetail } from '../../composables/useCountryDetail'
 
   const route = useRoute()
   const groupLetter = computed(() => String(route.params.id).toUpperCase())
@@ -9,6 +10,7 @@
   const { groupByLetter, pending: standingsPending } = useStandings()
   const { matches, pending: matchesPending } = useScores()
   const { openMatch } = useMatchDetail()
+  const { openCountry } = useCountryDetail()
 
   const group = computed(() => groupByLetter.value.get(groupLetter.value))
 
@@ -27,16 +29,22 @@
 <template>
   <div class="group-page">
     <div class="group-page__inner">
-      <!-- Back -->
-      <NuxtLink to="/groups" class="group-page__back"> ← All Groups </NuxtLink>
+      <!-- Breadcrumb heading -->
+      <h1 class="group-page__title">
+        <NuxtLink to="/groups" class="group-page__breadcrumb-link"
+          >Groups</NuxtLink
+        >
+        <ArrowIcon class="group-page__breadcrumb-arrow" />
+        <span class="group-page__breadcrumb-current"
+          >Group {{ groupLetter }}</span
+        >
+      </h1>
 
       <div v-if="standingsPending" class="group-page__loading">
         <div class="group-page__spinner" />
       </div>
 
       <template v-else-if="group">
-        <h1 class="group-page__title">Group {{ group.letter }}</h1>
-
         <!-- Standings table -->
         <div class="group-page__standings">
           <table class="standings-table">
@@ -70,9 +78,12 @@
                 </td>
                 <td class="standings-table__td standings-table__td--team">
                   <CountryFlag :iso2="entry.iso2" :size="24" />
-                  <span class="standings-table__team-name">{{
-                    entry.teamName
-                  }}</span>
+                  <button
+                    class="standings-table__team-name standings-table__team-name--btn"
+                    @click="openCountry(entry.teamName)"
+                  >
+                    {{ entry.teamName }}
+                  </button>
                 </td>
                 <td class="standings-table__td">{{ entry.played }}</td>
                 <td class="standings-table__td">{{ entry.wins }}</td>
@@ -130,6 +141,7 @@
 
     <GameDetailModal />
     <MyNationModal />
+    <CountryDetailModal />
   </div>
 </template>
 
@@ -140,11 +152,43 @@
   }
 
   .group-page__inner {
-    @apply mx-auto max-w-4xl space-y-6 px-4 py-6;
+    @apply mx-auto max-w-4xl space-y-6;
+    padding: 1rem 1rem 2rem;
   }
 
-  .group-page__back {
-    @apply text-sm font-semibold text-white/50 no-underline transition-colors hover:text-white;
+  .group-page__title {
+    @apply flex items-center text-lg font-bold text-white/80;
+    @apply font-anybody-semi;
+    gap: 0.3em;
+    margin-bottom: 0.5rem;
+  }
+
+  .group-page__breadcrumb-link {
+    @apply text-white/40 no-underline transition-colors hover:text-white/80;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+  }
+
+  .group-page__breadcrumb-arrow {
+    @apply text-white;
+    width: 1.1em;
+    height: 1.1em;
+    flex-shrink: 0;
+  }
+
+  .group-page__breadcrumb-current {
+    @apply text-white;
+    @apply font-anybody-semi;
+    font-size: inherit;
+  }
+
+  .group-page__qualify-inline {
+    @apply flex items-center gap-1.5 text-xs text-white/40;
+  }
+
+  .group-page__qualify-dot-inline {
+    @apply inline-block h-2 w-2 shrink-0 rounded-sm bg-emerald-500/60;
   }
 
   .group-page__loading {
@@ -153,10 +197,6 @@
 
   .group-page__spinner {
     @apply h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/70;
-  }
-
-  .group-page__title {
-    @apply text-3xl font-black text-white;
   }
 
   .group-page__standings {
@@ -188,7 +228,7 @@
   }
 
   .standings-table__row--qualify {
-    @apply bg-emerald-950/20;
+    @apply bg-emerald-900/25;
   }
 
   .standings-table__td {
@@ -208,7 +248,22 @@
   }
 
   .standings-table__team-name {
-    @apply font-semibold text-white;
+    @apply text-white;
+    font-weight: 680;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 680;
+  }
+
+  .standings-table__team-name--btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    font-size: inherit;
+    font-family: inherit;
+    @apply underline-offset-2 transition-all hover:underline;
   }
 
   .group-page__qualify-note {

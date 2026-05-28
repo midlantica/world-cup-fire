@@ -3,7 +3,7 @@
 @plugin '@tailwindcss/typography';
 
 body {
-  background-color: var(--app-bg, #000);
+  background-color: var(--app-bg, #0c0a09);
   transition: background-color 0.4s ease;
 }
 
@@ -34,7 +34,7 @@ body {
 
 /* ── CSS custom properties ─────────────────────────────────────────────────── */
 :root {
-  --app-bg: #000;
+  --app-bg: #0c0a09; /* stone-950 */
   --color-theme-primary: theme(colors.neutral.500);
   --color-theme-on-primary: #ffffff;
   --color-text-accent: theme(colors.neutral.400);
@@ -50,9 +50,12 @@ body {
   --modal-copy-size: 1rem;
 
   /* ── Anybody font-variation defaults ──────────────────────────────────── */
-  --font-anybody-heading: 'wdth' 100, 'wght' 500;
-  --font-anybody-copy: 'wdth' 87.5, 'wght' 300;
-  --font-anybody-logo: 'wdth' 91, 'wght' 900;
+  --font-anybody-heading-wdth: 100;
+  --font-anybody-heading-wght: 500;
+  --font-anybody-copy-wdth: 87.5;
+  --font-anybody-copy-wght: 300;
+  --font-anybody-logo-wdth: 91;
+  --font-anybody-logo-wght: 900;
 }
 
 /* ── Base typography ───────────────────────────────────────────────────────── */
@@ -93,7 +96,7 @@ span {
 }
 
 /* Utility classes for Anybody font variations */
-.font-anybody-heading {
+@utility font-anybody-heading {
   font-family: 'Anybody', sans-serif;
   font-variation-settings:
     'wdth' 100,
@@ -101,7 +104,7 @@ span {
   letter-spacing: 0.06rem;
 }
 
-.font-anybody-copy {
+@utility font-anybody-copy {
   font-family: 'Anybody', sans-serif;
   font-variation-settings:
     'wdth' 87.5,
@@ -109,26 +112,61 @@ span {
   letter-spacing: 0.06rem;
 }
 
-.font-anybody-logo {
+@utility font-anybody-logo {
   font-family: 'Anybody', sans-serif;
   font-variation-settings:
     'wdth' 91,
     'wght' 900;
 }
 
-.font-anybody-bold {
+@utility font-anybody-bold {
   font-family: 'Anybody', sans-serif;
   font-variation-settings:
     'wdth' 100,
     'wght' 700;
 }
 
-.font-anybody-black {
+@utility font-anybody-black {
   font-family: 'Anybody', sans-serif;
   font-variation-settings:
     'wdth' 100,
     'wght' 900;
   letter-spacing: 0.06rem;
+}
+
+@utility font-anybody-semi {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 91,
+    'wght' 700;
+}
+
+@utility font-anybody-medium {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 100,
+    'wght' 600;
+}
+
+@utility font-anybody-nav {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 80,
+    'wght' 600;
+}
+
+@utility font-anybody-narrow {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 70,
+    'wght' 500;
+}
+
+@utility font-anybody-wide {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 110,
+    'wght' 600;
 }
 
 /* Smooth all theme color transitions */

@@ -7,7 +7,10 @@
     showDate?: boolean
   }>()
 
-  const emit = defineEmits<{ (e: 'click', match: Match): void }>()
+  const emit = defineEmits<{
+    (e: 'click', match: Match): void
+    (e: 'click-country', name: string): void
+  }>()
 
   const { formatTimeHtml, iana } = useTimezone()
 
@@ -61,7 +64,7 @@
       <span v-if="match.group" class="match-card__group">
         Group {{ match.group }}
       </span>
-      <span v-else class="match-card__group match-card__group--ko">KO</span>
+      <span v-else class="match-card__group">Knockout Stage</span>
       <span v-if="match.venue" class="match-card__venue">{{
         match.venue
       }}</span>
@@ -81,24 +84,36 @@
       <div class="match-card__teams">
         <!-- Home -->
         <div class="match-card__team">
-          <CountryFlag
-            :iso2="match.homeIso2"
-            :size="22"
-            class="match-card__flag"
-          />
-          <span class="match-card__name">{{ match.home }}</span>
+          <button
+            class="match-card__flag-btn"
+            :title="`View ${match.home}`"
+            @click.stop="emit('click-country', match.home)"
+          >
+            <CountryFlag
+              :iso2="match.homeIso2"
+              :size="22"
+              class="match-card__flag"
+            />
+          </button>
+          <span class="match-card__name">{{ match.homeShort }}</span>
           <span v-if="!isNS" class="match-card__score">{{
             match.homeScore
           }}</span>
         </div>
         <!-- Away -->
         <div class="match-card__team">
-          <CountryFlag
-            :iso2="match.awayIso2"
-            :size="22"
-            class="match-card__flag"
-          />
-          <span class="match-card__name">{{ match.away }}</span>
+          <button
+            class="match-card__flag-btn"
+            :title="`View ${match.away}`"
+            @click.stop="emit('click-country', match.away)"
+          >
+            <CountryFlag
+              :iso2="match.awayIso2"
+              :size="22"
+              class="match-card__flag"
+            />
+          </button>
+          <span class="match-card__name">{{ match.awayShort }}</span>
           <span v-if="!isNS" class="match-card__score">{{
             match.awayScore
           }}</span>
@@ -168,13 +183,7 @@
     padding-block: 0.4rem 0.25rem;
     letter-spacing: 0.1em;
     color: color-mix(in oklab, #fff 60%, transparent);
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 700;
-  }
-
-  .match-card__group--ko {
-    color: color-mix(in oklab, oklch(0.75 0.18 55) 60%, transparent);
+    @apply font-anybody-bold;
   }
 
   .match-card__venue {
@@ -208,22 +217,28 @@
     @apply flex items-center gap-2;
   }
 
+  .match-card__flag-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
   .match-card__flag {
     @apply shrink-0;
   }
 
   .match-card__name {
     @apply min-w-0 flex-1 truncate text-sm font-semibold text-white;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 500;
+    @apply font-anybody-heading;
   }
 
   .match-card__score {
     @apply shrink-0 text-sm font-bold text-white/80 tabular-nums;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 700;
+    @apply font-anybody-bold;
   }
 
   /* ── Time / status block ─────────────────────────────────────────────────── */
@@ -236,9 +251,7 @@
     @apply font-semibold tabular-nums;
     font-size: 1rem;
     color: color-mix(in oklab, #fff 80%, transparent);
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 600;
+    @apply font-anybody-medium;
   }
 
   .match-card__kickoff :deep(.ampm) {
@@ -248,16 +261,12 @@
   .match-card__date-label {
     font-size: 0.9rem;
     color: color-mix(in oklab, #fff 75%, transparent);
-    font-variation-settings:
-      'wdth' 87.5,
-      'wght' 300;
+    @apply font-anybody-copy;
   }
 
   .match-card__status {
     @apply rounded px-2 py-0.5 text-xs font-bold text-white/50 uppercase tabular-nums;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 700;
+    @apply font-anybody-bold;
   }
 
   .match-card__status--live {
