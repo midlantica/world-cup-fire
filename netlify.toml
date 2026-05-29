@@ -1,5 +1,11 @@
+# Nuxt uses the `netlify` nitro preset (see nuxt.config.ts).
+# With this preset Nuxt outputs:
+#   - static assets  -> ./dist            (publish directory)
+#   - SSR + API code -> ./.netlify/functions-internal (Netlify Functions)
+# Package manager (pnpm) is auto-detected from pnpm-lock.yaml.
+
 [build]
-  command = "npm run build"
+  command = "pnpm run build"
   publish = "dist"
 
 [build.environment]
