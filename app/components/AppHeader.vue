@@ -134,6 +134,7 @@
   /* Logo */
   .app-header__brand {
     @apply flex shrink-0 items-center no-underline;
+    flex: 1;
     margin-right: 0.5rem;
   }
 
@@ -144,9 +145,7 @@
 
   /* Nav */
   .app-header__nav {
-    @apply flex items-stretch gap-2;
-    flex: 1;
-    align-self: stretch;
+    @apply flex shrink-0 items-center justify-center gap-2;
   }
 
   .app-header__nav-link {
@@ -198,8 +197,8 @@
 
   /* Right controls group */
   .app-header__controls {
-    @apply flex items-center gap-2;
-    margin-left: auto;
+    @apply flex items-center justify-end gap-2;
+    flex: 1;
   }
 
   /* My Nation button */
@@ -262,7 +261,10 @@
     overflow: hidden;
     background: #1a1817;
     border-radius: 0.75rem;
-    margin: 0 auto 0.75rem;
+    /* Pad off the sides on desktop so the bar isn't edge-to-edge.
+       Keep it centered (auto left/right) within the max-width container. */
+    margin-bottom: 0.75rem;
+    width: calc(100% - 1.5rem);
   }
 
   .app-header__stage-row {

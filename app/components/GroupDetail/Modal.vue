@@ -98,10 +98,87 @@
   const LEAVE_MS = 200
 
   const bodyInner = ref<HTMLElement | null>(null)
+  const headerTitle = ref<HTMLElement | null>(null)
+
+  // The header title renders from this, NOT directly from group.letter, so the
+  // visible letter doesn't change until the title has whizzed off-screen. Kept
+  // in sync with the active group whenever we're not mid-swipe (open / URL nav).
+  const displayedLetter = ref<string>('')
+  watch(
+    [selectedGroupLetter, groupModalOpen],
+    ([letter, open], [prevLetter, prevOpen]) => {
+      // Only auto-sync on open or when there was no previous group to swipe
+      // from; arrow/key swaps update displayedLetter mid-animation instead.
+      const isSwipe = open && prevOpen && prevLetter && letter !== prevLetter
+      if (letter && !isSwipe) displayedLetter.value = letter
+    },
+    { immediate: true }
+  )
+
+  /** Run the same leave→enter "whiz" used by the standings table on any
+   *  element, so it travels in sync. `onSwap` (optional) runs once the element
+   *  is off-screen, right before it whizzes back — use it to swap text/content
+   *  so the change is never seen. Returns immediately (fire-and-forget). */
+  function whizElement(el: HTMLElement, dir: 1 | -1, onSwap?: () => void) {
+    el.style.willChange = 'opacity, transform, filter'
+    const leave = el.animate(
+      [
+        { opacity: 1, transform: 'translateX(0)', filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          transform: `translateX(${-dir * SWIPE}px)`,
+          filter: 'blur(12px)',
+        },
+      ],
+      {
+        duration: LEAVE_MS,
+        easing: 'cubic-bezier(0.55, 0, 0.75, 0.2)',
+        fill: 'forwards',
+      }
+    )
+    leave.onfinish = () => {
+      onSwap?.()
+
+      const enter = el.animate(
+        [
+          {
+            opacity: 0,
+            transform: `translateX(${dir * SWIPE}px)`,
+            filter: 'blur(12px)',
+          },
+          { opacity: 1, transform: 'translateX(0)', filter: 'blur(0px)' },
+        ],
+        {
+          duration: ENTER_MS,
+          easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+          fill: 'forwards',
+        }
+      )
+      enter.onfinish = () => {
+        el.style.willChange = ''
+        el.style.opacity = ''
+        el.style.transform = ''
+        el.style.filter = ''
+      }
+    }
+  }
 
   function playSwipe(dir: 1 | -1) {
     const node = bodyInner.value
     if (!node) return
+
+    // The header "Group {x}" title whizzes in sync with the standings table.
+    // Its letter is only swapped (via displayedLetter) once it's off-screen,
+    // so you never see the new letter on the title before it slides away.
+    const newLetter = selectedGroupLetter.value
+    if (headerTitle.value) {
+      headerTitle.value.getAnimations().forEach((a) => a.cancel())
+      whizElement(headerTitle.value, dir, () => {
+        if (newLetter) displayedLetter.value = newLetter
+      })
+    } else if (newLetter) {
+      displayedLetter.value = newLetter
+    }
 
     // Only the standings table block does the "whiz". The match cards below
     // stay put and re-stagger in afterwards.
@@ -114,6 +191,17 @@
     const matches = node.querySelector<HTMLElement>('.grd-matches')
     if (matches) {
       matches.style.minHeight = `${matches.offsetHeight}px`
+
+      // Cancel any lingering plop animations from a PREVIOUS swipe. Their
+      // `fill: 'both'` effect otherwise keeps opacity:1 latched onto the
+      // title/cards, which would override the reactive `opacity:0` (set via
+      // cardsVisible=false) — making "Matches" fail to disappear and "blink"
+      // on every swipe after the first.
+      matches
+        .querySelectorAll<HTMLElement>(
+          '.grd-section-title, .grd-match-grid > *'
+        )
+        .forEach((el) => el.getAnimations().forEach((a) => a.cancel()))
     }
 
     table.style.willChange = 'opacity, transform, filter'
@@ -165,32 +253,40 @@
         // area kept its locked height the whole time, so nothing jumped.
         cardsVisible.value = true
 
+        // The "Matches" title plops in FIRST, then each card in order.
+        const title = node.querySelector<HTMLElement>('.grd-section-title')
         const cards = node.querySelectorAll<HTMLElement>('.grd-match-grid > *')
-        const perCard = 240
+        const items: HTMLElement[] = [
+          ...(title ? [title] : []),
+          ...Array.from(cards),
+        ]
+        const perItem = 240
         const stagger = 90
-        cards.forEach((card, i) => {
-          const anim = card.animate(
+        items.forEach((item, i) => {
+          const anim = item.animate(
             [
               { opacity: 0, transform: 'translateY(10px) scale(0.96)' },
               { opacity: 1, transform: 'translateY(0) scale(1)' },
             ],
             {
-              duration: perCard,
+              duration: perItem,
               delay: 80 + i * stagger, // deliberate "plop... plop..." cadence
               easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', // slight overshoot pop
-              fill: 'both',
+              fill: 'backwards', // hold opacity:0 during the delay only
             }
           )
-          // Release the height lock once the LAST card has plopped in.
-          if (i === cards.length - 1) {
-            anim.onfinish = () => {
-              if (matches) matches.style.minHeight = ''
-            }
+          // On finish, cancel so NO fill effect lingers — the element reverts
+          // to its natural CSS (cardsVisible=true ⇒ opacity:1). This is what
+          // lets the NEXT swipe's reactive opacity:0 actually hide it again.
+          anim.onfinish = () => {
+            anim.cancel()
+            // Release the height lock once the LAST item has plopped in.
+            if (i === items.length - 1 && matches) matches.style.minHeight = ''
           }
         })
 
-        // Safety: if there are no cards, release the lock immediately.
-        if (cards.length === 0 && matches) matches.style.minHeight = ''
+        // Safety: if there are no items, release the lock immediately.
+        if (items.length === 0 && matches) matches.style.minHeight = ''
       }
     }
   }
@@ -317,7 +413,9 @@
 
               <!-- Title -->
               <div class="grd-header__title-block">
-                <h2 class="grd-header__title">Group {{ group.letter }}</h2>
+                <h2 ref="headerTitle" class="grd-header__title">
+                  Group {{ displayedLetter || group.letter }}
+                </h2>
               </div>
 
               <!-- Right arrow -->
@@ -418,7 +516,12 @@
 
                 <!-- Matches -->
                 <div class="grd-matches">
-                  <h3 class="grd-section-title">Matches</h3>
+                  <h3
+                    class="grd-section-title"
+                    :style="cardsVisible ? undefined : { opacity: 0 }"
+                  >
+                    Matches
+                  </h3>
 
                   <div v-if="groupMatches.length === 0" class="grd-empty">
                     No matches scheduled.
@@ -494,7 +597,7 @@
   .grd-header__nav-group {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
   }
 
   .grd-header__title-block {
@@ -548,10 +651,15 @@
   }
 
   .grd-nav-btn:hover:not(.grd-nav-btn--disabled),
-  .grd-nav-btn:focus:not(.grd-nav-btn--disabled) {
+  .grd-nav-btn:focus-visible:not(.grd-nav-btn--disabled) {
     opacity: 1;
     background: none !important;
     outline: none;
+  }
+
+  /* A mouse click leaves :focus on the button — don't keep it lit. */
+  .grd-nav-btn:focus:not(:focus-visible):not(:hover) {
+    opacity: 0.6;
   }
 
   .grd-nav-btn--disabled {

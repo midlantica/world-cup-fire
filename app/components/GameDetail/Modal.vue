@@ -411,9 +411,10 @@
     gap: 0.4rem;
   }
 
-  /* Group link */
+  /* Group link — tight rounded outline button */
   .gd-header__group-link {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
+
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
@@ -422,18 +423,22 @@
     color: oklab(100% 0 0 / 0.6);
     text-decoration: none;
     margin-bottom: 0.15rem;
-    transition: color 0.15s;
-    background: none;
-    border: none;
-    padding: 0;
+    background: hsl(0deg 0% 100% / 12%);
+    border: 1px solid oklab(100% 0 0 / 0.085);
+
+    border-radius: 9999px;
+    padding: 0.2rem 0.75rem 0.1rem;
     cursor: pointer;
     font-family: inherit;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
   }
 
   .gd-header__group-link:hover {
-    color: oklab(100% 0 0 / 0.95);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
+    color: oklab(100% 0 0);
+    border-color: oklab(1 0 0 / 0.3);
+    text-decoration: none;
   }
 
   /* Teams row — 3-column grid so centre is always truly centred */

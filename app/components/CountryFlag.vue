@@ -24,6 +24,7 @@
   })
 
   // Convert ISO2 to emoji flag using regional indicator symbols
+
   const emoji = computed(() => {
     const code = props.iso2?.toUpperCase() ?? ''
     if (code.length !== 2) return '🏳️'
@@ -56,6 +57,7 @@
       class="h-full w-full object-cover"
       @error="imgError = true"
     />
+
     <span
       v-else
       class="flex h-full w-full items-center justify-center text-xs leading-none"

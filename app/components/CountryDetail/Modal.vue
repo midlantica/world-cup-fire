@@ -1,7 +1,13 @@
 <script setup lang="ts">
   import { useCountryDetail } from '~/composables/useCountryDetail'
   import { useStandings } from '~/composables/useStandings'
-  import { TEAM_BY_NAME, espnLogoUrl } from '~/constants/worldcup'
+  import {
+    TEAM_BY_NAME,
+    espnLogoUrl,
+    wcTitles,
+    nameToIso2,
+  } from '~/constants/worldcup'
+
   import type { Match } from '~/composables/useScores'
   import { useMatchDetail } from '~/composables/useMatchDetail'
   import { useModalNav } from '~/composables/useModalNav'
@@ -97,10 +103,30 @@
     const c = countryData.value
     if (!c) return {}
     const primary = `#${c.color}`
+    const alt = `#${c.altColor}`
     const text = `#${c.textColor}`
+
+    // ── Group pill colors ────────────────────────────────────────────────
+    // The pill is filled with the country's secondary (alt) color. For the text
+    // we deliberately avoid using the primary brand color directly: saturated
+    // colors layered on a saturated background (e.g. red on blue) cause an
+    // uncomfortable "vibrating" optical effect (chromostereopsis). Instead we
+    // pick a neutral black or white — whichever contrasts best against the pill
+    // background — so the label is always crisp and stable.
+    const groupBg = alt
+    const bgLum = hexLuminance(c.altColor) // 0–255
+    // Resting text: contrasting black/white. On hover we deepen it to full
+    // strength black/white so the change still reads clearly.
+    const restText =
+      bgLum > 150 ? 'oklab(0% 0 0 / 0.78)' : 'oklab(100% 0 0 / 0.9)'
+    const hoverText = bgLum > 150 ? '#000000' : '#ffffff'
     return {
       '--cd-primary': primary,
+      '--cd-alt': alt,
       '--cd-text': text,
+      '--cd-group-bg': groupBg,
+      '--cd-group-text': restText,
+      '--cd-group-hover-text': hoverText,
       background: `linear-gradient(135deg, ${primary} 0%, color-mix(in oklab, ${primary} 70%, black) 100%)`,
       color: text,
     }
@@ -547,12 +573,35 @@
 
               <!-- Name + meta -->
               <div class="cd-header__info">
-                <h2 class="cd-header__name">{{ countryData.name }}</h2>
+                <h2 class="cd-header__name">
+                  <span class="cd-header__name-text">{{
+                    countryData.name
+                  }}</span>
+                  <!-- One star per World Cup title, sized to the name's x-height -->
+                  <span
+                    v-if="wcTitles(countryData.name)"
+                    class="cd-header__stars"
+                    :title="`${wcTitles(countryData.name)}× World Cup winner`"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      v-for="n in wcTitles(countryData.name)"
+                      :key="n"
+                      class="cd-header__star"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="m5.825 21l1.625-7.025L2 9.25l7.2-.625L12 2l2.8 6.625l7.2.625l-5.45 4.725L18.175 21L12 17.275z"
+                      />
+                    </svg>
+                  </span>
+                </h2>
+
                 <p class="cd-header__meta">
                   <button class="cd-header__group" @click="goToGroup">
                     Group {{ countryData.group }}
                   </button>
-                  <span class="cd-header__sep">·</span>
                   <span class="cd-header__rank"
                     >FIFA #{{ countryData.fifaRank }}</span
                   >
@@ -976,12 +1025,6 @@
                           </span>
                         </div>
                       </div>
-                      <div class="cd-match__time-block">
-                        <span class="cd-match__status">FT</span>
-                        <span class="cd-match__date">{{
-                          formatMatchDate(m.date)
-                        }}</span>
-                      </div>
                     </div>
                   </div>
                 </template>
@@ -1009,9 +1052,10 @@
                         <!-- Home -->
                         <div class="cd-match__team">
                           <CountryFlag
-                            :iso2="TEAM_BY_NAME.get(r.homeTeam)?.iso2 ?? ''"
+                            :iso2="nameToIso2(r.homeTeam)"
                             :size="20"
                           />
+
                           <div class="cd-match__team-name-wrap">
                             <span
                               class="cd-match__team-name"
@@ -1039,9 +1083,10 @@
                         <!-- Away -->
                         <div class="cd-match__team">
                           <CountryFlag
-                            :iso2="TEAM_BY_NAME.get(r.awayTeam)?.iso2 ?? ''"
+                            :iso2="nameToIso2(r.awayTeam)"
                             :size="20"
                           />
+
                           <div class="cd-match__team-name-wrap">
                             <span
                               class="cd-match__team-name"
@@ -1066,20 +1111,6 @@
                             {{ r.awayScore }}
                           </span>
                         </div>
-                      </div>
-                      <!-- Right: W/D/L badge -->
-                      <div class="cd-match__time-block">
-                        <span
-                          class="cd-result__badge"
-                          :class="{
-                            'cd-result__badge--w': getResultLabel(r) === 'W',
-                            'cd-result__badge--d': getResultLabel(r) === 'D',
-                            'cd-result__badge--l': getResultLabel(r) === 'L',
-                          }"
-                        >
-                          {{ getResultLabel(r) }}
-                        </span>
-                        <span class="cd-match__status">FT</span>
                       </div>
                     </div>
                   </div>
@@ -1229,6 +1260,9 @@
   }
 
   .cd-header__name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 1.6rem;
     font-variation-settings:
       'wdth' 100,
@@ -1239,10 +1273,33 @@
     color: inherit;
   }
 
+  /* World Cup title stars — sit beside the name at roughly its x-height,
+     inheriting the header's contrast text color. */
+  .cd-header__stars {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    flex-shrink: 0;
+    color: inherit;
+    opacity: 0.95;
+    /* Stars render larger than the name and are nudged up slightly so they
+       sit balanced against the cap height of the team name. */
+    font-size: 2.2rem;
+    position: relative;
+    top: -0.2rem;
+  }
+
+  .cd-header__star {
+    width: 0.62em;
+    height: 0.62em;
+    display: block;
+  }
+
   .cd-header__meta {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.6rem;
+
     font-size: 0.8rem;
     font-variation-settings:
       'wdth' 100,
@@ -1251,7 +1308,6 @@
     text-transform: uppercase;
     margin: 0;
     color: inherit;
-    opacity: 0.8;
   }
 
   .cd-header__meta span {
@@ -1259,35 +1315,42 @@
       'wdth' 100,
       'wght' 680;
     letter-spacing: 0.05rem;
+    opacity: 0.8;
   }
 
+  /* Group link — tight rounded pill filled with the country's secondary color,
+     text in the primary color. On hover the text flips to a contrasting
+     black/white so the interaction reads clearly. */
   .cd-header__group {
-    background: none;
+    background: var(--cd-group-bg, oklab(100% 0 0 / 0.15));
     border: none;
-    padding: 0;
+    border-radius: 9999px;
+    padding: 0.1rem 0.65rem 0.05rem;
     margin: 0;
-    font-size: inherit;
+    font-size: 0.65rem;
     font-family: inherit;
+
     font-variation-settings: inherit;
     letter-spacing: inherit;
     text-transform: inherit;
-    color: inherit;
+    color: var(--cd-group-text, inherit);
     cursor: pointer;
-    text-underline-offset: 2px;
-    transition: opacity 0.12s;
+    text-decoration: none;
+    /* Thin line beneath the button, matching the text color. Transparent at
+       rest, revealed in the text color on hover. */
+    box-shadow: 0 1px 0 transparent;
+    transition:
+      color 0.15s,
+      box-shadow 0.15s;
   }
 
   .cd-header__group:hover {
-    text-decoration: underline;
-    text-decoration-color: currentColor;
-    opacity: 1;
-  }
-
-  .cd-header__sep {
-    opacity: 0.5;
+    color: var(--cd-group-hover-text, oklab(0% 0 0));
+    box-shadow: 0 1px 0 var(--cd-group-hover-text, oklab(0% 0 0));
   }
 
   /* Close button */
+
   .cd-close {
     position: absolute;
     top: 0.4rem;
@@ -1431,7 +1494,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
-    align-items: start;
+    align-items: stretch;
   }
 
   /* Section labels and squad groups span full width */
@@ -1452,6 +1515,7 @@
 
   /* ── Match card ────────────────────────────────────────────────────────── */
   .cd-match {
+    height: 100%;
     border-radius: 0.75rem;
     background: oklch(18% 0.008 260);
     border: 1px solid oklab(100% 0 0 / 0.08);
@@ -1905,6 +1969,7 @@
   }
 
   .cd-result {
+    height: 100%;
     border-radius: 0.75rem;
     background: oklch(18% 0.008 260);
     border: 1px solid oklab(100% 0 0 / 0.08);

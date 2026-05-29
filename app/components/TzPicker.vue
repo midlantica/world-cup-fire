@@ -42,7 +42,8 @@
         :class="{ selected: selectedTz === tz.code }"
         @click="choose(tz.code)"
       >
-        {{ tz.code }}
+        <span class="tz-option-code">{{ tz.code }}</span>
+        <span class="tz-option-label">{{ tz.label }}</span>
       </button>
     </div>
   </div>
@@ -109,14 +110,17 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    min-width: 5rem;
+    overflow-y: auto;
+    max-height: 18rem;
+    min-width: 13rem;
   }
 
   .tz-option {
-    display: block;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
     width: 100%;
-    text-align: center;
+    text-align: left;
     padding: 0.4rem 0.75rem;
     font-size: 0.8rem;
     font-weight: 600;
@@ -130,6 +134,25 @@
       background 0.1s,
       color 0.1s;
     white-space: nowrap;
+  }
+
+  .tz-option-code {
+    flex-shrink: 0;
+    min-width: 2.5rem;
+    font-weight: 700;
+  }
+
+  .tz-option-label {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+  }
+
+  .tz-option:hover .tz-option-label,
+  .tz-option.selected .tz-option-label {
+    color: rgba(255, 255, 255, 0.8);
   }
 
   .tz-option + .tz-option {

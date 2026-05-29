@@ -1,47 +1,141 @@
 // ── Timezone selector composable ──────────────────────────────────────────────
-// Supports the four main US timezones. Defaults to the user's browser timezone
-// (mapped to the nearest of ET/CT/MT/PT), falling back to CT.
+// Supports a broad set of international timezones (covering the World Cup host
+// nations USA/Canada/Mexico plus major regions worldwide). Defaults to the
+// user's browser timezone, mapped to the nearest supported zone, falling back
+// to ET.
 
-export type TzCode = 'ET' | 'CT' | 'MT' | 'PT'
+export type TzCode =
+  // North America (host nations)
+  | 'PT'
+  | 'MT'
+  | 'CT'
+  | 'ET'
+  | 'AT'
+  // South America
+  | 'BRT'
+  | 'ART'
+  // Europe / Africa
+  | 'GMT'
+  | 'CET'
+  | 'EET'
+  // Middle East
+  | 'GST'
+  // Asia
+  | 'IST'
+  | 'CST'
+  | 'JST'
+  // Oceania
+  | 'AET'
+  | 'NZT'
 
-export const TZ_OPTIONS: { code: TzCode; iana: string }[] = [
-  { code: 'ET', iana: 'America/New_York' },
-  { code: 'CT', iana: 'America/Chicago' },
-  { code: 'MT', iana: 'America/Denver' },
-  { code: 'PT', iana: 'America/Los_Angeles' },
+export interface TzOption {
+  code: TzCode
+  iana: string
+  label: string
+}
+
+export const TZ_OPTIONS: TzOption[] = [
+  // North America
+  { code: 'PT', iana: 'America/Los_Angeles', label: 'Los Angeles' },
+  { code: 'MT', iana: 'America/Denver', label: 'Denver' },
+  { code: 'CT', iana: 'America/Chicago', label: 'Chicago / Mexico City' },
+  { code: 'ET', iana: 'America/New_York', label: 'New York / Toronto' },
+  { code: 'AT', iana: 'America/Halifax', label: 'Halifax' },
+  // South America
+  { code: 'BRT', iana: 'America/Sao_Paulo', label: 'São Paulo' },
+  {
+    code: 'ART',
+    iana: 'America/Argentina/Buenos_Aires',
+    label: 'Buenos Aires',
+  },
+  // Europe / Africa
+  { code: 'GMT', iana: 'Europe/London', label: 'London / Lisbon' },
+  { code: 'CET', iana: 'Europe/Paris', label: 'Paris / Madrid / Berlin' },
+  { code: 'EET', iana: 'Europe/Athens', label: 'Athens / Cairo' },
+  // Middle East
+  { code: 'GST', iana: 'Asia/Dubai', label: 'Dubai' },
+  // Asia
+  { code: 'IST', iana: 'Asia/Kolkata', label: 'India' },
+  { code: 'CST', iana: 'Asia/Shanghai', label: 'Beijing / Singapore' },
+  { code: 'JST', iana: 'Asia/Tokyo', label: 'Tokyo / Seoul' },
+  // Oceania
+  { code: 'AET', iana: 'Australia/Sydney', label: 'Sydney' },
+  { code: 'NZT', iana: 'Pacific/Auckland', label: 'Auckland' },
 ]
 
 function detectTzCode(): TzCode {
   try {
     const iana = Intl.DateTimeFormat().resolvedOptions().timeZone
-    // Direct matches
-    if (
-      iana === 'America/New_York' ||
-      iana === 'America/Detroit' ||
-      iana === 'America/Indiana/Indianapolis'
-    )
-      return 'ET'
-    if (iana === 'America/Chicago' || iana === 'America/Menominee') return 'CT'
-    if (
-      iana === 'America/Denver' ||
-      iana === 'America/Boise' ||
-      iana === 'America/Phoenix'
-    )
-      return 'MT'
-    if (
-      iana === 'America/Los_Angeles' ||
-      iana === 'America/Anchorage' ||
-      iana === 'America/Honolulu'
-    )
-      return 'PT'
-    // Fallback: compare UTC offset to find nearest zone
-    const offset = -new Date().getTimezoneOffset() // minutes east of UTC
-    if (offset >= -240) return 'ET' // UTC-4 or less negative
-    if (offset >= -360) return 'CT' // UTC-5 or UTC-6
-    if (offset >= -420) return 'MT' // UTC-7
-    return 'PT' // UTC-8 or further west
+
+    // Direct match against the supported list first.
+    const direct = TZ_OPTIONS.find((t) => t.iana === iana)
+    if (direct) return direct.code
+
+    // Common aliases that map cleanly onto a supported zone.
+    const aliases: Record<string, TzCode> = {
+      'America/Detroit': 'ET',
+      'America/Indiana/Indianapolis': 'ET',
+      'America/Toronto': 'ET',
+      'America/Menominee': 'CT',
+      'America/Mexico_City': 'CT',
+      'America/Winnipeg': 'CT',
+      'America/Boise': 'MT',
+      'America/Phoenix': 'MT',
+      'America/Edmonton': 'MT',
+      'America/Vancouver': 'PT',
+      'America/Tijuana': 'PT',
+      'Europe/Lisbon': 'GMT',
+      'Europe/Dublin': 'GMT',
+      'Europe/Madrid': 'CET',
+      'Europe/Berlin': 'CET',
+      'Europe/Rome': 'CET',
+      'Europe/Amsterdam': 'CET',
+      'Africa/Cairo': 'EET',
+      'Europe/Istanbul': 'EET',
+      'Asia/Singapore': 'CST',
+      'Asia/Hong_Kong': 'CST',
+      'Asia/Seoul': 'JST',
+      'Pacific/Auckland': 'NZT',
+    }
+    if (aliases[iana]) return aliases[iana]!
+
+    // Fallback: pick the supported zone whose current UTC offset is closest.
+    const userOffset = -new Date().getTimezoneOffset() // minutes east of UTC
+    let best: TzCode = 'ET'
+    let bestDiff = Infinity
+    for (const opt of TZ_OPTIONS) {
+      const off = offsetMinutes(opt.iana)
+      const diff = Math.abs(off - userOffset)
+      if (diff < bestDiff) {
+        bestDiff = diff
+        best = opt.code
+      }
+    }
+    return best
   } catch {
-    return 'CT'
+    return 'ET'
+  }
+}
+
+/** Current UTC offset (minutes east of UTC) for an IANA timezone. */
+function offsetMinutes(iana: string): number {
+  try {
+    const now = new Date()
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: iana,
+      timeZoneName: 'shortOffset',
+    }).formatToParts(now)
+    const tzName = parts.find((p) => p.type === 'timeZoneName')?.value ?? ''
+    const m = tzName.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/)
+    if (m) {
+      const sign = m[1] === '-' ? -1 : 1
+      const h = parseInt(m[2]!, 10)
+      const min = m[3] ? parseInt(m[3], 10) : 0
+      return sign * (h * 60 + min)
+    }
+    return 0
+  } catch {
+    return 0
   }
 }
 
@@ -71,7 +165,7 @@ export function useTimezone() {
   }
 
   function ianaForCode(code: TzCode): string {
-    return TZ_OPTIONS.find((t) => t.code === code)?.iana ?? 'America/Chicago'
+    return TZ_OPTIONS.find((t) => t.code === code)?.iana ?? 'America/New_York'
   }
 
   const iana = computed(() => ianaForCode(selectedTz.value))

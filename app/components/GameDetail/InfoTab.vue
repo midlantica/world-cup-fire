@@ -59,7 +59,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
-    align-items: start;
+    align-items: stretch;
   }
 
   @media (max-width: 480px) {
@@ -69,6 +69,7 @@
   }
 
   .info-card {
+    height: 100%;
     border-radius: 0.75rem;
     background: oklch(18% 0.008 260);
     border: 1px solid oklab(100% 0 0 / 0.08);
