@@ -344,31 +344,11 @@
     }
   )
 
-  // Restore match modal from URL params (?match=<id>&modal=match) on fresh page load.
-  // Only runs client-side — during SSR normaliseEvent produces incomplete match objects
-  // (empty date, qualityScore:0) which would get serialized into the SSR payload and
-  // hydrated on the client, overriding the correct data.
-  const matchRestored = ref(false)
-  if (import.meta.client) {
-    watch(
-      allGroupMatches,
-      (matches) => {
-        if (matchRestored.value || matches.length === 0) return
-        if (route.query.modal === 'match' && route.query.match) {
-          const matchId = String(route.query.match)
-          const found = matches.find((m) => m.id === matchId)
-          if (found) {
-            // Only lock matchRestored when we have valid data (non-empty date).
-            // SSR-hydrated matches have date:"" — don't lock so the watcher
-            // can re-run once the client fetch completes with correct data.
-            if (found.date) matchRestored.value = true
-            openMatch(found)
-          }
-        }
-      },
-      { immediate: true }
-    )
-  }
+  // NOTE: Match modal restoration from URL params (?match=<id>&modal=match) is
+  // handled exclusively by app.vue onMounted, which fetches /api/match-detail
+  // and constructs a complete Match object including venue. We must NOT restore
+  // here from the schedule API data — the scoreboard endpoint does not include
+  // venue, so doing so would open the modal without the stadium name.
 
   // Body scroll lock
   watchEffect(() => {

@@ -63,13 +63,37 @@
       const awayScore =
         code !== 'ns' ? ((awayComp.score as string) ?? '0') : null
 
-      const venue = (comp.venue as Record<string, unknown>)?.fullName as
+      // comp.venue is null in the summary API for pre-tournament matches.
+      // Fall back to the scoreboard API (schedule endpoint) which always has venue.
+      let venue = (comp.venue as Record<string, unknown>)?.fullName as
         | string
         | null
 
+      if (!venue && comp.date) {
+        try {
+          // Extract YYYYMMDD from the ISO date string for the schedule query
+          const dateStr = (comp.date as string).slice(0, 10).replace(/-/g, '')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const scheduleEvents = await $fetch<any[]>('/api/schedule', {
+            query: { dates: dateStr },
+          })
+          const scheduleEvent = scheduleEvents?.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (e: any) => String(e.id) === String(matchId)
+          )
+          const scheduleComp = scheduleEvent?.competitions?.[0]
+          const scheduleVenue = scheduleComp?.venue?.fullName as
+            | string
+            | undefined
+          if (scheduleVenue) venue = scheduleVenue
+        } catch {
+          // Ignore — venue just won't show
+        }
+      }
+
       const match: Match = {
         id: matchId,
-        date: (header?.date as string) ?? '',
+        date: (comp.date as string) ?? (header?.date as string) ?? '',
         home: homeName,
         homeShort: homeData?.shortName ?? homeData?.name ?? homeName,
         homeScore,

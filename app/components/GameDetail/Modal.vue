@@ -480,7 +480,7 @@
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     width: 100%;
-    gap: 0.5rem;
+    gap: 0.3rem;
     /* Prevent overflow from long team names */
     min-width: 0;
   }
@@ -488,7 +488,7 @@
   .gd-header__side {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.45rem;
     /* Allow side to shrink so names don't overflow */
     min-width: 0;
   }
@@ -543,6 +543,9 @@
     white-space: normal;
     overflow-wrap: break-word;
     min-width: 0;
+    /* Ensure the text span aligns to center with the flag */
+    display: flex;
+    align-items: center;
   }
 
   /* Child spans must explicitly override the global span { wdth 87.5, wght 300 } rule */
@@ -564,28 +567,16 @@
     .gd-header {
       padding: 0.85rem 2rem 0.3rem;
     }
-    .gd-header__teams-row {
-      gap: 0.5rem;
-    }
-    .gd-header__side {
-      gap: 0.4rem;
-    }
     .gd-header__team-name {
       font-size: 1.1rem;
       letter-spacing: 0.03rem;
     }
   }
 
-  /* Very narrow: switch to 3-letter abbreviations */
-  @media (max-width: 340px) {
+  /* Narrow phones (≤375px): switch to 3-letter abbreviations */
+  @media (max-width: 375px) {
     .gd-header {
       padding: 0.85rem 1.5rem 0.3rem;
-    }
-    .gd-header__teams-row {
-      gap: 0.3rem;
-    }
-    .gd-header__side {
-      gap: 0.25rem;
     }
     /* Swap to 3-letter abbreviation */
     .gd-header__team-name-full {
@@ -603,11 +594,11 @@
   .gd-header__vs {
     font-size: 1.15rem;
     font-variation-settings:
-      'wdth' 100,
+      'wdth' 80,
       'wght' 400;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     color: oklab(100% 0 0 / 0.85);
-    padding: 0 0.5rem;
+    padding: 0 0.2rem;
   }
 
   .gd-header__score {
