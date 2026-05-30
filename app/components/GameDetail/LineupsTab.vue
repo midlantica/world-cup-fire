@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { TEAM_BY_NAME } from '~/constants/worldcup'
   import type { Match } from '../../composables/useScores'
 
   const props = defineProps<{
@@ -9,6 +10,12 @@
     homeLastPending?: boolean
     awayLastPending?: boolean
   }>()
+
+  // If teams are not yet determined (knockout placeholders), suppress all lineup data
+  const teamsKnown = computed(
+    () =>
+      TEAM_BY_NAME.has(props.match.home) && TEAM_BY_NAME.has(props.match.away)
+  )
 
   interface Player {
     name: string
@@ -136,9 +143,14 @@
 
 <template>
   <div class="lineups-tab">
+    <!-- Teams not yet determined (knockout placeholder) -->
+    <div v-if="!teamsKnown" class="lineups-tab__empty">
+      <p>Match data will be available closer to kick-off.</p>
+    </div>
+
     <!-- No data at all -->
     <div
-      v-if="!hasData && !hasFallbackData && !isLoading"
+      v-else-if="!hasData && !hasFallbackData && !isLoading"
       class="lineups-tab__empty"
     >
       <p>Lineups will be available closer to kick-off.</p>

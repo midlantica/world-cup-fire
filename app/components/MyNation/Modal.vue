@@ -90,7 +90,8 @@
   }
 
   .modal-header {
-    @apply flex items-center justify-between border-b border-white/10 px-5 py-4;
+    @apply flex items-center justify-between border-b border-white/10;
+    padding: 0.6rem 0.6rem 0.3rem 1.3rem;
   }
 
   .modal-title {
@@ -98,7 +99,7 @@
   }
 
   .modal-close {
-    @apply rounded-lg p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white;
+    @apply rounded-lg p-1.5 text-white/50 transition-colors hover:text-white;
   }
 
   .modal-current {
@@ -120,11 +121,19 @@
   }
 
   .modal-group__header {
-    @apply mb-2 text-xs font-black tracking-wider text-white/40 uppercase;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+    line-height: 1rem;
+    font-variation-settings:
+      'wdth' 90,
+      'wght' 400;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, #fff 60%, transparent);
+    text-transform: uppercase;
   }
 
   .modal-team-btn {
-    @apply flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-all hover:bg-white/10;
+    @apply flex w-full items-center gap-2 rounded-lg px-0 py-0.5 text-left text-sm transition-all hover:bg-white/10;
   }
 
   .modal-team-btn--selected {
@@ -132,7 +141,7 @@
   }
 
   .modal-team-btn__name {
-    @apply flex-1 truncate font-medium text-white;
+    @apply truncate font-medium text-white;
   }
 
   .modal-team-btn__rank {

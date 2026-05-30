@@ -1,0 +1,13 @@
+# Cline Rules for world-cup-fire
+
+## Browser Task Cleanup
+
+When performing any browser-related tasks using Playwright or browser_action tools:
+
+1. Always close the browser when done using the `close` action.
+2. After closing, if "Google Chrome for Testing" processes remain, run:
+   ```
+   pkill -f 'Google Chrome for Testing'
+   ```
+3. If the browser close action fails or throws an error, still attempt the pkill command to ensure cleanup.
+4. Never leave browser sessions open between tasks.

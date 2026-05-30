@@ -73,7 +73,7 @@ export const WC_TEAMS: WCTeam[] = [
   {
     id: '467',
     name: 'South Africa',
-    shortName: 'South Africa',
+    shortName: 'S. Africa',
     abbrev: 'RSA',
     iso2: 'ZA',
     fifaRank: 60,
@@ -370,7 +370,6 @@ export const WC_TEAMS: WCTeam[] = [
   {
     id: '2666',
     name: 'New Zealand',
-    shortName: 'New Zealand',
     abbrev: 'NZL',
     iso2: 'NZ',
     fifaRank: 97,

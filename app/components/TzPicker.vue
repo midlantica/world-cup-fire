@@ -61,15 +61,14 @@
   .tz-picker-btn {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
     gap: 5px;
     padding: 6px 12px;
-    border-radius: 10px;
+    border-radius: 4px;
     border: none;
-    background: linear-gradient(
-      180deg,
-      rgba(62, 58, 54, 1) 0%,
-      rgba(40, 35, 34, 1) 100%
-    );
+    background: hsl(0deg 0% 100% / 10%);
+
     cursor: pointer;
     transition: background 0.15s;
     white-space: nowrap;
@@ -77,11 +76,7 @@
   }
 
   .tz-picker-btn:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(72, 68, 64, 1) 0%,
-      rgba(50, 45, 44, 1) 100%
-    );
+    background: hsl(0deg 0% 100% / 16%);
     color: #ffffff;
   }
 

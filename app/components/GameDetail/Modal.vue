@@ -93,11 +93,39 @@
 
   const homeAbbrev = computed(() => {
     const name = selectedMatch.value?.home ?? ''
-    return TEAM_BY_NAME.get(name)?.abbrev ?? name.slice(0, 3).toUpperCase()
+    return TEAM_BY_NAME.get(name)?.abbrev ?? abbrevTeamName(name)
   })
   const awayAbbrev = computed(() => {
     const name = selectedMatch.value?.away ?? ''
-    return TEAM_BY_NAME.get(name)?.abbrev ?? name.slice(0, 3).toUpperCase()
+    return TEAM_BY_NAME.get(name)?.abbrev ?? abbrevTeamName(name)
+  })
+
+  // Abbreviate long knockout placeholder team names for the header
+  function abbrevTeamName(name: string): string {
+    if (TEAM_BY_NAME.has(name)) return name
+    return name
+      .replace(/\bRound of 32\b/gi, 'R32')
+      .replace(/\bRound of 16\b/gi, 'R16')
+      .replace(/\bQuarter.?final\b/gi, 'QF')
+      .replace(/\bSemi.?final\b/gi, 'SF')
+      .replace(/\bThird Place\b/gi, '3rd Pl.')
+      .replace(/\bGroup\b/gi, 'Grp')
+      .replace(/\bWinner\b/gi, 'W')
+      .replace(/\b1st Place\b/gi, '1st')
+      .replace(/\b2nd Place\b/gi, '2nd')
+      .replace(/\b3rd Place\b/gi, '3rd')
+      .replace(/\b(\d+)th Place\b/gi, '$1th')
+  }
+
+  const homeDisplay = computed(() => {
+    const name = selectedMatch.value?.home ?? ''
+    const team = TEAM_BY_NAME.get(name)
+    return team?.shortName ?? abbrevTeamName(name)
+  })
+  const awayDisplay = computed(() => {
+    const name = selectedMatch.value?.away ?? ''
+    const team = TEAM_BY_NAME.get(name)
+    return team?.shortName ?? abbrevTeamName(name)
   })
 
   const hasLineupData = computed(() => {
@@ -228,7 +256,7 @@
               >
                 <span class="gd-header__team-name">
                   <span class="gd-header__team-name-full">{{
-                    selectedMatch.home
+                    homeDisplay
                   }}</span>
                   <span class="gd-header__team-name-abbrev">{{
                     homeAbbrev
@@ -277,7 +305,7 @@
                 <CountryFlag :iso2="selectedMatch.awayIso2" :size="32" />
                 <span class="gd-header__team-name">
                   <span class="gd-header__team-name-full">{{
-                    selectedMatch.away
+                    awayDisplay
                   }}</span>
                   <span class="gd-header__team-name-abbrev">{{
                     awayAbbrev
@@ -403,12 +431,17 @@
   /* ── Header ────────────────────────────────────────────────────────────────── */
   .gd-header {
     position: relative;
-    padding: 1rem 2.5rem 0.85rem;
+    padding: 0.85rem 2.5rem 0.3rem;
     border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
+    /* Prevent the header from forcing the panel wider than its container */
+    min-width: 0;
+    /* flex-shrink: 0 ensures the header takes its natural height and is never
+       compressed by the scrolling body below it */
+    flex-shrink: 0;
   }
 
   /* Group link — tight rounded outline button */
@@ -422,9 +455,9 @@
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.6);
     text-decoration: none;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.25rem;
     background: hsl(0deg 0% 100% / 12%);
-    border: 1px solid oklab(100% 0 0 / 0.085);
+    /* border: 1px solid oklab(100% 0 0 / 0.085); */
 
     border-radius: 9999px;
     padding: 0.2rem 0.75rem 0.1rem;
@@ -447,13 +480,17 @@
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     width: 100%;
-    gap: 1.25rem;
+    gap: 0.5rem;
+    /* Prevent overflow from long team names */
+    min-width: 0;
   }
 
   .gd-header__side {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    /* Allow side to shrink so names don't overflow */
+    min-width: 0;
   }
 
   .gd-header__team-btn {
@@ -474,8 +511,16 @@
     justify-content: flex-end;
   }
 
+  .gd-header__side--home .gd-header__team-name {
+    text-align: right;
+  }
+
   .gd-header__side--away {
     justify-content: flex-start;
+  }
+
+  .gd-header__side--away .gd-header__team-name {
+    text-align: left;
   }
 
   .gd-header__centre {
@@ -488,12 +533,16 @@
 
   .gd-header__team-name {
     font-size: 1.3rem;
+    line-height: 1.2;
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
     letter-spacing: 0.06rem;
     color: oklab(100% 0 0);
-    white-space: nowrap;
+    /* Allow wrapping — long names flow to a second line */
+    white-space: normal;
+    overflow-wrap: break-word;
+    min-width: 0;
   }
 
   /* Child spans must explicitly override the global span { wdth 87.5, wght 300 } rule */
@@ -510,7 +559,11 @@
     display: none;
   }
 
-  @media (max-width: 430px) {
+  /* Narrow: tighten gaps/padding so wrapping names don't waste space */
+  @media (max-width: 480px) {
+    .gd-header {
+      padding: 0.85rem 2rem 0.3rem;
+    }
     .gd-header__teams-row {
       gap: 0.5rem;
     }
@@ -519,7 +572,20 @@
     }
     .gd-header__team-name {
       font-size: 1.1rem;
-      letter-spacing: 0.04rem;
+      letter-spacing: 0.03rem;
+    }
+  }
+
+  /* Very narrow: switch to 3-letter abbreviations */
+  @media (max-width: 340px) {
+    .gd-header {
+      padding: 0.85rem 1.5rem 0.3rem;
+    }
+    .gd-header__teams-row {
+      gap: 0.3rem;
+    }
+    .gd-header__side {
+      gap: 0.25rem;
     }
     /* Swap to 3-letter abbreviation */
     .gd-header__team-name-full {
@@ -530,7 +596,7 @@
     }
     .gd-header__vs {
       font-size: 0.95rem;
-      padding: 0 0.2rem;
+      padding: 0 0.15rem;
     }
   }
 
@@ -589,7 +655,8 @@
     flex-direction: column;
     align-items: center;
     gap: 0.1rem;
-    margin-top: 0.1rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
   }
 
   .gd-header__kickoff {
@@ -609,7 +676,7 @@
       'wght' 400;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: oklab(100% 0 0 / 0.55);
+    color: oklab(100% 0 0 / 0.75);
   }
 
   /* Close button */

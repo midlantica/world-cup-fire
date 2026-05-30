@@ -12,6 +12,11 @@
 
 <template>
   <div class="info-tab">
+    <!-- Placeholder: teams not yet determined -->
+    <div v-if="!homeTeam && !awayTeam" class="info-tab__placeholder">
+      <p>Match data will be available closer to kick-off.</p>
+    </div>
+
     <!-- Home team card -->
     <div v-if="homeTeam" class="info-card">
       <div class="info-card__header">
@@ -60,6 +65,16 @@
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     align-items: stretch;
+  }
+
+  .info-tab__placeholder {
+    grid-column: 1 / -1;
+    padding: 3rem 0;
+    text-align: center;
+    color: oklab(100% 0 0 / 0.4);
+    font-size: 0.9rem;
+    font-weight: 200;
+    letter-spacing: 0.05em;
   }
 
   @media (max-width: 480px) {

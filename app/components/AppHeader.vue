@@ -72,7 +72,7 @@
             <span class="app-header__nation-name">{{ myTeamData.abbrev }}</span>
           </template>
           <template v-else>
-            <span class="app-header__nation-placeholder">Flag</span>
+            <span class="app-header__nation-placeholder">My Flag</span>
           </template>
           <span class="app-header__chevron">▼</span>
         </button>
@@ -134,49 +134,58 @@
   /* Logo */
   .app-header__brand {
     @apply flex shrink-0 items-center no-underline;
-    flex: 1;
-    margin-right: 0.5rem;
+    margin-right: 1rem;
   }
 
   .app-header__logo {
-    height: 2.75rem;
-    width: auto;
+    /* Fixed, aspect-correct size (SVG is 323×96 ≈ 3.365:1).
+       Explicit width + flex:none so the flex layout can never squeeze
+       or scale the logo. */
+    height: 2.65rem;
+    width: calc(2.65rem * 3.365);
+    flex: none;
+    object-fit: contain;
   }
 
   /* Nav */
   .app-header__nav {
-    @apply flex shrink-0 items-center justify-center gap-2;
+    @apply flex shrink-0 items-stretch justify-center;
+    gap: 0.75rem;
   }
 
+  /* LEVEL 1 (top of hierarchy): largest size, fattest weight */
   .app-header__nav-link {
     @apply flex items-center justify-center no-underline transition-all;
-    padding: 0.5rem 0.75rem;
+    padding: 0.95rem 1.25rem;
     border-radius: 10px;
     font-family: 'Anybody', sans-serif;
-    font-size: 1.26rem;
-    line-height: 22.54px;
-    letter-spacing: 0.07em;
+    font-size: 1.2rem;
+    line-height: 1;
     text-transform: uppercase;
-    @apply font-anybody-nav;
-    color: #d1cdcb;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    letter-spacing: 0.08rem;
+    /* Unselected = light / dull */
+    color: rgb(255 255 255 / 0.5);
+
     background: linear-gradient(
       180deg,
-      rgba(60, 56, 52, 1) 0%,
-      rgba(139, 124, 120, 0) 94%
+      rgba(60, 56, 52, 0.55) 0%,
+      rgba(40, 36, 33, 0.55) 100%
     );
-    align-self: center;
-    /* min-height: 2.3rem; */
   }
 
   .app-header__nav-link:hover {
+    color: rgb(255 255 255 / 0.8);
     background: linear-gradient(
       180deg,
-      rgba(70, 66, 62, 1) 0%,
-      rgba(139, 124, 120, 0.3) 94%
+      rgba(70, 66, 62, 0.7) 0%,
+      rgba(48, 44, 40, 0.7) 100%
     );
-    color: #ffffff;
   }
 
+  /* Selected = dark / clear (solid, full opacity, attached to tabs below) */
   .app-header__nav-link--active {
     text-shadow: 0 1px 3px #00000082;
     background: linear-gradient(
@@ -185,8 +194,6 @@
       rgb(36 33 30) 100%
     );
     color: #ffffff;
-    line-height: 1;
-    padding-top: 10px;
   }
 
   .app-header__nav-link--soon {
@@ -197,37 +204,29 @@
 
   /* Right controls group */
   .app-header__controls {
-    @apply flex items-center justify-end gap-2;
+    @apply flex items-center justify-end gap-3;
     flex: 1;
   }
 
-  /* My Nation button */
+  /* My Nation button — identical bar to the TZ picker, only text differs */
   .app-header__nation-btn {
-    @apply flex items-center transition-all;
+    @apply flex items-center justify-between transition-all;
     gap: 5px;
     padding: 6px 12px;
-    border-radius: 10px;
+    border-radius: 4px;
     font-family: 'Anybody', sans-serif;
     font-weight: 500;
-    font-size: 0.947rem;
+    font-size: 1.009rem;
     line-height: 22.54px;
     letter-spacing: 0.05em;
     color: #f3f3f3;
-    background: linear-gradient(
-      180deg,
-      rgba(62, 58, 54, 1) 0%,
-      rgba(40, 35, 34, 1) 100%
-    );
+    background: hsl(0deg 0% 100% / 10%);
     border: none;
     cursor: pointer;
   }
 
   .app-header__nation-btn:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(72, 68, 64, 1) 0%,
-      rgba(50, 45, 44, 1) 100%
-    );
+    background: hsl(0deg 0% 100% / 16%);
     color: #ffffff;
   }
 
@@ -242,9 +241,11 @@
   .app-header__nation-placeholder {
     font-family: 'Anybody', sans-serif;
     font-weight: 500;
-    font-size: 0.947rem;
+    font-size: 1.009rem;
     line-height: 22.54px;
     letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .app-header__chevron {
@@ -273,18 +274,21 @@
     background: #0c0a09;
   }
 
+  /* LEVEL 2 (sub to MGP): smaller size, less fat weight */
   .app-header__stage-btn {
     flex: 1;
-    padding: 0.5rem 0.75rem;
-    border: none;
+    border-top: 1px solid hsl(0deg 0% 100% / 10%);
+    border-right: 1px solid hsl(0deg 0% 100% / 10%);
+    padding: 0.45rem 0.75rem;
     border-radius: 0;
     cursor: pointer;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    @apply font-anybody-semi;
+    @apply font-anybody-bold;
     white-space: nowrap;
+
+    /* Unselected = light / dull */
     color: rgb(255 255 255 / 0.45);
     background: hsl(12 7% 10% / 1);
     transition: all 0.15s ease;
@@ -295,8 +299,9 @@
     background: hsl(12 7% 14% / 1);
   }
 
+  /* Selected = dark / clear */
   .app-header__stage-btn--active {
-    color: #e1e1e1;
+    color: #ffffff;
     background: #252120;
   }
 
@@ -305,6 +310,7 @@
     padding: 0.3rem 0.4rem;
     gap: 0.25rem;
     background: #252120;
+    border-right: 1px solid hsl(0deg 0% 100% / 10%);
   }
 
   .app-header__week-tab {
@@ -317,6 +323,7 @@
     padding: 0.45rem 0.5rem;
     text-align: center;
     transition: all 0.15s ease;
+    /* Unselected = light / dull */
     color: rgb(255 255 255 / 0.5);
     background: none;
     border: none;
@@ -329,6 +336,7 @@
     background: rgba(255, 255, 255, 0.06);
   }
 
+  /* Selected = dark / clear */
   .app-header__week-tab--active {
     background: linear-gradient(180deg, rgb(85 80 74) 0%, rgb(46 42 38) 100%);
     color: #ffffff;
@@ -344,31 +352,35 @@
     opacity: 1;
   }
 
+  /* LEVEL 3 (smallest, least fat): bottom of the hierarchy */
   .app-header__week-label {
     line-height: 1.2;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    @apply font-anybody-black;
+    @apply font-anybody-medium;
   }
 
   .app-header__week-dates {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     line-height: 1.2;
     opacity: 0.7;
     @apply font-anybody-narrow;
   }
 
-  /* ── Narrow layout (≤ 600px): stacked rows ─────────────────────────────── */
-  @media (max-width: 600px) {
+  /* ── Narrow layout (≤ 800px): stacked rows, full-bleed (100vw) ──────────── */
+  @media (max-width: 800px) {
     .app-header__inner {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       grid-template-rows: auto auto;
       grid-template-areas:
-        'ctrls-left  brand  ctrls-right'
-        'nav         nav    nav';
+        'ctrls-left brand ctrls-right'
+        'nav nav nav';
       align-items: center;
-      gap: 0.4rem 0.5rem;
+      column-gap: 0.5rem;
+      /* No vertical gap so the MGP bar reads as one unit with the tabs below */
+      row-gap: 0.5rem;
       padding-top: 0.5rem;
       padding-bottom: 0;
       min-height: unset;
@@ -380,6 +392,7 @@
       margin-right: 0;
     }
 
+    /* Full-bleed nav: span the entire viewport width (100vw), flush to tabs */
     .app-header__nav {
       grid-area: nav;
       justify-content: stretch;
@@ -387,17 +400,24 @@
       gap: 0;
       align-self: auto;
       padding: 0;
-      margin: 0 -0.75rem;
-      width: calc(100% + 1.5rem);
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      margin-bottom: 0;
     }
 
+    /* Keep the hierarchy on mobile: MGP stays the largest of the three rows */
     .app-header__nav-link {
       flex: 1;
-      padding: 0.5rem 0.25rem;
-      font-size: 0.95rem;
+      padding: 0.6rem 0.25rem;
+      font-size: 1rem;
       border-radius: 0;
       min-height: unset;
-      align-self: auto;
+      align-self: stretch;
+    }
+
+    .app-header__stage-btn {
+      font-size: 0.85rem;
     }
 
     .app-header__controls {
@@ -405,19 +425,42 @@
       margin-left: 0;
     }
 
+    /* TZ + Flag buttons: identical fixed width, mirrored to each edge */
     .app-header__tz {
       grid-area: ctrls-left;
       justify-self: start;
+      width: 6.25rem;
     }
 
     .app-header__nation-btn {
       grid-area: ctrls-right;
       justify-self: end;
+      width: 6.25rem;
     }
 
+    /* Full-bleed tabs: 100vw, flush to the nav above (one continuous unit) */
     .app-header__tabs {
-      margin: 0;
+      width: 100vw;
+      max-width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      margin-top: 0;
+      margin-bottom: 0;
       border-radius: 0;
+    }
+  }
+
+  /* ── Small mobile (≤ 425px): smaller logo, tighter top row ──────────────── */
+  @media (max-width: 425px) {
+    .app-header__logo {
+      height: 2.35rem;
+      width: calc(2.35rem * 3.365);
+    }
+
+    .app-header__inner {
+      column-gap: 0.25rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
   }
 

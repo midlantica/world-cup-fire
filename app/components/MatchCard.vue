@@ -319,6 +319,13 @@
     }
   }
 
+  /* ── Very narrow (≤ 360px): tighten group pill padding ──────────────────── */
+  @media (max-width: 360px) {
+    .match-card__group {
+      padding-inline: 0.7rem 0rem;
+    }
+  }
+
   .match-card__score {
     @apply shrink-0 text-sm font-bold text-white/80 tabular-nums;
     @apply font-anybody-bold;
