@@ -923,3 +923,158 @@ export const WC_TITLES: Record<string, number> = {
 export function wcTitles(teamName: string): number {
   return WC_TITLES[teamName] ?? 0
 }
+
+// ---------------------------------------------------------------------------
+// WC 2026 venue → location lookup
+// Keyed by the venue's fullName as returned by ESPN.
+// Used as a bulletproof fallback so venue + location never disappear.
+// ---------------------------------------------------------------------------
+export const VENUE_LOCATIONS: Record<string, string> = {
+  'SoFi Stadium': 'Los Angeles, CA',
+  'Rose Bowl Stadium': 'Pasadena, CA',
+  "Levi's Stadium": 'Santa Clara, CA',
+  'AT&T Stadium': 'Arlington, TX',
+  'NRG Stadium': 'Houston, TX',
+  'GEHA Field at Arrowhead Stadium': 'Kansas City, MO',
+  'Arrowhead Stadium': 'Kansas City, MO',
+  'Empower Field at Mile High': 'Denver, CO',
+  'Lumen Field': 'Seattle, WA',
+  'MetLife Stadium': 'East Rutherford, NJ',
+  'Gillette Stadium': 'Foxborough, MA',
+  'Lincoln Financial Field': 'Philadelphia, PA',
+  'Hard Rock Stadium': 'Miami Gardens, FL',
+  'Mercedes-Benz Stadium': 'Atlanta, GA',
+  'Estadio Akron': 'Guadalajara, Mexico',
+  'Estadio BBVA': 'Monterrey, Mexico',
+  'Estadio Azteca': 'Mexico City, Mexico',
+  'Estadio Banorte': 'Guadalajara, Mexico',
+  'BC Place': 'Vancouver, Canada',
+  'BMO Field': 'Toronto, Canada',
+}
+
+/** Look up the city/state location for a venue name. */
+export function venueLocation(
+  venueName: string | null | undefined
+): string | null {
+  if (!venueName) return null
+  return VENUE_LOCATIONS[venueName] ?? null
+}
+
+// ---------------------------------------------------------------------------
+// Static match ID → venue name lookup (all 104 WC 2026 matches)
+// This is the ultimate fallback — used when both the match-detail summary API
+// and the schedule API fail to return a venue (e.g. pre-tournament UTC offset
+// issues or API gaps). Keyed by ESPN event ID as a string.
+// ---------------------------------------------------------------------------
+export const MATCH_VENUE: Record<string, string> = {
+  '760414': 'Estadio Akron',
+  '760415': 'Estadio Banorte',
+  '760416': 'BMO Field',
+  '760417': 'SoFi Stadium',
+  '760418': 'Gillette Stadium',
+  '760419': 'MetLife Stadium',
+  '760420': "Levi's Stadium",
+  '760421': 'BC Place',
+  '760422': 'NRG Stadium',
+  '760423': 'Lincoln Financial Field',
+  '760424': 'Estadio BBVA',
+  '760425': 'AT&T Stadium',
+  '760426': 'Lumen Field',
+  '760427': 'SoFi Stadium',
+  '760428': 'Mercedes-Benz Stadium',
+  '760429': 'Hard Rock Stadium',
+  '760430': 'Gillette Stadium',
+  '760431': "Levi's Stadium",
+  '760432': 'MetLife Stadium',
+  '760433': 'GEHA Field at Arrowhead Stadium',
+  '760434': 'BMO Field',
+  '760435': 'NRG Stadium',
+  '760436': 'Estadio Banorte',
+  '760437': 'AT&T Stadium',
+  '760438': 'Mercedes-Benz Stadium',
+  '760439': 'SoFi Stadium',
+  '760440': 'BC Place',
+  '760441': 'Estadio Akron',
+  '760442': 'Lumen Field',
+  '760443': "Levi's Stadium",
+  '760444': 'Lincoln Financial Field',
+  '760445': 'Gillette Stadium',
+  '760446': 'GEHA Field at Arrowhead Stadium',
+  '760447': 'NRG Stadium',
+  '760448': 'BMO Field',
+  '760449': 'Estadio BBVA',
+  '760450': 'Hard Rock Stadium',
+  '760451': 'SoFi Stadium',
+  '760452': 'BC Place',
+  '760453': 'Mercedes-Benz Stadium',
+  '760454': 'MetLife Stadium',
+  '760455': "Levi's Stadium",
+  '760456': 'AT&T Stadium',
+  '760457': 'Lincoln Financial Field',
+  '760458': 'Gillette Stadium',
+  '760459': 'Estadio Akron',
+  '760460': 'BMO Field',
+  '760461': 'NRG Stadium',
+  '760462': 'Lumen Field',
+  '760463': 'BC Place',
+  '760464': 'Mercedes-Benz Stadium',
+  '760465': 'Hard Rock Stadium',
+  '760466': 'Estadio BBVA',
+  '760467': 'Estadio Banorte',
+  '760468': 'MetLife Stadium',
+  '760469': "Levi's Stadium",
+  '760470': 'SoFi Stadium',
+  '760471': 'AT&T Stadium',
+  '760472': 'GEHA Field at Arrowhead Stadium',
+  '760473': 'Lincoln Financial Field',
+  '760474': 'BMO Field',
+  '760475': 'Gillette Stadium',
+  '760476': 'Lumen Field',
+  '760477': 'BC Place',
+  '760478': 'NRG Stadium',
+  '760479': 'Estadio Akron',
+  '760480': 'Lincoln Financial Field',
+  '760481': 'Hard Rock Stadium',
+  '760482': 'Mercedes-Benz Stadium',
+  '760483': 'AT&T Stadium',
+  '760484': 'GEHA Field at Arrowhead Stadium',
+  '760485': 'MetLife Stadium',
+  '760486': 'SoFi Stadium',
+  '760487': 'NRG Stadium',
+  '760488': 'Estadio BBVA',
+  '760489': 'Gillette Stadium',
+  '760490': 'AT&T Stadium',
+  '760491': 'Estadio Banorte',
+  '760492': 'MetLife Stadium',
+  '760493': 'Lumen Field',
+  '760494': "Levi's Stadium",
+  '760495': 'Mercedes-Benz Stadium',
+  '760496': 'BMO Field',
+  '760497': 'SoFi Stadium',
+  '760498': 'BC Place',
+  '760499': 'AT&T Stadium',
+  '760500': 'Hard Rock Stadium',
+  '760501': 'GEHA Field at Arrowhead Stadium',
+  '760502': 'NRG Stadium',
+  '760503': 'Lincoln Financial Field',
+  '760504': 'MetLife Stadium',
+  '760505': 'Estadio Banorte',
+  '760506': 'AT&T Stadium',
+  '760507': 'Lumen Field',
+  '760508': 'BC Place',
+  '760509': 'Mercedes-Benz Stadium',
+  '760510': 'Gillette Stadium',
+  '760511': 'SoFi Stadium',
+  '760512': 'Hard Rock Stadium',
+  '760513': 'GEHA Field at Arrowhead Stadium',
+  '760514': 'AT&T Stadium',
+  '760515': 'Mercedes-Benz Stadium',
+  '760516': 'Hard Rock Stadium',
+  '760517': 'MetLife Stadium',
+}
+
+/** Look up the venue name for a match by its ESPN event ID. */
+export function matchVenue(eventId: string | null | undefined): string | null {
+  if (!eventId) return null
+  return MATCH_VENUE[eventId] ?? null
+}

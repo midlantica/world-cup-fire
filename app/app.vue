@@ -1,6 +1,9 @@
 <script setup lang="ts">
   import { useMatchDetail } from '~/composables/useMatchDetail'
-  import { TEAM_BY_NAME } from '~/constants/worldcup'
+  import {
+    TEAM_BY_NAME,
+    venueLocation as lookupVenueLocation,
+  } from '~/constants/worldcup'
   import type { Match } from '~/composables/useScores'
 
   const { modalOpen, openMatch } = useMatchDetail()
@@ -19,6 +22,7 @@
     if (!modalParam && teamParam) return // legacy: team-only URL, no match modal
 
     try {
+      // ── Step 1: fetch the match-detail summary (for status/score/date) ──────
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = await $fetch<any>('/api/match-detail', {
         query: { eventId: matchId },
@@ -63,37 +67,40 @@
       const awayScore =
         code !== 'ns' ? ((awayComp.score as string) ?? '0') : null
 
-      // comp.venue is null in the summary API for pre-tournament matches.
-      // Fall back to the scoreboard API (schedule endpoint) which always has venue.
-      let venue = (comp.venue as Record<string, unknown>)?.fullName as
-        | string
-        | null
-
-      if (!venue && comp.date) {
+      // ── Step 2: get venue from the scoreboard API — it always has it ────────
+      // The summary API returns null for comp.venue on pre-match events.
+      // The scoreboard (schedule) API always has the venue.
+      // comp.date is UTC, so the event may be in the previous calendar day's
+      // bucket — query a 2-day window to guarantee we find it.
+      let venue: string | null = null
+      const compDate = comp.date as string | undefined
+      if (compDate) {
         try {
-          // Extract YYYYMMDD from the ISO date string for the schedule query
-          const dateStr = (comp.date as string).slice(0, 10).replace(/-/g, '')
+          const utcDate = new Date(compDate)
+          const fmt = (d: Date) =>
+            d.toISOString().slice(0, 10).replace(/-/g, '')
+          const dayBefore = new Date(utcDate)
+          dayBefore.setUTCDate(dayBefore.getUTCDate() - 1)
+          const dateRange = `${fmt(dayBefore)}-${fmt(utcDate)}`
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const scheduleEvents = await $fetch<any[]>('/api/schedule', {
-            query: { dates: dateStr },
+            query: { dates: dateRange },
           })
           const scheduleEvent = scheduleEvents?.find(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (e: any) => String(e.id) === String(matchId)
           )
-          const scheduleComp = scheduleEvent?.competitions?.[0]
-          const scheduleVenue = scheduleComp?.venue?.fullName as
-            | string
-            | undefined
-          if (scheduleVenue) venue = scheduleVenue
+          venue =
+            (scheduleEvent?.competitions?.[0]?.venue?.fullName as string) ??
+            null
         } catch {
-          // Ignore — venue just won't show
+          // Ignore — venue will be null
         }
       }
 
       const match: Match = {
         id: matchId,
-        date: (comp.date as string) ?? (header?.date as string) ?? '',
+        date: compDate ?? (header?.date as string) ?? '',
         home: homeName,
         homeShort: homeData?.shortName ?? homeData?.name ?? homeName,
         homeScore,
@@ -109,7 +116,8 @@
         awayIso2: awayData?.iso2 ?? '',
         awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
         group: homeData?.group ?? awayData?.group ?? null,
-        venue: venue ?? null,
+        venue,
+        venueLocation: lookupVenueLocation(venue),
         status: { code, clock: clock !== '0:00' ? clock : undefined },
         qualityScore: 0,
         badge: null,

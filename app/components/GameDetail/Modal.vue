@@ -325,6 +325,12 @@
               <span v-if="selectedMatch.venue" class="gd-header__venue">
                 {{ selectedMatch.venue }}
               </span>
+              <span
+                v-if="selectedMatch.venueLocation"
+                class="gd-header__venue-location"
+              >
+                {{ selectedMatch.venueLocation }}
+              </span>
             </div>
 
             <!-- Close button -->
@@ -668,6 +674,16 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.75);
+  }
+
+  .gd-header__venue-location {
+    font-size: 0.75rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: oklab(100% 0 0 / 0.45);
   }
 
   /* Close button */

@@ -171,6 +171,10 @@ label {
     'wght' 600;
 }
 
+@utility grd-body {
+  padding: 1rem;
+}
+
 /* Smooth all theme color transitions */
 *,
 *::before,

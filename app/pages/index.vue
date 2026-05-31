@@ -16,6 +16,7 @@
     <div class="home-page__inner">
       <!-- Main: Scores wall -->
       <main class="home-page__main">
+        <CountdownBanner />
         <ScoresSection />
       </main>
     </div>
@@ -32,7 +33,7 @@
   @reference "~/assets/css/main.css";
   .home-page {
     flex: 1;
-    margin-top: 1rem;
+    margin-top: 0;
   }
 
   .home-page__inner {

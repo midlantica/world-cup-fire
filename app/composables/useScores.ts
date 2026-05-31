@@ -3,6 +3,7 @@ import {
   RIVALRY_PAIRS,
   WC_START,
   WC_FINAL,
+  venueLocation,
 } from '../constants/worldcup'
 import { useTimezone } from './useTimezone'
 
@@ -32,6 +33,7 @@ export interface Match {
   awayAbbrev: string
   group: string | null
   venue: string | null
+  venueLocation: string | null
   status: MatchStatus
   qualityScore: number
   badge: MatchBadge
@@ -270,6 +272,9 @@ export function normaliseEvent(ev: any): Match {
     group,
     venue:
       ((comp.venue as Record<string, unknown>)?.fullName as string) ?? null,
+    venueLocation: venueLocation(
+      ((comp.venue as Record<string, unknown>)?.fullName as string) ?? null
+    ),
     status: { code, clock },
     qualityScore: quality,
     badge,
