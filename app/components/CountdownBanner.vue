@@ -234,7 +234,6 @@
     padding-top: 0.5rem;
     padding-bottom: 0.75rem;
     container-type: inline-size;
-    container-name: cb;
   }
 
   /* ── Banner shell ─────────────────────────────────────────────────────────── */
