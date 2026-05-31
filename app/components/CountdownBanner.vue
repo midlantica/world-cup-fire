@@ -326,9 +326,9 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 900;
-    font-size: clamp(1.1rem, 4.5cqw, 3.2rem);
+    font-size: clamp(1.1rem, 3.7cqw, 3.2rem);
     line-height: 1;
-    letter-spacing: 0.04em;
+    letter-spacing: 0em;
     color: #000000;
     text-align: center;
     display: block;
@@ -340,9 +340,9 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    font-size: clamp(0.5rem, 1.1cqw, 0.75rem);
+    font-size: clamp(0.5rem, 1.2cqw, 0.75rem);
     line-height: 1;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.17em;
     text-transform: uppercase;
     text-align: center;
     color: #000000;
@@ -357,7 +357,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 900;
-    font-size: clamp(1.1rem, 4.5cqw, 3.2rem);
+    font-size: clamp(1.1rem, 3.7cqw, 3.2rem);
     line-height: 1;
     color: #000000;
     flex: 0 0 auto;
