@@ -301,8 +301,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    container-type: size;
-    container-name: clock-overlay;
   }
 
   /* ── Clock row ────────────────────────────────────────────────────────────── */
@@ -310,7 +308,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 0;
+    gap: 0.3em;
   }
 
   /* ── Individual unit (number + label stacked) ────────────────────────────── */
@@ -320,20 +318,19 @@
     align-items: center;
     gap: 0;
     flex: 0 0 auto;
+    min-width: 2em;
   }
 
-  /* ── Number — sized relative to the overlay box (height & width capped) ─── */
+  /* ── Number — sized using cqw from the outer .cb-wrap container ─────────── */
   .cb-num {
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 900;
-    font-size: 2.5rem; /* fallback for browsers without container query unit support */
-    font-size: min(52cqh, 12cqw);
+    font-size: clamp(1.1rem, 4.5cqw, 3.2rem);
     line-height: 1;
     letter-spacing: 0.04em;
     color: #000000;
-    width: 2.4ch;
     text-align: center;
     display: block;
   }
@@ -344,8 +341,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    font-size: 0.7rem; /* fallback for browsers without container query unit support */
-    font-size: min(14cqh, 4cqw);
+    font-size: clamp(0.5rem, 1.1cqw, 0.75rem);
     line-height: 1;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -362,12 +358,11 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 900;
-    font-size: 2.5rem; /* fallback for browsers without container query unit support */
-    font-size: min(52cqh, 12cqw);
+    font-size: clamp(1.1rem, 4.5cqw, 3.2rem);
     line-height: 1;
     color: #000000;
     flex: 0 0 auto;
-    width: 0.25em;
+    padding-bottom: 0.1em;
     text-align: center;
     align-self: flex-start;
   }
