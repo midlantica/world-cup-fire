@@ -36,6 +36,19 @@
   }
 
   onMounted(() => {
+    // Clear any stale localStorage keys from previous versions that had a dismiss button
+    const staleKeys = [
+      'wcf-countdown-dismissed',
+      'wcf-banner-dismissed',
+      'countdown-dismissed',
+      'countdown-closed',
+      'banner-closed',
+      'banner-dismissed',
+      'countdownBannerClosed',
+      'countdownDismissed',
+    ]
+    staleKeys.forEach((key) => localStorage.removeItem(key))
+
     startTimer()
 
     // Auto-collapse copy when banner scrolls out of view (mobile only)
@@ -264,6 +277,7 @@
 
   /* Wide SVG: scales with container, capped at native size */
   .cb-wide .cb-svg-wrap {
+    width: 38%;
     width: clamp(260px, 38cqw, 469px);
     align-self: stretch;
   }
@@ -314,6 +328,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 900;
+    font-size: 2.5rem; /* fallback for browsers without container query unit support */
     font-size: min(52cqh, 12cqw);
     line-height: 1;
     letter-spacing: 0.04em;
@@ -329,6 +344,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
+    font-size: 0.7rem; /* fallback for browsers without container query unit support */
     font-size: min(14cqh, 4cqw);
     line-height: 1;
     letter-spacing: 0.07em;
@@ -346,6 +362,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 900;
+    font-size: 2.5rem; /* fallback for browsers without container query unit support */
     font-size: min(52cqh, 12cqw);
     line-height: 1;
     color: #000000;
