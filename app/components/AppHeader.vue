@@ -318,9 +318,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.15rem;
+    gap: 0.1rem;
     border-radius: 0.5rem;
-    padding: 0.45rem 0.5rem;
+    padding: 0.7rem 0.5rem 0.4rem;
     text-align: center;
     transition: all 0.15s ease;
     /* Unselected = light / dull */
@@ -354,18 +354,25 @@
 
   /* LEVEL 3 (smallest, least fat): bottom of the hierarchy */
   .app-header__week-label {
-    line-height: 1.2;
-    font-size: 0.9rem;
-    letter-spacing: 0.04em;
+    line-height: 1;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    @apply font-anybody-medium;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
   }
 
   .app-header__week-dates {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     line-height: 1.2;
     opacity: 0.7;
-    @apply font-anybody-narrow;
+    letter-spacing: 0.05rem;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 90,
+      'wght' 300;
   }
 
   /* ── Narrow layout (≤ 800px): stacked rows, full-bleed (100vw) ──────────── */
