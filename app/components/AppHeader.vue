@@ -122,6 +122,11 @@
   .app-header {
     @apply sticky top-0 z-40;
     background: #0c0a09;
+    /* The header owns the gap below itself, in exactly ONE place. This pushes
+       whatever follows (the countdown banner today, the ScoresSection if the
+       banner is ever removed) down by a consistent amount — so content can
+       never bump into the tab bar above it. Applies at every breakpoint. */
+    margin-bottom: 0.75rem;
   }
 
   /* ── Wide layout (> 600px): single flex row ─────────────────────────────── */
@@ -264,7 +269,9 @@
     border-radius: 0.75rem;
     /* Pad off the sides on desktop so the bar isn't edge-to-edge.
        Keep it centered (auto left/right) within the max-width container. */
-    margin-bottom: 0.75rem;
+    /* No margin-bottom here: the gap below the whole header (including this
+       tab bar) is owned by .app-header's margin-bottom, so it persists no
+       matter what content follows. */
     width: calc(100% - 1.5rem);
   }
 
