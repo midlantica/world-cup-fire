@@ -133,11 +133,18 @@
   }
 
   .modal-team-btn {
-    @apply flex w-full items-center gap-2 rounded-lg px-0 py-0.5 text-left text-sm transition-all hover:bg-white/10;
+    @apply flex w-full items-center gap-2 rounded-lg text-left text-sm transition-all hover:bg-white/10;
+    padding: 0.2rem 0.4rem;
   }
 
   .modal-team-btn--selected {
-    @apply bg-orange-500/20 ring-1 ring-orange-400/50;
+    background: color-mix(
+      in srgb,
+      var(--nation-accent, #f97316) 20%,
+      transparent
+    );
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--nation-accent, #fb923c) 55%, transparent);
   }
 
   .modal-team-btn__name {

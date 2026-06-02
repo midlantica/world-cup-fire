@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { useMatchDetail } from '~/composables/useMatchDetail'
+  import { useNationTheme } from '~/composables/useNationTheme'
   import {
     TEAM_BY_NAME,
     venueLocation as lookupVenueLocation,
@@ -7,6 +8,11 @@
   import type { Match } from '~/composables/useScores'
 
   const { modalOpen, openMatch } = useMatchDetail()
+
+  // Apply the selected nation's contrast-safe color theme (sets CSS vars on
+  // <html> and toggles the .has-nation-theme class).
+  useNationTheme()
+
   const route = useRoute()
 
   // ── Deep-link: ?match=<eventId> opens the game detail modal on load ──────
@@ -159,10 +165,56 @@
   @reference "~/assets/css/main.css";
   .app-root {
     @apply min-h-screen text-white;
+    position: relative;
     display: flex;
     flex-direction: column;
-    background-color: #0c0a09; /* stone-950 */
-    transition: filter 0.2s ease;
+    /* Nation-tinted base (falls back to stone-950 when no nation selected). */
+    background-color: var(--nation-bg, #0c0a09);
+    transition:
+      filter 0.2s ease,
+      background-color 0.4s ease;
+  }
+
+  /* ── Nation theme: subtle background wash ──────────────────────────────────
+     A faint nation-colored tint over the whole page plus a soft glow that
+     fades in from the top. Dark stays dark — these only appear once a nation
+     is selected (the vars are unset otherwise, so the layer is transparent). */
+  .app-root::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        130% 60% at 50% 0%,
+        var(--nation-glow, transparent) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        130% 50% at 50% 100%,
+        var(--nation-glow, transparent) 0%,
+        transparent 55%
+      ),
+      linear-gradient(
+        180deg,
+        var(--nation-tint, transparent) 0%,
+        transparent 35%,
+        transparent 65%,
+        var(--nation-tint, transparent) 100%
+      );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  :global(html.has-nation-theme) .app-root::before {
+    opacity: 1;
+  }
+
+  /* Keep real content above the background wash. */
+  .app-root > * {
+    position: relative;
+    z-index: 1;
   }
 
   /* Let the page content grow to fill available space, pushing footer down */

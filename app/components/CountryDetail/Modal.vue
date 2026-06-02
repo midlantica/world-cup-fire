@@ -6,6 +6,7 @@
     espnLogoUrl,
     wcTitles,
     nameToIso2,
+    venueLocation,
   } from '~/constants/worldcup'
 
   import type { Match } from '~/composables/useScores'
@@ -15,7 +16,18 @@
 
   const { selectedCountry, countryData, modalOpen, closeCountry, openCountry } =
     useCountryDetail()
+  const { myNation } = useMyNation()
   const { openMatch } = useMatchDetail()
+
+  /** True when a given match involves the user's selected nation, so it gets
+   *  the subtle accent ring (consistent with MatchCard's --mine treatment).
+   *  Works in any country's modal: e.g. viewing Haiti while Brazil is your
+   *  nation rings the Brazil-vs-Haiti card. */
+  function isMyMatch(home: string, away: string): boolean {
+    const mine = myNation.value
+    return !!mine && (home === mine || away === mine)
+  }
+
   const { pushHistory, popHistory, clearHistory, canGoBack } = useModalNav()
   const { openGroup } = useGroupDetail()
 
@@ -536,6 +548,7 @@
       awayAbbrev: awayData?.abbrev ?? m.away.slice(0, 3).toUpperCase(),
       group: m.group,
       venue: m.venue,
+      venueLocation: venueLocation(m.venue),
       status: { code: m.statusCode, clock: m.statusClock },
       qualityScore: 0,
       badge: null,
@@ -673,10 +686,12 @@
                       'cd-match--live':
                         m.statusCode === 'live' || m.statusCode === 'ht',
                       'cd-match--ft': m.statusCode === 'ft',
+                      'cd-match--mine': isMyMatch(m.home, m.away),
                     }"
                     @click="openMatchDetail(m)"
                   >
                     <!-- Top bar: group + venue -->
+
                     <div class="cd-match__top">
                       <span v-if="m.group" class="cd-match__group">
                         Group {{ m.group }}
@@ -1325,7 +1340,7 @@
     background: var(--cd-group-bg, oklab(100% 0 0 / 0.15));
     border: none;
     border-radius: 9999px;
-    padding: 0.1rem 0.65rem 0.05rem;
+    padding: 0.15rem 0.65rem 0.05rem;
     margin: 0;
     font-size: 0.65rem;
     font-family: inherit;
@@ -1539,7 +1554,20 @@
     background: oklch(20% 0.025 160);
   }
 
+  /* My nation: subtle accent ring (consistent with MatchCard --mine). The
+     background stays the neutral card color — only the ring distinguishes it.
+     Falls back to a faint white ring if no nation theme is active. */
+  .cd-match--mine {
+    border-color: var(--nation-accent-soft, oklab(100% 0 0 / 0.08));
+    box-shadow: 0 0 0 1px var(--nation-accent-soft, transparent);
+  }
+
+  .cd-match--mine:hover {
+    box-shadow: 0 0 0 1px var(--nation-accent, oklab(100% 0 0 / 0.15));
+  }
+
   /* Top bar */
+
   .cd-match__top {
     display: flex;
     align-items: center;

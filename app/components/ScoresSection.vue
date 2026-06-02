@@ -55,30 +55,32 @@
           :key="day"
           class="scores-section__day"
         >
-          <button class="scores-section__day-header" @click="toggleDay(day)">
-            <svg
-              class="scores-section__day-caret"
-              :class="{
-                'scores-section__day-caret--collapsed': collapsed.has(day),
-              }"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+          <div class="scores-section__day-header">
+            <button
+              type="button"
+              class="scores-section__day-toggle"
+              :aria-expanded="!collapsed.has(day)"
+              @click="toggleDay(day)"
             >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-            <span class="scores-section__day-title">{{
-              formatDayHeader(day)
-            }}</span>
-            <span class="scores-section__day-count"
-              >{{ dayMatches.length }} match{{
-                dayMatches.length !== 1 ? 'es' : ''
-              }}</span
-            >
-          </button>
+              <svg
+                class="scores-section__day-caret"
+                :class="{
+                  'scores-section__day-caret--collapsed': collapsed.has(day),
+                }"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+              <span class="scores-section__day-title">{{
+                formatDayHeader(day)
+              }}</span>
+            </button>
+          </div>
 
           <div v-if="!collapsed.has(day)" class="scores-section__grid">
             <MatchCard
@@ -132,13 +134,39 @@
   .scores-section__day-header {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+  }
+
+  /* Only the caret + date text is the click target — not the full row width. */
+  .scores-section__day-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     background: none;
     border: none;
-    padding: 0;
+    padding: 0.25rem 0.5rem 0;
+    margin: -0.25rem -0.5rem;
+
+    border-radius: 0.5rem;
     cursor: pointer;
     text-align: left;
-    width: 100%;
+    width: fit-content;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+
+  .scores-section__day-toggle:focus-visible {
+    outline: none;
+  }
+
+  /* Light up the date text + caret in a pale yellow on hover/click/focus. */
+  .scores-section__day-toggle:hover .scores-section__day-title,
+  .scores-section__day-toggle:active .scores-section__day-title,
+  .scores-section__day-toggle:focus-visible .scores-section__day-title,
+  .scores-section__day-toggle:hover .scores-section__day-caret,
+  .scores-section__day-toggle:active .scores-section__day-caret,
+  .scores-section__day-toggle:focus-visible .scores-section__day-caret {
+    color: #fff3a0;
   }
 
   .scores-section__day-caret {
@@ -149,6 +177,8 @@
     transform: rotate(0deg);
     transition: transform 0.2s ease;
     flex-shrink: 0;
+    margin-bottom: 0.1rem;
+    margin-top: -0.1rem;
   }
 
   .scores-section__day-caret--collapsed {
@@ -156,16 +186,13 @@
   }
 
   .scores-section__day-title {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 700;
+
     color: rgb(255 255 255 / 0.9);
     letter-spacing: 0.075em;
     text-transform: uppercase;
     @apply font-anybody-wide;
-  }
-
-  .scores-section__day-count {
-    @apply text-xs font-normal text-white/40;
   }
 
   .scores-section__grid {

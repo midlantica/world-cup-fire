@@ -1,11 +1,22 @@
 <script setup lang="ts">
   import type { Match } from '../composables/useScores'
   import { useTimezone } from '../composables/useTimezone'
+  import { useMyNation } from '../composables/useMyNation'
 
   const props = defineProps<{
     match: Match
     showDate?: boolean
   }>()
+
+  const { myNation } = useMyNation()
+
+  /** True when the selected nation is playing in this match. */
+  const isMyNation = computed(
+    () =>
+      !!myNation.value &&
+      (props.match.home === myNation.value ||
+        props.match.away === myNation.value)
+  )
 
   const emit = defineEmits<{
     (e: 'click', match: Match): void
@@ -77,7 +88,10 @@
 <template>
   <article
     class="match-card"
-    :class="[`q-${qClass}`, { live: isLive || isHT }]"
+    :class="[
+      `q-${qClass}`,
+      { live: isLive || isHT, 'match-card--mine': isMyNation },
+    ]"
     @click="emit('click', match)"
   >
     <!-- Top bar: darker row, group pill flush-left, venue flush-right -->
@@ -176,12 +190,28 @@
   /* ── Card shell ──────────────────────────────────────────────────────────── */
   .match-card {
     @apply relative cursor-pointer rounded-xl transition-all duration-200 hover:shadow-lg;
-    background-color: #1d1d1d;
+    /* Nation-tinted card surface (falls back to plain grey when no nation). */
+    background-color: var(--nation-card, #1d1d1d);
     border: 1px solid rgb(255 255 255 / 0.08);
   }
 
   .match-card:hover {
-    background-color: #252525;
+    background-color: var(--nation-card-hover, #252525);
+  }
+
+  /* ── My nation: subtle accent ring ──────────────────────────────────────────
+     Highlights the selected nation's matches inline in the day list. Uses the
+     contrast-safe nation accent vars set by useNationTheme (on <html>), with a
+     graceful fallback if no theme is active. */
+  .match-card--mine {
+    /* Stronger nation-tinted surface for the selected nation's own matches. */
+    background-color: var(--nation-card-mine, #1d1d1d);
+    border-color: var(--nation-accent-soft, rgb(255 255 255 / 0.08));
+    box-shadow: 0 0 0 1px var(--nation-accent-soft, transparent);
+  }
+
+  .match-card--mine:hover {
+    box-shadow: 0 0 0 1px var(--nation-accent, transparent);
   }
 
   .match-card.live {

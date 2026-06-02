@@ -6,6 +6,15 @@
   const { groups, pending } = useStandings()
   const { openCountry } = useCountryDetail()
   const { openGroup } = useGroupDetail()
+  const { myNation } = useMyNation()
+
+  /** True when a group contains the user's selected nation, so the whole group
+   *  card gets the subtle accent ring (consistent with the match-card --mine
+   *  treatment elsewhere). */
+  function isMyGroup(entries: { teamName: string }[]): boolean {
+    const mine = myNation.value
+    return !!mine && entries.some((e) => e.teamName === mine)
+  }
 </script>
 
 <template>
@@ -27,6 +36,7 @@
         v-for="group in groups"
         :key="group.letter"
         class="group-card"
+        :class="{ 'group-card--mine': isMyGroup(group.entries) }"
         @click="openGroup(group.letter)"
       >
         <div class="group-card__header">
@@ -115,7 +125,7 @@
   }
 
   .groups-section__qualify-dot {
-    @apply inline-block h-2 w-2 flex-shrink-0 rounded-sm bg-emerald-500/60;
+    @apply inline-block h-2 w-2 shrink-0 rounded-sm bg-emerald-500/60;
   }
 
   .groups-section__loading {
@@ -133,6 +143,24 @@
   .group-card {
     @apply cursor-pointer rounded-xl border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10;
     padding-bottom: 0.5rem;
+  }
+
+  /* My nation: accent ring on the whole group card (consistent with the
+     match-card --mine treatment, but turned up a few steps here since the
+     group cards are larger and the subtle ring read too faintly). The
+     background stays neutral — only the ring distinguishes the group
+     containing the user's selected nation. */
+  .group-card--mine {
+    border-color: var(--nation-accent, rgb(255 255 255 / 0.25));
+    box-shadow:
+      0 0 0 1px var(--nation-accent, rgb(255 255 255 / 0.2)),
+      0 0 8px 0 var(--nation-glow, transparent);
+  }
+
+  .group-card--mine:hover {
+    box-shadow:
+      0 0 0 1px var(--nation-accent, rgb(255 255 255 / 0.3)),
+      0 0 12px 0 var(--nation-glow, transparent);
   }
 
   .group-card__header {

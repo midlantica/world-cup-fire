@@ -55,10 +55,11 @@
           Groups
         </NuxtLink>
         <NuxtLink
-          to="/predictor"
-          class="app-header__nav-link app-header__nav-link--soon"
+          to="/picks"
+          class="app-header__nav-link"
+          active-class="app-header__nav-link--active"
         >
-          Predictor
+          Picks
         </NuxtLink>
       </nav>
 
@@ -121,7 +122,12 @@
   /* ── Header shell ─────────────────────────────────────────────────────────── */
   .app-header {
     @apply sticky top-0 z-40;
-    background: #0c0a09;
+    /* Transparent so the single page-wide nation wash (--nation-bg on <body>)
+       shows through uniformly. Falls back to the app bg when no nation is
+       selected. A distinct header tint here caused a visibly different green
+       band across the top of the page. */
+    background: var(--nation-bg, #0c0a09);
+
     /* The header owns the gap below itself, in exactly ONE place. This pushes
        whatever follows (the countdown banner today, the ScoresSection if the
        banner is ever removed) down by a consistent amount — so content can
@@ -171,32 +177,38 @@
       'wdth' 100,
       'wght' 800;
     letter-spacing: 0.08rem;
-    /* Unselected = light / dull */
-    color: rgb(255 255 255 / 0.5);
+    /* Unselected = light / dull, but still clearly readable against the dark
+       (or nation-tinted) page. Bumped up from 0.5 so the label doesn't wash
+       into the background. */
+    color: rgb(255 255 255 / 0.62);
 
+    /* Translucent so the nation theme washes through the nav, but opaque
+       enough that the button shape reads as a distinct chip against the
+       background (previous 0.35 gradient disappeared on the dark header). */
     background: linear-gradient(
       180deg,
-      rgba(60, 56, 52, 0.55) 0%,
-      rgba(40, 36, 33, 0.55) 100%
+      rgba(78, 73, 68, 0.62) 0%,
+      rgba(52, 47, 43, 0.62) 100%
     );
   }
 
   .app-header__nav-link:hover {
-    color: rgb(255 255 255 / 0.8);
+    color: rgb(255 255 255 / 0.9);
     background: linear-gradient(
       180deg,
-      rgba(70, 66, 62, 0.7) 0%,
-      rgba(48, 44, 40, 0.7) 100%
+      rgba(92, 87, 81, 0.72) 0%,
+      rgba(62, 57, 52, 0.72) 100%
     );
   }
 
-  /* Selected = dark / clear (solid, full opacity, attached to tabs below) */
+  /* Selected = brighter, lifted chip so it clearly stands apart from the
+     unselected buttons (still translucent so the theme shows through). */
   .app-header__nav-link--active {
     text-shadow: 0 1px 3px #00000082;
     background: linear-gradient(
       180deg,
-      rgba(60, 56, 52, 1) 0%,
-      rgb(36 33 30) 100%
+      rgb(134 125 117 / 78%) 0%,
+      rgb(53 49 44 / 78%) 100%
     );
     color: #ffffff;
   }
@@ -265,7 +277,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #1a1817;
+    /* Translucent so the nation theme washes through the tab bar. */
+    background: rgb(26 24 23 / 0.55);
     border-radius: 0.75rem;
     /* Pad off the sides on desktop so the bar isn't edge-to-edge.
        Keep it centered (auto left/right) within the max-width container. */
@@ -278,7 +291,8 @@
   .app-header__stage-row {
     display: flex;
     gap: 2px;
-    background: #0c0a09;
+    /* Transparent so the tab bar's translucent base (and the theme) shows. */
+    background: transparent;
   }
 
   /* LEVEL 2 (sub to MGP): smaller size, less fat weight */
@@ -295,28 +309,29 @@
     @apply font-anybody-bold;
     white-space: nowrap;
 
-    /* Unselected = light / dull */
+    /* Unselected = light / dull (translucent so the theme washes through). */
     color: rgb(255 255 255 / 0.45);
-    background: hsl(12 7% 10% / 1);
+    background: hsl(12 7% 10% / 0.45);
     transition: all 0.15s ease;
   }
 
   .app-header__stage-btn:hover:not(.app-header__stage-btn--active) {
     color: rgb(255 255 255 / 0.75);
-    background: hsl(12 7% 14% / 1);
+    background: hsl(12 7% 14% / 0.55);
   }
 
-  /* Selected = dark / clear */
+  /* Selected = dark / clear (translucent so the theme shows through). */
   .app-header__stage-btn--active {
     color: #ffffff;
-    background: #252120;
+    background: rgb(37 33 32 / 0.7);
   }
 
   .app-header__week-tabs {
     display: flex;
     padding: 0.3rem 0.4rem;
     gap: 0.25rem;
-    background: #252120;
+    /* Translucent so the theme washes through the week-tab strip. */
+    background: rgb(37 33 32 / 0.6);
     border-right: 1px solid hsl(0deg 0% 100% / 10%);
   }
 
