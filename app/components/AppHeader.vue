@@ -4,15 +4,34 @@
   import { useScores, WC_TABS } from '../composables/useScores'
   import type { Stage } from '../composables/useScores'
   import { usePicks } from '../composables/usePicks'
+  import { usePools } from '../composables/usePools'
 
   const { myTeamData, openModal } = useMyNation()
+
   const { selectedTz, setTz } = useTimezone()
   const { activeTab } = useScores()
   const { pickCount } = usePicks()
+  const { pools } = usePools()
 
   const route = useRoute()
+  const router = useRouter()
 
   const showTabs = computed(() => route.path === '/')
+
+  // ── Picks sub-tabs (My Picks | Group Pools) ────────────────────────────────
+  // Rendered inside the header (like the Matches stage row) only on /picks. The
+  // active tab is driven by the URL (?tab=personal | ?tab=pools) so it survives
+  // a refresh and the picks page reads the same query to show the right view.
+  const showPicksTabs = computed(() => route.path === '/picks')
+
+  type PicksTab = 'personal' | 'pools'
+  const activePicksTab = computed<PicksTab>(() =>
+    route.query.tab === 'pools' ? 'pools' : 'personal'
+  )
+
+  function selectPicksTab(tab: PicksTab) {
+    router.replace({ query: { ...route.query, tab } })
+  }
 
   const activeStage = computed<Stage>(() => {
     const tab = WC_TABS.find((t) => t.key === activeTab.value)
@@ -27,10 +46,28 @@
   const visibleTabs = computed(() =>
     WC_TABS.filter((t) => t.stage === activeStage.value)
   )
+
+  // Publish the header's rendered height as a CSS variable (--app-header-h) so
+  // page-level sticky sub-navs (e.g. the Picks "My Picks / Group Pools" bar) can
+  // pin themselves flush beneath the header without hard-coding a pixel offset
+  // that would break across breakpoints (the logo shrinks on small screens).
+  const headerEl = ref<HTMLElement | null>(null)
+
+  onMounted(() => {
+    if (!import.meta.client || !headerEl.value) return
+    const publish = () => {
+      const h = headerEl.value?.offsetHeight ?? 0
+      document.documentElement.style.setProperty('--app-header-h', `${h}px`)
+    }
+    publish()
+    const ro = new ResizeObserver(publish)
+    ro.observe(headerEl.value)
+    onBeforeUnmount(() => ro.disconnect())
+  })
 </script>
 
 <template>
-  <header class="app-header">
+  <header ref="headerEl" class="app-header">
     <div class="app-header__inner">
       <!-- Logo / Brand -->
       <NuxtLink to="/" class="app-header__brand">
@@ -121,6 +158,33 @@
         </button>
       </div>
     </div>
+
+    <!-- Picks sub-tabs (My Picks | Group Pools) — only on the picks page -->
+    <div v-if="showPicksTabs" class="app-header__tabs app-header__tabs--picks">
+      <div class="app-header__stage-row">
+        <button
+          class="app-header__stage-btn"
+          :class="{
+            'app-header__stage-btn--active': activePicksTab === 'personal',
+          }"
+          @click="selectPicksTab('personal')"
+        >
+          My Picks
+        </button>
+        <button
+          class="app-header__stage-btn"
+          :class="{
+            'app-header__stage-btn--active': activePicksTab === 'pools',
+          }"
+          @click="selectPicksTab('pools')"
+        >
+          Group Pools
+          <span v-if="pools.length > 0" class="app-header__picks-count">{{
+            pools.length
+          }}</span>
+        </button>
+      </div>
+    </div>
   </header>
 </template>
 
@@ -136,10 +200,9 @@
        band across the top of the page. */
     background: var(--nation-bg, #0c0a09);
 
-    /* The header owns the gap below itself, in exactly ONE place. This pushes
-       whatever follows (the countdown banner today, the ScoresSection if the
-       banner is ever removed) down by a consistent amount — so content can
-       never bump into the tab bar above it. Applies at every breakpoint. */
+    /* No gap below the header: each page owns its own top spacing (e.g.
+       .home-page margin-top), and page sub-navs (Picks) pin flush beneath the
+       header. Applies at every breakpoint. */
     margin-bottom: 0.75rem;
   }
 
@@ -371,6 +434,39 @@
   .app-header__stage-btn--active {
     color: #ffffff;
     background: rgb(37 33 32 / 0.7);
+  }
+
+  /* ── Picks sub-tabs (My Picks | Group Pools) ─────────────────────────────── */
+  /* Reuses .app-header__tabs + .app-header__stage-btn so the look matches the
+     Matches "Group Stage / Knockout Stage" row exactly. The picks variant has
+     no week-tabs strip, so round off its bottom corners on desktop. */
+  .app-header__tabs--picks {
+    border-radius: 0.75rem;
+  }
+
+  .app-header__tabs--picks .app-header__stage-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  /* Green count pill on the Group Pools tab */
+  .app-header__picks-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    padding: 0 0.3rem;
+    border-radius: 9999px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    letter-spacing: 0;
   }
 
   .app-header__week-tabs {

@@ -55,6 +55,12 @@ export function usePicks() {
   const picks = useState<PicksMap>('wc-picks', () => loadPicks())
   const { iana } = useTimezone()
 
+  // True once picks have actually been read from localStorage on the client.
+  // On the server (and during the first client tick before hydration) this is
+  // false, so the UI can avoid flashing "deadline" nudges based on an empty map
+  // that hasn't been loaded yet.
+  const picksReady = useState<boolean>('wc-picks-ready', () => false)
+
   // Keep localStorage in sync. (Hydrate once on client too, in case the state
   // was first created during SSR with an empty map.)
   if (import.meta.client) {
@@ -63,6 +69,7 @@ export function usePicks() {
         const stored = loadPicks()
         if (Object.keys(stored).length > 0) picks.value = stored
       }
+      picksReady.value = true
     })
   }
 
@@ -257,7 +264,9 @@ export function usePicks() {
 
   return {
     picks,
+    picksReady,
     pickCount,
+
     pickList,
     pickListByDay,
     pickedTeam,

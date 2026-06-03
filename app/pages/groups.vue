@@ -31,6 +31,6 @@
 
   .groups-page__inner {
     @apply mx-auto max-w-7xl;
-    padding: 1rem 1rem 2rem;
+    padding: 0rem 1rem 2rem;
   }
 </style>

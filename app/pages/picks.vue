@@ -12,7 +12,8 @@
     title: 'Picks — World Cup Fire 🔥',
   })
 
-  const { picks, pickListByDay, pickCount, clearAll } = usePicks()
+  const { picks, picksReady, pickListByDay, pickCount, clearAll } = usePicks()
+
   const {
     pools,
     canCreate,
@@ -199,11 +200,16 @@
   // The "soonest" kickoff among matches the user hasn't picked yet that haven't
   // started. Drives a 🚨 nudge so picks get made before the window closes.
   const nextDeadline = computed(() => {
+    // Wait until picks have actually been read from localStorage. Otherwise, on
+    // a refresh the map is momentarily empty and this banner flashes up for an
+    // already-picked match before disappearing.
+    if (!picksReady.value) return null
     const now = Date.now()
     let soonest: {
       match: (typeof matches.value)[number]
       kickoff: number
     } | null = null
+
     for (const m of matches.value) {
       if (m.status.code !== 'ns') continue
       if (picks.value[m.id]) continue
@@ -237,29 +243,9 @@
 
 <template>
   <div class="picks-page">
-    <!-- ── Sub-nav: Personal Picks | Group Pools ────────────────────────── -->
-    <div class="picks-subnav">
-      <div class="picks-subnav__inner">
-        <button
-          class="picks-subnav__btn"
-          :class="{ 'picks-subnav__btn--active': activeTab === 'personal' }"
-          @click="setTab('personal')"
-        >
-          Personal Picks
-        </button>
-        <button
-          class="picks-subnav__btn"
-          :class="{ 'picks-subnav__btn--active': activeTab === 'pools' }"
-          @click="setTab('pools')"
-        >
-          Group Pools
-          <span v-if="pools.length > 0" class="picks-subnav__count">{{
-            pools.length
-          }}</span>
-        </button>
-      </div>
-    </div>
-
+    <!-- Sub-nav (My Picks | Group Pools) now lives in AppHeader, rendered as a
+         header sub-tab row (like the Matches stage tabs). The active tab is
+         driven by the ?tab= query, which both AppHeader and this page read. -->
     <div class="picks-page__inner">
       <!-- ── Invitee welcome banner ─────────────────────────────────────── -->
       <div v-if="isInvitee" class="picks-page__welcome">
@@ -431,77 +417,6 @@
 
   .picks-page {
     flex: 1;
-  }
-
-  /* ── Sub-nav (mirrors the Matches stage tabs) ───────────────────────────── */
-  .picks-subnav {
-    @apply mx-auto max-w-7xl px-3;
-    margin-bottom: 1rem;
-  }
-
-  .picks-subnav__inner {
-    display: flex;
-    gap: 2px;
-    overflow: hidden;
-    border-radius: 0.75rem;
-    background: rgb(26 24 23 / 0.55);
-  }
-
-  .picks-subnav__btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: none;
-    border-top: 1px solid hsl(0deg 0% 100% / 10%);
-    padding: 0.6rem 0.75rem;
-    cursor: pointer;
-    font-family: 'Anybody', sans-serif;
-    font-size: 1.05rem;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 800;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: rgb(255 255 255 / 0.45);
-    background: hsl(12 7% 10% / 0.45);
-    transition: all 0.15s ease;
-  }
-
-  .picks-subnav__btn:first-child {
-    border-radius: 0.75rem 0 0 0.75rem;
-  }
-
-  .picks-subnav__btn:last-child {
-    border-radius: 0 0.75rem 0.75rem 0;
-  }
-
-  .picks-subnav__btn:hover:not(.picks-subnav__btn--active) {
-    color: rgb(255 255 255 / 0.75);
-    background: hsl(12 7% 14% / 0.55);
-  }
-
-  .picks-subnav__btn--active {
-    color: #ffffff;
-    background: linear-gradient(180deg, rgb(83 77 72) 0%, rgb(50 45 41) 100%);
-  }
-
-  .picks-subnav__count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.1rem;
-    height: 1.1rem;
-    padding: 0 0.3rem;
-    border-radius: 9999px;
-    background: #16a34a;
-    color: #fff;
-    font-size: 0.7rem;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 800;
-    letter-spacing: 0;
   }
 
   .picks-page__inner {
