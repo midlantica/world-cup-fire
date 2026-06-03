@@ -3,10 +3,13 @@
   import { useTimezone } from '../composables/useTimezone'
   import { useScores, WC_TABS } from '../composables/useScores'
   import type { Stage } from '../composables/useScores'
+  import { usePicks } from '../composables/usePicks'
 
   const { myTeamData, openModal } = useMyNation()
   const { selectedTz, setTz } = useTimezone()
   const { activeTab } = useScores()
+  const { pickCount } = usePicks()
+
   const route = useRoute()
 
   const showTabs = computed(() => route.path === '/')
@@ -60,6 +63,11 @@
           active-class="app-header__nav-link--active"
         >
           Picks
+          <Transition name="pick-badge">
+            <span v-if="pickCount > 0" class="app-header__pick-badge">{{
+              pickCount
+            }}</span>
+          </Transition>
         </NuxtLink>
       </nav>
 
@@ -166,9 +174,10 @@
 
   /* LEVEL 1 (top of hierarchy): largest size, fattest weight */
   .app-header__nav-link {
-    @apply flex items-center justify-center no-underline transition-all;
+    @apply relative flex items-center justify-center gap-2 no-underline transition-all;
     padding: 0.95rem 1.25rem;
     border-radius: 10px;
+
     font-family: 'Anybody', sans-serif;
     font-size: 1.2rem;
     line-height: 1;
@@ -217,6 +226,44 @@
     @apply cursor-not-allowed;
     pointer-events: none;
     opacity: 0.35;
+  }
+
+  /* Picks count badge — green pill, draws the eye after picks are made */
+  .app-header__pick-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.35rem;
+    border-radius: 9999px;
+    background: #16a34a;
+    color: #ffffff;
+    font-family: 'Anybody', sans-serif;
+    font-size: 0.8rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    letter-spacing: 0;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+  }
+
+  /* Pop-in transition when the badge first appears / count changes */
+  .pick-badge-enter-active {
+    transition:
+      transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.2s ease;
+  }
+  .pick-badge-leave-active {
+    transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+  }
+  .pick-badge-enter-from,
+  .pick-badge-leave-to {
+    opacity: 0;
+    transform: scale(0.3);
   }
 
   /* Right controls group */

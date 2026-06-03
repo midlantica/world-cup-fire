@@ -2,6 +2,7 @@
   import { useMatchDetail } from '../../composables/useMatchDetail'
   import { useCountryDetail } from '../../composables/useCountryDetail'
   import { useModalNav } from '../../composables/useModalNav'
+  import { usePicks } from '../../composables/usePicks'
   import { TEAM_BY_NAME } from '~/constants/worldcup'
 
   const { selectedMatch, modalOpen, closeMatch, detail, pending } =
@@ -9,7 +10,66 @@
   const { openCountry } = useCountryDetail()
   const { pushHistory, popHistory, clearHistory, canGoBack } = useModalNav()
 
-  function goToCountry(name: string) {
+  // ── Picks (pick straight from the modal header via the unified WTL unit) ───
+  const { wtlOutcome, canPick, canPickDraw, pickWtl, clearPick } = usePicks()
+
+  /** Win·Tie·Lose pick for the open match (anchored to home), or null. */
+  const matchWtl = computed(() =>
+    selectedMatch.value ? wtlOutcome(selectedMatch.value.id) : null
+  )
+  const matchPickable = computed(() =>
+    selectedMatch.value ? canPick(selectedMatch.value) : false
+  )
+  const matchHasPick = computed(() => matchWtl.value !== null)
+  /** Tie (draw) slot only at group stage. */
+  const matchAllowTie = computed(() =>
+    selectedMatch.value ? canPickDraw(selectedMatch.value) : false
+  )
+  /** Show the control when pickable, or a pick already exists. */
+  const showWtl = computed(() => matchPickable.value || matchHasPick.value)
+
+  // ── Hover / tap arming (mirrors MatchCard) ─────────────────────────────────
+  // Desktop: hovering a team name reveals that side's picker. Mobile: the first
+  // tap "arms" that side (reveals the picker) and a second tap drills into the
+  // country. We track which side is active so the picker pops in that exact row.
+  const armedSide = ref<'home' | 'away' | null>(null)
+  const hoveredSide = ref<'home' | 'away' | null>(null)
+
+  /** Picker is revealed for a side (hover desktop / armed mobile). */
+  function rowRevealed(side: 'home' | 'away'): boolean {
+    return (
+      matchPickable.value &&
+      (hoveredSide.value === side || armedSide.value === side)
+    )
+  }
+
+  // Reset arming whenever the open match changes.
+  watch(
+    () => selectedMatch.value?.id,
+    () => {
+      armedSide.value = null
+      hoveredSide.value = null
+    }
+  )
+
+  function onWtlPick(choice: 'win' | 'tie' | 'lose') {
+    if (selectedMatch.value && matchPickable.value)
+      pickWtl(selectedMatch.value, choice)
+    armedSide.value = null
+  }
+
+  function cancelPick() {
+    if (selectedMatch.value) clearPick(selectedMatch.value.id)
+    armedSide.value = null
+  }
+
+  function goToCountry(name: string, side: 'home' | 'away') {
+    // On a pickable match the first tap arms that side's picker (so touch users
+    // can pick); a second tap drills into the country.
+    if (matchPickable.value && armedSide.value !== side) {
+      armedSide.value = side
+      return
+    }
     // Push current match onto history before navigating away
     if (selectedMatch.value) {
       pushHistory({ type: 'match', match: selectedMatch.value })
@@ -246,24 +306,42 @@
               Group {{ selectedMatch.group }}
             </button>
 
-            <!-- Teams row: Name Flag | vs/score | Flag Name -->
+            <!-- Teams row: [pick] Name Flag | vs/score | Flag Name [pick] -->
             <div class="gd-header__teams-row">
               <!-- Home side -->
-              <button
-                class="gd-header__side gd-header__side--home gd-header__team-btn"
-                :title="`View ${selectedMatch.home}`"
-                @click="goToCountry(selectedMatch.home)"
+              <div
+                class="gd-header__side gd-header__side--home"
+                @mouseenter="hoveredSide = 'home'"
+                @mouseleave="hoveredSide = null"
               >
-                <span class="gd-header__team-name">
-                  <span class="gd-header__team-name-full">{{
-                    homeDisplay
-                  }}</span>
-                  <span class="gd-header__team-name-abbrev">{{
-                    homeAbbrev
-                  }}</span>
-                </span>
-                <CountryFlag :iso2="selectedMatch.homeIso2" :size="32" />
-              </button>
+                <!-- Unified Win·Tie·Lose pick control — anchored to home -->
+                <PicksWtlToggle
+                  v-if="showWtl"
+                  :outcome="matchWtl"
+                  :perspective="'home'"
+                  :allow-tie="matchAllowTie"
+                  :revealed="rowRevealed('home')"
+                  :readonly="!matchPickable"
+                  @pick="onWtlPick"
+                  @cancel="cancelPick"
+                />
+
+                <button
+                  class="gd-header__team-btn"
+                  :title="`View ${selectedMatch.home}`"
+                  @click="goToCountry(selectedMatch.home, 'home')"
+                >
+                  <span class="gd-header__team-name">
+                    <span class="gd-header__team-name-full">{{
+                      homeDisplay
+                    }}</span>
+                    <span class="gd-header__team-name-abbrev">{{
+                      homeAbbrev
+                    }}</span>
+                  </span>
+                  <CountryFlag :iso2="selectedMatch.homeIso2" :size="32" />
+                </button>
+              </div>
 
               <!-- Centre: vs or score -->
               <div class="gd-header__centre">
@@ -297,21 +375,39 @@
               </div>
 
               <!-- Away side -->
-              <button
-                class="gd-header__side gd-header__side--away gd-header__team-btn"
-                :title="`View ${selectedMatch.away}`"
-                @click="goToCountry(selectedMatch.away)"
+              <div
+                class="gd-header__side gd-header__side--away"
+                @mouseenter="hoveredSide = 'away'"
+                @mouseleave="hoveredSide = null"
               >
-                <CountryFlag :iso2="selectedMatch.awayIso2" :size="32" />
-                <span class="gd-header__team-name">
-                  <span class="gd-header__team-name-full">{{
-                    awayDisplay
-                  }}</span>
-                  <span class="gd-header__team-name-abbrev">{{
-                    awayAbbrev
-                  }}</span>
-                </span>
-              </button>
+                <button
+                  class="gd-header__team-btn"
+                  :title="`View ${selectedMatch.away}`"
+                  @click="goToCountry(selectedMatch.away, 'away')"
+                >
+                  <CountryFlag :iso2="selectedMatch.awayIso2" :size="32" />
+                  <span class="gd-header__team-name">
+                    <span class="gd-header__team-name-full">{{
+                      awayDisplay
+                    }}</span>
+                    <span class="gd-header__team-name-abbrev">{{
+                      awayAbbrev
+                    }}</span>
+                  </span>
+                </button>
+
+                <!-- Unified Win·Tie·Lose pick control — anchored to away -->
+                <PicksWtlToggle
+                  v-if="showWtl"
+                  :outcome="matchWtl"
+                  :perspective="'away'"
+                  :allow-tie="matchAllowTie"
+                  :revealed="rowRevealed('away')"
+                  :readonly="!matchPickable"
+                  @pick="onWtlPick"
+                  @cancel="cancelPick"
+                />
+              </div>
             </div>
 
             <!-- Date + Venue -->
@@ -505,6 +601,9 @@
     padding: 0;
     margin: 0;
     border-radius: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
   }
 
   .gd-header__team-btn:hover .gd-header__team-name {

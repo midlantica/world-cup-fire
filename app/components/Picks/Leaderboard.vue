@@ -1,0 +1,215 @@
+<script setup lang="ts">
+  // ── Leaderboard ───────────────────────────────────────────────────────────
+  // Ranked list of a pool's members + their scores. The leader (rank 1) row is
+  // highlighted. Styled per Figma: header bar #1A1817, body #252120.
+
+  import type { LeaderRow } from '../../composables/usePools'
+
+  defineProps<{
+    rows: LeaderRow[]
+  }>()
+</script>
+
+<template>
+  <div class="leaderboard">
+    <div class="leaderboard__head">LeaderBoard</div>
+
+    <!-- Column header -->
+    <div class="leaderboard__cols">
+      <span class="leaderboard__col leaderboard__col--rank">#</span>
+      <span class="leaderboard__col leaderboard__col--name">Player</span>
+      <span class="leaderboard__col leaderboard__col--num" title="Correct picks"
+        >✓</span
+      >
+      <span class="leaderboard__col leaderboard__col--num" title="Picks made"
+        >Picks</span
+      >
+      <span class="leaderboard__col leaderboard__col--num" title="Accuracy"
+        >Acc</span
+      >
+    </div>
+
+    <div class="leaderboard__body">
+      <div
+        v-for="row in rows"
+        :key="row.memberId"
+        class="leaderboard__row"
+        :class="{ 'leaderboard__row--leader': row.rank === 1 }"
+      >
+        <span class="leaderboard__rank">{{ row.rank }}</span>
+        <span class="leaderboard__name">
+          {{ row.name }}
+          <span v-if="row.isSelf" class="leaderboard__you">you</span>
+        </span>
+
+        <span class="leaderboard__score">{{ row.score }}</span>
+        <span class="leaderboard__num">{{ row.picksMade }}</span>
+        <span class="leaderboard__num leaderboard__acc">{{
+          row.decided > 0 ? Math.round(row.accuracy * 100) + '%' : '—'
+        }}</span>
+      </div>
+
+      <div v-if="rows.length === 0" class="leaderboard__empty">
+        No players yet.
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+  @reference "~/assets/css/main.css";
+
+  .leaderboard {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #3c3834;
+  }
+
+  .leaderboard__head {
+    background: #1a1817;
+    color: #d1cdcb;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid #3c3834;
+  }
+
+  /* Shared row grid: rank | name | ✓ | picks | acc */
+  .leaderboard__cols,
+  .leaderboard__row {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr) 2rem 2.5rem 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .leaderboard__cols {
+    background: rgb(0 0 0 / 0.2);
+    border-bottom: 1px solid #3c3834;
+  }
+
+  .leaderboard__col {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.4);
+  }
+
+  .leaderboard__col--rank {
+    text-align: center;
+  }
+
+  .leaderboard__col--num {
+    text-align: right;
+  }
+
+  .leaderboard__body {
+    background: #252120;
+  }
+
+  .leaderboard__row {
+    border-bottom: 1px solid rgb(255 255 255 / 0.04);
+  }
+
+  .leaderboard__row:last-child {
+    border-bottom: none;
+  }
+
+  .leaderboard__rank {
+    width: 1.25rem;
+    flex-shrink: 0;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.4);
+    text-align: center;
+  }
+
+  .leaderboard__name {
+    @apply min-w-0 truncate;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 300;
+    font-size: 1rem;
+    color: rgb(255 255 255 / 0.85);
+  }
+
+  .leaderboard__you {
+    @apply ml-1 rounded px-1 align-middle text-xs;
+    background: rgb(255 255 255 / 0.1);
+    color: rgb(255 255 255 / 0.55);
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
+  }
+
+  .leaderboard__score {
+    flex-shrink: 0;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    font-size: 1rem;
+    color: rgb(255 255 255 / 0.9);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .leaderboard__num {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.55);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .leaderboard__acc {
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  /* Leader row highlight */
+  .leaderboard__row--leader {
+    background: rgb(0 111 13 / 0.14);
+  }
+
+  .leaderboard__row--leader .leaderboard__name {
+    color: #fff7f7;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+  }
+
+  .leaderboard__row--leader .leaderboard__score {
+    color: #fff7f7;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+  }
+
+  .leaderboard__row--leader .leaderboard__rank {
+    color: #4ade80;
+  }
+
+  .leaderboard__empty {
+    padding: 0.85rem;
+    text-align: center;
+    color: rgb(255 255 255 / 0.4);
+    font-size: 0.85rem;
+  }
+</style>

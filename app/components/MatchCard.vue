@@ -2,13 +2,80 @@
   import type { Match } from '../composables/useScores'
   import { useTimezone } from '../composables/useTimezone'
   import { useMyNation } from '../composables/useMyNation'
+  import { usePicks } from '../composables/usePicks'
 
   const props = defineProps<{
     match: Match
     showDate?: boolean
+    /**
+     * Read-only context (e.g. inside a pool card): show the chosen win icon
+     * but don't allow re-picking or revealing the transient controls.
+     */
+    readonly?: boolean
   }>()
 
   const { myNation } = useMyNation()
+
+  // ── Picks ────────────────────────────────────────────────────────────────
+  const { wtlOutcome, canPick, canPickDraw, pickWtl, clearPick } = usePicks()
+
+  /** The current Win·Tie·Lose pick for this match (anchored to home), or null. */
+  const wtl = computed(() => wtlOutcome(props.match.id))
+
+  /** A pick already exists for this match. */
+  const hasPick = computed(() => wtl.value !== null)
+
+  /** Picking is allowed for this (not-yet-started) match. */
+  const pickable = computed(() => !props.readonly && canPick(props.match))
+
+  /** A draw (Tie) may be picked here (group-stage). */
+  const allowTie = computed(() => canPickDraw(props.match))
+
+  /** Show the WTL control at all: pickable, or a pick already exists. */
+  const showWtl = computed(() => pickable.value || hasPick.value)
+
+  /**
+   * Mobile "armed" state: on touch devices the picker only opens after the user
+   * taps a team row once. On desktop it opens on hover of that row. We track
+   * which row (home / away) is active so the picker pops up in that exact row.
+   */
+  const armedSide = ref<'home' | 'away' | null>(null)
+  const hoveredSide = ref<'home' | 'away' | null>(null)
+
+  /** The picker is revealed for a given row (hover desktop / armed mobile). */
+  function rowRevealed(side: 'home' | 'away'): boolean {
+    return (
+      pickable.value && (hoveredSide.value === side || armedSide.value === side)
+    )
+  }
+
+  /**
+   * Tap / click a team row. On a pickable card the first tap "arms" that row so
+   * a touch user can see + use the picker; a second tap opens the match detail.
+   */
+  function onRowClick(side: 'home' | 'away') {
+    if (pickable.value && armedSide.value !== side) {
+      armedSide.value = side
+      return
+    }
+    emit('click', props.match)
+  }
+
+  /** Tap / click anywhere else on the card → open detail. */
+  function onCardClick() {
+    emit('click', props.match)
+  }
+
+  function onPick(choice: 'win' | 'tie' | 'lose') {
+    if (!pickable.value) return
+    pickWtl(props.match, choice)
+    armedSide.value = null
+  }
+
+  function cancel() {
+    clearPick(props.match.id)
+    armedSide.value = null
+  }
 
   /** True when the selected nation is playing in this match. */
   const isMyNation = computed(
@@ -83,6 +150,16 @@
     if (isLive.value) return props.match.status.clock ?? 'LIVE'
     return null
   })
+
+  // ── Finished-match winner (for the green pick-result triangle) ─────────────
+  /** Which side won a finished match: 'home' | 'away' | null (draw/not done). */
+  const winner = computed<'home' | 'away' | null>(() => {
+    if (props.match.status.code !== 'ft') return null
+    const h = Number(props.match.homeScore)
+    const a = Number(props.match.awayScore)
+    if (Number.isNaN(h) || Number.isNaN(a) || h === a) return null
+    return h > a ? 'home' : 'away'
+  })
 </script>
 
 <template>
@@ -90,9 +167,15 @@
     class="match-card"
     :class="[
       `q-${qClass}`,
-      { live: isLive || isHT, 'match-card--mine': isMyNation },
+      {
+        live: isLive || isHT,
+        'match-card--mine': isMyNation,
+        'match-card--pickable': pickable,
+        'match-card--armed': armedSide !== null,
+        'match-card--has-pick': hasPick,
+      },
     ]"
-    @click="emit('click', match)"
+    @click="onCardClick"
   >
     <!-- Top bar: darker row, group pill flush-left, venue flush-right -->
     <div class="match-card__top">
@@ -118,7 +201,12 @@
       <!-- Left: two team rows -->
       <div class="match-card__teams">
         <!-- Home -->
-        <div class="match-card__team">
+        <div
+          class="match-card__team"
+          @mouseenter="hoveredSide = 'home'"
+          @mouseleave="hoveredSide = null"
+          @click.stop="onRowClick('home')"
+        >
           <button
             class="match-card__flag-btn"
             :title="`View ${match.home}`"
@@ -134,12 +222,45 @@
             <span class="match-card__name-full">{{ match.homeShort }}</span>
             <span class="match-card__name-short">{{ homeShortMobile }}</span>
           </span>
-          <span v-if="!isNS" class="match-card__score">{{
-            match.homeScore
-          }}</span>
+
+          <!-- Win·Tie·Lose picker (interactive) — only before kickoff -->
+          <PicksWtlToggle
+            v-if="isNS && showWtl"
+            :outcome="wtl"
+            :perspective="'home'"
+            :popout="'left'"
+            :allow-tie="allowTie"
+            :revealed="rowRevealed('home')"
+            :readonly="readonly"
+            @pick="onPick"
+            @cancel="cancel"
+          />
+
+          <!-- Finished/live: pick chip (left of score) + score + winner triangle -->
+          <span v-if="!isNS" class="match-card__result">
+            <PicksWtlToggle
+              v-if="hasPick"
+              :outcome="wtl"
+              :perspective="'home'"
+              :readonly="true"
+            />
+            <span
+              v-if="winner === 'home'"
+              class="match-card__tri"
+              aria-hidden="true"
+            />
+            <span class="match-card__score">{{ match.homeScore }}</span>
+          </span>
         </div>
+
         <!-- Away -->
-        <div class="match-card__team">
+
+        <div
+          class="match-card__team"
+          @mouseenter="hoveredSide = 'away'"
+          @mouseleave="hoveredSide = null"
+          @click.stop="onRowClick('away')"
+        >
           <button
             class="match-card__flag-btn"
             :title="`View ${match.away}`"
@@ -155,9 +276,35 @@
             <span class="match-card__name-full">{{ match.awayShort }}</span>
             <span class="match-card__name-short">{{ awayShortMobile }}</span>
           </span>
-          <span v-if="!isNS" class="match-card__score">{{
-            match.awayScore
-          }}</span>
+
+          <!-- Win·Tie·Lose picker (interactive) — only before kickoff -->
+          <PicksWtlToggle
+            v-if="isNS && showWtl"
+            :outcome="wtl"
+            :perspective="'away'"
+            :popout="'left'"
+            :allow-tie="allowTie"
+            :revealed="rowRevealed('away')"
+            :readonly="readonly"
+            @pick="onPick"
+            @cancel="cancel"
+          />
+
+          <!-- Finished/live: pick chip (left of score) + score + winner triangle -->
+          <span v-if="!isNS" class="match-card__result">
+            <PicksWtlToggle
+              v-if="hasPick"
+              :outcome="wtl"
+              :perspective="'away'"
+              :readonly="true"
+            />
+            <span
+              v-if="winner === 'away'"
+              class="match-card__tri"
+              aria-hidden="true"
+            />
+            <span class="match-card__score">{{ match.awayScore }}</span>
+          </span>
         </div>
       </div>
 
@@ -354,6 +501,20 @@
     .match-card__group {
       padding-inline: 0.7rem 0rem;
     }
+  }
+
+  /* ── Finished result: score + winner triangle ───────────────────────────── */
+
+  .match-card__result {
+    @apply flex shrink-0 items-center gap-1;
+  }
+
+  .match-card__tri {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid #006f0d;
   }
 
   .match-card__score {
