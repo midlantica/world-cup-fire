@@ -324,7 +324,7 @@
   }
 
   /* ── Tap "pop" — quick acknowledgement when a slot is chosen ───────────────
-     Expands to 115% with a slight clockwise→counter-clockwise wobble, then
+     Expands to 115% and wobbles clockwise→counter-clockwise TWICE, then
      settles back to 100% over ~⅓s. Keyed remounting of the SVG retriggers the
      animation on every tap (even re-tapping the same slot). */
   .wtl__btn--pop svg {
@@ -336,10 +336,16 @@
     0% {
       transform: scale(1) rotate(0deg);
     }
-    35% {
+    20% {
       transform: scale(1.15) rotate(20deg);
     }
-    65% {
+    40% {
+      transform: scale(1.15) rotate(-20deg);
+    }
+    60% {
+      transform: scale(1.15) rotate(20deg);
+    }
+    80% {
       transform: scale(1.15) rotate(-20deg);
     }
     100% {
