@@ -45,6 +45,15 @@
      * pass `'left'` on both rows to keep the picker from overlapping the time.
      */
     popout?: 'left' | 'right'
+    /**
+     * Which side the caret points toward (i.e. which side this row's team name
+     * sits on, relative to the picker). Defaults to the popout direction, which
+     * is correct for stacked layouts (match cards) where the name is on the same
+     * side the picker pops toward. In the modal header the name sits on the
+     * OPPOSITE side from the empty space the picker pops into, so pass the side
+     * the team name is on so the caret points back at it.
+     */
+    caret?: 'left' | 'right'
   }>()
 
   const emit = defineEmits<{
@@ -59,6 +68,14 @@
   // stacked layouts where both rows should pop the same way.
   const popoutDir = computed<'left' | 'right'>(
     () => props.popout ?? (side.value === 'away' ? 'right' : 'left')
+  )
+
+  // Which side the caret points toward (this row's team name). Defaults to the
+  // popout direction (correct for stacked layouts where the name sits on the
+  // same side the picker pops toward). The modal header passes `caret`
+  // explicitly because there the name sits opposite the popout direction.
+  const caretDir = computed<'left' | 'right'>(
+    () => props.caret ?? popoutDir.value
   )
 
   const hasPick = computed(() => props.outcome !== null)
@@ -86,12 +103,31 @@
     return thisRowWon ? 'check' : null
   })
 
+  // Transient "just tapped" key — bumps to retrigger the pop animation on the
+  // clicked slot each time, even if the same slot is tapped again.
+  const poppedSlot = ref<Slot | null>(null)
+  const popKey = ref(0)
+  let popTimer: ReturnType<typeof setTimeout> | null = null
+
   function onSlot(slot: Slot) {
     if (props.readonly) return
     const o = slotToOutcome(slot)
+
+    // Fire the quick pop animation on the tapped slot.
+    poppedSlot.value = slot
+    popKey.value++
+    if (popTimer) clearTimeout(popTimer)
+    popTimer = setTimeout(() => {
+      poppedSlot.value = null
+    }, 340)
+
     if (props.outcome === o) emit('cancel')
     else emit('pick', o)
   }
+
+  onBeforeUnmount(() => {
+    if (popTimer) clearTimeout(popTimer)
+  })
 
   const slots = computed<Slot[]>(() =>
     props.allowTie ? ['check', 'tie'] : ['check']
@@ -110,14 +146,17 @@
       'wtl--open': open,
       'wtl--has-pick': hasPick,
       'wtl--pop-right': popoutDir === 'right',
+      'wtl--caret-left': caretDir === 'left',
+      'wtl--caret-right': caretDir === 'right',
     }"
   >
     <!-- OPEN: the exact grey picker bar with integrated caret + coloured slots.
-         Pop-left rows put the caret on the RIGHT (pointing left at the name);
-         pop-right rows put the caret on the LEFT (pointing right at the name).
-         Either way the caret points back at this row's team name. -->
+         The caret sits on the side facing this row's team name (`caretDir`) and
+         points back at it. In stacked layouts the name is on the same side the
+         picker pops toward; in the modal header it's on the opposite side, so
+         `caretDir` is decoupled from `popoutDir`. -->
     <span v-if="open" class="wtl__picker">
-      <span v-if="popoutDir === 'left'" class="wtl__caret" aria-hidden="true" />
+      <span v-if="caretDir === 'left'" class="wtl__caret" aria-hidden="true" />
 
       <span class="wtl__btns">
         <button
@@ -125,11 +164,19 @@
           :key="slot"
           type="button"
           class="wtl__btn"
-          :class="`wtl__btn--${slot}`"
+          :class="[
+            `wtl__btn--${slot}`,
+            { 'wtl__btn--pop': poppedSlot === slot },
+          ]"
           :title="titleFor[slot]"
           @click.stop="onSlot(slot)"
         >
-          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <svg
+            :key="poppedSlot === slot ? popKey : 0"
+            viewBox="0 0 18 18"
+            fill="none"
+            aria-hidden="true"
+          >
             <path
               d="M15.6494 0C16.1874 0 16.6488 0.19178 17.0322 0.575195C17.4155 0.958521 17.607 1.41893 17.6064 1.95605V15.6494C17.6064 16.1874 17.415 16.6488 17.0322 17.0322C16.6495 17.4156 16.188 17.6061 15.6494 17.6055H1.95605C1.41833 17.6054 0.957845 17.4148 0.575195 17.0322C0.192432 16.6495 0.000652067 16.188 0 15.6494V1.95605C5.04213e-05 1.41822 0.191866 0.957898 0.575195 0.575195C0.958535 0.192507 1.41889 0.000727135 1.95605 0H15.6494Z"
               class="wtl__box"
@@ -149,11 +196,7 @@
           </svg>
         </button>
       </span>
-      <span
-        v-if="popoutDir === 'right'"
-        class="wtl__caret"
-        aria-hidden="true"
-      />
+      <span v-if="caretDir === 'right'" class="wtl__caret" aria-hidden="true" />
     </span>
 
     <!-- CLOSED + a pick exists: the single dark-marked leftover icon for this row -->
@@ -221,18 +264,28 @@
   .wtl__caret {
     width: 4px;
     height: 8px;
-    margin-right: -1px;
     flex-shrink: 0;
     background: #424242;
-    /* Point LEFT (toward this row's team name). */
-    clip-path: polygon(100% 0, 0 50%, 100% 100%);
     filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.5));
   }
 
-  /* ── Pop-right variant: mirror everything horizontally ────────────────────
-     When the picker pops to the RIGHT of this row's team name, it anchors to
-     the slot's LEFT edge and its caret points RIGHT, back toward the team name
-     on its left. (Used for the away side in the modal header.) */
+  /* Caret pointing LEFT — sits on the picker's LEFT edge (before the btns),
+     pointing back at a team name on the left. */
+  .wtl--caret-left .wtl__caret {
+    margin-right: -1px;
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  }
+
+  /* Caret pointing RIGHT — sits on the picker's RIGHT edge (after the btns),
+     pointing back at a team name on the right. */
+  .wtl--caret-right .wtl__caret {
+    margin-left: -1px;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+
+  /* ── Pop-right variant: anchor the picker to the slot's LEFT edge so it pops
+     out to the RIGHT (into empty space) instead of overlapping content on the
+     left. Caret direction is controlled independently via `caretDir`. */
   .wtl--pop-right {
     justify-content: flex-start;
   }
@@ -240,13 +293,6 @@
   .wtl--pop-right .wtl__picker {
     right: auto;
     left: 0;
-  }
-
-  .wtl--pop-right .wtl__caret {
-    margin-right: 0;
-    margin-left: -1px;
-    /* Point RIGHT (toward this row's team name). */
-    clip-path: polygon(0 0, 100% 50%, 0 100%);
   }
 
   .wtl__btns {
@@ -275,6 +321,36 @@
 
   .wtl__btn:active {
     transform: scale(0.9);
+  }
+
+  /* ── Tap "pop" — quick acknowledgement when a slot is chosen ───────────────
+     Expands to 115% with a slight clockwise→counter-clockwise wobble, then
+     settles back to 100% over ~⅓s. Keyed remounting of the SVG retriggers the
+     animation on every tap (even re-tapping the same slot). */
+  .wtl__btn--pop svg {
+    animation: wtl-pop 0.33s ease-out;
+    transform-origin: center;
+  }
+
+  @keyframes wtl-pop {
+    0% {
+      transform: scale(1) rotate(0deg);
+    }
+    35% {
+      transform: scale(1.15) rotate(20deg);
+    }
+    65% {
+      transform: scale(1.15) rotate(-20deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wtl__btn--pop svg {
+      animation: none;
+    }
   }
 
   .wtl__btn svg,

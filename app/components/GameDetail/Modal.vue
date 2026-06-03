@@ -55,7 +55,13 @@
   function onWtlPick(choice: 'win' | 'tie' | 'lose') {
     if (selectedMatch.value && matchPickable.value)
       pickWtl(selectedMatch.value, choice)
-    armedSide.value = null
+    // Dismiss the picker after the tap. Clear BOTH armed (touch) and hovered
+    // (sticky on touch where mouseleave never fires) so the popper reliably
+    // closes on mobile. A short delay lets the slot's pop animation finish.
+    setTimeout(() => {
+      armedSide.value = null
+      hoveredSide.value = null
+    }, 260)
   }
 
   function cancelPick() {
@@ -319,6 +325,7 @@
                   v-if="showWtl"
                   :outcome="matchWtl"
                   :perspective="'home'"
+                  :caret="'right'"
                   :allow-tie="matchAllowTie"
                   :revealed="rowRevealed('home')"
                   :readonly="!matchPickable"
@@ -401,6 +408,7 @@
                   v-if="showWtl"
                   :outcome="matchWtl"
                   :perspective="'away'"
+                  :caret="'left'"
                   :allow-tie="matchAllowTie"
                   :revealed="rowRevealed('away')"
                   :readonly="!matchPickable"

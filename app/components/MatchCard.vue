@@ -69,7 +69,14 @@
   function onPick(choice: 'win' | 'tie' | 'lose') {
     if (!pickable.value) return
     pickWtl(props.match, choice)
-    armedSide.value = null
+    // Dismiss the picker after the tap. We clear BOTH the armed (touch) and the
+    // hovered (desktop, but also "sticky" on touch where mouseleave never
+    // fires) state so the popper reliably closes on mobile. A short delay lets
+    // the slot's pop animation play before the picker collapses to the chip.
+    setTimeout(() => {
+      armedSide.value = null
+      hoveredSide.value = null
+    }, 260)
   }
 
   function cancel() {
