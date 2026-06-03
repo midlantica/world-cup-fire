@@ -92,9 +92,9 @@
     }
   })
 
-  function onJoinSubmit(value: { yourName: string; poolName: string }) {
+  async function onJoinSubmit(value: { yourName: string; poolName: string }) {
     if (poolId.value && !hasPool(poolId.value)) {
-      const joined = joinPool(poolId.value, {
+      const joined = await joinPool(poolId.value, {
         yourName: value.yourName,
         // The pool name comes from the invite link (?n=); the join modal hides
         // the pool-name input, so prefer the link value and fall back to any
@@ -104,7 +104,7 @@
       })
 
       if (joined) {
-        syncOwnerPicks(picks.value)
+        await syncOwnerPicks(picks.value)
         setTab('pools')
       }
     }
@@ -170,13 +170,13 @@
     modalOpen.value = true
   }
 
-  function onModalSubmit(value: { yourName: string; poolName: string }) {
+  async function onModalSubmit(value: { yourName: string; poolName: string }) {
     if (modalMode.value === 'edit' && editingPool.value) {
-      updatePool(editingPool.value.id, value)
+      await updatePool(editingPool.value.id, value)
     } else {
-      const created = createPool(value)
+      const created = await createPool(value)
       if (created) {
-        syncOwnerPicks(picks.value)
+        await syncOwnerPicks(picks.value)
         setTab('pools')
       }
     }

@@ -3,62 +3,50 @@
 // Lets a user create "pools" — named groups they can share with friends & family
 // via a link so everyone can make picks and compete on a leaderboard.
 //
-// PHASE A (this file): everything lives in localStorage. There is no cross-device
-// sync yet — a pool's members + their picks are seeded locally so the UI (pool
-// cards, leaderboards, edit/delete) is fully functional and reviewable. The
-// owner is always the local user.
+// PHASE B (this file): pools are persisted server-side via @netlify/blobs behind
+// `/api/pools/…`, so members + their picks SYNC across devices and the
+// leaderboard is real. The public surface here is unchanged from Phase A, but the
+// create/join/update/delete/sync operations are now ASYNC (they hit the API).
 //
-// PHASE B (future): swap the read/write internals here for `$fetch('/api/pools/…')`
-// backed by @netlify/blobs, keeping this same public surface. Member writes are
-// gated by a per-member token; only the owner can edit/delete. Picks re-validate
-// kickoff server-side. See docs / plan for the security model.
+// SECURITY (anonymous per-member tokens):
+//   • create → server mints an owner token; we store it locally (token registry).
+//   • join   → server mints a member token; we store it locally.
+//   • Writes (rename/delete/picks) send the token; the server authorizes it.
+//   • A pool shows up on this device only if we hold a token for it. The token
+//     registry (localStorage) is the source of "which pools am I in + as whom".
+//
+// The reactive `pools` array is a CACHE of the server state for the pools this
+// device belongs to. It's hydrated on mount and after every mutation.
 
 import type { Pick, PickOutcome } from './usePicks'
 
-const STORAGE_KEY = 'wc-pools-v1'
+/** Local registry of the pools this device belongs to + its credentials. */
+const TOKENS_KEY = 'wc-pool-tokens-v1'
+/** Cache of the last-known server pools (so the UI paints instantly on load). */
+const CACHE_KEY = 'wc-pools-cache-v1'
 
 /** Max members per pool (keeps leaderboards readable + writes cheap). */
 export const MAX_MEMBERS = 20
 /** Max pools a single user may own. */
 export const MAX_POOLS = 5
 
-/** A pool member and their picks (matchId → picked team name). */
+/** A pool member and their picks (matchId → backed outcome). */
 export interface PoolMember {
-  /** Stable member id. */
   id: string
-  /** Display name. */
   name: string
-  /** True for the local user who owns the pool. */
   isOwner?: boolean
-  /**
-   * True for the member that represents the LOCAL user on this device. For an
-   * owned pool this is the same as the owner; for a joined pool it's the
-   * invitee's own (non-owner) member row. Picks sync into whichever member is
-   * the local "self".
-   */
+  /** True for the member that represents the LOCAL user on this device. */
   isSelf?: boolean
-  /** Their picks: matchId → backed outcome ('home' | 'away' | 'draw'). */
   picks: Record<string, PickOutcome>
 }
 
 export interface Pool {
-  /** Unguessable random id, also used in the share link. */
   id: string
-  /** Pool display name (e.g. "Chelsea Mates Pool"). */
   name: string
-  /** The owner's display name. */
   ownerName: string
-  /** ISO timestamp the pool was created. */
   createdAt: string
-  /** Members (owner first). */
   members: PoolMember[]
-  /**
-   * True if the local user OWNS this pool (created it here). False when this
-   * pool was JOINED via an invite link — in Phase A (no backend) a joined pool
-   * is a local stub so the invitee's picks have somewhere to live and the pool
-   * shows up under Group Pools. The owner's real members/picks live on their
-   * device until Phase B sync lands.
-   */
+  /** True if the local user OWNS this pool (holds the owner token). */
   owned: boolean
 }
 
@@ -67,29 +55,52 @@ export interface LeaderRow {
   memberId: string
   name: string
   isOwner: boolean
-  /** True for the row representing the LOCAL user (gets the "you" tag). */
   isSelf: boolean
-  /** Correct picks so far. */
   score: number
-  /** Matches that have finished and were picked. */
   decided: number
-  /** Total picks the member has made (all matches, decided or not). */
   picksMade: number
-  /** Accuracy = score / decided, as a 0–1 fraction (0 when none decided). */
   accuracy: number
   rank: number
 }
 
-function randomId(len = 8): string {
-  let s = ''
-  while (s.length < len) s += Math.random().toString(36).slice(2)
-  return s.slice(0, len)
+/** Per-pool credentials this device holds. */
+interface PoolCreds {
+  memberId: string
+  token: string
+  isOwner: boolean
 }
 
-function loadPools(): Pool[] {
+/** Shape of a member as returned by the public API. */
+interface ApiMember {
+  id: string
+  name: string
+  isOwner: boolean
+  picks: Record<string, PickOutcome>
+}
+interface ApiPool {
+  id: string
+  name: string
+  ownerName: string
+  createdAt: string
+  members: ApiMember[]
+}
+
+function loadCreds(): Record<string, PoolCreds> {
+  if (!import.meta.client) return {}
+  try {
+    const raw = localStorage.getItem(TOKENS_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as Record<string, PoolCreds>
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function loadCache(): Pool[] {
   if (!import.meta.client) return []
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(CACHE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as Pool[]
     return Array.isArray(parsed) ? parsed : []
@@ -99,28 +110,105 @@ function loadPools(): Pool[] {
 }
 
 export function usePools() {
-  const pools = useState<Pool[]>('wc-pools', () => loadPools())
+  const pools = useState<Pool[]>('wc-pools', () => loadCache())
+  // Credentials live in their own state so they survive across the app.
+  const creds = useState<Record<string, PoolCreds>>('wc-pool-creds', () =>
+    loadCreds()
+  )
 
-  if (import.meta.client) {
-    onMounted(() => {
-      if (pools.value.length === 0) {
-        const stored = loadPools()
-        if (stored.length > 0) pools.value = stored
-      }
-    })
-  }
-
-  function persist() {
+  function persistCache() {
     if (!import.meta.client) return
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(pools.value))
+      localStorage.setItem(CACHE_KEY, JSON.stringify(pools.value))
     } catch {
-      // storage unavailable — ignore
+      // ignore
     }
   }
 
+  function persistCreds() {
+    if (!import.meta.client) return
+    try {
+      localStorage.setItem(TOKENS_KEY, JSON.stringify(creds.value))
+    } catch {
+      // ignore
+    }
+  }
+
+  /** Map an API pool → the UI Pool shape using this device's creds. */
+  function toUiPool(api: ApiPool): Pool {
+    const c = creds.value[api.id]
+    const selfId = c?.memberId
+    return {
+      id: api.id,
+      name: api.name,
+      ownerName: api.ownerName,
+      createdAt: api.createdAt,
+      owned: !!c?.isOwner,
+      members: api.members.map((m) => ({
+        id: m.id,
+        name: m.name,
+        isOwner: m.isOwner,
+        isSelf: m.id === selfId,
+        picks: m.picks ?? {},
+      })),
+    }
+  }
+
+  /** Fetch a single pool from the server and merge it into the cache. */
+  async function fetchPool(id: string): Promise<Pool | null> {
+    try {
+      const res = await $fetch<{ pool: ApiPool }>(`/api/pools/${id}`)
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      // 404 → the pool was deleted upstream; drop our local copy + creds.
+      removeLocal(id)
+      return null
+    }
+  }
+
+  /** Insert/replace a pool in the reactive cache + persist. */
+  function mergePool(pool: Pool) {
+    const idx = pools.value.findIndex((p) => p.id === pool.id)
+    if (idx === -1) pools.value = [...pools.value, pool]
+    else {
+      const next = [...pools.value]
+      next[idx] = pool
+      pools.value = next
+    }
+    persistCache()
+  }
+
+  /** Drop a pool + its creds from this device (left/deleted/not-found). */
+  function removeLocal(id: string) {
+    pools.value = pools.value.filter((p) => p.id !== id)
+    if (creds.value[id]) {
+      const next = { ...creds.value }
+      delete next[id]
+      creds.value = next
+      persistCreds()
+    }
+    persistCache()
+  }
+
+  /** Re-fetch every pool we hold creds for (live leaderboards). */
+  async function refreshPools() {
+    const ids = Object.keys(creds.value)
+    await Promise.all(ids.map((id) => fetchPool(id)))
+  }
+
+  // Hydrate from the server on mount.
+  if (import.meta.client) {
+    onMounted(() => {
+      refreshPools()
+    })
+  }
+
   const poolCount = computed(() => pools.value.length)
-  const canCreate = computed(() => pools.value.length < MAX_POOLS)
+  // Cap counts OWNED pools only (joined pools don't count against the cap).
+  const ownedCount = computed(() => pools.value.filter((p) => p.owned).length)
+  const canCreate = computed(() => ownedCount.value < MAX_POOLS)
 
   function getPool(id: string): Pool | undefined {
     return pools.value.find((p) => p.id === id)
@@ -130,165 +218,173 @@ export function usePools() {
     const origin = import.meta.client
       ? window.location.origin
       : 'https://worldcupfire.netlify.app'
+    // Only the pool id is needed now — the invitee fetches the real pool
+    // (name, owner, members) from the server. We still pass o/n as a friendly
+    // fallback for the join modal title before the fetch resolves.
     const pool = getPool(id)
-    // Encode the owner's name + pool name into the link so the invitee's local
-    // stub can seed the owner onto the leaderboard and use the real pool name.
-    // (Phase A: the owner's picks still can't sync until the Phase B backend.)
     const params = new URLSearchParams({ p: id })
     if (pool?.ownerName) params.set('o', pool.ownerName)
     if (pool?.name) params.set('n', pool.name)
     return `${origin}/picks?${params.toString()}`
   }
 
-  /** Create a pool owned by the local user. Returns it, or null if at the cap. */
-  function createPool(input: {
+  /** Create a pool owned by the local user. Returns it, or null on failure/cap. */
+  async function createPool(input: {
     yourName: string
     poolName: string
-  }): Pool | null {
+  }): Promise<Pool | null> {
     if (!canCreate.value) return null
-    const owner: PoolMember = {
-      id: randomId(6),
-      name: input.yourName.trim() || 'You',
-      isOwner: true,
-      isSelf: true,
-      picks: {},
+    try {
+      const res = await $fetch<{
+        pool: ApiPool
+        poolId: string
+        memberId: string
+        token: string
+      }>('/api/pools', {
+        method: 'POST',
+        body: { yourName: input.yourName, poolName: input.poolName },
+      })
+      creds.value = {
+        ...creds.value,
+        [res.poolId]: {
+          memberId: res.memberId,
+          token: res.token,
+          isOwner: true,
+        },
+      }
+      persistCreds()
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      return null
     }
-    const pool: Pool = {
-      id: randomId(8),
-      name: input.poolName.trim() || 'My Pool',
-      ownerName: owner.name,
-      createdAt: new Date().toISOString(),
-      members: [owner],
-      owned: true,
-    }
-    pools.value = [...pools.value, pool]
-    persist()
-    return pool
   }
 
-  /** True if the local user has already created or joined the pool with `id`. */
+  /** True if the local user already created or joined the pool with `id`. */
   function hasPool(id: string): boolean {
-    return pools.value.some((p) => p.id === id)
+    return !!creds.value[id]
   }
 
   /**
-   * Join a pool from an invite link. In Phase A (no backend) we can't fetch the
-   * owner's real pool, so we create a LOCAL stub for it: the invitee becomes a
-   * non-owner "self" member whose picks sync in locally, and the pool shows up
-   * under Group Pools. Returns the (new or existing) pool. Idempotent.
+   * Join a pool from an invite link. Fetches the real pool from the server,
+   * adds the local user as a member, and stores their token. Idempotent: if we
+   * already hold creds for this pool we just refresh it.
    */
-  function joinPool(
+  async function joinPool(
     id: string,
     input: { yourName: string; poolName?: string; ownerName?: string }
-  ): Pool | null {
-    const existing = getPool(id)
-    if (existing) return existing
-    const self: PoolMember = {
-      id: randomId(6),
-      name: input.yourName.trim() || 'You',
-      isOwner: false,
-      isSelf: true,
-      picks: {},
+  ): Promise<Pool | null> {
+    if (creds.value[id]) {
+      return await fetchPool(id)
     }
-    // Seed the owner (from the invite link) onto the leaderboard so the invitee
-    // sees who they're competing against. The owner's picks can't sync until
-    // Phase B, so their row scores 0 until then.
-    const members: PoolMember[] = []
-    const ownerName = input.ownerName?.trim()
-    if (ownerName) {
-      members.push({
-        id: randomId(6),
-        name: ownerName,
-        isOwner: true,
-        isSelf: false,
-        picks: {},
+    try {
+      const res = await $fetch<{
+        pool: ApiPool
+        memberId: string
+        token: string
+      }>(`/api/pools/${id}/join`, {
+        method: 'POST',
+        body: { yourName: input.yourName },
       })
+      creds.value = {
+        ...creds.value,
+        [id]: { memberId: res.memberId, token: res.token, isOwner: false },
+      }
+      persistCreds()
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      return null
     }
-    members.push(self)
-    const pool: Pool = {
-      id,
-      name: input.poolName?.trim() || 'Shared Pool',
-      ownerName: ownerName || '',
-      createdAt: new Date().toISOString(),
-      members,
-      owned: false,
-    }
-    pools.value = [...pools.value, pool]
-    persist()
-    return pool
   }
 
-  /** Leave (remove the local copy of) a joined pool. */
+  /** Leave (remove the local copy + creds of) a joined pool. */
   function leavePool(id: string) {
-    pools.value = pools.value.filter((p) => p.id !== id)
-    persist()
+    // Phase B note: we leave the member row on the server (their picks stay on
+    // the leaderboard). Removing it server-side would need a dedicated route;
+    // for now leaving simply forgets the pool on this device.
+    removeLocal(id)
   }
 
-  /** Rename a pool / owner name. */
-  function updatePool(
+  /** Rename a pool / owner name (owner only). */
+  async function updatePool(
     id: string,
     input: { yourName: string; poolName: string }
-  ) {
-    pools.value = pools.value.map((p) => {
-      if (p.id !== id) return p
-      const members = p.members.map((m) =>
-        m.isOwner ? { ...m, name: input.yourName.trim() || m.name } : m
-      )
-      return {
-        ...p,
-        name: input.poolName.trim() || p.name,
-        ownerName: input.yourName.trim() || p.ownerName,
-        members,
-      }
-    })
-    persist()
+  ): Promise<Pool | null> {
+    const c = creds.value[id]
+    if (!c?.isOwner) return null
+    try {
+      const res = await $fetch<{ pool: ApiPool }>(`/api/pools/${id}`, {
+        method: 'PATCH',
+        body: {
+          token: c.token,
+          poolName: input.poolName,
+          yourName: input.yourName,
+        },
+      })
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      return null
+    }
   }
 
-  function deletePool(id: string) {
-    pools.value = pools.value.filter((p) => p.id !== id)
-    persist()
+  /** Delete a pool (owner only). */
+  async function deletePool(id: string): Promise<boolean> {
+    const c = creds.value[id]
+    if (!c?.isOwner) return false
+    try {
+      await $fetch(`/api/pools/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-pool-token': c.token },
+      })
+      removeLocal(id)
+      return true
+    } catch {
+      return false
+    }
   }
 
   /**
-   * Sync the LOCAL user's picks into every pool, from the personal picks map.
-   * The local user is the member flagged `isSelf` — for an owned pool that's the
-   * owner; for a joined (invite-link) pool that's the invitee's own row. Call
-   * this whenever personal picks change so each pool reflects the current
-   * selections of whoever is using this device.
+   * Sync the LOCAL user's picks into every pool they belong to. Sends each pool
+   * the picks for the device's own member, with each pick's kickoff time so the
+   * server can reject late edits. Called whenever personal picks change.
    */
-  function syncOwnerPicks(personalPicks: Record<string, Pick>) {
-    const flat: Record<string, PickOutcome> = {}
+  async function syncOwnerPicks(personalPicks: Record<string, Pick>) {
+    const payload: Record<string, { outcome: PickOutcome; kickoff: string }> =
+      {}
     for (const [matchId, pick] of Object.entries(personalPicks)) {
-      flat[matchId] = pick.outcome
+      payload[matchId] = { outcome: pick.outcome, kickoff: pick.match.date }
     }
-    let changed = false
-    pools.value = pools.value.map((p) => {
-      const self = p.members.find((m) => m.isSelf)
-      if (!self) return p
-      if (JSON.stringify(self.picks) === JSON.stringify(flat)) return p
-      changed = true
-      return {
-        ...p,
-        members: p.members.map((m) =>
-          m.isSelf ? { ...m, picks: { ...flat } } : m
-        ),
-      }
-    })
-    if (changed) persist()
+
+    const ids = Object.keys(creds.value)
+    await Promise.all(
+      ids.map(async (id) => {
+        const c = creds.value[id]
+        if (!c) return
+        try {
+          const res = await $fetch<{ pool: ApiPool }>(
+            `/api/pools/${id}/picks`,
+            {
+              method: 'PUT',
+              body: { memberId: c.memberId, token: c.token, picks: payload },
+            }
+          )
+          mergePool(toUiPool(res.pool))
+        } catch {
+          // ignore individual pool sync failures
+        }
+      })
+    )
   }
 
   /**
    * Compute a ranked leaderboard for a pool. A member scores a point for each
-   * FINISHED match where their backed OUTCOME ('home' | 'away' | 'draw')
-   * matches the actual result. `resolveResult` maps a matchId → the finished
-   * outcome (or null if not finished), supplied by the caller from the
-   * schedule.
-   *
-   * Ranking tiebreakers, in order:
-   *   1. correct picks (score)        — most right wins
-   *   2. accuracy (score / decided)   — better hit-rate breaks ties
-   *   3. picks made                   — more skin in the game
-   *   4. name (A→Z)                   — stable final tiebreak
+   * FINISHED match where their backed OUTCOME matches the actual result.
+   * `resolveResult` maps a matchId → the finished outcome (or null).
    */
   function leaderboard(
     id: string,
@@ -326,7 +422,6 @@ export function usePools() {
         b.picksMade - a.picksMade ||
         a.name.localeCompare(b.name)
     )
-    // Rank is based on correct-pick count only, so equal scores share a rank.
     let lastScore = -1
     let lastRank = 0
     rows.forEach((r, i) => {
@@ -354,6 +449,7 @@ export function usePools() {
     updatePool,
     deletePool,
     syncOwnerPicks,
+    refreshPools,
     leaderboard,
   }
 }
