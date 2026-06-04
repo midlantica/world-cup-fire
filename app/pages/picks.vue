@@ -4,6 +4,7 @@
   import { useTimezone } from '../composables/useTimezone'
   import { useMatchDetail } from '../composables/useMatchDetail'
   import { useCountryDetail } from '../composables/useCountryDetail'
+  import { useGroupDetail } from '../composables/useGroupDetail'
   import { useScores } from '../composables/useScores'
   import type { PickOutcome } from '../composables/usePicks'
   import type { Pool } from '../composables/usePools'
@@ -33,6 +34,7 @@
   const { iana } = useTimezone()
   const { openMatch } = useMatchDetail()
   const { openCountry } = useCountryDetail()
+  const { openGroupSilent: openGroup } = useGroupDetail()
   const { matches } = useScores()
   const route = useRoute()
   const router = useRouter()
@@ -323,6 +325,7 @@
                 :match="p.match"
                 @click="openMatch(p.match)"
                 @click-country="openCountry"
+                @click-group="openGroup"
               />
             </div>
           </div>

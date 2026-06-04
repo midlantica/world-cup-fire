@@ -2,10 +2,12 @@
   import { useScores } from '../composables/useScores'
   import { useMatchDetail } from '../composables/useMatchDetail'
   import { useCountryDetail } from '../composables/useCountryDetail'
+  import { useGroupDetail } from '../composables/useGroupDetail'
 
   const { matches, matchesByDay, pending, error } = useScores()
   const { openMatch } = useMatchDetail()
   const { openCountry } = useCountryDetail()
+  const { openGroupSilent: openGroup } = useGroupDetail()
 
   function formatDayHeader(day: string): string {
     // day is already YYYY-MM-DD in the selected timezone — parse at noon UTC
@@ -82,6 +84,7 @@
               :match="match"
               @click="openMatch(match)"
               @click-country="openCountry"
+              @click-group="openGroup"
             />
           </div>
         </div>

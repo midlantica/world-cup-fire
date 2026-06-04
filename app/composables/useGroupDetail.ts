@@ -39,12 +39,12 @@ export function useGroupDetail() {
     }
   }
 
-  /** Close and navigate away from /group/:id if currently on that route */
+  /** Close the modal and navigate back if we pushed a /group/ route to open it */
   function closeGroup() {
     state.open = false
     state.letter = null
     if (route.path.startsWith('/group/')) {
-      router.push('/groups')
+      router.back()
     }
   }
 

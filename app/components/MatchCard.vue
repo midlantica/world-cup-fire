@@ -49,21 +49,18 @@
     )
   }
 
-  /**
-   * Tap / click a team row. On a pickable card the first tap "arms" that row so
-   * a touch user can see + use the picker; a second tap opens the match detail.
-   */
-  function onRowClick(side: 'home' | 'away') {
-    if (pickable.value && armedSide.value !== side) {
-      armedSide.value = side
-      return
-    }
+  /** Tap / click anywhere on the card → open detail. */
+  function onCardClick() {
     emit('click', props.match)
   }
 
-  /** Tap / click anywhere else on the card → open detail. */
-  function onCardClick() {
-    emit('click', props.match)
+  /**
+   * Tap the WtlToggle placeholder/area on a pickable row — arms that row so
+   * the picker pops open. Stops propagation so the card click doesn't also fire.
+   */
+  function onPickerAreaClick(e: Event, side: 'home' | 'away') {
+    e.stopPropagation()
+    armedSide.value = side
   }
 
   function onPick(choice: 'win' | 'tie' | 'lose') {
@@ -95,6 +92,7 @@
   const emit = defineEmits<{
     (e: 'click', match: Match): void
     (e: 'click-country', name: string): void
+    (e: 'click-group', group: string): void
   }>()
 
   const { formatTimeHtml, iana } = useTimezone()
@@ -184,9 +182,19 @@
     ]"
     @click="onCardClick"
   >
-    <!-- Top bar: darker row, group pill flush-left, venue flush-right -->
-    <div class="match-card__top">
-      <span v-if="match.group" class="match-card__group">
+    <!-- Top bar: darker row, group pill flush-left, venue flush-right.
+         Clicking the group pill navigates to that group's page. -->
+    <div
+      class="match-card__top"
+      @click.stop="
+        match.group ? emit('click-group', match.group) : emit('click', match)
+      "
+    >
+      <span
+        v-if="match.group"
+        class="match-card__group match-card__group--link"
+        :title="`View Group ${match.group}`"
+      >
         Group {{ match.group }}
       </span>
       <span v-else class="match-card__group">Knockout Stage</span>
@@ -212,7 +220,6 @@
           class="match-card__team"
           @mouseenter="hoveredSide = 'home'"
           @mouseleave="hoveredSide = null"
-          @click.stop="onRowClick('home')"
         >
           <button
             class="match-card__flag-btn"
@@ -230,18 +237,25 @@
             <span class="match-card__name-short">{{ homeShortMobile }}</span>
           </span>
 
-          <!-- Win·Tie·Lose picker (interactive) — only before kickoff -->
-          <PicksWtlToggle
+          <!-- Win·Tie·Lose picker (interactive) — only before kickoff.
+               Wrapped in a stop-propagation span so tapping the picker zone
+               arms this row without also firing the card's open-detail click. -->
+          <span
             v-if="isNS && showWtl"
-            :outcome="wtl"
-            :perspective="'home'"
-            :popout="'left'"
-            :allow-tie="allowTie"
-            :revealed="rowRevealed('home')"
-            :readonly="readonly"
-            @pick="onPick"
-            @cancel="cancel"
-          />
+            class="match-card__picker-zone"
+            @click.stop="onPickerAreaClick($event, 'home')"
+          >
+            <PicksWtlToggle
+              :outcome="wtl"
+              :perspective="'home'"
+              :popout="'left'"
+              :allow-tie="allowTie"
+              :revealed="rowRevealed('home')"
+              :readonly="readonly"
+              @pick="onPick"
+              @cancel="cancel"
+            />
+          </span>
 
           <!-- Finished/live: pick chip (left of score) + score + winner triangle -->
           <span v-if="!isNS" class="match-card__result">
@@ -266,7 +280,6 @@
           class="match-card__team"
           @mouseenter="hoveredSide = 'away'"
           @mouseleave="hoveredSide = null"
-          @click.stop="onRowClick('away')"
         >
           <button
             class="match-card__flag-btn"
@@ -285,17 +298,22 @@
           </span>
 
           <!-- Win·Tie·Lose picker (interactive) — only before kickoff -->
-          <PicksWtlToggle
+          <span
             v-if="isNS && showWtl"
-            :outcome="wtl"
-            :perspective="'away'"
-            :popout="'left'"
-            :allow-tie="allowTie"
-            :revealed="rowRevealed('away')"
-            :readonly="readonly"
-            @pick="onPick"
-            @cancel="cancel"
-          />
+            class="match-card__picker-zone"
+            @click.stop="onPickerAreaClick($event, 'away')"
+          >
+            <PicksWtlToggle
+              :outcome="wtl"
+              :perspective="'away'"
+              :popout="'left'"
+              :allow-tie="allowTie"
+              :revealed="rowRevealed('away')"
+              :readonly="readonly"
+              @pick="onPick"
+              @cancel="cancel"
+            />
+          </span>
 
           <!-- Finished/live: pick chip (left of score) + score + winner triangle -->
           <span v-if="!isNS" class="match-card__result">
@@ -397,6 +415,15 @@
     @apply font-anybody-bold;
   }
 
+  .match-card__group--link {
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .match-card__group--link:hover {
+    color: color-mix(in oklab, #fff 90%, transparent);
+  }
+
   .match-card__venue {
     @apply flex-1 self-center truncate text-right text-xs;
     padding-inline: 0.7rem 0.7rem;
@@ -426,6 +453,14 @@
 
   .match-card__team {
     @apply flex items-center gap-2;
+  }
+
+  /* Picker zone: contains the WtlToggle and intercepts clicks so only tapping
+     the icon area arms the picker — the rest of the card opens the detail. */
+  .match-card__picker-zone {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
   }
 
   .match-card__flag-btn {
