@@ -161,9 +161,16 @@ export function usePools() {
       const ui = toUiPool(res.pool)
       mergePool(ui)
       return ui
-    } catch {
-      // 404 → the pool was deleted upstream; drop our local copy + creds.
-      removeLocal(id)
+    } catch (err) {
+      // ONLY forget the pool on a definitive 404 (it was deleted upstream).
+      // A transient failure — network blip, timeout, 5xx, or an offline reload
+      // — must NOT wipe our creds/cache, otherwise a single flaky refresh would
+      // permanently lose a valid pool from this device. We keep the cached copy
+      // (painted from localStorage) and try again next refresh.
+      const status =
+        (err as { statusCode?: number; status?: number })?.statusCode ??
+        (err as { status?: number })?.status
+      if (status === 404) removeLocal(id)
       return null
     }
   }
@@ -199,8 +206,26 @@ export function usePools() {
   }
 
   // Hydrate from the server on mount.
+  //
+  // IMPORTANT (SSR): `useState(...)` runs its initializer on the SERVER during
+  // SSR, where `loadCreds()` / `loadCache()` can't see localStorage and return
+  // empty. That empty value is serialized into the Nuxt payload and ADOPTED by
+  // the client on hydration — so `useState` does NOT re-run the initializer on
+  // the client. Without re-reading localStorage here, a page refresh would wipe
+  // every pool this device belongs to (creds + cache both look empty), which is
+  // exactly the "my pool disappeared after refresh" bug. So we re-hydrate from
+  // localStorage on mount BEFORE refreshing from the server. (usePicks does the
+  // same dance for the personal picks map.)
   if (import.meta.client) {
     onMounted(() => {
+      if (Object.keys(creds.value).length === 0) {
+        const storedCreds = loadCreds()
+        if (Object.keys(storedCreds).length > 0) creds.value = storedCreds
+      }
+      if (pools.value.length === 0) {
+        const storedCache = loadCache()
+        if (storedCache.length > 0) pools.value = storedCache
+      }
       refreshPools()
     })
   }
