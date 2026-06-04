@@ -1,10 +1,16 @@
-// POST /api/pools/:id/join — add the caller as a new member of a pool.
+// POST /api/pools/:id/join — add the caller as a member of a pool (or re-attach
+// to an existing member that shares their name).
 //
 // Body: { yourName: string }
 // Returns: { pool: PublicPool, memberId, token } — the member's secret write
-// token (stored client-side). Capped at MAX_MEMBERS. If the same person re-opens
-// the link they'll just get a NEW member row unless the client already holds a
-// token for this pool (the client checks that before calling join).
+// token (stored client-side). Capped at MAX_MEMBERS.
+//
+// RE-ATTACH BY NAME: if a member with the SAME (case-insensitive) name already
+// exists in the pool, we return that member's existing id + token instead of
+// creating a duplicate row. This is what lets someone who created/joined a pool
+// in another browser (or after clearing storage / in incognito) "rejoin" their
+// OWN pool from the invite link without spawning a second copy of themselves —
+// e.g. the owner re-opening their own share link on a different device.
 
 import {
   readPool,
@@ -28,6 +34,21 @@ export default defineEventHandler(async (event) => {
   const pool = await readPool(id)
   if (!pool) {
     throw createError({ statusCode: 404, statusMessage: 'Pool not found' })
+  }
+
+  // Re-attach by name: if a member with this name already exists, hand back its
+  // existing credentials instead of creating a duplicate. Lets the owner (or any
+  // member) rejoin their own pool from the link on a new device / browser.
+  const existing = pool.members.find(
+    (m) => m.name.trim().toLowerCase() === yourName.toLowerCase()
+  )
+  if (existing) {
+    return {
+      pool: toPublicPool(pool),
+      memberId: existing.id,
+      token: existing.token,
+      isOwner: existing.isOwner,
+    }
   }
 
   if (pool.members.length >= MAX_MEMBERS) {

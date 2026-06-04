@@ -10,6 +10,13 @@
     mode: 'create' | 'edit' | 'join'
     /** The pool being edited (edit mode only). */
     pool?: Pool | null
+    /**
+     * Suggested name to pre-fill in JOIN mode. Carried on the invite link as the
+     * owner's name (?o=). If the owner re-opens their own link on a new device,
+     * pre-filling this lets them re-attach to their existing membership in one
+     * click instead of accidentally creating a duplicate.
+     */
+    suggestedName?: string | null
   }>()
 
   const emit = defineEmits<{
@@ -29,7 +36,10 @@
         yourName.value = props.pool.ownerName
         poolName.value = props.pool.name
       } else if (props.mode === 'join') {
-        yourName.value = ''
+        // Pre-fill with the name carried on the invite link so the owner (or a
+        // returning member) can re-attach to their existing membership in one
+        // click instead of creating a duplicate.
+        yourName.value = props.suggestedName?.trim() ?? ''
         poolName.value = 'Shared Pool'
       } else {
         yourName.value = ''

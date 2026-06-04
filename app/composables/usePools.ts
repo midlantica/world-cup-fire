@@ -283,14 +283,23 @@ export function usePools() {
         pool: ApiPool
         memberId: string
         token: string
+        // Present (and true) when the server RE-ATTACHED us to the existing
+        // owner member — e.g. the owner rejoining their own pool from the link
+        // on a new device. We must preserve owner abilities in that case.
+        isOwner?: boolean
       }>(`/api/pools/${id}/join`, {
         method: 'POST',
         body: { yourName: input.yourName },
       })
       creds.value = {
         ...creds.value,
-        [id]: { memberId: res.memberId, token: res.token, isOwner: false },
+        [id]: {
+          memberId: res.memberId,
+          token: res.token,
+          isOwner: res.isOwner ?? false,
+        },
       }
+
       persistCreds()
       const ui = toUiPool(res.pool)
       mergePool(ui)
