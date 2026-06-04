@@ -399,7 +399,7 @@
     <PicksPoolModal
       :open="joinModalOpen"
       mode="join"
-      :suggested-name="linkOwnerName"
+      :join-pool-name="linkPoolName"
       @close="joinModalOpen = false"
       @submit="onJoinSubmit"
     />

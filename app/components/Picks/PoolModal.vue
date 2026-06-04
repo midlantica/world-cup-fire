@@ -11,12 +11,11 @@
     /** The pool being edited (edit mode only). */
     pool?: Pool | null
     /**
-     * Suggested name to pre-fill in JOIN mode. Carried on the invite link as the
-     * owner's name (?o=). If the owner re-opens their own link on a new device,
-     * pre-filling this lets them re-attach to their existing membership in one
-     * click instead of accidentally creating a duplicate.
+     * The name of the pool being joined (JOIN mode only). Shown in the copy so
+     * the joiner knows which pool they're joining. Carried on the invite link
+     * as ?n=. The input itself stays empty — it's for the NEW joiner's name.
      */
-    suggestedName?: string | null
+    joinPoolName?: string | null
   }>()
 
   const emit = defineEmits<{
@@ -36,11 +35,10 @@
         yourName.value = props.pool.ownerName
         poolName.value = props.pool.name
       } else if (props.mode === 'join') {
-        // Pre-fill with the name carried on the invite link so the owner (or a
-        // returning member) can re-attach to their existing membership in one
-        // click instead of creating a duplicate.
-        yourName.value = props.suggestedName?.trim() ?? ''
-        poolName.value = 'Shared Pool'
+        // The input is for the NEW joiner's name — always start empty. The pool
+        // they're joining is shown in the copy (joinPoolName), not pre-filled.
+        yourName.value = ''
+        poolName.value = props.joinPoolName?.trim() || 'Shared Pool'
       } else {
         yourName.value = ''
         poolName.value = ''
@@ -100,8 +98,10 @@
             leaderboard for you. 🏆
           </p>
           <p v-else-if="mode === 'join'" class="pool-modal__copy">
-            You've been invited to a pool! Add your name to join, then make your
-            picks. We'll keep a leaderboard for everyone. 🏆
+            You're joining
+            <strong class="pool-modal__pool-name">{{ poolName }}</strong
+            >. Add your name below, then make your picks. We'll keep a
+            leaderboard for everyone. 🏆
           </p>
 
           <form class="pool-modal__form" @submit.prevent="onSubmit">
@@ -213,6 +213,13 @@
       'wght' 300;
     font-size: 0.95rem;
     line-height: 1.5;
+  }
+
+  .pool-modal__pool-name {
+    color: #86efac;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
   }
 
   .pool-modal__form {
