@@ -31,32 +31,8 @@
   >
     <span class="copy-pill__text">{{ copied ? 'URL copied' : url }}</span>
     <span class="copy-pill__icon" aria-hidden="true">
-      <svg v-if="!copied" viewBox="0 0 20 20" fill="none">
-        <rect
-          x="6.5"
-          y="6.5"
-          width="9"
-          height="9"
-          rx="2"
-          stroke="currentColor"
-          stroke-width="1.4"
-        />
-        <path
-          d="M4.5 13.5h-.5a1.5 1.5 0 0 1-1.5-1.5v-7A1.5 1.5 0 0 1 4 3.5h7A1.5 1.5 0 0 1 12.5 5v.5"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-        />
-      </svg>
-      <svg v-else viewBox="0 0 20 20" fill="none">
-        <path
-          d="M4.5 10.5l3.5 3.5 7-8"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      <IconsCopy v-if="!copied" />
+      <IconsCheck v-else />
     </span>
   </button>
 </template>
