@@ -16,6 +16,12 @@
      * as ?n=. The input itself stays empty — it's for the NEW joiner's name.
      */
     joinPoolName?: string | null
+    /**
+     * The local user's already-known display name (learned from a pool they
+     * already belong to). When present we PRE-FILL the name input in create /
+     * join mode so they don't have to retype it every time.
+     */
+    knownName?: string | null
   }>()
 
   const emit = defineEmits<{
@@ -31,16 +37,20 @@
     () => props.open,
     (isOpen) => {
       if (!isOpen) return
+      // Prefill the name with whatever we already know about this user (from a
+      // pool they've already joined/created) so they don't retype it each time.
+      const known = props.knownName?.trim() ?? ''
       if (props.mode === 'edit' && props.pool) {
         yourName.value = props.pool.ownerName
         poolName.value = props.pool.name
       } else if (props.mode === 'join') {
-        // The input is for the NEW joiner's name — always start empty. The pool
-        // they're joining is shown in the copy (joinPoolName), not pre-filled.
-        yourName.value = ''
+        // The pool they're joining is shown in the copy (joinPoolName); the name
+        // input is pre-filled if we already know who they are (else empty).
+        yourName.value = known
         poolName.value = props.joinPoolName?.trim() || 'Shared Pool'
       } else {
-        yourName.value = ''
+        // Create: pre-fill the known name, leave the (new) pool name blank.
+        yourName.value = known
         poolName.value = ''
       }
     },

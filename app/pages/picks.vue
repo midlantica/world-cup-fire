@@ -17,6 +17,7 @@
   const {
     pools,
     canCreate,
+    selfName,
     MAX_POOLS,
     hasPool,
     joinPool,
@@ -391,6 +392,7 @@
       :open="modalOpen"
       :mode="modalMode"
       :pool="editingPool"
+      :known-name="selfName"
       @close="modalOpen = false"
       @submit="onModalSubmit"
     />
@@ -400,6 +402,7 @@
       :open="joinModalOpen"
       mode="join"
       :join-pool-name="linkPoolName"
+      :known-name="selfName"
       @close="joinModalOpen = false"
       @submit="onJoinSubmit"
     />

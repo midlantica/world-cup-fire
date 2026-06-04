@@ -235,6 +235,21 @@ export function usePools() {
   const ownedCount = computed(() => pools.value.filter((p) => p.owned).length)
   const canCreate = computed(() => ownedCount.value < MAX_POOLS)
 
+  // The local user's display name, learned from any pool they already belong to
+  // (the `isSelf` member). Lets the create/join modals pre-fill their name
+  // instead of asking for it again every time. Prefer an OWNED pool's name (the
+  // one they chose when they first created a pool), else fall back to any pool.
+  const selfName = computed(() => {
+    const owned = pools.value.find((p) => p.owned)
+    const ownedSelf = owned?.members.find((m) => m.isSelf)?.name
+    if (ownedSelf) return ownedSelf
+    for (const p of pools.value) {
+      const self = p.members.find((m) => m.isSelf)?.name
+      if (self) return self
+    }
+    return ''
+  })
+
   function getPool(id: string): Pool | undefined {
     return pools.value.find((p) => p.id === id)
   }
@@ -472,8 +487,10 @@ export function usePools() {
     pools,
     poolCount,
     canCreate,
+    selfName,
     MAX_MEMBERS,
     MAX_POOLS,
+
     getPool,
     hasPool,
     joinPool,
