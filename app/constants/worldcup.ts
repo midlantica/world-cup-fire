@@ -4,10 +4,10 @@
 export const WC_START = new Date('2026-06-11')
 
 /** Group stage ends */
-export const WC_GROUP_END = new Date('2026-07-02')
+const WC_GROUP_END = new Date('2026-07-02')
 
 /** Knockout stage starts */
-export const WC_KNOCKOUT_START = new Date('2026-07-04')
+const WC_KNOCKOUT_START = new Date('2026-07-04')
 
 /** Final */
 export const WC_FINAL = new Date('2026-07-19')
@@ -633,7 +633,7 @@ export const TEAM_BY_NAME = new Map<string, WCTeam>(
 )
 
 // Map from ESPN display name → ISO2 code
-export const ISO2_BY_NAME = new Map<string, string>(
+const ISO2_BY_NAME = new Map<string, string>(
   WC_TEAMS.map((t) => [t.name, t.iso2])
 )
 
@@ -652,7 +652,7 @@ export const WC_GROUPS = [
   'K',
   'L',
 ] as const
-export type WCGroup = (typeof WC_GROUPS)[number]
+type WCGroup = (typeof WC_GROUPS)[number]
 
 // Classic rivalries — these get a quality bonus
 export const RIVALRY_PAIRS: [string, string][] = [
@@ -908,7 +908,7 @@ export function nameToIso2(name: string | null | undefined): string {
 // Used to render a "star" per title next to the team name (à la football kits).
 // Keyed by the team's `name` as used in WC_TEAMS.
 // ---------------------------------------------------------------------------
-export const WC_TITLES: Record<string, number> = {
+const WC_TITLES: Record<string, number> = {
   Brazil: 5,
   Germany: 4,
   Italy: 4,
@@ -929,7 +929,7 @@ export function wcTitles(teamName: string): number {
 // Keyed by the venue's fullName as returned by ESPN.
 // Used as a bulletproof fallback so venue + location never disappear.
 // ---------------------------------------------------------------------------
-export const VENUE_LOCATIONS: Record<string, string> = {
+const VENUE_LOCATIONS: Record<string, string> = {
   'SoFi Stadium': 'Los Angeles, CA',
   'Rose Bowl Stadium': 'Pasadena, CA',
   "Levi's Stadium": 'Santa Clara, CA',
@@ -966,7 +966,7 @@ export function venueLocation(
 // and the schedule API fail to return a venue (e.g. pre-tournament UTC offset
 // issues or API gaps). Keyed by ESPN event ID as a string.
 // ---------------------------------------------------------------------------
-export const MATCH_VENUE: Record<string, string> = {
+const MATCH_VENUE: Record<string, string> = {
   '760414': 'Estadio Akron',
   '760415': 'Estadio Banorte',
   '760416': 'BMO Field',
@@ -1074,7 +1074,7 @@ export const MATCH_VENUE: Record<string, string> = {
 }
 
 /** Look up the venue name for a match by its ESPN event ID. */
-export function matchVenue(eventId: string | null | undefined): string | null {
+function matchVenue(eventId: string | null | undefined): string | null {
   if (!eventId) return null
   return MATCH_VENUE[eventId] ?? null
 }

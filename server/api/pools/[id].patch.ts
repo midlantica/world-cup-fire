@@ -3,13 +3,10 @@
 // Body: { token: string, poolName?: string, yourName?: string }
 // The token must match the pool's OWNER member. Returns the updated PublicPool.
 
-import { readPool, writePool, toPublicPool } from '../../utils/pools'
+import { requirePool, writePool, toPublicPool } from '../../utils/pools'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
-  }
+  const { pool } = await requirePool(event)
 
   const body = await readBody<{
     token?: string
@@ -19,11 +16,6 @@ export default defineEventHandler(async (event) => {
   const token = body?.token
   if (!token) {
     throw createError({ statusCode: 400, statusMessage: 'Missing token' })
-  }
-
-  const pool = await readPool(id)
-  if (!pool) {
-    throw createError({ statusCode: 404, statusMessage: 'Pool not found' })
   }
 
   const owner = pool.members.find((m) => m.isOwner)

@@ -19,6 +19,11 @@ function fmtUTC(d: Date): string {
   })
 }
 
+/** Format a Date as "Mon D" using local (system) date parts */
+function fmtLocal(d: Date): string {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 // ── MLS hiatus / off-season windows ──────────────────────────────────────────
 // During the World Cup hiatus (Jun 11 – Jul 19 2026) and the off-season,
 // "Last Week" snaps back to the last week with MLS games, and "Next Week"
@@ -92,43 +97,25 @@ function weekRange(
     if (offset === 0) {
       // "This Week" — show the hiatus message; return the actual calendar week
       // dates so the label is accurate, but flag it as a hiatus.
-      const label =
-        monday.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }) +
-        ' – ' +
-        sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      const label = fmtLocal(monday) + ' – ' + fmtLocal(sunday)
       return {
         from: toDateStr(monday),
         to: toDateStr(sunday),
         label,
         hiatus: hiatus.message,
       }
-    } else if (offset === -1) {
-      // "Last Week" — snap to the last week with MLS games before the hiatus
-      const snapMonday = hiatus.lastGameWeekMonday
-      const snapSunday = new Date(snapMonday)
-      snapSunday.setDate(snapMonday.getDate() + 6)
-      // Use fmtUTC to avoid timezone shift on ISO-string-constructed dates
-      const label = fmtUTC(snapMonday) + ' – ' + fmtUTC(snapSunday)
-      return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
-    } else {
-      // "Next Week" — snap to the first week with MLS games after the hiatus
-      const snapMonday = hiatus.nextGameWeekMonday
-      const snapSunday = new Date(snapMonday)
-      snapSunday.setDate(snapMonday.getDate() + 6)
-      // Use fmtUTC to avoid timezone shift on ISO-string-constructed dates
-      const label = fmtUTC(snapMonday) + ' – ' + fmtUTC(snapSunday)
-      return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
     }
+    // "Last Week" snaps before the hiatus; "Next Week" snaps after it.
+    // Use fmtUTC to avoid timezone shift on ISO-string-constructed dates.
+    const snapMonday =
+      offset === -1 ? hiatus.lastGameWeekMonday : hiatus.nextGameWeekMonday
+    const snapSunday = new Date(snapMonday)
+    snapSunday.setDate(snapMonday.getDate() + 6)
+    const label = fmtUTC(snapMonday) + ' – ' + fmtUTC(snapSunday)
+    return { from: toDateStr(snapMonday), to: toDateStr(snapSunday), label }
   }
 
-  const label =
-    monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
-    ' – ' +
-    sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-
+  const label = fmtLocal(monday) + ' – ' + fmtLocal(sunday)
   return { from: toDateStr(monday), to: toDateStr(sunday), label }
 }
 

@@ -37,6 +37,8 @@ export interface Match {
   status: MatchStatus
   qualityScore: number
   badge: MatchBadge
+  /** Unix ms timestamp rounded to the nearest 30-min slot — used for grouping */
+  kickoffSlot: number
 }
 
 // ---------------------------------------------------------------------------
@@ -278,6 +280,11 @@ export function normaliseEvent(ev: any): Match {
     status: { code, clock },
     qualityScore: quality,
     badge,
+    kickoffSlot: (() => {
+      const ms = new Date(String(ev.date ?? '')).getTime()
+      const SLOT_MS = 30 * 60_000
+      return Math.floor(ms / SLOT_MS) * SLOT_MS
+    })(),
   }
 }
 

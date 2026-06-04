@@ -13,7 +13,7 @@
 // e.g. the owner re-opening their own share link on a different device.
 
 import {
-  readPool,
+  requirePool,
   writePool,
   toPublicPool,
   shortId,
@@ -23,18 +23,10 @@ import {
 } from '../../../utils/pools'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
-  }
+  const { pool } = await requirePool(event)
 
   const body = await readBody<{ yourName?: string }>(event)
   const yourName = (body?.yourName ?? '').trim().slice(0, 40) || 'You'
-
-  const pool = await readPool(id)
-  if (!pool) {
-    throw createError({ statusCode: 404, statusMessage: 'Pool not found' })
-  }
 
   // Re-attach by name: if a member with this name already exists, hand back its
   // existing credentials instead of creating a duplicate. Lets the owner (or any

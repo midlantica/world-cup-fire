@@ -179,6 +179,25 @@ export async function readPool(id: string): Promise<StoredPool | null> {
   return poolStore().read(id)
 }
 
+/**
+ * Resolve the pool id from the route param and load the pool, throwing
+ * appropriate H3 errors if either is missing. Eliminates the repeated
+ * id-guard + readPool + 404-guard pattern across pool route handlers.
+ */
+export async function requirePool(
+  event: Parameters<typeof getRouterParam>[0]
+): Promise<{ id: string; pool: StoredPool }> {
+  const id = getRouterParam(event, 'id')
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
+  }
+  const pool = await readPool(id)
+  if (!pool) {
+    throw createError({ statusCode: 404, statusMessage: 'Pool not found' })
+  }
+  return { id, pool }
+}
+
 /** Write a pool back to the store. */
 export async function writePool(pool: StoredPool): Promise<void> {
   await poolStore().write(pool)

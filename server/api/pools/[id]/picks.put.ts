@@ -16,7 +16,7 @@
 // as-is (we never silently drop a previously-made pick).
 
 import {
-  readPool,
+  requirePool,
   writePool,
   toPublicPool,
   type PickOutcome,
@@ -30,10 +30,7 @@ interface IncomingPick {
 const VALID_OUTCOMES: PickOutcome[] = ['home', 'away', 'draw']
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
-  }
+  const { pool } = await requirePool(event)
 
   const body = await readBody<{
     memberId?: string
@@ -47,11 +44,6 @@ export default defineEventHandler(async (event) => {
 
   if (!memberId || !token) {
     throw createError({ statusCode: 400, statusMessage: 'Missing credentials' })
-  }
-
-  const pool = await readPool(id)
-  if (!pool) {
-    throw createError({ statusCode: 404, statusMessage: 'Pool not found' })
   }
 
   const member = pool.members.find((m) => m.id === memberId)

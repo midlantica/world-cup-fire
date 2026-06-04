@@ -61,6 +61,26 @@ function autoSelectDay(days: DayTab[]): string {
   }).key
 }
 
+/** Group an array of matches by 30-min kickoff slot, sorted chronologically
+ *  within each slot by quality score (descending). */
+function groupMatchesBySlot(
+  matches: Match[],
+  kickoffKeyHtml: (iso: string) => string
+): [string, Match[]][] {
+  const slotMap = new Map<number, Match[]>()
+  for (const m of matches) {
+    const arr = slotMap.get(m.kickoffSlot) ?? []
+    arr.push(m)
+    slotMap.set(m.kickoffSlot, arr)
+  }
+  return [...slotMap.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([slot, slotMatches]) => [
+      kickoffKeyHtml(new Date(slot).toISOString()),
+      [...slotMatches].sort((a, b) => b.qualityScore - a.qualityScore),
+    ])
+}
+
 export function useMatchView(
   allWeekMatches: Readonly<Ref<Match[]>>,
   activeTab: Readonly<Ref<string>>
@@ -123,20 +143,9 @@ export function useMatchView(
     return day?.matches ?? []
   })
 
-  const byTimeGroups = computed((): [string, Match[]][] => {
-    const slotMap = new Map<number, Match[]>()
-    for (const m of selectedDayMatches.value) {
-      const arr = slotMap.get(m.kickoffSlot) ?? []
-      arr.push(m)
-      slotMap.set(m.kickoffSlot, arr)
-    }
-    return [...slotMap.entries()]
-      .sort(([a], [b]) => a - b)
-      .map(([slot, slotMatches]) => [
-        kickoffKeyHtml(new Date(slot).toISOString()),
-        [...slotMatches].sort((a, b) => b.qualityScore - a.qualityScore),
-      ])
-  })
+  const byTimeGroups = computed((): [string, Match[]][] =>
+    groupMatchesBySlot(selectedDayMatches.value, kickoffKeyHtml)
+  )
 
   const bestMatches = computed(() =>
     [...selectedDayMatches.value].sort(
@@ -148,23 +157,11 @@ export function useMatchView(
   // Used by the 'weekbytime' view mode — shows every game this week with
   // day headers and time sub-headings, sorted chronologically.
   const weekByDayGroups = computed(
-    (): { day: DayTab; slots: [string, Match[]][] }[] => {
-      return dayTabs.value.map((day) => {
-        const slotMap = new Map<number, Match[]>()
-        for (const m of day.matches) {
-          const arr = slotMap.get(m.kickoffSlot) ?? []
-          arr.push(m)
-          slotMap.set(m.kickoffSlot, arr)
-        }
-        const slots: [string, Match[]][] = [...slotMap.entries()]
-          .sort(([a], [b]) => a - b)
-          .map(([slot, slotMatches]) => [
-            kickoffKeyHtml(new Date(slot).toISOString()),
-            [...slotMatches].sort((a, b) => b.qualityScore - a.qualityScore),
-          ])
-        return { day, slots }
-      })
-    }
+    (): { day: DayTab; slots: [string, Match[]][] }[] =>
+      dayTabs.value.map((day) => ({
+        day,
+        slots: groupMatchesBySlot(day.matches, kickoffKeyHtml),
+      }))
   )
 
   return {

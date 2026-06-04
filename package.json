@@ -13,10 +13,8 @@
   "dependencies": {
     "@netlify/blobs": "^10.7.9",
     "@tailwindcss/vite": "^4.3.0",
-    "country-flag-icons": "^1.6.17",
-    "culori": "^4.0.2",
-    "nuxt": "^4.4.7",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "nuxt": "^4.4.7"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
