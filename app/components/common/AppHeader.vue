@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import { useMyNation } from '../composables/useMyNation'
-  import { useTimezone } from '../composables/useTimezone'
-  import { useScores, WC_TABS } from '../composables/useScores'
-  import type { Stage } from '../composables/useScores'
-  import { usePicks } from '../composables/usePicks'
-  import { usePools } from '../composables/usePools'
+  import { useMyNation } from '~/composables/useMyNation'
+  import { useTimezone } from '~/composables/useTimezone'
+  import { useScores, WC_TABS } from '~/composables/useScores'
+  import type { Stage } from '~/composables/useScores'
+  import { usePicks } from '~/composables/usePicks'
+  import { usePools } from '~/composables/usePools'
 
   const { myTeamData, openModal } = useMyNation()
 
@@ -20,13 +20,13 @@
 
   // ── Picks sub-tabs (My Picks | Group Pools) ────────────────────────────────
   // Rendered inside the header (like the Matches stage row) only on /picks. The
-  // active tab is driven by the URL (?tab=personal | ?tab=pools) so it survives
+  // active tab is driven by the URL (?tab=mypicks | ?tab=pools) so it survives
   // a refresh and the picks page reads the same query to show the right view.
   const showPicksTabs = computed(() => route.path === '/picks')
 
-  type PicksTab = 'personal' | 'pools'
+  type PicksTab = 'mypicks' | 'pools'
   const activePicksTab = computed<PicksTab>(() =>
-    route.query.tab === 'pools' ? 'pools' : 'personal'
+    route.query.tab === 'pools' ? 'pools' : 'mypicks'
   )
 
   function selectPicksTab(tab: PicksTab) {
@@ -165,9 +165,9 @@
         <button
           class="app-header__stage-btn"
           :class="{
-            'app-header__stage-btn--active': activePicksTab === 'personal',
+            'app-header__stage-btn--active': activePicksTab === 'mypicks',
           }"
-          @click="selectPicksTab('personal')"
+          @click="selectPicksTab('mypicks')"
         >
           My Picks
         </button>

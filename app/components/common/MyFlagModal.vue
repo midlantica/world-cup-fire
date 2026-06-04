@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { useMyNation } from '../../composables/useMyNation'
-  import { WC_GROUPS } from '../../constants/worldcup'
+  import { useMyNation } from '~/composables/useMyNation'
+  import { WC_GROUPS } from '~/constants/worldcup'
 
   const { myNation, myTeamData, setNation, modalOpen, closeModal, allTeams } =
     useMyNation()

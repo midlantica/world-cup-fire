@@ -27,6 +27,15 @@ export default defineNuxtConfig({
     },
   },
 
+  // Register the default components dir plus a `common/` subdir whose names are
+  // NOT path-prefixed — so shared shell components (AppHeader, AppFooter,
+  // TzPicker, CountryFlag) keep their bare names instead of becoming
+  // <CommonAppHeader> etc.
+  components: [
+    { path: '~/components/common', pathPrefix: false },
+    '~/components',
+  ],
+
   css: ['~/assets/css/main.css', '~/assets/css/scrollbar.css'],
 
   // Use the netlify preset so server/api routes become Netlify Functions

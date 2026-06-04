@@ -18,7 +18,7 @@
 
     <GroupDetailModal />
     <GameDetailModal />
-    <MyNationModal />
+    <MyFlagModal />
     <CountryDetailModal />
   </div>
 </template>

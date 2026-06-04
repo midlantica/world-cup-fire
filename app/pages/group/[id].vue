@@ -14,7 +14,7 @@
     <!-- GroupDetailModal opens automatically via useGroupDetail route watcher -->
     <GroupDetailModal />
     <GameDetailModal />
-    <MyNationModal />
+    <MyFlagModal />
     <CountryDetailModal />
   </div>
 </template>

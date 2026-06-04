@@ -36,13 +36,13 @@
   const route = useRoute()
   const router = useRouter()
 
-  // ── Sub-nav: Personal Picks | Group Pools ──────────────────────────────────
-  // The active tab is reflected in the URL (?tab=personal | ?tab=pools) so each
+  // ── Sub-nav: My Picks | Group Pools ────────────────────────────────────────
+  // The active tab is reflected in the URL (?tab=mypicks | ?tab=pools) so each
   // view has a hard, deep-linkable route that survives a page refresh.
-  type Tab = 'personal' | 'pools'
+  type Tab = 'mypicks' | 'pools'
 
   function tabFromQuery(): Tab {
-    return route.query.tab === 'pools' ? 'pools' : 'personal'
+    return route.query.tab === 'pools' ? 'pools' : 'mypicks'
   }
 
   const activeTab = ref<Tab>(tabFromQuery())
@@ -259,7 +259,7 @@
       </div>
 
       <!-- ════════════════ PERSONAL PICKS ════════════════ -->
-      <section v-show="activeTab === 'personal'">
+      <section v-show="activeTab === 'mypicks'">
         <div class="picks-panel__title-row">
           <span class="picks-panel__title">My Picks</span>
           <span class="picks-panel__count"
@@ -380,7 +380,7 @@
             @edit="openEdit"
             @delete="onDelete"
             @leave="onLeave"
-            @edit-picks="setTab('personal')"
+            @edit-picks="setTab('mypicks')"
           />
         </div>
       </section>
@@ -407,7 +407,7 @@
     <!-- Modals (so picks can be inspected / drilled into) -->
 
     <GameDetailModal />
-    <MyNationModal />
+    <MyFlagModal />
     <CountryDetailModal />
     <GroupDetailModal />
   </div>
@@ -489,7 +489,7 @@
 
   /* Explanatory copy */
   .picks-panel__copy {
-    @apply mt-3 max-w-3xl text-sm text-white/70;
+    @apply mt-3 max-w-3xl text-base text-white/70;
     line-height: 1.55;
   }
 

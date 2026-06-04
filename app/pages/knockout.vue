@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <MyNationModal />
+    <MyFlagModal />
   </div>
 </template>
 

@@ -23,7 +23,7 @@
 
     <!-- Modals -->
     <GameDetailModal />
-    <MyNationModal />
+    <MyFlagModal />
     <CountryDetailModal />
     <GroupDetailModal />
   </div>
