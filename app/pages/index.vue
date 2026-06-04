@@ -32,14 +32,13 @@
 <style scoped>
   @reference "~/assets/css/main.css";
   .home-page {
-    flex: 1;
     margin-top: 0;
   }
 
   .home-page__inner {
     @apply mx-auto max-w-7xl px-3;
     padding-top: 0;
-    padding-bottom: 2rem;
+    padding-bottom: 1rem;
   }
 
   .home-page__main {

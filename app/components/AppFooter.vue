@@ -6,7 +6,7 @@
   <footer class="app-footer">
     <div class="app-footer__inner">
       <span class="app-footer__text">
-        World Cup Fire 🔥 · {{ year }} · Data via ESPN
+        World Cup Fire 🔥 &#8226; {{ year }} &#8226; Data via ESPN
       </span>
       <span class="app-footer__disclaimer">
         Not affiliated with FIFA or ESPN
@@ -18,7 +18,8 @@
 <style scoped>
   @reference "~/assets/css/main.css";
   .app-footer {
-    @apply mt-12 border-t border-white/5 py-6;
+    @apply border-t border-white/5 py-2;
+    margin-top: auto;
   }
 
   .app-footer__inner {

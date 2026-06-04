@@ -415,12 +415,8 @@
 <style scoped>
   @reference "~/assets/css/main.css";
 
-  .picks-page {
-    flex: 1;
-  }
-
   .picks-page__inner {
-    @apply mx-auto max-w-7xl space-y-4 px-3 pb-12;
+    @apply mx-auto max-w-7xl space-y-4 px-3 pb-1;
   }
 
   /* ── Invitee welcome ──────────────────────────────────────────────────────── */
@@ -436,7 +432,7 @@
   }
 
   .picks-page__welcome-text {
-    @apply mt-1 text-sm text-white/70;
+    @apply mt-1 text-base text-white/70;
     line-height: 1.55;
   }
 

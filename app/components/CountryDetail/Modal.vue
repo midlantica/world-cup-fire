@@ -624,7 +624,7 @@
 
             <!-- Close -->
             <button class="cd-close" aria-label="Close" @click="closeCountry">
-              <CloseIcon />
+              <IconsClose />
             </button>
           </div>
 

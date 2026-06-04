@@ -79,7 +79,7 @@
             aria-label="Close"
             @click="emit('close')"
           >
-            <CloseIcon />
+            <IconsClose />
           </button>
 
           <h2 class="pool-modal__title">{{ title }}</h2>

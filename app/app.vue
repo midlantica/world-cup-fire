@@ -217,12 +217,9 @@
     z-index: 1;
   }
 
-  /* Let the page content grow to fill available space, pushing footer down */
-  .app-root > :deep(.nuxt-page),
-  .app-root > :deep([data-v-app]),
-  .app-root > main {
-    flex: 1;
-  }
+  /* The footer uses `margin-top: auto` to pin itself to the bottom of the
+     flex column on short pages, while hugging the content on tall pages —
+     no empty gap. The page roots no longer need `flex: 1`. */
 
   .app-root.modal-blurred {
     filter: blur(2px);

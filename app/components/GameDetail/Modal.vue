@@ -439,7 +439,7 @@
 
             <!-- Close button -->
             <button class="gd-close" aria-label="Close" @click="closeMatch">
-              <CloseIcon />
+              <IconsClose />
             </button>
           </div>
 

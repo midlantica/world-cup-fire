@@ -414,7 +414,7 @@
                 aria-label="Previous group"
                 @click="goToPrev"
               >
-                <ArrowNavIcon :flipped="true" />
+                <IconsArrowNav :flipped="true" />
               </button>
 
               <!-- Title -->
@@ -430,13 +430,13 @@
                 aria-label="Next group"
                 @click="goToNext"
               >
-                <ArrowNavIcon />
+                <IconsArrowNav />
               </button>
             </div>
 
             <!-- Close -->
             <button class="grd-close" aria-label="Close" @click="closeGroup">
-              <CloseIcon />
+              <IconsClose />
             </button>
           </div>
 

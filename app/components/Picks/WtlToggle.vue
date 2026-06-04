@@ -83,6 +83,15 @@
   // Show the full picker when revealed and interactive.
   const open = computed(() => !props.readonly && !!props.revealed)
 
+  // Show the semi-transparent placeholder when this is an interactive,
+  // not-yet-picked control that isn't currently revealed. It sits in the EXACT
+  // spot the real picked icon (check / tie chip) will occupy, hinting to the
+  // user where to click — and is swapped out for the real icon once a pick is
+  // made (or the live picker when the row is revealed).
+  const showPlaceholder = computed(
+    () => !props.readonly && !hasPick.value && !open.value
+  )
+
   // ── Slot ⇄ home-anchored outcome mapping (per row perspective) ────────────
   // A visual "slot" (check / tie) means a different home-anchored outcome
   // depending on which team's row we sit on. The check on a row always means
@@ -228,6 +237,19 @@
         />
       </svg>
     </button>
+
+    <!-- PLACEHOLDER: no pick yet + picker not revealed. A semi-transparent
+         checkmark occupying the EXACT spot the real picked icon will land,
+         hinting where to click. Hovering the row (desktop) / tapping it
+         (mobile) reveals the live picker, which replaces this; making a pick
+         replaces it with the real chip. -->
+    <span
+      v-else-if="showPlaceholder"
+      class="wtl__placeholder"
+      aria-hidden="true"
+    >
+      <IconsPickPlaceholder />
+    </span>
   </span>
 </template>
 
@@ -409,5 +431,34 @@
 
   .wtl__chip .wtl__mark {
     fill: #272727;
+  }
+
+  /* ── PLACEHOLDER: semi-transparent checkmark hinting where to pick ─────────
+     Fills the same 1.3rem footprint as the real chip so it lands in the EXACT
+     spot the picked icon will occupy. Pointer events pass through to the team
+     row beneath so a hover/tap reveals the live picker as usual. The icon's
+     own opacity (0.5) is dialled down a touch more here so it reads clearly as
+     a placeholder rather than a real selection. */
+  .wtl__placeholder {
+    width: 1.3rem;
+    height: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0.85;
+    transition: opacity 0.15s ease;
+  }
+
+  .wtl__placeholder :deep(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Brighten slightly when the user hovers the row so the affordance reads as
+     "click here". The row's :hover bubbles down to this child. */
+  .wtl:hover .wtl__placeholder {
+    opacity: 1;
   }
 </style>

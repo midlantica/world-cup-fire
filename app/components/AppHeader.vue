@@ -200,10 +200,10 @@
        band across the top of the page. */
     background: var(--nation-bg, #0c0a09);
 
-    /* No gap below the header: each page owns its own top spacing (e.g.
-       .home-page margin-top), and page sub-navs (Picks) pin flush beneath the
-       header. Applies at every breakpoint. */
-    margin-bottom: 0.75rem;
+    /* Small gap below the header so the tab/sub-nav bar doesn't collide with
+       the page content below. Applies at every breakpoint. */
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
   }
 
   /* ── Wide layout (> 600px): single flex row ─────────────────────────────── */
