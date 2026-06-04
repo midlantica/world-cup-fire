@@ -28,9 +28,19 @@
   <section class="pool-card">
     <!-- Head: name + link + actions -->
     <div class="pool-card__head">
-      <h3 class="pool-card__name">{{ pool.name }}</h3>
+      <h3 class="pool-card__name">
+        {{ pool.name }}
+        <template v-if="pool.ownerName">
+          <span class="pool-card__name-sep">–</span>
+          <span class="pool-card__owner">{{ pool.ownerName }}</span>
+        </template>
+      </h3>
+
       <div class="pool-card__head-right">
-        <PicksCopyLinkPill v-if="pool.owned" :url="link" />
+        <!-- Every pool — owned OR joined — has a shareable link. Any member can
+             invite more friends/family with the same link, so the copy pill is
+             always shown (not just for the owner). -->
+        <PicksCopyLinkPill :url="link" />
         <div class="pool-card__actions">
           <template v-if="pool.owned">
             <button class="pool-card__btn" @click="emit('edit', pool)">
@@ -92,6 +102,19 @@
     font-size: 1.05rem;
     font-weight: 800;
     letter-spacing: 0.04em;
+  }
+
+  /* "{Pool name} – {Creator name}" — the creator is shown a touch dimmer so the
+     pool name stays the focal point. */
+  .pool-card__name-sep {
+    @apply text-white/40;
+    margin: 0 0.2em;
+    font-weight: 600;
+  }
+
+  .pool-card__owner {
+    @apply text-white/55;
+    font-weight: 600;
   }
 
   .pool-card__head-right {
