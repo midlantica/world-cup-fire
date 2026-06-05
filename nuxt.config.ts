@@ -48,6 +48,17 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      script: [
+        {
+          // Blocking inline script — runs synchronously before first paint.
+          // Reads the persisted nation accent from localStorage and applies all
+          // CSS custom properties directly on <html> so there is zero flash of
+          // the un-themed background on page load / refresh.
+          innerHTML: `(function(){try{var a=localStorage.getItem('wc-my-nation-accent');if(!a)return;var bg='#0c0a09';var r=document.documentElement;r.style.setProperty('--nation-accent',a);r.style.setProperty('--nation-accent-soft','color-mix(in srgb, '+a+' 40%, transparent)');r.style.setProperty('--nation-glow','color-mix(in srgb, '+a+' 55%, transparent)');r.style.setProperty('--nation-tint','color-mix(in srgb, '+a+' 12%, transparent)');r.style.setProperty('--nation-bg','color-mix(in srgb, '+a+' 12%, '+bg+')');r.style.setProperty('--nation-bg-header','color-mix(in srgb, '+a+' 18%, '+bg+')');r.style.setProperty('--nation-card','color-mix(in srgb, '+a+' 10%, #1d1d1d)');r.style.setProperty('--nation-card-hover','color-mix(in srgb, '+a+' 13%, #252525)');r.style.setProperty('--nation-card-mine','color-mix(in srgb, '+a+' 18%, #1d1d1d)');r.classList.add('has-nation-theme');}catch(e){}})();`,
+          tagPosition: 'head',
+          tagPriority: 0,
+        },
+      ],
       title: 'World Cup Fire 🔥',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

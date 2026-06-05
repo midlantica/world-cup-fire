@@ -35,50 +35,45 @@
   const showWtl = computed(() => pickable.value || hasPick.value)
 
   /**
-   * Mobile "armed" state: on touch devices the picker only opens after the user
-   * taps a team row once. On desktop it opens on hover of that row. We track
-   * which row (home / away) is active so the picker pops up in that exact row.
+   * Armed state: clicking a pick icon (placeholder/chip) on either team row
+   * reveals the WD picker for that row. Only one row can be armed at a time.
+   * null = closed, 'home' | 'away' = that row's picker is open.
    */
-  const armedSide = ref<'home' | 'away' | null>(null)
-  const hoveredSide = ref<'home' | 'away' | null>(null)
+  const armedRow = ref(null as 'home' | 'away' | null)
 
-  /** The picker is revealed for a given row (hover desktop / armed mobile). */
-  function rowRevealed(side: 'home' | 'away'): boolean {
-    return (
-      pickable.value && (hoveredSide.value === side || armedSide.value === side)
-    )
-  }
-
-  /** Tap / click anywhere on the card → open detail. */
-  function onCardClick() {
-    emit('click', props.match)
-  }
+  const homeRevealed = computed(
+    () => pickable.value && armedRow.value === 'home'
+  )
+  const awayRevealed = computed(
+    () => pickable.value && armedRow.value === 'away'
+  )
 
   /**
-   * Tap the WtlToggle placeholder/area on a pickable row — arms that row so
-   * the picker pops open. Stops propagation so the card click doesn't also fire.
+   * Clicking the pick icon on a team row arms that row's picker.
+   * Clicking the same row again closes it.
+   * The WtlToggle itself handles the actual pick/cancel via its own click.stop.
    */
-  function onPickerAreaClick(e: Event, side: 'home' | 'away') {
+  function onPickIconClick(row: 'home' | 'away', e: Event) {
     e.stopPropagation()
-    armedSide.value = side
+    armedRow.value = armedRow.value === row ? null : row
+  }
+
+  /** Clicking the time/date block always opens GameDetail. */
+  function onCardClick() {
+    emit('click', props.match)
   }
 
   function onPick(choice: 'win' | 'tie' | 'lose') {
     if (!pickable.value) return
     pickWtl(props.match, choice)
-    // Dismiss the picker after the tap. We clear BOTH the armed (touch) and the
-    // hovered (desktop, but also "sticky" on touch where mouseleave never
-    // fires) state so the popper reliably closes on mobile. A short delay lets
-    // the slot's pop animation play before the picker collapses to the chip.
     setTimeout(() => {
-      armedSide.value = null
-      hoveredSide.value = null
+      armedRow.value = null
     }, 260)
   }
 
   function cancel() {
     clearPick(props.match.id)
-    armedSide.value = null
+    armedRow.value = null
   }
 
   /** True when the selected nation is playing in this match. */
@@ -176,7 +171,7 @@
         live: isLive || isHT,
         'match-card--mine': isMyNation,
         'match-card--pickable': pickable,
-        'match-card--armed': armedSide !== null,
+        'match-card--armed': armedRow !== null,
         'match-card--has-pick': hasPick,
       },
     ]"
@@ -213,14 +208,13 @@
 
     <!-- Teams + score/time -->
     <div class="match-card__body">
-      <!-- Left: two team rows -->
-      <div class="match-card__teams">
-        <!-- Home -->
-        <div
-          class="match-card__team"
-          @mouseenter="hoveredSide = 'home'"
-          @mouseleave="hoveredSide = null"
-        >
+      <!-- Left: two team rows.
+           Each row: [flag] [name] [score?] [pick icon]
+           Clicking the team name area opens GameDetail.
+           Clicking the pick icon (W/D/placeholder) arms that row's WD picker. -->
+      <div class="match-card__teams" @click.stop="onCardClick">
+        <!-- Home row -->
+        <div class="match-card__team">
           <button
             class="match-card__flag-btn"
             :title="`View ${match.home}`"
@@ -232,39 +226,13 @@
               class="match-card__flag"
             />
           </button>
-          <span class="match-card__name">
+          <span class="match-card__name match-card__name--hoverable">
             <span class="match-card__name-full">{{ match.homeShort }}</span>
             <span class="match-card__name-short">{{ homeShortMobile }}</span>
           </span>
 
-          <!-- Win·Tie·Lose picker (interactive) — only before kickoff.
-               Wrapped in a stop-propagation span so tapping the picker zone
-               arms this row without also firing the card's open-detail click. -->
-          <span
-            v-if="isNS && showWtl"
-            class="match-card__picker-zone"
-            @click.stop="onPickerAreaClick($event, 'home')"
-          >
-            <PicksWtlToggle
-              :outcome="wtl"
-              :perspective="'home'"
-              :popout="'left'"
-              :allow-tie="allowTie"
-              :revealed="rowRevealed('home')"
-              :readonly="readonly"
-              @pick="onPick"
-              @cancel="cancel"
-            />
-          </span>
-
-          <!-- Finished/live: pick chip (left of score) + score + winner triangle -->
+          <!-- Score (live/FT) + winner triangle -->
           <span v-if="!isNS" class="match-card__result">
-            <PicksWtlToggle
-              v-if="hasPick"
-              :outcome="wtl"
-              :perspective="'home'"
-              :readonly="true"
-            />
             <span
               v-if="winner === 'home'"
               class="match-card__tri"
@@ -272,15 +240,37 @@
             />
             <span class="match-card__score">{{ match.homeScore }}</span>
           </span>
+
+          <!-- Pick icon: placeholder / W chip / D chip — arms the picker on click.
+               Only shown for not-started matches where picking is relevant. -->
+          <span
+            v-if="isNS && showWtl"
+            class="match-card__pick-slot"
+            @click.stop="onPickIconClick('home', $event)"
+          >
+            <PicksWtlToggle
+              :outcome="wtl"
+              :perspective="'home'"
+              :popout="'left'"
+              :allow-tie="allowTie"
+              :revealed="homeRevealed"
+              :readonly="readonly"
+              @pick="onPick"
+              @cancel="cancel"
+            />
+          </span>
+          <!-- Read-only pick chip for finished/live matches -->
+          <span v-else-if="!isNS && hasPick" class="match-card__pick-slot">
+            <PicksWtlToggle
+              :outcome="wtl"
+              :perspective="'home'"
+              :readonly="true"
+            />
+          </span>
         </div>
 
-        <!-- Away -->
-
-        <div
-          class="match-card__team"
-          @mouseenter="hoveredSide = 'away'"
-          @mouseleave="hoveredSide = null"
-        >
+        <!-- Away row -->
+        <div class="match-card__team">
           <button
             class="match-card__flag-btn"
             :title="`View ${match.away}`"
@@ -292,37 +282,13 @@
               class="match-card__flag"
             />
           </button>
-          <span class="match-card__name">
+          <span class="match-card__name match-card__name--hoverable">
             <span class="match-card__name-full">{{ match.awayShort }}</span>
             <span class="match-card__name-short">{{ awayShortMobile }}</span>
           </span>
 
-          <!-- Win·Tie·Lose picker (interactive) — only before kickoff -->
-          <span
-            v-if="isNS && showWtl"
-            class="match-card__picker-zone"
-            @click.stop="onPickerAreaClick($event, 'away')"
-          >
-            <PicksWtlToggle
-              :outcome="wtl"
-              :perspective="'away'"
-              :popout="'left'"
-              :allow-tie="allowTie"
-              :revealed="rowRevealed('away')"
-              :readonly="readonly"
-              @pick="onPick"
-              @cancel="cancel"
-            />
-          </span>
-
-          <!-- Finished/live: pick chip (left of score) + score + winner triangle -->
+          <!-- Score (live/FT) + winner triangle -->
           <span v-if="!isNS" class="match-card__result">
-            <PicksWtlToggle
-              v-if="hasPick"
-              :outcome="wtl"
-              :perspective="'away'"
-              :readonly="true"
-            />
             <span
               v-if="winner === 'away'"
               class="match-card__tri"
@@ -330,27 +296,58 @@
             />
             <span class="match-card__score">{{ match.awayScore }}</span>
           </span>
+
+          <!-- Pick icon: placeholder / W chip / D chip — arms the picker on click. -->
+          <span
+            v-if="isNS && showWtl"
+            class="match-card__pick-slot"
+            @click.stop="onPickIconClick('away', $event)"
+          >
+            <PicksWtlToggle
+              :outcome="wtl"
+              :perspective="'away'"
+              :popout="'left'"
+              :allow-tie="allowTie"
+              :revealed="awayRevealed"
+              :readonly="readonly"
+              @pick="onPick"
+              @cancel="cancel"
+            />
+          </span>
+          <!-- Read-only pick chip for finished/live matches -->
+          <span v-else-if="!isNS && hasPick" class="match-card__pick-slot">
+            <PicksWtlToggle
+              :outcome="wtl"
+              :perspective="'away'"
+              :readonly="true"
+            />
+          </span>
         </div>
       </div>
 
-      <!-- Right: time/status -->
-      <div class="match-card__time-block">
-        <template v-if="!isNS">
-          <span
-            class="match-card__status"
-            :class="{
-              'match-card__status--live': isLive || isHT,
-              'match-card__status--ft': isFT,
-            }"
-          >
-            {{ statusLabel }}
-          </span>
-        </template>
-        <template v-else>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <span class="match-card__kickoff" v-html="kickoffLabel" />
-          <span class="match-card__date-label">{{ dayDateLabel }}</span>
-        </template>
+      <!-- Right: time/status block.
+           Clicking ALWAYS opens GameDetail — no WTL toggle here.
+           The WD picker pops out to the LEFT from the pick icons on the team rows. -->
+      <div class="match-card__time-block" @click.stop="onCardClick">
+        <!-- Time / status text column -->
+        <div class="match-card__time-col">
+          <template v-if="!isNS">
+            <span
+              class="match-card__status"
+              :class="{
+                'match-card__status--live': isLive || isHT,
+                'match-card__status--ft': isFT,
+              }"
+            >
+              {{ statusLabel }}
+            </span>
+          </template>
+          <template v-else>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <span class="match-card__kickoff" v-html="kickoffLabel" />
+            <span class="match-card__date-label">{{ dayDateLabel }}</span>
+          </template>
+        </div>
       </div>
     </div>
   </article>
@@ -455,14 +452,6 @@
     @apply flex items-center gap-2;
   }
 
-  /* Picker zone: contains the WtlToggle and intercepts clicks so only tapping
-     the icon area arms the picker — the rest of the card opens the detail. */
-  .match-card__picker-zone {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
   .match-card__flag-btn {
     background: none;
     border: none;
@@ -483,6 +472,14 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
+  }
+
+  /* Team names show underline when the teams area is hovered (signals
+     the area is clickable to open GameDetail). */
+  .match-card__teams:hover .match-card__name--hoverable {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-color: color-mix(in oklab, #fff 40%, transparent);
   }
 
   /* Full name shown by default; short name hidden */
@@ -564,10 +561,36 @@
     @apply font-anybody-bold;
   }
 
+  /* ── Pick icon slot — sits at the right end of each team row ─────────────
+     The WtlToggle inside pops its picker out to the LEFT (absolutely positioned)
+     so it overlaps the time block area without shifting the layout. */
+  .match-card__pick-slot {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
   /* ── Time / status block ─────────────────────────────────────────────────── */
+  /* Clicking always opens GameDetail. No WTL toggle here. */
   .match-card__time-block {
-    @apply flex shrink-0 flex-col items-center;
-    gap: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    gap: 0.4rem;
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  /* Time text column: stacks kickoff time + date label */
+  .match-card__time-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
   }
 
   .match-card__kickoff {

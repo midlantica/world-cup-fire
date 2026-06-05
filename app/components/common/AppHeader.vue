@@ -159,7 +159,7 @@
 
   /* ── Wide layout (> 600px): single flex row ─────────────────────────────── */
   .app-header__inner {
-    @apply mx-auto flex max-w-7xl items-center px-3;
+    @apply mx-auto flex max-w-7xl items-center px-4;
     gap: 0.5rem;
     min-height: 4.5rem;
   }

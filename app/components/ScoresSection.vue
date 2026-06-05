@@ -314,7 +314,7 @@
   }
 
   .scores-section__day-title {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     color: rgb(255 255 255 / 0.55);
     letter-spacing: 0.14em;
     text-transform: uppercase;

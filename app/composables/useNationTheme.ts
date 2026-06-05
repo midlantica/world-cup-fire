@@ -1,4 +1,4 @@
-import { useMyNation } from './useMyNation'
+import { useMyNation, STORAGE_ACCENT_KEY } from './useMyNation'
 
 // ---------------------------------------------------------------------------
 // Nation color theme
@@ -172,11 +172,11 @@ export function useNationTheme() {
         // stays dark but visibly hued.
         root.style.setProperty(
           '--nation-bg',
-          `color-mix(in srgb, ${a} 9%, ${APP_BG})`
+          `color-mix(in srgb, ${a} 12%, ${APP_BG})`
         )
         root.style.setProperty(
           '--nation-bg-header',
-          `color-mix(in srgb, ${a} 14%, ${APP_BG})`
+          `color-mix(in srgb, ${a} 18%, ${APP_BG})`
         )
         // Card surface — the nation color bled into the standard card grey so
         // match cards read as part of the theme (stronger on the my-nation
@@ -194,8 +194,14 @@ export function useNationTheme() {
           `color-mix(in srgb, ${a} 18%, #1d1d1d)`
         )
 
+        // Persist the computed accent so the blocking head script can restore
+        // it on the next page load without any flash.
+        localStorage.setItem(STORAGE_ACCENT_KEY, a)
+
         root.classList.add('has-nation-theme')
       } else {
+        localStorage.removeItem(STORAGE_ACCENT_KEY)
+
         root.style.removeProperty('--nation-accent')
         root.style.removeProperty('--nation-accent-soft')
         root.style.removeProperty('--nation-glow')
