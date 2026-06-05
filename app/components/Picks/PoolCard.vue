@@ -14,6 +14,8 @@
     /** The local user's pick summary for this pool. */
     picksMade: number
     picksCorrect: number
+    /** Total number of matches in the tournament (for the summary line). */
+    totalMatches?: number
   }>()
 
   const emit = defineEmits<{
@@ -26,31 +28,23 @@
 
 <template>
   <section class="pool-card">
-    <!-- Head: name + link + actions -->
+    <!-- Head: name + actions -->
     <div class="pool-card__head">
       <h3 class="pool-card__name">
         {{ pool.name }}
-        <template v-if="pool.ownerName">
-          <span class="pool-card__name-sep">–</span>
-          <span class="pool-card__owner">{{ pool.ownerName }}</span>
-        </template>
       </h3>
 
       <div class="pool-card__head-right">
-        <!-- Every pool — owned OR joined — has a shareable link. Any member can
-             invite more friends/family with the same link, so the copy pill is
-             always shown (not just for the owner). -->
-        <PicksCopyLinkPill :url="link" />
         <div class="pool-card__actions">
+          <!-- Invite link button — always shown so any member can share -->
+          <PicksCopyLinkPill :url="link" />
           <template v-if="pool.owned">
-            <button class="pool-card__btn" @click="emit('edit', pool)">
-              Edit
-            </button>
             <button
-              class="pool-card__btn pool-card__btn--danger"
-              @click="emit('delete', pool)"
+              class="pool-card__btn pool-card__btn--icon"
+              aria-label="Edit pool"
+              @click="emit('edit', pool)"
             >
-              Delete
+              <IconsEditPencil class="pool-card__edit-icon" />
             </button>
           </template>
           <button
@@ -67,12 +61,14 @@
     <!-- Your picks summary (the same global picks, scored for this pool) -->
     <div class="pool-card__summary">
       <span class="pool-card__summary-text">
-        Your picks:
-        <strong>{{ picksMade }}</strong> made ·
-        <strong>{{ picksCorrect }}</strong> correct so far
+        Picks made:
+        <strong>{{ picksMade }}</strong>
+        of
+        <strong>{{ totalMatches ?? 72 }}</strong>
+        total matches
       </span>
       <button class="pool-card__edit-picks" @click="emit('edit-picks')">
-        Edit your picks →
+        Edit picks →
       </button>
     </div>
 
@@ -93,7 +89,18 @@
   }
 
   .pool-card__head {
-    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  @media (min-width: 40rem) {
+    .pool-card__head {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0.2rem;
+    }
   }
 
   .pool-card__name {
@@ -104,38 +111,28 @@
     letter-spacing: 0.04em;
   }
 
-  /* "{Pool name} – {Creator name}" — the creator is shown a touch dimmer so the
-     pool name stays the focal point. */
-  .pool-card__name-sep {
-    @apply text-white/40;
-    margin: 0 0.2em;
-    font-weight: 600;
-  }
-
-  .pool-card__owner {
-    @apply text-white/55;
-    font-weight: 600;
-  }
-
   .pool-card__head-right {
-    @apply flex flex-wrap items-center gap-3;
+    @apply flex flex-wrap items-center;
   }
 
   .pool-card__actions {
-    @apply flex items-center gap-2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem;
   }
 
   .pool-card__btn {
-    background: #bcbcbc;
+    background: rgb(255 255 255 / 0.68);
     color: #080808;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
     font-size: 0.8rem;
-    padding: 0.4rem 0.9rem;
+    padding: 0.3rem 0.7rem 0.25rem;
     cursor: pointer;
     transition:
       background-color 0.12s ease,
@@ -151,9 +148,27 @@
     color: #ffffff;
   }
 
+  .pool-card__btn--icon {
+    background: none;
+    padding: 0.1rem 0.2rem;
+    color: rgb(255 255 255 / 0.7);
+    transition: color 0.12s ease;
+  }
+
+  .pool-card__btn--icon:hover {
+    background: none;
+    color: #ffffff;
+  }
+
+  .pool-card__edit-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+    display: block;
+  }
+
   /* ── Your picks summary ──────────────────────────────────────────────────── */
   .pool-card__summary {
-    @apply mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl px-3.5 py-2.5;
+    @apply mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-2.5;
     background: rgb(255 255 255 / 0.04);
     border: 1px solid rgb(255 255 255 / 0.06);
   }
@@ -194,6 +209,6 @@
   }
 
   .pool-card__board {
-    @apply mt-4;
+    margin-top: calc(var(--spacing, 0.25rem) * 3);
   }
 </style>

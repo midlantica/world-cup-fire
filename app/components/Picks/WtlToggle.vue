@@ -138,12 +138,12 @@
     if (popTimer) clearTimeout(popTimer)
   })
 
-  // For the away side the picker pops out to the RIGHT with the caret on the
-  // LEFT pointing back at the team name. To keep the W (win) icon closest to
-  // the team, we reverse the slot order so it reads [W][D] instead of [D][W].
+  // W (win/check) is always on the RIGHT side of the picker, D (draw/tie) on
+  // the LEFT. This is consistent regardless of which team row the picker sits
+  // on or which direction it pops out.
   const slots = computed<Slot[]>(() => {
     if (!props.allowTie) return ['check']
-    return side.value === 'away' ? ['check', 'tie'] : ['tie', 'check']
+    return ['tie', 'check']
   })
 
   const titleFor: Record<Slot, string> = {

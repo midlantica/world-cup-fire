@@ -20,7 +20,6 @@
 <template>
   <section class="groups-section">
     <div class="groups-section__heading">
-      <h2 class="groups-section__title">Groups</h2>
       <p class="groups-section__qualify-note">
         <span class="groups-section__qualify-dot" />
         Top 2 advance to Round of 32
@@ -121,11 +120,22 @@
   }
 
   .groups-section__qualify-note {
-    @apply flex items-center gap-1.5 text-xs text-white/40;
+    @apply flex items-center gap-2 text-white/55;
+    font-size: var(--text-base, 1rem);
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
+    letter-spacing: 0.04em;
   }
 
   .groups-section__qualify-dot {
-    @apply inline-block h-2 w-2 shrink-0 rounded-sm bg-emerald-500/60;
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 2px;
+    background: #10b981;
   }
 
   .groups-section__loading {
@@ -181,11 +191,20 @@
   }
 
   .group-card__label {
-    @apply font-bold;
-    font-size: 0.85rem;
+    font-weight: 700;
+    font-size: 1rem;
     letter-spacing: 0.06em;
-    color: color-mix(in oklab, #fff 90%, transparent);
-    @apply font-anybody-bold;
+    color: color-mix(in oklab, #fff 70%, transparent);
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    text-transform: uppercase;
+    transition: color 0.15s ease;
+  }
+
+  .group-card:hover .group-card__label {
+    color: #fff3a0;
   }
 
   .group-card__table {

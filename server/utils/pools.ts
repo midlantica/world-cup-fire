@@ -18,6 +18,8 @@
 // match that has already started. (Enforced in the picks route via the schedule.)
 
 import { getStore } from '@netlify/blobs'
+import { mkdir, readFile, writeFile, unlink } from 'node:fs/promises'
+import { resolve, join } from 'node:path'
 
 // Use the Web Crypto global (available in Nitro / Netlify Functions runtime) so
 // we don't need @types/node just for randomUUID.
@@ -155,6 +157,48 @@ function makeMemoryStore(): PoolStore {
   }
 }
 
+/**
+ * File-based store for local dev — persists pools to `.data/pools/` so they
+ * survive server restarts. Only used when Netlify Blobs is not configured.
+ */
+function makeFileStore(): PoolStore {
+  // Resolve relative to the project root (process.cwd() in Nitro dev).
+  const dir = resolve(process.cwd(), '.data', 'pools')
+
+  async function ensureDir() {
+    await mkdir(dir, { recursive: true })
+  }
+
+  function filePath(id: string) {
+    // Sanitise the id so we never write outside the dir.
+    const safe = id.replace(/[^a-zA-Z0-9_-]/g, '')
+    return join(dir, `${safe}.json`)
+  }
+
+  return {
+    async read(id) {
+      await ensureDir()
+      try {
+        const raw = await readFile(filePath(id), 'utf8')
+        return JSON.parse(raw) as StoredPool
+      } catch {
+        return null
+      }
+    },
+    async write(pool) {
+      await ensureDir()
+      await writeFile(filePath(pool.id), JSON.stringify(pool), 'utf8')
+    },
+    async remove(id) {
+      try {
+        await unlink(filePath(id))
+      } catch {
+        // ignore — file may not exist
+      }
+    },
+  }
+}
+
 /** The shared pools store (lazily created). */
 export function poolStore(): PoolStore {
   if (cachedStore) return cachedStore
@@ -165,11 +209,16 @@ export function poolStore(): PoolStore {
       cachedStore = makeMemoryStore()
     }
   } else {
-    // Local dev without Netlify context — use the ephemeral in-memory store.
+    // Local dev without Netlify context — use a file-based store so pools
+    // survive server restarts. Falls back to in-memory if the file store fails.
     console.warn(
-      '[pools] Netlify Blobs not configured — using in-memory store (dev only).'
+      '[pools] Netlify Blobs not configured — using file store (.data/pools/).'
     )
-    cachedStore = makeMemoryStore()
+    try {
+      cachedStore = makeFileStore()
+    } catch {
+      cachedStore = makeMemoryStore()
+    }
   }
   return cachedStore
 }

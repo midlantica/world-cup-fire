@@ -27,6 +27,7 @@
   const emit = defineEmits<{
     (e: 'close'): void
     (e: 'submit', value: { yourName: string; poolName: string }): void
+    (e: 'delete'): void
   }>()
 
   const yourName = ref('')
@@ -101,6 +102,7 @@
           </button>
 
           <h2 class="pool-modal__title">{{ title }}</h2>
+          <!-- spacer so close button doesn't overlap title -->
 
           <p v-if="mode === 'create'" class="pool-modal__copy">
             You can share this pool with friends via a link. Send the link to
@@ -134,19 +136,29 @@
 
             <div class="pool-modal__actions">
               <button
+                v-if="mode === 'edit'"
                 type="button"
-                class="pool-modal__cancel"
-                @click="emit('close')"
+                class="pool-modal__delete"
+                @click="emit('delete')"
               >
-                Cancel
+                Delete
               </button>
-              <button
-                type="submit"
-                class="pool-modal__submit"
-                :disabled="!valid"
-              >
-                {{ submitLabel }}
-              </button>
+              <div class="pool-modal__actions-right">
+                <button
+                  type="button"
+                  class="pool-modal__cancel"
+                  @click="emit('close')"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="pool-modal__submit"
+                  :disabled="!valid"
+                >
+                  {{ submitLabel }}
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -179,7 +191,7 @@
     background: #1b1917;
     border: 1px solid oklab(100% 0 0 / 0.1);
     box-shadow: 0 8px 32px oklab(0% 0 0 / 1);
-    padding: 1.75rem 1.5rem 1.5rem;
+    padding: 2rem 2.25rem 2.15rem;
   }
 
   .pool-modal__close {
@@ -202,17 +214,18 @@
   }
 
   .pool-modal__close :deep(svg) {
-    width: 14px;
-    height: 14px;
+    width: 17px;
+    height: 17px;
   }
 
   .pool-modal__title {
-    @apply text-center text-white;
+    @apply text-white;
     @apply font-anybody-bold;
     font-size: 1.35rem;
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
+    text-align: left;
   }
 
   .pool-modal__copy {
@@ -233,13 +246,16 @@
   }
 
   .pool-modal__form {
-    @apply mt-5 flex flex-col gap-3;
+    margin-top: calc(var(--spacing, 0.25rem) * 3);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .pool-modal__input {
     width: 100%;
     padding: 0.75rem 1.1rem;
-    border-radius: 30px;
+    border-radius: 10px;
     background: #9c9c9c;
     border: none;
     color: #111111;
@@ -247,7 +263,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     outline: none;
   }
 
@@ -260,7 +276,35 @@
   }
 
   .pool-modal__actions {
-    @apply mt-2 flex items-center justify-end gap-3;
+    @apply mt-2 flex items-center justify-between gap-3;
+  }
+
+  .pool-modal__actions-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
+  .pool-modal__delete {
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem 0.45rem;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      opacity 0.12s ease;
+  }
+
+  .pool-modal__delete:hover {
+    background: #b91c1c;
   }
 
   .pool-modal__cancel {
@@ -272,7 +316,7 @@
       'wdth' 100,
       'wght' 600;
     font-size: 0.95rem;
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 1rem 0.45rem;
     cursor: pointer;
     transition: color 0.12s ease;
   }
@@ -291,7 +335,7 @@
       'wdth' 100,
       'wght' 600;
     font-size: 1rem;
-    padding: 0.65rem 1.4rem;
+    padding: 0.5rem 1rem 0.45rem;
     cursor: pointer;
     transition:
       background-color 0.12s ease,

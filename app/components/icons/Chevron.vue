@@ -2,13 +2,18 @@
   // ── Chevron ───────────────────────────────────────────────────────────────
   // A simple chevron (caret). Points DOWN by default; rotate via CSS on the
   // consumer's class (the component forwards its class through to the <svg>).
-  // `strokeWidth` is a prop because call sites use slightly different weights.
+  // `strokeWidth`, `strokeLinecap`, and `strokeLinejoin` are props so call
+  // sites can tune the look without needing a separate component.
   withDefaults(
     defineProps<{
       strokeWidth?: number | string
+      strokeLinecap?: 'round' | 'square' | 'butt'
+      strokeLinejoin?: 'round' | 'square' | 'miter'
     }>(),
     {
-      strokeWidth: 2.5,
+      strokeWidth: 5,
+      strokeLinecap: 'square',
+      strokeLinejoin: 'square',
     }
   )
 </script>
@@ -19,8 +24,8 @@
     fill="none"
     stroke="currentColor"
     :stroke-width="strokeWidth"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    :stroke-linecap="strokeLinecap"
+    :stroke-linejoin="strokeLinejoin"
     aria-hidden="true"
   >
     <polyline points="6 9 12 15 18 9" />

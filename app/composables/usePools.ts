@@ -265,7 +265,7 @@ export function usePools() {
     const params = new URLSearchParams({ p: id })
     if (pool?.ownerName) params.set('o', pool.ownerName)
     if (pool?.name) params.set('n', pool.name)
-    return `${origin}/picks?${params.toString()}`
+    return `${origin}/pools?${params.toString()}`
   }
 
   /** Create a pool owned by the local user. Returns it, or null on failure/cap. */

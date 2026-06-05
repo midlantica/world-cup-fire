@@ -11,6 +11,9 @@ node_modules/
 package-lock.json
 yarn.lock
 
+# Local dev data (file-based pool store — not for production)
+.data/
+
 # Misc
 .DS_Store
 .env

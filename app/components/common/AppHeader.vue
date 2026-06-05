@@ -78,11 +78,11 @@
           Groups
         </NuxtLink>
         <NuxtLink
-          to="/picks"
+          to="/pools"
           class="app-header__nav-link"
           active-class="app-header__nav-link--active"
         >
-          Picks
+          Pools
           <!-- pick-badge intentionally hidden — pickCount kept for future urgency nudge -->
         </NuxtLink>
       </nav>
