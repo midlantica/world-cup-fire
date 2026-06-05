@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import { useTimezone, TZ_OPTIONS } from '~/composables/useTimezone'
+  import { useMyNation } from '~/composables/useMyNation'
 
   const { selectedTz, setTz } = useTimezone()
+  const { myTeamData, openModal } = useMyNation()
 
   const open = ref(false)
   const wrapRef = ref<HTMLElement | null>(null)
@@ -25,16 +27,32 @@
 </script>
 
 <template>
-  <div ref="wrapRef" class="tz-picker-wrap">
+  <div ref="wrapRef" class="utility-btn-wrap">
+    <!-- TZ picker button -->
     <button
-      class="tz-picker-btn"
+      class="utility-btn timezone-btn"
       aria-label="Select time zone"
       @click.stop="open = !open"
     >
-      <span class="tz-picker-label">TZ: {{ selectedTz }}</span>
-      <span class="tz-picker-caret">▼</span>
+      <span class="utility-btn__label">TZ: {{ selectedTz }}</span>
+      <span class="utility-btn__caret">▼</span>
     </button>
+
+    <!-- My Flag button -->
+    <button class="utility-btn nation-flag-btn" @click="openModal">
+      <template v-if="myTeamData">
+        <CountryFlag :iso2="myTeamData.iso2" :size="16" />
+        <span class="utility-btn__nation-name">{{ myTeamData.abbrev }}</span>
+      </template>
+      <template v-else>
+        <span class="utility-btn__label">My Flag</span>
+      </template>
+      <span class="utility-btn__caret">▼</span>
+    </button>
+
+    <!-- TZ dropdown (direct child of wrap for positioning) -->
     <div v-if="open" class="tz-dropdown">
+      <div class="tz-dropdown__header">Select Time Zone</div>
       <button
         v-for="tz in TZ_OPTIONS"
         :key="tz.code"
@@ -50,52 +68,69 @@
 </template>
 
 <style scoped>
-  .tz-picker-wrap {
+  /* Outer wrapper: both utility buttons side by side */
+  .utility-btn-wrap {
     position: relative;
     display: flex;
+    flex-direction: row;
     align-items: stretch;
+    gap: 0.8rem;
     flex-shrink: 0;
   }
 
-  /* Single unified pill button — matches My Nation button style */
-  .tz-picker-btn {
+  /* Shared utility button style (TZ + My Flag) */
+  .utility-btn {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
     gap: 5px;
-    padding: 6px 12px;
-    border-radius: 4px;
+    padding: 10px 10px 9px 14px;
+    border-radius: 6px;
     border: none;
-    background: hsl(0deg 0% 100% / 10%);
-
+    background: rgb(255 255 255 / 0.09);
     cursor: pointer;
-    transition: background 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
     white-space: nowrap;
-    color: #f3f3f3;
+    color: rgb(255 255 255 / 0.75);
+    font-family: 'Anybody', sans-serif;
   }
 
-  .tz-picker-btn:hover {
-    background: hsl(0deg 0% 100% / 16%);
+  .utility-btn:hover {
+    background: rgb(255 255 255 / 0.14);
     color: #ffffff;
   }
 
-  .tz-picker-label {
+  .utility-btn__label {
     font-family: 'Anybody', sans-serif;
-    font-weight: 500;
-    font-size: 1.009rem;
-    line-height: 22.54px;
-    letter-spacing: 0.05em;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    font-size: 0.82rem;
+    line-height: 1;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     white-space: nowrap;
   }
 
-  .tz-picker-caret {
-    font-size: 0.5rem;
-    opacity: 0.7;
+  .utility-btn__nation-name {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .utility-btn__caret {
+    font-size: 0.55rem;
+    opacity: 0.6;
     margin-left: 0.1rem;
   }
 
+  /* TZ dropdown */
   .tz-dropdown {
     position: absolute;
     top: calc(100% + 0.25rem);
@@ -103,11 +138,35 @@
     z-index: 200;
     background: #1a1817;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
+    border-radius: 8px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
     overflow-y: auto;
     max-height: 18rem;
     min-width: 13rem;
+  }
+
+  /* ── Mobile overrides ────────────────────────────────────────────────────── */
+  @media (max-width: 800px) {
+    .utility-btn {
+      padding: 10px 7px 9px 10px;
+      border-radius: 4px;
+    }
+
+    .utility-btn__label {
+      font-variation-settings:
+        'wdth' 90,
+        'wght' 400;
+    }
+  }
+
+  .tz-dropdown__header {
+    padding: 0.5rem 0.75rem 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .tz-option {
@@ -117,7 +176,7 @@
     width: 100%;
     text-align: left;
     padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -142,7 +201,7 @@
     text-transform: none;
     letter-spacing: 0;
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
   }
 
   .tz-option:hover .tz-option-label,

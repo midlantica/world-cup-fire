@@ -4,34 +4,17 @@
   import { useScores, WC_TABS } from '~/composables/useScores'
   import type { Stage } from '~/composables/useScores'
   import { usePicks } from '~/composables/usePicks'
-  import { usePools } from '~/composables/usePools'
 
   const { myTeamData, openModal } = useMyNation()
 
   const { selectedTz, setTz } = useTimezone()
   const { activeTab } = useScores()
+  // pickCount kept available for future urgency-nudge badge repurposing
   const { pickCount } = usePicks()
-  const { pools } = usePools()
 
   const route = useRoute()
-  const router = useRouter()
 
   const showTabs = computed(() => route.path === '/')
-
-  // ── Picks sub-tabs (My Picks | Group Pools) ────────────────────────────────
-  // Rendered inside the header (like the Matches stage row) only on /picks. The
-  // active tab is driven by the URL (?tab=mypicks | ?tab=pools) so it survives
-  // a refresh and the picks page reads the same query to show the right view.
-  const showPicksTabs = computed(() => route.path === '/picks')
-
-  type PicksTab = 'mypicks' | 'pools'
-  const activePicksTab = computed<PicksTab>(() =>
-    route.query.tab === 'pools' ? 'pools' : 'mypicks'
-  )
-
-  function selectPicksTab(tab: PicksTab) {
-    router.replace({ query: { ...route.query, tab } })
-  }
 
   const activeStage = computed<Stage>(() => {
     const tab = WC_TABS.find((t) => t.key === activeTab.value)
@@ -100,28 +83,13 @@
           active-class="app-header__nav-link--active"
         >
           Picks
-          <Transition name="pick-badge">
-            <span v-if="pickCount > 0" class="app-header__pick-badge">{{
-              pickCount
-            }}</span>
-          </Transition>
+          <!-- pick-badge intentionally hidden — pickCount kept for future urgency nudge -->
         </NuxtLink>
       </nav>
 
-      <!-- Right controls: TZ picker + My Nation -->
+      <!-- Right controls: utility buttons (TZ + My Flag, combined in TzPicker) -->
       <div class="app-header__controls">
-        <TzPicker class="app-header__tz" />
-
-        <button class="app-header__nation-btn" @click="openModal">
-          <template v-if="myTeamData">
-            <CountryFlag :iso2="myTeamData.iso2" :size="18" />
-            <span class="app-header__nation-name">{{ myTeamData.abbrev }}</span>
-          </template>
-          <template v-else>
-            <span class="app-header__nation-placeholder">My Flag</span>
-          </template>
-          <span class="app-header__chevron">▼</span>
-        </button>
+        <TzPicker class="app-header__utility" />
       </div>
     </div>
 
@@ -158,52 +126,35 @@
         </button>
       </div>
     </div>
-
-    <!-- Picks sub-tabs (My Picks | Group Pools) — only on the picks page -->
-    <div v-if="showPicksTabs" class="app-header__tabs app-header__tabs--picks">
-      <div class="app-header__stage-row">
-        <button
-          class="app-header__stage-btn"
-          :class="{
-            'app-header__stage-btn--active': activePicksTab === 'mypicks',
-          }"
-          @click="selectPicksTab('mypicks')"
-        >
-          My Picks
-        </button>
-        <button
-          class="app-header__stage-btn"
-          :class="{
-            'app-header__stage-btn--active': activePicksTab === 'pools',
-          }"
-          @click="selectPicksTab('pools')"
-        >
-          Group Pools
-          <span v-if="pools.length > 0" class="app-header__picks-count">{{
-            pools.length
-          }}</span>
-        </button>
-      </div>
-    </div>
   </header>
 </template>
 
 <style scoped>
   @reference "~/assets/css/main.css";
 
+  /* ═══════════════════════════════════════════════════════════════════════════
+     VISUAL HIERARCHY SYSTEM
+     ─────────────────────────────────────────────────────────────────────────
+     L1 — Primary nav (MATCHES / GROUPS / PICKS)
+          Font: wdth 100, wght 900 · Size: 1.1rem desktop / 0.9rem mobile
+          Shape: 8px radius chips · Color: white active, white/55 inactive
+
+     L2 — Stage tabs (GROUP STAGE / KNOCKOUT STAGE · MY PICKS / GROUP POOLS)
+          Font: wdth 100, wght 700 · Size: 0.72rem · Letter-spacing: 0.14em
+          Shape: flat (no radius) · Color: white/90 active, white/38 inactive
+
+     L3 — Week tabs (WEEK 1 / WEEK 2 …)
+          Label: wdth 100, wght 800 · Size: 0.78rem
+          Dates: wdth 87.5, wght 300 · Size: 0.65rem
+          Shape: 6px radius chips · Color: white active, white/42 inactive
+     ═══════════════════════════════════════════════════════════════════════════ */
+
   /* ── Header shell ─────────────────────────────────────────────────────────── */
   .app-header {
     @apply sticky top-0 z-40;
-    /* Transparent so the single page-wide nation wash (--nation-bg on <body>)
-       shows through uniformly. Falls back to the app bg when no nation is
-       selected. A distinct header tint here caused a visibly different green
-       band across the top of the page. */
     background: var(--nation-bg, #0c0a09);
-
-    /* Small gap below the header so the tab/sub-nav bar doesn't collide with
-       the page content below. Applies at every breakpoint. */
     margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
   }
 
   /* ── Wide layout (> 600px): single flex row ─────────────────────────────── */
@@ -220,9 +171,6 @@
   }
 
   .app-header__logo {
-    /* Fixed, aspect-correct size (SVG is 323×96 ≈ 3.365:1).
-       Explicit width + flex:none so the flex layout can never squeeze
-       or scale the logo. */
     height: 2.65rem;
     width: calc(2.65rem * 3.365);
     flex: none;
@@ -232,78 +180,66 @@
   /* Nav */
   .app-header__nav {
     @apply flex shrink-0 items-stretch justify-center;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
-  /* LEVEL 1 (top of hierarchy): largest size, fattest weight */
+  /* ── L1: Primary nav chips ───────────────────────────────────────────────── */
   .app-header__nav-link {
-    @apply relative flex items-center justify-center gap-2 no-underline transition-all;
-    padding: 0.95rem 1.25rem;
-    border-radius: 10px;
+    @apply relative flex items-center justify-center gap-2 no-underline;
+    padding: 0.7rem 1.1rem;
+    border-radius: 8px;
 
     font-family: 'Anybody', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     line-height: 1;
     text-transform: uppercase;
     font-variation-settings:
       'wdth' 100,
-      'wght' 800;
-    letter-spacing: 0.08rem;
-    /* Unselected = light / dull, but still clearly readable against the dark
-       (or nation-tinted) page. Bumped up from 0.5 so the label doesn't wash
-       into the background. */
-    color: rgb(255 255 255 / 0.62);
+      'wght' 700;
+    letter-spacing: 0.07em;
 
-    /* Translucent so the nation theme washes through the nav, but opaque
-       enough that the button shape reads as a distinct chip against the
-       background (previous 0.35 gradient disappeared on the dark header). */
-    background: linear-gradient(
-      180deg,
-      rgba(78, 73, 68, 0.62) 0%,
-      rgba(52, 47, 43, 0.62) 100%
-    );
+    /* Inactive: clearly readable but visually recessed */
+    color: rgb(255 255 255 / 0.55);
+    background: rgb(255 255 255 / 0.07);
+    transition:
+      color 0.15s ease,
+      background 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .app-header__nav-link:hover {
-    color: rgb(255 255 255 / 0.9);
-    background: linear-gradient(
-      180deg,
-      rgba(92, 87, 81, 0.72) 0%,
-      rgba(62, 57, 52, 0.72) 100%
-    );
+    color: rgb(255 255 255 / 0.85);
+    background: rgb(255 255 255 / 0.11);
+    border-color: rgb(255 255 255 / 0.14);
   }
 
-  /* Selected = brighter, lifted chip so it clearly stands apart from the
-     unselected buttons (still translucent so the theme shows through). */
+  /* Active: bright white, clearly elevated */
   .app-header__nav-link--active {
-    text-shadow: 0 1px 3px #00000082;
-    background: linear-gradient(
-      180deg,
-      rgb(134 125 117 / 78%) 0%,
-      rgb(53 49 44 / 78%) 100%
-    );
     color: #ffffff;
+    background: rgb(255 255 255 / 0.18);
+    border-color: rgb(255 255 255 / 0.22);
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
   }
 
   .app-header__nav-link--soon {
     @apply cursor-not-allowed;
     pointer-events: none;
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
-  /* Picks count badge — green pill, draws the eye after picks are made */
+  /* Picks count badge */
   .app-header__pick-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    padding: 0 0.35rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    padding: 0 0.3rem;
     border-radius: 9999px;
     background: #16a34a;
     color: #ffffff;
     font-family: 'Anybody', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-variation-settings:
       'wdth' 100,
       'wght' 800;
@@ -312,7 +248,6 @@
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
   }
 
-  /* Pop-in transition when the badge first appears / count changes */
   .pick-badge-enter-active {
     transition:
       transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -331,151 +266,108 @@
 
   /* Right controls group */
   .app-header__controls {
-    @apply flex items-center justify-end gap-3;
+    @apply flex items-center justify-end gap-2;
     flex: 1;
   }
 
-  /* My Nation button — identical bar to the TZ picker, only text differs */
-  .app-header__nation-btn {
-    @apply flex items-center justify-between transition-all;
-    gap: 5px;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-family: 'Anybody', sans-serif;
-    font-weight: 500;
-    font-size: 1.009rem;
-    line-height: 22.54px;
-    letter-spacing: 0.05em;
-    color: #f3f3f3;
-    background: hsl(0deg 0% 100% / 10%);
-    border: none;
-    cursor: pointer;
-  }
-
-  .app-header__nation-btn:hover {
-    background: hsl(0deg 0% 100% / 16%);
-    color: #ffffff;
-  }
-
-  .app-header__nation-name {
-    font-family: 'Anybody', sans-serif;
-    font-weight: 900;
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .app-header__nation-placeholder {
-    font-family: 'Anybody', sans-serif;
-    font-weight: 500;
-    font-size: 1.009rem;
-    line-height: 22.54px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .app-header__chevron {
-    font-size: 0.5rem;
-    opacity: 0.7;
-    margin-left: 0.1rem;
-  }
-
-  /* ── Stage + week tabs ───────────────────────────────────────────────────── */
+  /* ── L2: Stage / sub-tab row ─────────────────────────────────────────────── */
   .app-header__tabs {
     @apply mx-auto max-w-7xl;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    /* Translucent so the nation theme washes through the tab bar. */
-    background: rgb(26 24 23 / 0.55);
-    border-radius: 0.75rem;
-    /* Pad off the sides on desktop so the bar isn't edge-to-edge.
-       Keep it centered (auto left/right) within the max-width container. */
-    /* No margin-bottom here: the gap below the whole header (including this
-       tab bar) is owned by .app-header's margin-bottom, so it persists no
-       matter what content follows. */
+    /* Slightly darker than the page so the tab block reads as a contained unit */
+    background: rgb(0 0 0 / 0.28);
+    border-radius: 8px;
+    box-shadow: 0px 1px 3px -1px hsl(0deg 0% 100% / 75%);
     width: calc(100% - 1.5rem);
   }
 
   .app-header__stage-row {
     display: flex;
-    gap: 2px;
-    /* Transparent so the tab bar's translucent base (and the theme) shows. */
+    /* Hairline divider between stage buttons */
     background: transparent;
   }
 
-  /* LEVEL 2 (sub to MGP): smaller size, less fat weight */
+  /* L2 buttons: clearly smaller + lighter than L1 */
   .app-header__stage-btn {
     flex: 1;
-    border-top: 1px solid hsl(0deg 0% 100% / 10%);
-    border-right: 1px solid hsl(0deg 0% 100% / 10%);
-    padding: 0.45rem 0.75rem;
+    padding: 0.4rem 0.75rem 0.25rem;
     border-radius: 0;
     cursor: pointer;
-    font-size: 0.95rem;
-    letter-spacing: 0.1em;
+    font-family: 'Anybody', sans-serif;
+    font-size: 1rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    @apply font-anybody-bold;
     white-space: nowrap;
 
-    /* Unselected = light / dull (translucent so the theme washes through). */
-    color: rgb(255 255 255 / 0.45);
-    background: hsl(12 7% 10% / 0.45);
-    transition: all 0.15s ease;
+    /* Inactive: clearly dimmer than L1 inactive */
+    color: rgb(255 255 255 / 0.38);
+    background: hsl(0deg 0% 10.44%);
+    border: none;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+
+  /* Divider between stage buttons */
+  .app-header__stage-btn + .app-header__stage-btn {
+    border-left: 1px solid rgb(255 255 255 / 0.07);
   }
 
   .app-header__stage-btn:hover:not(.app-header__stage-btn--active) {
-    color: rgb(255 255 255 / 0.75);
-    background: hsl(12 7% 14% / 0.55);
+    color: rgb(255 255 255 / 0.65);
+    background: rgb(255 255 255 / 0.04);
   }
 
-  /* Selected = dark / clear (translucent so the theme shows through). */
+  /* Active L2 */
   .app-header__stage-btn--active {
-    color: #ffffff;
-    background: rgb(37 33 32 / 0.7);
+    color: rgb(255 255 255 / 0.92);
+    background: rgb(49 49 49 / 85%);
+    border-bottom: none;
   }
 
-  /* ── Picks sub-tabs (My Picks | Group Pools) ─────────────────────────────── */
-  /* Reuses .app-header__tabs + .app-header__stage-btn so the look matches the
-     Matches "Group Stage / Knockout Stage" row exactly. The picks variant has
-     no week-tabs strip, so round off its bottom corners on desktop. */
+  /* ── Picks sub-tabs ──────────────────────────────────────────────────────── */
   .app-header__tabs--picks {
-    border-radius: 0.75rem;
+    border-radius: 8px;
   }
 
   .app-header__tabs--picks .app-header__stage-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
+    /* No week-tabs below, so remove the bottom border */
+    border-bottom: none;
   }
 
-  /* Green count pill on the Group Pools tab */
+  /* Green count pill */
   .app-header__picks-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 1.1rem;
-    height: 1.1rem;
-    padding: 0 0.3rem;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.28rem;
     border-radius: 9999px;
     background: #16a34a;
     color: #ffffff;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-variation-settings:
       'wdth' 100,
       'wght' 800;
     letter-spacing: 0;
   }
 
+  /* ── L3: Week tabs ───────────────────────────────────────────────────────── */
   .app-header__week-tabs {
     display: flex;
-    padding: 0.3rem 0.4rem;
-    gap: 0.25rem;
-    /* Translucent so the theme washes through the week-tab strip. */
-    background: rgb(37 33 32 / 0.6);
-    border-right: 1px solid hsl(0deg 0% 100% / 10%);
+    padding: 0.35rem 0.35rem 0.4rem;
+    gap: 0.2rem;
+    background: linear-gradient(0deg, #181818, #2b2b2b);
   }
 
   .app-header__week-tab {
@@ -483,29 +375,36 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.1rem;
-    border-radius: 0.5rem;
-    padding: 0.7rem 0.5rem 0.4rem;
+    gap: 0.08rem;
+    border-radius: 6px;
+    padding: 0.45rem 0.4rem 0.35rem;
     text-align: center;
-    transition: all 0.15s ease;
-    /* Unselected = light / dull */
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
     color: rgb(255 255 255 / 0.5);
-    background: none;
+    background: linear-gradient(
+      0deg,
+      hsl(0deg 0% 0% / 70%),
+      hsl(0deg 0% 15.96%)
+    );
+    box-shadow: 0px 1px 3px -2px hsl(0deg 0% 70%);
     border: none;
     cursor: pointer;
     min-width: 0;
   }
 
   .app-header__week-tab:hover:not(.app-header__week-tab--active) {
-    color: rgb(255 255 255 / 0.85);
-    background: rgba(255, 255, 255, 0.06);
+    color: rgb(255 255 255 / 0.72);
+    background: rgb(0 0 0 / 20%);
   }
 
-  /* Selected = dark / clear */
+  /* Active L3 */
   .app-header__week-tab--active {
-    background: linear-gradient(180deg, rgb(85 80 74) 0%, rgb(46 42 38) 100%);
+    background: linear-gradient(0deg, hsl(0deg 0% 22.8%), #2b2b2b);
     color: #ffffff;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+    box-shadow: 0 2px 2px rgb(0 0 0 / 0.35);
+    border: none;
   }
 
   .app-header__week-tab--active .app-header__week-label {
@@ -513,45 +412,45 @@
   }
 
   .app-header__week-tab--active .app-header__week-dates {
-    color: rgb(255 255 255 / 0.7);
+    color: rgb(255 255 255 / 0.65);
     opacity: 1;
   }
 
-  /* LEVEL 3 (smallest, least fat): bottom of the hierarchy */
+  /* L3 label */
   .app-header__week-label {
     line-height: 1;
     font-size: 1rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
-      'wght' 800;
+      'wght' 600;
   }
 
+  /* L3 dates */
   .app-header__week-dates {
     font-size: 0.85rem;
     line-height: 1.2;
-    opacity: 0.7;
-    letter-spacing: 0.05rem;
+    opacity: 0.85;
+    letter-spacing: 0.06em;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
-      'wdth' 90,
-      'wght' 300;
+      'wdth' 87.5,
+      'wght' 400;
   }
 
   /* ── Narrow layout (≤ 800px): stacked rows, full-bleed (100vw) ──────────── */
   @media (max-width: 800px) {
     .app-header__inner {
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: 1fr auto;
       grid-template-rows: auto auto;
       grid-template-areas:
-        'ctrls-left brand ctrls-right'
-        'nav nav nav';
+        'brand controls'
+        'nav nav';
       align-items: center;
       column-gap: 0.5rem;
-      /* No vertical gap so the MGP bar reads as one unit with the tabs below */
       row-gap: 0.5rem;
       padding-top: 0.5rem;
       padding-bottom: 0;
@@ -560,11 +459,11 @@
 
     .app-header__brand {
       grid-area: brand;
-      justify-self: center;
+      justify-self: start;
       margin-right: 0;
     }
 
-    /* Full-bleed nav: span the entire viewport width (100vw), flush to tabs */
+    /* Full-bleed nav */
     .app-header__nav {
       grid-area: nav;
       justify-content: stretch;
@@ -578,39 +477,42 @@
       margin-bottom: 0;
     }
 
-    /* Keep the hierarchy on mobile: MGP stays the largest of the three rows */
+    /* Mobile L1: slightly smaller, no radius (full-bleed) */
     .app-header__nav-link {
       flex: 1;
-      padding: 0.6rem 0.25rem;
-      font-size: 1rem;
+      padding: 0.55rem 0.25rem;
+      font-size: 0.9rem;
       border-radius: 0;
+      border: none;
+      border-right: 1px solid rgb(255 255 255 / 0.08);
       min-height: unset;
       align-self: stretch;
+      background: rgb(255 255 255 / 0.06);
     }
 
+    .app-header__nav-link:last-child {
+      border-right: none;
+    }
+
+    .app-header__nav-link--active {
+      background: rgb(255 255 255 / 0.15);
+    }
+
+    /* Mobile L2: scale down from desktop 1rem */
     .app-header__stage-btn {
-      font-size: 0.85rem;
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem 0.2rem;
+      letter-spacing: 0.08rem;
     }
 
+    /* Controls: utility wrap sits in the right column on mobile */
     .app-header__controls {
-      display: contents;
-      margin-left: 0;
-    }
-
-    /* TZ + Flag buttons: identical fixed width, mirrored to each edge */
-    .app-header__tz {
-      grid-area: ctrls-left;
-      justify-self: start;
-      width: 6.25rem;
-    }
-
-    .app-header__nation-btn {
-      grid-area: ctrls-right;
+      grid-area: controls;
       justify-self: end;
-      width: 6.25rem;
+      flex: unset;
     }
 
-    /* Full-bleed tabs: 100vw, flush to the nav above (one continuous unit) */
+    /* Full-bleed tabs */
     .app-header__tabs {
       width: 100vw;
       max-width: 100vw;
@@ -619,6 +521,13 @@
       margin-top: 0;
       margin-bottom: 0;
       border-radius: 0;
+      border-left: none;
+      border-right: none;
+      box-shadow: none;
+    }
+
+    .app-header__week-tabs {
+      background: linear-gradient(0deg, #0d0a0a, #2b2b2b);
     }
   }
 
@@ -634,14 +543,27 @@
       padding-left: 0.5rem;
       padding-right: 0.5rem;
     }
+
+    /* Mobile L3: tighten week tabs further */
+    .app-header__week-tab {
+      padding: 0.4rem 0.25rem 0.3rem;
+    }
+
+    .app-header__week-label {
+      font-size: 0.72rem;
+    }
+
+    .app-header__week-dates {
+      font-size: 0.6rem;
+    }
   }
 
   /* ── Very narrow (≤ 360px) ───────────────────────────────────────────────── */
   @media (max-width: 360px) {
     .app-header__nav-link {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       padding: 0.45rem 0.15rem;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
     }
   }
 </style>

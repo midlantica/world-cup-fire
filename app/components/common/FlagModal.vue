@@ -39,7 +39,7 @@
       <div v-if="modalOpen" class="modal-backdrop" @click="onBackdrop">
         <div class="modal-panel">
           <div class="modal-header">
-            <h2 class="modal-title">🌍 Choose Your Nation</h2>
+            <h2 class="modal-title">🏳️ Select your Flag</h2>
             <button class="modal-close" @click="closeModal">✕</button>
           </div>
 
@@ -80,13 +80,31 @@
 
 <style scoped>
   @reference "~/assets/css/main.css";
+
+  /* Backdrop: mobile = centered with padding, desktop = top-aligned */
   .modal-backdrop {
-    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center;
+    @apply fixed inset-0 z-50 bg-black/70 backdrop-blur-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Mobile: padding so tapping edges closes modal */
+    padding: 3rem 2rem;
   }
 
   .modal-panel {
-    @apply flex w-full max-w-2xl flex-col rounded-t-2xl bg-zinc-900 sm:rounded-2xl;
+    @apply flex w-full max-w-2xl flex-col rounded-2xl bg-zinc-900;
     max-height: min(90vh, 90dvh);
+  }
+
+  /* Desktop: push panel toward top */
+  @media (min-width: 640px) {
+    .modal-backdrop {
+      align-items: flex-start;
+      padding-top: 3.5rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-bottom: 1rem;
+    }
   }
 
   .modal-header {
