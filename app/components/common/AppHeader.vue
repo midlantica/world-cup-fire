@@ -167,7 +167,7 @@
   /* Logo */
   .app-header__brand {
     @apply flex shrink-0 items-center no-underline;
-    margin-right: 1rem;
+    margin-right: 0.5rem;
   }
 
   .app-header__logo {
@@ -199,7 +199,7 @@
     letter-spacing: 0.07em;
 
     /* Inactive: clearly readable but visually recessed */
-    color: rgb(255 255 255 / 0.55);
+    color: hsl(0deg 0% 100% / 40%);
     background: rgb(255 255 255 / 0.07);
     transition:
       color 0.15s ease,
@@ -216,9 +216,13 @@
   /* Active: bright white, clearly elevated */
   .app-header__nav-link--active {
     color: #ffffff;
-    background: rgb(255 255 255 / 0.18);
+    background: linear-gradient(
+      180deg,
+      hsl(0deg 0% 27.22%),
+      hsl(0deg 0% 9.27%)
+    );
     border-color: rgb(255 255 255 / 0.22);
-    text-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+    text-shadow: 0 2px 2px hsl(0deg 0% 0% / 100%);
   }
 
   .app-header__nav-link--soon {
@@ -279,7 +283,7 @@
     /* Slightly darker than the page so the tab block reads as a contained unit */
     background: rgb(0 0 0 / 0.28);
     border-radius: 8px;
-    box-shadow: 0px 1px 3px -1px hsl(0deg 0% 100% / 75%);
+    /* box-shadow: 0px 1px 3px -1px hsl(0deg 0% 100% / 75%); */
     width: calc(100% - 1.5rem);
   }
 
@@ -305,7 +309,7 @@
     white-space: nowrap;
 
     /* Inactive: clearly dimmer than L1 inactive */
-    color: rgb(255 255 255 / 0.38);
+    color: hsl(0deg 0% 100% / 40%);
     background: hsl(0deg 0% 10.44%);
     border: none;
     transition:
@@ -326,8 +330,10 @@
   /* Active L2 */
   .app-header__stage-btn--active {
     color: rgb(255 255 255 / 0.92);
-    background: rgb(49 49 49 / 85%);
+    background: linear-gradient(0deg, hsl(0deg 0% 27.22%), hsl(0deg 0% 9.27%));
+    border-top: 1px solid hsl(0deg 0% 21.72%);
     border-bottom: none;
+    text-shadow: 0 1px 2px hsl(0deg 0% 0% / 100%);
   }
 
   /* ── Picks sub-tabs ──────────────────────────────────────────────────────── */
@@ -365,9 +371,13 @@
   /* ── L3: Week tabs ───────────────────────────────────────────────────────── */
   .app-header__week-tabs {
     display: flex;
-    padding: 0.35rem 0.35rem 0.4rem;
+    padding: 0.3rem 0.35rem 0.3rem;
     gap: 0.2rem;
-    background: linear-gradient(0deg, #181818, #2b2b2b);
+    background: linear-gradient(
+      180deg,
+      hsl(0deg 0% 27.22%),
+      hsl(0deg 0% 9.27%)
+    );
   }
 
   .app-header__week-tab {
@@ -382,7 +392,7 @@
     transition:
       color 0.15s ease,
       background 0.15s ease;
-    color: rgb(255 255 255 / 0.5);
+    color: rgb(255 255 255 / 0.4);
     background: linear-gradient(
       0deg,
       hsl(0deg 0% 0% / 70%),
@@ -401,10 +411,9 @@
 
   /* Active L3 */
   .app-header__week-tab--active {
-    background: linear-gradient(0deg, hsl(0deg 0% 22.8%), #2b2b2b);
+    background: linear-gradient(180deg, hsl(0deg 0% 39.85%), hsl(0deg 0% 6.9%));
     color: #ffffff;
-    box-shadow: 0 2px 2px rgb(0 0 0 / 0.35);
-    border: none;
+    box-shadow: 0px 0px 2px 0px hsl(0deg 0% 80% / 50%);
   }
 
   .app-header__week-tab--active .app-header__week-label {
@@ -418,19 +427,20 @@
 
   /* L3 label */
   .app-header__week-label {
-    line-height: 1;
-    font-size: 1rem;
+    line-height: 1.1;
+    font-size: 0.8rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
+    text-shadow: 0 1px 0px hsl(0deg 0% 0% / 100%);
   }
 
   /* L3 dates */
   .app-header__week-dates {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     line-height: 1.2;
     opacity: 0.85;
     letter-spacing: 0.06em;
@@ -438,6 +448,7 @@
     font-variation-settings:
       'wdth' 87.5,
       'wght' 400;
+    text-shadow: 0 1px 0px hsl(0deg 0% 0% / 100%);
   }
 
   /* ── Narrow layout (≤ 800px): stacked rows, full-bleed (100vw) ──────────── */
@@ -481,7 +492,7 @@
     .app-header__nav-link {
       flex: 1;
       padding: 0.55rem 0.25rem;
-      font-size: 0.9rem;
+      font-size: 1rem;
       border-radius: 0;
       border: none;
       border-right: 1px solid rgb(255 255 255 / 0.08);
@@ -495,13 +506,17 @@
     }
 
     .app-header__nav-link--active {
-      background: rgb(255 255 255 / 0.15);
+      background: linear-gradient(
+        180deg,
+        hsl(0deg 0% 27.22%),
+        hsl(0deg 0% 9.27%)
+      );
     }
 
     /* Mobile L2: scale down from desktop 1rem */
     .app-header__stage-btn {
-      font-size: 0.75rem;
-      padding: 0.4rem 0.5rem 0.2rem;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.5rem 0.3rem;
       letter-spacing: 0.08rem;
     }
 
@@ -527,7 +542,11 @@
     }
 
     .app-header__week-tabs {
-      background: linear-gradient(0deg, #0d0a0a, #2b2b2b);
+      background: linear-gradient(
+        180deg,
+        hsl(0deg 0% 27.22%),
+        hsl(0deg 0% 9.27%)
+      );
     }
   }
 
