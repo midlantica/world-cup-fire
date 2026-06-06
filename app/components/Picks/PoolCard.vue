@@ -2,12 +2,12 @@
   // ── PoolCard ──────────────────────────────────────────────────────────────
   // Renders a single pool in the Group Pools view as a LEADERBOARD (not a copy
   // of every match card — picks are global and shown once under My Picks). The
-  // card shows: the pool name, a copyable invite link, Edit / Delete (owner) or
-  // Leave (joined) actions, a compact "your picks" summary, and the leaderboard.
+  // card shows: the pool name, action buttons (copy link / edit / leave), a
+  // compact "your picks" summary, and the leaderboard.
 
   import type { Pool, LeaderRow } from '../../composables/usePools'
 
-  defineProps<{
+  const props = defineProps<{
     pool: Pool
     link: string
     leaderRows: LeaderRow[]
@@ -24,53 +24,63 @@
     (e: 'leave', pool: Pool): void
     (e: 'edit-picks'): void
   }>()
+
+  const copied = ref(false)
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(props.link)
+    } catch {
+      // ignore
+    }
+    copied.value = true
+    setTimeout(() => (copied.value = false), 1800)
+  }
 </script>
 
 <template>
   <section class="pool-card">
-    <!-- Head: name + actions -->
-    <div class="pool-card__head">
-      <h3 class="pool-card__name">
-        {{ pool.name }}
-      </h3>
+    <!-- Head: pool name -->
+    <h3 class="pool-card__name">{{ pool.name }}</h3>
 
-      <div class="pool-card__head-right">
-        <div class="pool-card__actions">
-          <!-- Invite link button — always shown so any member can share -->
-          <PicksCopyLinkPill :url="link" />
-          <template v-if="pool.owned">
-            <button
-              class="pool-card__btn pool-card__btn--icon"
-              aria-label="Edit pool"
-              @click="emit('edit', pool)"
-            >
-              <IconsEditPencil class="pool-card__edit-icon" />
-            </button>
-          </template>
-          <button
-            v-else
-            class="pool-card__btn pool-card__btn--danger"
-            @click="emit('leave', pool)"
-          >
-            Leave
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Action buttons row -->
+    <div class="pool-card__actions">
+      <!-- Copy invite link — always shown -->
+      <button
+        class="pool-card__action-btn pool-card__action-btn--copy"
+        :class="{ 'pool-card__action-btn--copied': copied }"
+        @click="copyLink"
+      >
+        {{ copied ? '✓ Link Copied!' : 'Copy Invite Link' }}
+      </button>
 
-    <!-- Your picks summary (the same global picks, scored for this pool) -->
-    <div class="pool-card__summary">
-      <span class="pool-card__summary-text">
-        Picks made:
-        <strong>{{ picksMade }}</strong>
-        of
-        <strong>{{ totalMatches ?? 72 }}</strong>
-        total matches
-      </span>
-      <button class="pool-card__edit-picks" @click="emit('edit-picks')">
-        Edit picks →
+      <!-- Edit (owner only) -->
+      <button
+        v-if="pool.owned"
+        class="pool-card__action-btn pool-card__action-btn--edit"
+        @click="emit('edit', pool)"
+      >
+        Edit Pool
+      </button>
+
+      <!-- Leave (member only) -->
+      <button
+        v-else
+        class="pool-card__action-btn pool-card__action-btn--leave"
+        @click="emit('leave', pool)"
+      >
+        Leave Pool
       </button>
     </div>
+
+    <!-- Your picks summary -->
+    <p class="pool-card__summary">
+      <strong>{{ picksMade }}</strong> of
+      <strong>{{ totalMatches ?? 72 }}</strong> picks made on Group matches —
+      <button class="pool-card__check-picks" @click="emit('edit-picks')">
+        {{ picksMade === 0 ? 'Make Picks!' : 'Check Picks' }}
+      </button>
+    </p>
 
     <!-- Leaderboard -->
     <div class="pool-card__board">
@@ -83,113 +93,109 @@
   @reference "~/assets/css/main.css";
 
   .pool-card {
-    @apply rounded-2xl border p-4;
+    @apply border p-4;
+    border-radius: 0;
     border-color: rgb(255 255 255 / 0.08);
     background: rgb(255 255 255 / 0.03);
   }
 
-  .pool-card__head {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  @media (min-width: 40rem) {
-    .pool-card__head {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      margin: 0 0.2rem;
-    }
-  }
-
   .pool-card__name {
     @apply text-white uppercase;
-    @apply font-anybody-wide;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 110,
+      'wght' 600;
     font-size: 1.05rem;
     font-weight: 800;
     letter-spacing: 0.04em;
+    margin: 0 0.2rem 0.4rem;
   }
 
-  .pool-card__head-right {
-    @apply flex flex-wrap items-center;
-  }
-
+  /* ── Action buttons ──────────────────────────────────────────────────────── */
   .pool-card__actions {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.7rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
-  .pool-card__btn {
-    background: rgb(255 255 255 / 0.68);
-    color: #080808;
+  .pool-card__action-btn {
+    flex: 1;
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 0.8rem;
-    padding: 0.3rem 0.7rem 0.25rem;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.35rem 0.25rem;
     cursor: pointer;
     transition:
-      background-color 0.12s ease,
-      color 0.12s ease;
+      background-color 0.15s ease,
+      color 0.15s ease;
+    white-space: nowrap;
   }
 
-  .pool-card__btn:hover {
-    background: #d4d4d4;
+  /* Copy invite link — orange */
+  .pool-card__action-btn--copy {
+    background: oklab(0.62 0.13 0.14 / 0.8);
+    color: rgb(255 255 255 / 0.82);
   }
 
-  .pool-card__btn--danger:hover {
+  .pool-card__action-btn--copy:hover {
+    background: oklab(0.68 0.14 0.15);
+  }
+
+  /* Copied state */
+  .pool-card__action-btn--copied {
+    background: #014d1c;
+    color: #86efac;
+  }
+
+  .pool-card__action-btn--copied:hover {
+    background: #014d1c;
+  }
+
+  /* Edit pool — orange */
+  .pool-card__action-btn--edit {
+    background: oklab(0.62 0.13 0.14 / 0.8);
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  .pool-card__action-btn--edit:hover {
+    background: oklab(0.68 0.14 0.15);
+  }
+
+  /* Leave pool — muted danger */
+  .pool-card__action-btn--leave {
+    background: rgb(255 255 255 / 0.08);
+    color: rgb(255 255 255 / 0.6);
+  }
+
+  .pool-card__action-btn--leave:hover {
     background: #e06464;
     color: #ffffff;
   }
 
-  .pool-card__btn--icon {
-    background: none;
-    padding: 0.1rem 0.2rem;
-    color: rgb(255 255 255 / 0.7);
-    transition: color 0.12s ease;
-  }
-
-  .pool-card__btn--icon:hover {
-    background: none;
-    color: #ffffff;
-  }
-
-  .pool-card__edit-icon {
-    width: 1.85rem;
-    height: 1.85rem;
-    display: block;
-  }
-
   /* ── Your picks summary ──────────────────────────────────────────────────── */
   .pool-card__summary {
-    @apply mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-2.5;
-    background: rgb(255 255 255 / 0.04);
-    border: 1px solid rgb(255 255 255 / 0.06);
-  }
-
-  .pool-card__summary-text {
+    margin: 0.9rem 0 0.3rem;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 300;
     font-size: 0.85rem;
     color: rgb(255 255 255 / 0.7);
+    line-height: 1.5;
   }
 
-  .pool-card__summary-text strong {
+  .pool-card__summary strong {
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
     color: #fff;
   }
 
-  .pool-card__edit-picks {
+  .pool-card__check-picks {
     background: transparent;
     border: none;
     cursor: pointer;
@@ -198,14 +204,15 @@
       'wdth' 100,
       'wght' 600;
     font-size: 0.8rem;
-    color: #fdba74;
-    padding: 0.15rem 0.25rem;
+    color: #ffffff;
+    padding: 0;
     transition: color 0.12s ease;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  .pool-card__edit-picks:hover {
-    color: #fb923c;
-    text-decoration: underline;
+  .pool-card__check-picks:hover {
+    color: rgb(255 255 255 / 0.7);
   }
 
   .pool-card__board {

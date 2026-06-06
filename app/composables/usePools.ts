@@ -486,6 +486,7 @@ export function usePools() {
   return {
     pools,
     poolCount,
+    ownedCount,
     canCreate,
     selfName,
     MAX_MEMBERS,

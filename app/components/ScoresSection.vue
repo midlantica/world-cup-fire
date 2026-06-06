@@ -314,7 +314,7 @@
   .scores-section__day-caret {
     width: 1rem;
     height: 1rem;
-    color: rgb(255 255 255 / 0.6);
+    color: oklab(0.77 0.12 0.14);
     display: inline-block;
     transform: rotate(0deg);
     transition: transform 0.2s ease;
@@ -327,7 +327,7 @@
 
   .scores-section__day-title {
     font-size: 1rem;
-    color: rgb(255 255 255 / 0.6);
+    color: oklab(0.77 0.12 0.14);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-family: 'Anybody', sans-serif;

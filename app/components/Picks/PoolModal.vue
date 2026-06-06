@@ -22,6 +22,11 @@
      * join mode so they don't have to retype it every time.
      */
     knownName?: string | null
+    /**
+     * True when this is the only owned pool — delete is shown but disabled so
+     * the user always has at least one pool.
+     */
+    isLastOwned?: boolean
   }>()
 
   const emit = defineEmits<{
@@ -139,7 +144,11 @@
                 v-if="mode === 'edit'"
                 type="button"
                 class="pool-modal__delete"
-                @click="emit('delete')"
+                :disabled="isLastOwned"
+                :title="
+                  isLastOwned ? 'You must keep at least one pool' : undefined
+                "
+                @click="!isLastOwned && emit('delete')"
               >
                 Delete
               </button>
@@ -187,10 +196,10 @@
     margin-top: 4rem;
     width: 100%;
     max-width: 30rem;
-    border-radius: 1rem;
+    border-radius: 0;
     background: #1b1917;
     border: 1px solid oklab(100% 0 0 / 0.1);
-    box-shadow: 0 8px 32px oklab(0% 0 0 / 1);
+    box-shadow: none;
     padding: 2rem 2.25rem 2.15rem;
   }
 
@@ -202,7 +211,7 @@
     border: none;
     color: oklab(100% 0 0 / 0.5);
     padding: 0.35rem;
-    border-radius: 0.25rem;
+    border-radius: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -255,7 +264,7 @@
   .pool-modal__input {
     width: 100%;
     padding: 0.75rem 1.1rem;
-    border-radius: 10px;
+    border-radius: 0;
     background: #9c9c9c;
     border: none;
     color: #111111;
@@ -272,7 +281,7 @@
   }
 
   .pool-modal__input:focus {
-    box-shadow: 0 0 0 2px #056900;
+    box-shadow: 0 0 0 2px oklab(0.62 0.13 0.14);
   }
 
   .pool-modal__actions {
@@ -290,7 +299,7 @@
     background: #dc2626;
     color: #ffffff;
     border: none;
-    border-radius: 12px;
+    border-radius: 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -303,8 +312,14 @@
       opacity 0.12s ease;
   }
 
-  .pool-modal__delete:hover {
+  .pool-modal__delete:hover:not(:disabled) {
     background: #b91c1c;
+  }
+
+  .pool-modal__delete:disabled {
+    background: #4b4b4b;
+    color: rgb(255 255 255 / 0.35);
+    cursor: not-allowed;
   }
 
   .pool-modal__cancel {
@@ -326,10 +341,10 @@
   }
 
   .pool-modal__submit {
-    background: #056900;
+    background: oklab(0.62 0.13 0.14);
     color: #ffffff;
     border: none;
-    border-radius: 12px;
+    border-radius: 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -343,7 +358,7 @@
   }
 
   .pool-modal__submit:hover:not(:disabled) {
-    background: #067a00;
+    background: oklab(0.68 0.14 0.15);
   }
 
   .pool-modal__submit:disabled {

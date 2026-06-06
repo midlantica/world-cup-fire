@@ -27,10 +27,12 @@
   }
 
   .app-footer__text {
-    @apply text-sm text-white/30;
+    @apply text-sm;
+    color: oklab(1 0 0 / 0.5);
   }
 
   .app-footer__disclaimer {
-    @apply text-xs text-white/20;
+    @apply text-xs;
+    color: oklab(1 0 0 / 0.5);
   }
 </style>

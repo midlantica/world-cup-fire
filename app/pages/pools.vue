@@ -18,6 +18,7 @@
   const {
     pools,
     canCreate,
+    ownedCount,
     selfName,
     MAX_POOLS,
     hasPool,
@@ -200,7 +201,9 @@
             <ul class="pools-sidebar__steps">
               <li>
                 <span class="pools-sidebar__step-num">1</span>
-                <span>Create a pool and give it a name.</span>
+                <span
+                  >Edit the Pool or create a new pool and give it a name.</span
+                >
               </li>
               <li>
                 <span class="pools-sidebar__step-num">2</span>
@@ -228,7 +231,7 @@
                 :disabled="!canCreate"
                 @click="openCreate"
               >
-                + New Pool
+                New Pool
               </button>
             </div>
 
@@ -253,7 +256,7 @@
               :disabled="!canCreate"
               @click="openCreate"
             >
-              + New Pool
+              New Pool
             </button>
           </div>
 
@@ -284,6 +287,7 @@
       :mode="modalMode"
       :pool="editingPool"
       :known-name="selfName"
+      :is-last-owned="ownedCount <= 1"
       @close="modalOpen = false"
       @submit="onModalSubmit"
       @delete="onModalDelete"
@@ -312,13 +316,15 @@
 
   /* ── Page shell ──────────────────────────────────────────────────────────── */
   .pools-page__inner {
-    @apply mx-auto max-w-7xl space-y-4 pb-8;
-    margin-inline: 1.5rem;
+    @apply space-y-4 pb-8;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
   }
 
   /* ── Invitee welcome banner ──────────────────────────────────────────────── */
   .pools-welcome {
-    @apply rounded-2xl border px-6 py-5;
+    @apply border px-6 py-5;
     border-color: rgb(34 197 94 / 0.4);
     background: rgb(34 197 94 / 0.08);
   }
@@ -371,7 +377,9 @@
   }
 
   .pools-sidebar__trophy {
-    font-size: 1rem;
+    font-size: 1em;
+    line-height: 1;
+    vertical-align: baseline;
   }
 
   .pools-sidebar__heading {
@@ -409,7 +417,7 @@
 
   .pools-sidebar__steps li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.65rem;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
@@ -459,19 +467,22 @@
     align-items: center;
     gap: 0.85rem;
     flex-wrap: wrap;
+    margin-top: 0;
+    justify-content: center;
   }
 
   .pools-sidebar__new-btn {
-    background: #056900;
+    width: 100%;
+    background: oklab(0.62 0.13 0.14 / 0.85);
     color: #ffffff;
     border: none;
-    border-radius: 10px;
+    border-radius: 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
     font-size: 1rem;
-    padding: 0.45rem 1.25rem 0.35rem;
+    padding: 0.55rem 1.25rem 0.45rem;
     cursor: pointer;
     white-space: nowrap;
     transition:
@@ -480,7 +491,7 @@
   }
 
   .pools-sidebar__new-btn:hover:not(:disabled) {
-    background: #067a00;
+    background: oklab(0.68 0.14 0.15);
   }
 
   .pools-sidebar__new-btn:disabled {
@@ -521,7 +532,7 @@
 
   /* ── Empty state ─────────────────────────────────────────────────────────── */
   .pools-empty {
-    @apply flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-center;
+    @apply flex flex-col items-center gap-2 border border-white/10 bg-white/5 px-6 py-12 text-center;
   }
 
   .pools-empty__icon {
@@ -543,10 +554,10 @@
 
   .pools-empty__btn {
     @apply mt-3;
-    background: #056900;
+    background: oklab(0.62 0.13 0.14);
     color: #ffffff;
     border: none;
-    border-radius: 10px;
+    border-radius: 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -561,7 +572,7 @@
   }
 
   .pools-empty__btn:hover:not(:disabled) {
-    background: #067a00;
+    background: oklab(0.68 0.14 0.15);
   }
 
   .pools-empty__btn:disabled {

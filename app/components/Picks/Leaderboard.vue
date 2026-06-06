@@ -24,8 +24,8 @@
       <span class="leaderboard__col leaderboard__col--num" title="Picks made"
         >Picks</span
       >
-      <span class="leaderboard__col leaderboard__col--num" title="Accuracy"
-        >Acc</span
+      <span class="leaderboard__col leaderboard__col--num" title="Accuracy %"
+        >%</span
       >
     </div>
 
@@ -60,7 +60,7 @@
   @reference "~/assets/css/main.css";
 
   .leaderboard {
-    border-radius: 10px;
+    border-radius: 0;
     overflow: hidden;
     border: 1px solid #3c3834;
   }
@@ -73,7 +73,7 @@
       'wdth' 100,
       'wght' 800;
     font-size: 0.875rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 0.55rem 0.85rem;
     border-bottom: 1px solid #3c3834;
@@ -99,10 +99,10 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 0.62rem;
+    font-size: 0.75rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.4);
+    color: rgb(255 255 255 / 0.75);
   }
 
   .leaderboard__col--rank {
@@ -148,7 +148,8 @@
   }
 
   .leaderboard__you {
-    @apply ml-1 rounded px-1 align-middle text-xs;
+    @apply ml-1 px-1 align-middle text-xs;
+    border-radius: 0;
     background: rgb(255 255 255 / 0.1);
     color: rgb(255 255 255 / 0.55);
     font-variation-settings:

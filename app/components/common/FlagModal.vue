@@ -81,29 +81,31 @@
 <style scoped>
   @reference "~/assets/css/main.css";
 
-  /* Backdrop: mobile = centered with padding, desktop = top-aligned */
+  /* Backdrop: mobile = centered, tablet = center-top, desktop = near top */
   .modal-backdrop {
     @apply fixed inset-0 z-50 bg-black/70 backdrop-blur-sm;
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Mobile: padding so tapping edges closes modal */
-    padding: 3rem 2rem;
+    padding: 1rem;
   }
 
   .modal-panel {
     @apply flex w-full max-w-2xl flex-col rounded-2xl bg-zinc-900;
-    max-height: min(90vh, 90dvh);
+    max-height: min(92vh, 92dvh);
   }
 
-  /* Desktop: push panel toward top */
+  /* Tablet (640px+): keep centered, just tighten max-height */
   @media (min-width: 640px) {
-    .modal-backdrop {
-      align-items: flex-start;
-      padding-top: 3.5rem;
-      padding-left: 1rem;
-      padding-right: 1rem;
-      padding-bottom: 1rem;
+    .modal-panel {
+      max-height: min(88vh, 88dvh);
+    }
+  }
+
+  /* Large desktop (1280px+): tighten further */
+  @media (min-width: 1280px) {
+    .modal-panel {
+      max-height: min(82vh, 82dvh);
     }
   }
 

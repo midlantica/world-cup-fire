@@ -32,36 +32,119 @@ export interface TzOption {
   code: TzCode
   iana: string
   label: string
+  region: string
 }
 
 export const TZ_OPTIONS: TzOption[] = [
   // North America
-  { code: 'PT', iana: 'America/Los_Angeles', label: 'Los Angeles' },
-  { code: 'MT', iana: 'America/Denver', label: 'Denver' },
-  { code: 'CT', iana: 'America/Chicago', label: 'Chicago / Mexico City' },
-  { code: 'ET', iana: 'America/New_York', label: 'New York / Toronto' },
-  { code: 'AT', iana: 'America/Halifax', label: 'Halifax' },
+  {
+    code: 'PT',
+    iana: 'America/Los_Angeles',
+    label: 'PT — Los Angeles',
+    region: 'North America',
+  },
+  {
+    code: 'MT',
+    iana: 'America/Denver',
+    label: 'MT — Denver',
+    region: 'North America',
+  },
+  {
+    code: 'CT',
+    iana: 'America/Chicago',
+    label: 'CT — Chicago / Mexico City',
+    region: 'North America',
+  },
+  {
+    code: 'ET',
+    iana: 'America/New_York',
+    label: 'ET — New York / Toronto',
+    region: 'North America',
+  },
+  {
+    code: 'AT',
+    iana: 'America/Halifax',
+    label: 'Halifax',
+    region: 'North America',
+  },
   // South America
-  { code: 'BRT', iana: 'America/Sao_Paulo', label: 'São Paulo' },
+  {
+    code: 'BRT',
+    iana: 'America/Sao_Paulo',
+    label: 'São Paulo',
+    region: 'South America',
+  },
   {
     code: 'ART',
     iana: 'America/Argentina/Buenos_Aires',
     label: 'Buenos Aires',
+    region: 'South America',
   },
   // Europe / Africa
-  { code: 'GMT', iana: 'Europe/London', label: 'London / Lisbon' },
-  { code: 'CET', iana: 'Europe/Paris', label: 'Paris / Madrid / Berlin' },
-  { code: 'EET', iana: 'Europe/Athens', label: 'Athens / Cairo' },
+  {
+    code: 'GMT',
+    iana: 'Europe/London',
+    label: 'London / Lisbon',
+    region: 'Europe',
+  },
+  {
+    code: 'CET',
+    iana: 'Europe/Paris',
+    label: 'Paris / Madrid / Berlin',
+    region: 'Europe',
+  },
+  {
+    code: 'EET',
+    iana: 'Europe/Athens',
+    label: 'Athens / Cairo',
+    region: 'Europe & Africa',
+  },
   // Middle East
-  { code: 'GST', iana: 'Asia/Dubai', label: 'Dubai' },
+  { code: 'GST', iana: 'Asia/Dubai', label: 'Dubai', region: 'Middle East' },
   // Asia
-  { code: 'IST', iana: 'Asia/Kolkata', label: 'India' },
-  { code: 'CST', iana: 'Asia/Shanghai', label: 'Beijing / Singapore' },
-  { code: 'JST', iana: 'Asia/Tokyo', label: 'Tokyo / Seoul' },
+  { code: 'IST', iana: 'Asia/Kolkata', label: 'India', region: 'Asia' },
+  {
+    code: 'CST',
+    iana: 'Asia/Shanghai',
+    label: 'Beijing / Singapore',
+    region: 'Asia',
+  },
+  { code: 'JST', iana: 'Asia/Tokyo', label: 'Tokyo / Seoul', region: 'Asia' },
   // Oceania
-  { code: 'AET', iana: 'Australia/Sydney', label: 'Sydney' },
-  { code: 'NZT', iana: 'Pacific/Auckland', label: 'Auckland' },
+  { code: 'AET', iana: 'Australia/Sydney', label: 'Sydney', region: 'Oceania' },
+  {
+    code: 'NZT',
+    iana: 'Pacific/Auckland',
+    label: 'Auckland',
+    region: 'Oceania',
+  },
 ]
+
+/** Returns a formatted GMT offset string like "GMT−5" or "GMT+5:30" for an IANA timezone */
+export function gmtOffsetLabel(iana: string): string {
+  try {
+    const now = new Date()
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: iana,
+      timeZoneName: 'shortOffset',
+    }).formatToParts(now)
+    const tzName = parts.find((p) => p.type === 'timeZoneName')?.value ?? ''
+    // tzName is like "GMT-5", "GMT+5:30", "GMT"
+    if (tzName === 'GMT') return 'GMT'
+    const m = tzName.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/)
+    if (m) {
+      const sign = m[1] === '-' ? '−' : '+'
+      const h = parseInt(m[2]!, 10)
+      const min = m[3] ? parseInt(m[3], 10) : 0
+      return min > 0
+        ? `GMT${sign}${h}:${String(min).padStart(2, '0')}`
+        : `GMT${sign}${h}`
+    }
+    return tzName
+  } catch {
+    return ''
+  }
+}
 
 function detectTzCode(): TzCode {
   try {

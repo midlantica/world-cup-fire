@@ -271,7 +271,7 @@ export const WC_TEAMS: WCTeam[] = [
   },
   {
     id: '11678',
-    name: 'Curacao',
+    name: 'Curaçao',
     abbrev: 'CUW',
     iso2: 'CW',
     fifaRank: 88,

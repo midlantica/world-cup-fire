@@ -291,9 +291,9 @@
     align-items: center;
     gap: 2px;
     padding: 2px 3px;
-    border-radius: 4px;
+    border-radius: 0;
     background: #424242;
-    box-shadow: 0 2px 2px 0 rgb(0 0 0 / 0.5);
+    box-shadow: none;
   }
 
   .wtl__btn {

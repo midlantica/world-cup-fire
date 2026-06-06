@@ -13,10 +13,22 @@ body {
   --font-family-sans: 'Anybody', 'Arial Narrow', sans-serif;
   --font-family-display: 'Anybody', 'Arial Narrow', sans-serif;
 
+  /* ── Fire accent palette — oklab(0.77 0.12 0.14) as 500 anchor ────────── */
+  --color-fire-50: oklab(0.97 0.02 0.02);
+  --color-fire-100: oklab(0.94 0.04 0.05);
+  --color-fire-200: oklab(0.9 0.06 0.07);
+  --color-fire-300: oklab(0.86 0.08 0.1);
+  --color-fire-400: oklab(0.82 0.1 0.12);
+  --color-fire-500: oklab(0.77 0.12 0.14);
+  --color-fire-600: oklab(0.68 0.13 0.15);
+  --color-fire-700: oklab(0.57 0.12 0.14);
+  --color-fire-800: oklab(0.45 0.1 0.11);
+  --color-fire-900: oklab(0.33 0.07 0.08);
+  --color-fire-950: oklab(0.22 0.05 0.06);
+
   /* ── Neutral (grey) palette ────────────────────────────────────────────── */
   --color-theme-50: var(--color-neutral-50);
   --color-theme-100: var(--color-neutral-100);
-  --color-theme-200: var(--color-neutral-200);
   --color-theme-300: var(--color-neutral-300);
   --color-theme-400: var(--color-neutral-400);
   --color-theme-500: var(--color-neutral-500);

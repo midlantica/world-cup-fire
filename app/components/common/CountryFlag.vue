@@ -14,14 +14,25 @@
 
   const size = computed(() => props.size ?? 32)
 
-  // country-flag-icons provides SVG URLs via a CDN path pattern
-  // We use the emoji flag as a text fallback, and the SVG as the main display
+  // Flags not on the purecatamphetamine CDN — served locally from /public/flags/
+  const LOCAL_FLAGS = new Set(['CW', 'GB-ENG', 'GB-SCT', 'GB-WLS'])
+
+  // Primary CDN: purecatamphetamine (most flags)
+  // Fallback CDN: Iconify (any remaining gaps)
   const svgUrl = computed(() => {
     if (!props.iso2) return null
-    // Handle special cases for GB subdivisions
     const code = props.iso2.toUpperCase()
+    if (LOCAL_FLAGS.has(code)) return `/flags/${code}.svg`
     return `https://purecatamphetamine.github.io/country-flag-icons/3x2/${code}.svg`
   })
+
+  const fallbackUrl = computed(() => {
+    if (!props.iso2) return null
+    const code = props.iso2.toLowerCase()
+    return `https://api.iconify.design/flag:${code}-4x3.svg`
+  })
+
+  const useFallback = ref(false)
 
   // Convert ISO2 to emoji flag using regional indicator symbols
 
@@ -38,6 +49,10 @@
   })
 
   const imgError = ref(false)
+  watch(svgUrl, () => {
+    useFallback.value = false
+    imgError.value = false
+  })
 </script>
 
 <template>
@@ -50,14 +65,27 @@
       border: '1px solid #ffffff2b',
     }"
   >
+    <!-- Primary: purecatamphetamine CDN -->
     <img
-      v-if="svgUrl && !imgError"
+      v-if="svgUrl && !useFallback && !imgError"
+      :key="svgUrl"
       :src="svgUrl"
+      :alt="iso2"
+      class="h-full w-full object-cover"
+      @error="useFallback = true"
+    />
+
+    <!-- Secondary: Iconify CDN (has CW, GB-SCT, GB-ENG, GB-WLS, etc.) -->
+    <img
+      v-else-if="fallbackUrl && useFallback && !imgError"
+      :key="fallbackUrl"
+      :src="fallbackUrl"
       :alt="iso2"
       class="h-full w-full object-cover"
       @error="imgError = true"
     />
 
+    <!-- Final: emoji fallback -->
     <span
       v-else
       class="flex h-full w-full items-center justify-center text-xs leading-none"

@@ -1,41 +1,75 @@
 <script setup lang="ts">
-  import { useTimezone, TZ_OPTIONS } from '~/composables/useTimezone'
+  import {
+    useTimezone,
+    TZ_OPTIONS,
+    gmtOffsetLabel,
+  } from '~/composables/useTimezone'
   import { useMyNation } from '~/composables/useMyNation'
 
   const { selectedTz, setTz } = useTimezone()
   const { myTeamData, openModal } = useMyNation()
 
-  const open = ref(false)
-  const wrapRef = ref<HTMLElement | null>(null)
+  const tzModalOpen = ref(false)
+
+  // Group TZ options by region
+  const tzByRegion = computed(() => {
+    const map = new Map<string, typeof TZ_OPTIONS>()
+    for (const tz of TZ_OPTIONS) {
+      if (!map.has(tz.region)) map.set(tz.region, [])
+      map.get(tz.region)!.push(tz)
+    }
+    return map
+  })
+
+  // Explicit column ordering
+  // Left: North America, South America
+  // Right: Europe, Europe & Africa, Middle East, Asia, Oceania
+  const leftColumnRegions = ['North America', 'South America', 'Europe']
+  const rightColumnRegions = [
+    'Europe & Africa',
+    'Middle East',
+    'Asia',
+    'Oceania',
+  ]
+
+  // Current selected TZ option with offset label
+  const selectedTzOption = computed(
+    () => TZ_OPTIONS.find((t) => t.code === selectedTz.value) ?? TZ_OPTIONS[3]!
+  )
+
+  const selectedTzOffset = computed(() =>
+    gmtOffsetLabel(selectedTzOption.value.iana)
+  )
+
+  function openTzModal() {
+    tzModalOpen.value = true
+  }
+
+  function closeTzModal() {
+    tzModalOpen.value = false
+  }
 
   function choose(code: (typeof TZ_OPTIONS)[number]['code']) {
     setTz(code)
-    open.value = false
+    closeTzModal()
   }
 
-  onMounted(() => {
-    document.addEventListener('click', (e) => {
-      if (
-        open.value &&
-        wrapRef.value &&
-        !wrapRef.value.contains(e.target as Node)
-      ) {
-        open.value = false
-      }
-    })
-  })
+  function onBackdrop(e: MouseEvent) {
+    if ((e.target as HTMLElement).classList.contains('tz-modal-backdrop')) {
+      closeTzModal()
+    }
+  }
 </script>
 
 <template>
-  <div ref="wrapRef" class="utility-btn-wrap">
+  <div class="utility-btn-wrap">
     <!-- TZ picker button -->
     <button
       class="utility-btn timezone-btn"
       aria-label="Select time zone"
-      @click.stop="open = !open"
+      @click="openTzModal"
     >
-      <span class="utility-btn__label">TZ: {{ selectedTz }}</span>
-      <span class="utility-btn__caret">▼</span>
+      <span class="utility-btn__label">{{ selectedTzOffset }}</span>
     </button>
 
     <!-- My Flag button -->
@@ -47,34 +81,90 @@
       <template v-else>
         <span class="utility-btn__label">My Flag</span>
       </template>
-      <span class="utility-btn__caret">▼</span>
     </button>
 
-    <!-- TZ dropdown (direct child of wrap for positioning) -->
-    <div v-if="open" class="tz-dropdown">
-      <div class="tz-dropdown__header">Select Time Zone</div>
-      <button
-        v-for="tz in TZ_OPTIONS"
-        :key="tz.code"
-        class="tz-option"
-        :class="{ selected: selectedTz === tz.code }"
-        @click="choose(tz.code)"
-      >
-        <span class="tz-option-code">{{ tz.code }}</span>
-        <span class="tz-option-label">{{ tz.label }}</span>
-      </button>
-    </div>
+    <!-- TZ Modal — teleported to body -->
+    <Teleport to="body">
+      <Transition name="tz-modal">
+        <div v-if="tzModalOpen" class="tz-modal-backdrop" @click="onBackdrop">
+          <div class="tz-modal-panel">
+            <div class="tz-modal-header">
+              <h2 class="tz-modal-title">🕐 Select Time Zone</h2>
+              <button class="tz-modal-close" @click="closeTzModal">✕</button>
+            </div>
+
+            <div class="tz-modal-body">
+              <div class="tz-columns">
+                <!-- Left column: North America, South America -->
+                <div class="tz-col">
+                  <div
+                    v-for="region in leftColumnRegions"
+                    :key="region"
+                    class="tz-region"
+                  >
+                    <template v-if="tzByRegion.get(region)">
+                      <div class="tz-region__header">{{ region }}</div>
+                      <button
+                        v-for="tz in tzByRegion.get(region)"
+                        :key="tz.code"
+                        class="tz-option-btn"
+                        :class="{
+                          'tz-option-btn--selected': selectedTz === tz.code,
+                        }"
+                        @click="choose(tz.code)"
+                      >
+                        <span class="tz-option-btn__offset">{{
+                          gmtOffsetLabel(tz.iana)
+                        }}</span>
+                        <span class="tz-option-btn__label">{{ tz.label }}</span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+                <!-- Right column: Europe, Europe & Africa, Middle East, Asia, Oceania -->
+                <div class="tz-col">
+                  <div
+                    v-for="region in rightColumnRegions"
+                    :key="region"
+                    class="tz-region"
+                  >
+                    <template v-if="tzByRegion.get(region)">
+                      <div class="tz-region__header">{{ region }}</div>
+                      <button
+                        v-for="tz in tzByRegion.get(region)"
+                        :key="tz.code"
+                        class="tz-option-btn"
+                        :class="{
+                          'tz-option-btn--selected': selectedTz === tz.code,
+                        }"
+                        @click="choose(tz.code)"
+                      >
+                        <span class="tz-option-btn__offset">{{
+                          gmtOffsetLabel(tz.iana)
+                        }}</span>
+                        <span class="tz-option-btn__label">{{ tz.label }}</span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
+  @reference "~/assets/css/main.css";
+
   /* Outer wrapper: both utility buttons side by side */
   .utility-btn-wrap {
-    position: relative;
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    gap: 0.8rem;
+    gap: 8px;
     flex-shrink: 0;
   }
 
@@ -83,11 +173,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 5px;
-    padding: 10px 10px 9px 14px;
-    border-radius: 6px;
+    gap: 2px;
+    padding: 10px 10px 9px 10px;
+    border-radius: 0;
     border: none;
-    background: rgb(255 255 255 / 0.09);
+    background: oklab(1 0 0 / 0.154);
     cursor: pointer;
     transition:
       background 0.15s,
@@ -130,26 +220,11 @@
     margin-left: 0.1rem;
   }
 
-  /* TZ dropdown */
-  .tz-dropdown {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    left: 0;
-    z-index: 200;
-    background: #1a1817;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
-    max-height: 18rem;
-    min-width: 13rem;
-  }
-
   /* ── Mobile overrides ────────────────────────────────────────────────────── */
   @media (max-width: 800px) {
     .utility-btn {
       padding: 10px 7px 9px 10px;
-      border-radius: 4px;
+      border-radius: 0;
     }
 
     .utility-btn__label {
@@ -159,67 +234,188 @@
     }
   }
 
-  .tz-dropdown__header {
-    padding: 0.5rem 0.75rem 0.35rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.35);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* ── TZ Modal ────────────────────────────────────────────────────────────── */
+
+  /* Backdrop: mobile = centered, tablet = center-top, desktop = near top */
+  .tz-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgb(0 0 0 / 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
   }
 
-  .tz-option {
+  .tz-modal-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 44rem;
+    border-radius: 1rem;
+    background: #18181b;
+    max-height: min(92vh, 92dvh);
+  }
+
+  /* Tablet (640px+): align toward top */
+  @media (min-width: 640px) {
+    .tz-modal-backdrop {
+      align-items: flex-start !important;
+      padding-top: 4rem !important;
+    }
+    .tz-modal-panel {
+      max-height: min(88vh, 88dvh);
+    }
+  }
+
+  /* Large desktop (1280px+): push closer to top */
+  @media (min-width: 1280px) {
+    .tz-modal-backdrop {
+      padding-top: 5rem !important;
+    }
+    .tz-modal-panel {
+      max-height: min(82vh, 82dvh);
+    }
+  }
+
+  .tz-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    padding: 0.6rem 0.6rem 0.3rem 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .tz-modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .tz-modal-close {
+    border-radius: 0.5rem;
+    padding: 0.375rem;
+    color: rgb(255 255 255 / 0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s;
+    font-size: 1rem;
+  }
+
+  .tz-modal-close:hover {
+    color: #fff;
+  }
+
+  .tz-modal-body {
+    overflow-y: auto;
+    padding: 0.75rem 0.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* Single column on mobile, two explicit columns on tablet+ */
+  .tz-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tz-col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 480px) {
+    .tz-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 0.5rem;
+      align-items: start;
+    }
+  }
+
+  .tz-region {
+    margin-bottom: 0.5rem;
+  }
+
+  .tz-region__header {
+    padding: 0.25rem 0.75rem 0.2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: oklab(0.72 0.17 0.16 / 0.8);
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    margin-bottom: 0.15rem;
+  }
+
+  .tz-option-btn {
     display: flex;
     align-items: baseline;
-    gap: 0.5rem;
+    gap: 0.6rem;
     width: 100%;
     text-align: left;
     padding: 0.4rem 0.75rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.7);
     background: transparent;
     border: none;
     cursor: pointer;
     transition:
       background 0.1s,
       color 0.1s;
-    white-space: nowrap;
+    border-radius: 0.4rem;
   }
 
-  .tz-option-code {
+  .tz-option-btn:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  .tz-option-btn--selected {
+    background: rgb(255 255 255 / 0.12);
+  }
+
+  .tz-option-btn__offset {
     flex-shrink: 0;
-    min-width: 2.5rem;
-    font-weight: 700;
-  }
-
-  .tz-option-label {
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    color: rgba(255, 255, 255, 0.5);
+    min-width: 4.5rem;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
     font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: rgb(255 255 255 / 0.9);
   }
 
-  .tz-option:hover .tz-option-label,
-  .tz-option.selected .tz-option-label {
-    color: rgba(255, 255, 255, 0.8);
+  .tz-option-btn--selected .tz-option-btn__offset {
+    color: #fff;
   }
 
-  .tz-option + .tz-option {
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  .tz-option-btn__label {
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.5);
   }
 
-  .tz-option:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
+  .tz-option-btn:hover .tz-option-btn__label,
+  .tz-option-btn--selected .tz-option-btn__label {
+    color: rgb(255 255 255 / 0.8);
   }
 
-  .tz-option.selected {
-    color: #f3f3f3;
-    background: rgba(255, 255, 255, 0.12);
+  /* Transition */
+  .tz-modal-enter-active,
+  .tz-modal-leave-active {
+    transition: all 0.2s;
+  }
+
+  .tz-modal-enter-from,
+  .tz-modal-leave-to {
+    opacity: 0;
+  }
+
+  .tz-modal-enter-from .tz-modal-panel,
+  .tz-modal-leave-to .tz-modal-panel {
+    transform: translateY(1rem) scale(0.95);
   }
 </style>

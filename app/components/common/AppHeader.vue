@@ -78,6 +78,13 @@
           Groups
         </NuxtLink>
         <NuxtLink
+          to="/stats"
+          class="app-header__nav-link"
+          active-class="app-header__nav-link--active"
+        >
+          Stats
+        </NuxtLink>
+        <NuxtLink
           to="/pools"
           class="app-header__nav-link"
           active-class="app-header__nav-link--active"
@@ -136,38 +143,115 @@
      VISUAL HIERARCHY SYSTEM
      ─────────────────────────────────────────────────────────────────────────
      L1 — Primary nav (MATCHES / GROUPS / PICKS)
-          Font: wdth 100, wght 900 · Size: 1.1rem desktop / 0.9rem mobile
-          Shape: 8px radius chips · Color: white active, white/55 inactive
+          Font: wdth 100, wght 700 · Size: 1.125rem desktop / 0.9rem mobile
+          Shape: flat (no radius) · Color: white active, warm white/65 inactive
 
-     L2 — Stage tabs (GROUP STAGE / KNOCKOUT STAGE · MY PICKS / GROUP POOLS)
-          Font: wdth 100, wght 700 · Size: 0.72rem · Letter-spacing: 0.14em
-          Shape: flat (no radius) · Color: white/90 active, white/38 inactive
+     L2 — Stage tabs (GROUP STAGE / KNOCKOUT STAGE)
+          Font: wdth 100, wght 700 · Size: 1rem · Letter-spacing: 0.14em
+          Shape: flat (no radius) · Color: white active, warm white/45 inactive
 
      L3 — Week tabs (WEEK 1 / WEEK 2 …)
-          Label: wdth 100, wght 800 · Size: 0.78rem
-          Dates: wdth 87.5, wght 300 · Size: 0.65rem
-          Shape: 6px radius chips · Color: white active, white/42 inactive
+          Label: wdth 100, wght 600 · Size: 0.8rem
+          Dates: wdth 87.5, wght 400 · Size: 0.75rem
+          Shape: flat (no radius) · Color: white active, warm white/42 inactive
      ═══════════════════════════════════════════════════════════════════════════ */
 
   /* ── Header shell ─────────────────────────────────────────────────────────── */
   .app-header {
-    @apply sticky top-0 z-40;
-    background: var(--nation-bg, #0c0a09);
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: oklab(0.53 0.11 0.12);
+    margin-bottom: 1rem;
+    padding-top: 0.3rem;
+    overflow: hidden;
+  }
+
+  /* ── CSS fireball: wide pulsing orb, slow irregular drift ───────────────── */
+  .app-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+
+    /* WHITE-HOT fire orb — near-white core bleeds into bright yellow/orange.
+       mix-blend-mode: screen punches through dark tab backgrounds. */
+    background: radial-gradient(
+      circle at 50% 130%,
+      hsl(60 100% 98% / 1) 0%,
+      hsl(55 100% 88% / 1) 5%,
+      hsl(46 100% 72% / 0.98) 12%,
+      hsl(34 100% 60% / 0.9) 24%,
+      hsl(22 100% 50% / 0.7) 40%,
+      hsl(14 100% 36% / 0.4) 58%,
+      transparent 76%
+    );
+
+    animation:
+      fireball-drift 9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate,
+      fireball-breathe 13s ease-in-out infinite alternate;
+
+    filter: blur(6px);
+    opacity: 1;
+    mix-blend-mode: screen;
+  }
+
+  /* Make sure all direct children sit above the fire layers */
+  .app-header > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Slow lateral + slight vertical drift — wide, lazy movement */
+  @keyframes fireball-drift {
+    0% {
+      transform: translate(-7%, 1%) scale(1.6);
+    }
+    25% {
+      transform: translate(2%, -2%) scale(1.75);
+    }
+    50% {
+      transform: translate(8%, 2%) scale(1.65);
+    }
+    75% {
+      transform: translate(-3%, -1%) scale(1.8);
+    }
+    100% {
+      transform: translate(-7%, 1%) scale(1.6);
+    }
+  }
+
+  /* Slow brightness/blur breathe — lingers at dim and bright extremes */
+  @keyframes fireball-breathe {
+    0% {
+      filter: blur(22px) brightness(0.78);
+    }
+    30% {
+      filter: blur(18px) brightness(0.92);
+    }
+    55% {
+      filter: blur(24px) brightness(0.72);
+    }
+    75% {
+      filter: blur(16px) brightness(1);
+    }
+    100% {
+      filter: blur(20px) brightness(0.82);
+    }
   }
 
   /* ── Wide layout (> 600px): single flex row ─────────────────────────────── */
   .app-header__inner {
-    @apply mx-auto flex max-w-7xl items-center px-4;
-    gap: 0.5rem;
-    min-height: 4.5rem;
+    @apply mx-auto flex max-w-7xl items-center px-3;
+    gap: 1px;
+    min-height: 3.3rem;
   }
 
   /* Logo */
   .app-header__brand {
     @apply flex shrink-0 items-center no-underline;
-    margin-right: 0.5rem;
+    margin-right: 0.25rem;
   }
 
   .app-header__logo {
@@ -180,17 +264,22 @@
   /* Nav */
   .app-header__nav {
     @apply flex shrink-0 items-stretch justify-center;
-    gap: 0.5rem;
+    gap: 1px;
   }
 
-  /* ── L1: Primary nav chips ───────────────────────────────────────────────── */
+  /* ── L1: Primary nav — flat rectangles ──────────────────────────────────── */
   .app-header__nav-link {
-    @apply relative flex items-center justify-center gap-2 no-underline;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
     padding: 0.7rem 1.1rem;
-    border-radius: 8px;
+    border-radius: 0;
 
     font-family: 'Anybody', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     line-height: 1;
     text-transform: uppercase;
     font-variation-settings:
@@ -198,9 +287,9 @@
       'wght' 700;
     letter-spacing: 0.07em;
 
-    /* Inactive: clearly readable but visually recessed */
-    color: hsl(0deg 0% 100% / 40%);
-    background: rgb(255 255 255 / 0.07);
+    /* Inactive: warm white on the orange bg, no bg fill */
+    color: hsl(30deg 100% 95% / 1);
+    background: transparent;
     transition:
       color 0.15s ease,
       background 0.15s ease,
@@ -208,21 +297,14 @@
   }
 
   .app-header__nav-link:hover {
-    color: rgb(255 255 255 / 0.85);
-    background: rgb(255 255 255 / 0.11);
-    border-color: rgb(255 255 255 / 0.14);
+    color: hsl(30deg 100% 98% / 0.95);
+    background: oklab(0.62 0.13 0.14);
   }
 
-  /* Active: bright white, clearly elevated */
+  /* Active: brighter orange fill — flat, no shadow */
   .app-header__nav-link--active {
     color: #ffffff;
-    background: linear-gradient(
-      180deg,
-      hsl(0deg 0% 27.22%),
-      hsl(0deg 0% 9.27%)
-    );
-    border-color: rgb(255 255 255 / 0.22);
-    text-shadow: 0 2px 2px hsl(0deg 0% 0% / 100%);
+    background: oklab(0.62 0.13 0.14);
   }
 
   .app-header__nav-link--soon {
@@ -268,10 +350,14 @@
     transform: scale(0.3);
   }
 
-  /* Right controls group */
+  /* Right controls group — needs higher z-index so the TZ dropdown
+     (position: absolute inside .utility-btn-wrap) paints above the
+     stage/week tab rows that follow in the DOM */
   .app-header__controls {
     @apply flex items-center justify-end gap-2;
     flex: 1;
+    position: relative;
+    z-index: 10;
   }
 
   /* ── L2: Stage / sub-tab row ─────────────────────────────────────────────── */
@@ -279,17 +365,14 @@
     @apply mx-auto max-w-7xl;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    /* Slightly darker than the page so the tab block reads as a contained unit */
-    background: rgb(0 0 0 / 0.28);
-    border-radius: 8px;
-    /* box-shadow: 0px 1px 3px -1px hsl(0deg 0% 100% / 75%); */
+    background: transparent;
     width: calc(100% - 1.5rem);
+    position: relative;
+    z-index: 0;
   }
 
   .app-header__stage-row {
     display: flex;
-    /* Hairline divider between stage buttons */
     background: transparent;
   }
 
@@ -304,13 +387,13 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     white-space: nowrap;
 
-    /* Inactive: clearly dimmer than L1 inactive */
-    color: hsl(0deg 0% 100% / 40%);
-    background: hsl(0deg 0% 10.44%);
+    /* Inactive: warm dim on the orange bg */
+    color: hsl(30deg 100% 95% / 0.85);
+    background: transparent;
     border: none;
     transition:
       color 0.15s ease,
@@ -323,17 +406,15 @@
   }
 
   .app-header__stage-btn:hover:not(.app-header__stage-btn--active) {
-    color: rgb(255 255 255 / 0.65);
-    background: rgb(255 255 255 / 0.04);
+    color: oklab(1 0 0 / 1);
+    background: oklab(1 0 0 / 0.15);
   }
 
-  /* Active L2 */
+  /* Active L2 — semi-transparent orange, no gradient, no shadow */
   .app-header__stage-btn--active {
-    color: rgb(255 255 255 / 0.92);
-    background: linear-gradient(0deg, hsl(0deg 0% 27.22%), hsl(0deg 0% 9.27%));
-    border-top: 1px solid hsl(0deg 0% 21.72%);
-    border-bottom: none;
-    text-shadow: 0 1px 2px hsl(0deg 0% 0% / 100%);
+    color: #ffffff;
+    background: oklab(0.62 0.13 0.14 / 0.6);
+    border: none;
   }
 
   /* ── Picks sub-tabs ──────────────────────────────────────────────────────── */
@@ -346,7 +427,6 @@
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
-    /* No week-tabs below, so remove the bottom border */
     border-bottom: none;
   }
 
@@ -372,12 +452,8 @@
   .app-header__week-tabs {
     display: flex;
     padding: 0.3rem 0.35rem 0.3rem;
-    gap: 0.2rem;
-    background: linear-gradient(
-      180deg,
-      hsl(0deg 0% 27.22%),
-      hsl(0deg 0% 9.27%)
-    );
+    gap: 0;
+    background: oklab(0.62 0.13 0.14 / 0.7);
   }
 
   .app-header__week-tab {
@@ -385,35 +461,43 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.08rem;
-    border-radius: 6px;
-    padding: 0.45rem 0.4rem 0.35rem;
+    gap: 0;
+    border-radius: 0;
+    padding: 0.65rem 0.4rem 0.35rem;
     text-align: center;
     transition:
       color 0.15s ease,
       background 0.15s ease;
-    color: rgb(255 255 255 / 0.4);
-    background: linear-gradient(
-      0deg,
-      hsl(0deg 0% 0% / 70%),
-      hsl(0deg 0% 15.96%)
-    );
-    box-shadow: 0px 1px 3px -2px hsl(0deg 0% 70%);
+    color: hsl(30deg 100% 95% / 0.7);
+    background: transparent;
     border: none;
+    /* Right-side divider via box-shadow — zero layout impact, never jumps */
+    box-shadow: 2px 0 0 0 oklab(1 0 0 / 0.15);
     cursor: pointer;
     min-width: 0;
   }
 
-  .app-header__week-tab:hover:not(.app-header__week-tab--active) {
-    color: rgb(255 255 255 / 0.72);
-    background: rgb(0 0 0 / 20%);
+  .app-header__week-tab:last-child:not(.app-header__week-tab--active) {
+    box-shadow: none;
   }
 
-  /* Active L3 */
+  .app-header__week-tab:hover:not(.app-header__week-tab--active) {
+    color: hsl(30deg 100% 95% / 1);
+    background: oklab(1 0 0 / 0.15);
+  }
+
+  /* Active L3 — inset ring only, zero layout impact, no jump, no doubling */
   .app-header__week-tab--active {
-    background: linear-gradient(180deg, hsl(0deg 0% 39.85%), hsl(0deg 0% 6.9%));
+    background: oklab(0.62 0.13 0.14 / 0.5);
     color: #ffffff;
-    box-shadow: 0px 0px 2px 0px hsl(0deg 0% 80% / 50%);
+    border: none;
+    box-shadow: inset 0 0 0 2px oklab(1 0 0 / 0.4);
+    z-index: 1;
+  }
+
+  /* Remove the right divider from the tab just before the active one */
+  .app-header__week-tab:has(+ .app-header__week-tab--active) {
+    box-shadow: none;
   }
 
   .app-header__week-tab--active .app-header__week-label {
@@ -428,14 +512,13 @@
   /* L3 label */
   .app-header__week-label {
     line-height: 1.1;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    text-shadow: 0 1px 0px hsl(0deg 0% 0% / 100%);
   }
 
   /* L3 dates */
@@ -448,7 +531,6 @@
     font-variation-settings:
       'wdth' 87.5,
       'wght' 400;
-    text-shadow: 0 1px 0px hsl(0deg 0% 0% / 100%);
   }
 
   /* ── Narrow layout (≤ 800px): stacked rows, full-bleed (100vw) ──────────── */
@@ -492,7 +574,7 @@
     .app-header__nav-link {
       flex: 1;
       padding: 0.55rem 0.25rem;
-      font-size: 1rem;
+      font-size: 0.9rem;
       border-radius: 0;
       border: none;
       border-right: 1px solid rgb(255 255 255 / 0.08);
@@ -506,11 +588,7 @@
     }
 
     .app-header__nav-link--active {
-      background: linear-gradient(
-        180deg,
-        hsl(0deg 0% 27.22%),
-        hsl(0deg 0% 9.27%)
-      );
+      background: oklab(0.62 0.13 0.14 / 0.75);
     }
 
     /* Mobile L2: scale down from desktop 1rem */
@@ -542,11 +620,7 @@
     }
 
     .app-header__week-tabs {
-      background: linear-gradient(
-        180deg,
-        hsl(0deg 0% 27.22%),
-        hsl(0deg 0% 9.27%)
-      );
+      background: oklab(0.62 0.13 0.14 / 0.7);
     }
   }
 
@@ -555,12 +629,6 @@
     .app-header__logo {
       height: 2.35rem;
       width: calc(2.35rem * 3.365);
-    }
-
-    .app-header__inner {
-      column-gap: 0.25rem;
-      padding-left: 0.5rem;
-      padding-right: 0.5rem;
     }
 
     /* Mobile L3: tighten week tabs further */
