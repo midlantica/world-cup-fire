@@ -366,9 +366,18 @@
         <!-- LEFT: hero copy + explainer + CTA ──────────────────────────────── -->
         <aside class="pools-sidebar">
           <div class="pools-sidebar__content">
-            <h1 class="pools-sidebar__heading">
-              <span class="pools-sidebar__trophy">🏆</span> Pools
-            </h1>
+            <div class="pools-sidebar__heading-row">
+              <h1 class="pools-sidebar__heading">
+                <span class="pools-sidebar__trophy">🏆</span> Pools
+              </h1>
+              <button
+                class="pools-sidebar__new-btn"
+                :disabled="!canCreate"
+                @click="openCreate"
+              >
+                New Pool
+              </button>
+            </div>
             <p class="pools-sidebar__lead">
               Compete with friends &amp; family all tournament long. Create a
               pool, share the link, and see who really knows their football.
@@ -400,16 +409,6 @@
                 <span>Watch the leaderboard update in real time. ⚽️</span>
               </li>
             </ul>
-
-            <div class="pools-sidebar__cta">
-              <button
-                class="pools-sidebar__new-btn"
-                :disabled="!canCreate"
-                @click="openCreate"
-              >
-                New Pool
-              </button>
-            </div>
 
             <p v-if="!canCreate" class="pools-sidebar__cap-note">
               You've reached the {{ MAX_POOLS }}-pool limit.
@@ -567,6 +566,21 @@
     flex-direction: column;
     gap: 1rem;
     margin-top: 0.25rem;
+  }
+
+  /* Heading row: title on left, New Pool button on right */
+  .pools-sidebar__heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .pools-sidebar__heading-row .pools-sidebar__new-btn {
+    width: auto;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.85rem 0.25rem;
   }
 
   .pools-sidebar__trophy {
