@@ -552,6 +552,11 @@
       status: { code: m.statusCode, clock: m.statusClock },
       qualityScore: 0,
       badge: null,
+      kickoffSlot: (() => {
+        const ms = new Date(m.date).getTime()
+        const SLOT_MS = 30 * 60_000
+        return Math.floor(ms / SLOT_MS) * SLOT_MS
+      })(),
     }
     // Push current country onto history before navigating to match
     if (selectedCountry.value) {

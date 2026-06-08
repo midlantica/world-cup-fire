@@ -127,6 +127,13 @@
         status: { code, clock: clock !== '0:00' ? clock : undefined },
         qualityScore: 0,
         badge: null,
+        kickoffSlot: (() => {
+          const ms = new Date(
+            compDate ?? (header?.date as string) ?? ''
+          ).getTime()
+          const SLOT_MS = 30 * 60_000
+          return Math.floor(ms / SLOT_MS) * SLOT_MS
+        })(),
       }
 
       openMatch(match)
