@@ -1,0 +1,64 @@
+/* ── CSS custom properties ─────────────────────────────────────────────────── */
+:root {
+  --modal-copy-size: 1rem;
+}
+
+/* ── App background ────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--nation-bg, var(--app-bg, #0c0a09));
+  transition: background-color 0.4s ease;
+}
+
+/* ── Modals don't carry the nation theme (mostly) ─────────────────────────────
+   Modal backdrops are teleported to <body>, so any MatchCard rendered inside a
+   modal would otherwise inherit the global --nation-* card vars set on <html>
+   and pick up the flag tint. Reset the GENERIC card surface vars on every modal
+   backdrop so ordinary cards read as neutral dark inside modals.
+
+   The accent ring vars (--nation-accent, --nation-accent-soft) are
+   intentionally NOT reset, so the user's own nation still gets its subtle
+   accent ring inside group modals (e.g. Brazil's rows in the Group C modal).
+   --nation-card-mine IS reset to the neutral card color so the selected
+   nation's card surface matches the other (neutral) cards in the modal — only
+   the ring distinguishes it, not a strong flag-tinted background. */
+.grd-backdrop,
+.gd-backdrop,
+.cd-backdrop,
+.modal-backdrop {
+  --nation-card: #1d1d1d;
+  --nation-card-hover: #252525;
+  --nation-card-mine: #1d1d1d;
+}
+
+/* ── Smooth all theme color transitions ───────────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* But don't slow down interactive elements */
+button,
+a,
+input,
+select {
+  transition-duration: 0.15s;
+}
+
+/* ── Pointer cursors on interactive elements ──────────────────────────────── */
+a,
+button,
+[role='button'],
+[onclick],
+label[for],
+select,
+summary {
+  cursor: pointer;
+}
+
+/* ── Layout utilities ─────────────────────────────────────────────────────── */
+@utility grd-body {
+  padding: 1rem;
+}

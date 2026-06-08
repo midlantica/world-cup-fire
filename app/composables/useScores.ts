@@ -6,6 +6,7 @@ import {
   venueLocation,
 } from '../constants/worldcup'
 import { useTimezone } from './useTimezone'
+import { nowDate } from './useMockTime'
 
 export interface MatchStatus {
   code: 'ns' | 'live' | 'ht' | 'ft'
@@ -155,7 +156,7 @@ export const WC_TABS: TabDef[] = [
  * - If WC is over, return 'week6'
  */
 function defaultTab(): WeekTab {
-  const now = new Date()
+  const now = nowDate()
   for (const tab of WC_TABS) {
     if (now >= tab.start && now <= tab.end) return tab.key
   }

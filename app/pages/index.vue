@@ -17,6 +17,8 @@
       <!-- Main: Scores wall -->
       <main class="home-page__main">
         <CountdownBanner />
+        <TournamentBanner />
+        <PicksDeadlineBanner />
         <ScoresSection />
       </main>
     </div>

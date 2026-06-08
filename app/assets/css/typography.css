@@ -1,0 +1,122 @@
+/* ── Base typography ───────────────────────────────────────────────────────── */
+html {
+  font-size: 1rem;
+  font-family: 'Anybody', 'Arial Narrow', sans-serif;
+  font-variation-settings:
+    'wdth' 87.5,
+    'wght' 300;
+  letter-spacing: 0.06rem;
+}
+
+/* Headings — Width 100, Weight 500 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Anybody', 'Arial Narrow', sans-serif;
+  letter-spacing: 0.06rem;
+  font-variation-settings:
+    'wdth' 100,
+    'wght' 500;
+}
+
+/* Body copy — Width 87.5, Weight 300 */
+/* Note: span is intentionally excluded here so it inherits from its parent
+   rather than resetting font-variation-settings on every child span.
+   The html rule above already sets the default for the whole page. */
+p,
+li,
+td,
+th,
+label {
+  font-variation-settings:
+    'wdth' 87.5,
+    'wght' 300;
+  letter-spacing: 0.06rem;
+}
+
+/* ── CSS custom properties for font-variation ────────────────────────────── */
+:root {
+  --font-anybody-heading-wdth: 100;
+  --font-anybody-heading-wght: 500;
+  --font-anybody-copy-wdth: 87.5;
+  --font-anybody-copy-wght: 300;
+  --font-anybody-logo-wdth: 91;
+  --font-anybody-logo-wght: 900;
+}
+
+/* ── Anybody font-variation utilities ─────────────────────────────────────── */
+@utility font-anybody-heading {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 100,
+    'wght' 500;
+  letter-spacing: 0.06rem;
+}
+
+@utility font-anybody-copy {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 87.5,
+    'wght' 300;
+  letter-spacing: 0.06rem;
+}
+
+@utility font-anybody-logo {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 91,
+    'wght' 900;
+}
+
+@utility font-anybody-bold {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 100,
+    'wght' 700;
+}
+
+@utility font-anybody-black {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 100,
+    'wght' 900;
+  letter-spacing: 0.06rem;
+}
+
+@utility font-anybody-semi {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 91,
+    'wght' 700;
+}
+
+@utility font-anybody-medium {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 100,
+    'wght' 600;
+}
+
+@utility font-anybody-nav {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 80,
+    'wght' 600;
+}
+
+@utility font-anybody-narrow {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 70,
+    'wght' 500;
+}
+
+@utility font-anybody-wide {
+  font-family: 'Anybody', sans-serif;
+  font-variation-settings:
+    'wdth' 110,
+    'wght' 600;
+}

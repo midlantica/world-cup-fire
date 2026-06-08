@@ -11,6 +11,7 @@
 
 import type { Match } from './useScores'
 import { useTimezone } from './useTimezone'
+import { now as mockNow } from './useMockTime'
 
 const STORAGE_KEY = 'wc-picks-v1'
 
@@ -156,8 +157,12 @@ export function usePicks() {
    * NOTE: per the brief picks open ~1h before kickoff. To keep the feature
    * usable before/at the tournament we allow picking any not-started match,
    * and only *lock* once the match is live/finished.
+   *
+   * MOCK MODE: mock match IDs start with 'mock-' — allow picking on finished
+   * mock matches so the pool leaderboard can be tested before the WC starts.
    */
   function canPick(match: Match): boolean {
+    if (match.id.startsWith('mock-')) return match.status.code !== 'live'
     return match.status.code === 'ns'
   }
 
@@ -166,7 +171,7 @@ export function usePicks() {
     if (match.status.code !== 'ns') return false
     const kickoff = new Date(match.date).getTime()
     if (Number.isNaN(kickoff)) return false
-    return kickoff - Date.now() <= PICK_WINDOW_MS
+    return kickoff - mockNow() <= PICK_WINDOW_MS
   }
 
   /** Pick a team to WIN a match (replaces any existing pick for that match). */

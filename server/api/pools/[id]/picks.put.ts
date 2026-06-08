@@ -36,11 +36,13 @@ export default defineEventHandler(async (event) => {
     memberId?: string
     token?: string
     picks?: Record<string, IncomingPick>
+    name?: string
   }>(event)
 
   const memberId = body?.memberId
   const token = body?.token
   const incoming = body?.picks ?? {}
+  const newName = (body?.name ?? '').trim().slice(0, 40)
 
   if (!memberId || !token) {
     throw createError({ statusCode: 400, statusMessage: 'Missing credentials' })
@@ -70,7 +72,19 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  member.picks = next
+  // Optional name update — any authenticated member may rename themselves.
+  if (newName) {
+    member.name = newName
+    // Keep ownerName in sync if this member is the owner.
+    if (member.isOwner) pool.ownerName = newName
+  }
+
+  // Only replace picks if the caller actually sent some. An empty incoming
+  // picks map with a name field means "name-only update — keep existing picks".
+  if (Object.keys(incoming).length > 0 || !newName) {
+    member.picks = next
+  }
+
   await writePool(pool)
 
   return { pool: toPublicPool(pool) }

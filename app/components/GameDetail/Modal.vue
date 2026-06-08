@@ -94,6 +94,39 @@
     // match → match back not needed currently
   }
 
+  // ── Key events (scorers / cards) row ──────────────────────────────────────
+  interface KeyEvent {
+    clock: string
+    team: string | null
+    text: string | null
+    type: string
+  }
+
+  const keyEvents = computed<KeyEvent[]>(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const events = (detail.value?.keyEvents as any[]) ?? []
+    return events
+      .filter((e: any) => {
+        const t = e?.type?.text as string | undefined
+        return t && ['Goal', 'Penalty - Scored', 'Red Card', 'Yellow Card'].includes(t)
+      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((e: any) => ({
+        clock: (e?.clock?.displayValue as string) ?? '',
+        team: (e?.team?.displayName as string) ?? null,
+        text: (e?.text as string) ?? null,
+        type: (e?.type?.text as string) ?? '',
+      }))
+  })
+
+  /** Extract scorer name from ESPN event text like "Goal! Mexico 1, South Korea 0. Raúl Jiménez (Mexico) heads home..." */
+  function extractScorer(text: string | null): string {
+    if (!text) return ''
+    // Match "Name (Team)" pattern after the score line
+    const m = text.match(/\.\s+([^(]+)\s+\(/)
+    return m ? m[1]!.trim() : ''
+  }
+
   const activeTab = ref<'info' | 'stats' | 'lineups'>('info')
 
   // Reset tab only when the match ID changes (not on reactive updates to the same match)
@@ -415,6 +448,59 @@
                   @pick="onWtlPick"
                   @cancel="cancelPick"
                 />
+              </div>
+            </div>
+
+            <!-- Key events row: goals ⚽ / yellow 🟨 / red 🟥 cards -->
+            <div
+              v-if="keyEvents.length > 0"
+              class="gd-header__events"
+            >
+              <!-- Home side events -->
+              <div class="gd-header__events-side gd-header__events-side--home">
+                <template
+                  v-for="(ev, i) in keyEvents.filter(
+                    (e) => e.team === selectedMatch?.home
+                  )"
+                  :key="i"
+                >
+                  <span class="gd-event">
+                    <span class="gd-event__icon">{{
+                      ev.type === 'Goal' || ev.type === 'Penalty - Scored'
+                        ? '⚽'
+                        : ev.type === 'Yellow Card'
+                          ? '🟨'
+                          : '🟥'
+                    }}</span>
+                    <span class="gd-event__name">{{
+                      extractScorer(ev.text)
+                    }}</span>
+                    <span class="gd-event__clock">{{ ev.clock }}</span>
+                  </span>
+                </template>
+              </div>
+              <!-- Away side events -->
+              <div class="gd-header__events-side gd-header__events-side--away">
+                <template
+                  v-for="(ev, i) in keyEvents.filter(
+                    (e) => e.team === selectedMatch?.away
+                  )"
+                  :key="i"
+                >
+                  <span class="gd-event">
+                    <span class="gd-event__clock">{{ ev.clock }}</span>
+                    <span class="gd-event__name">{{
+                      extractScorer(ev.text)
+                    }}</span>
+                    <span class="gd-event__icon">{{
+                      ev.type === 'Goal' || ev.type === 'Penalty - Scored'
+                        ? '⚽'
+                        : ev.type === 'Yellow Card'
+                          ? '🟨'
+                          : '🟥'
+                    }}</span>
+                  </span>
+                </template>
               </div>
             </div>
 
@@ -902,6 +988,60 @@
     font-size: 0.9rem;
     font-weight: 200;
     letter-spacing: 0.05em;
+  }
+
+  /* ── Key events row (scorers / cards) ─────────────────────────────────────── */
+  .gd-header__events {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 0.25rem 0.5rem;
+    padding: 0.15rem 0;
+  }
+
+  .gd-header__events-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .gd-header__events-side--home {
+    align-items: flex-end;
+  }
+
+  .gd-header__events-side--away {
+    align-items: flex-start;
+  }
+
+  .gd-event {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    line-height: 1.3;
+    color: oklab(100% 0 0 / 0.65);
+  }
+
+  .gd-event__icon {
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .gd-event__name {
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 10rem;
+  }
+
+  .gd-event__clock {
+    font-size: 0.65rem;
+    color: oklab(100% 0 0 / 0.4);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
   }
 
   /* ── Transition ────────────────────────────────────────────────────────────── */

@@ -1,13 +1,15 @@
 <script setup lang="ts">
   // ── PoolModal ─────────────────────────────────────────────────────────────
-  // Create / Edit a pool. In "create" mode it shows explanatory copy; in "edit"
-  // mode that copy is omitted and the submit button reads "Update Pool".
+  // Create / Edit / Join / Share a pool.
+  // "share" mode: shown when the owner clicks "Copy Invite Link" but hasn't
+  // set a real name yet. They enter their name (≥3 chars) and optionally rename
+  // the pool (≥3 chars), then hit "Copy Invite Link" to save + copy in one step.
 
   import type { Pool } from '../../composables/usePools'
 
   const props = defineProps<{
     open: boolean
-    mode: 'create' | 'edit' | 'join'
+    mode: 'create' | 'edit' | 'join' | 'share'
     /** The pool being edited (edit mode only). */
     pool?: Pool | null
     /**
@@ -27,6 +29,11 @@
      * the user always has at least one pool.
      */
     isLastOwned?: boolean
+    /**
+     * Optional default pool name to pre-fill in create mode (e.g. "World Cup
+     * Fire Pool" for the auto-created first pool). Ignored in edit/join modes.
+     */
+    defaultPoolName?: string | null
   }>()
 
   const emit = defineEmits<{
@@ -47,7 +54,18 @@
       // pool they've already joined/created) so they don't retype it each time.
       const known = props.knownName?.trim() ?? ''
       if (props.mode === 'edit' && props.pool) {
-        yourName.value = props.pool.ownerName
+        // Don't pre-fill the placeholder name "You" — show the input empty
+        // so the user sees the placeholder and knows they need to set a real name.
+        const ownerName =
+          props.pool.ownerName === 'You' ? '' : props.pool.ownerName
+        yourName.value = ownerName
+        poolName.value = props.pool.name
+      } else if (props.mode === 'share' && props.pool) {
+        // Share: same as edit but the primary action is "Copy Invite Link".
+        // Clear the name if it's the placeholder so they must enter a real one.
+        const ownerName =
+          props.pool.ownerName === 'You' ? '' : props.pool.ownerName
+        yourName.value = ownerName
         poolName.value = props.pool.name
       } else if (props.mode === 'join') {
         // The pool they're joining is shown in the copy (joinPoolName); the name
@@ -55,9 +73,9 @@
         yourName.value = known
         poolName.value = props.joinPoolName?.trim() || 'Shared Pool'
       } else {
-        // Create: pre-fill the known name, leave the (new) pool name blank.
+        // Create: pre-fill the known name and optional default pool name.
         yourName.value = known
-        poolName.value = ''
+        poolName.value = props.defaultPoolName?.trim() || ''
       }
     },
     { immediate: true }
@@ -65,17 +83,22 @@
 
   const title = computed(() => {
     if (props.mode === 'edit') return 'Edit Pool'
+    if (props.mode === 'share') return 'Edit Pool'
     if (props.mode === 'join') return 'Join Pool'
     return 'Create Pool'
   })
   const submitLabel = computed(() => {
     if (props.mode === 'edit') return 'Update Pool'
+    if (props.mode === 'share') return 'Copy Invite Link'
     if (props.mode === 'join') return 'Join Pool'
     return 'Make Pool'
   })
   const valid = computed(() => {
     if (props.mode === 'join') return yourName.value.trim().length > 0
-    return yourName.value.trim().length > 0 && poolName.value.trim().length > 0
+    // share / edit / create: both name and pool name must be ≥3 chars
+    return (
+      yourName.value.trim().length >= 3 && poolName.value.trim().length >= 3
+    )
   })
 
   function onSubmit() {
@@ -126,7 +149,7 @@
               v-model="yourName"
               class="pool-modal__input"
               type="text"
-              placeholder="Your name..."
+              placeholder="Enter your name or handle..."
               autocomplete="name"
               maxlength="40"
             />
@@ -195,7 +218,7 @@
     position: relative;
     margin-top: 4rem;
     width: 100%;
-    max-width: 30rem;
+    max-width: 34rem;
     border-radius: 0;
     background: #1b1917;
     border: 1px solid oklab(100% 0 0 / 0.1);
@@ -228,23 +251,27 @@
   }
 
   .pool-modal__title {
-    @apply text-white;
-    @apply font-anybody-bold;
+    color: var(--color-white, #fff);
+    font-family: 'Anybody', sans-serif;
     font-size: 1.35rem;
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
     text-align: left;
+    letter-spacing: 0.06rem;
+    margin-bottom: 0.3rem;
   }
 
   .pool-modal__copy {
-    @apply mx-auto mt-3 max-w-sm text-center text-white/70;
+    @apply mt-3 text-white/70;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 300;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    text-align: left;
+    line-height: 1.7;
+    letter-spacing: 0.08rem;
   }
 
   .pool-modal__pool-name {
@@ -330,8 +357,8 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 0.95rem;
-    padding: 0.5rem 1rem 0.45rem;
+    font-size: 1.25rem;
+    padding: 0.5rem 1.3rem 0.45rem;
     cursor: pointer;
     transition: color 0.12s ease;
   }
@@ -349,12 +376,13 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 1rem;
-    padding: 0.5rem 1rem 0.45rem;
+    font-size: 1.25rem;
+    padding: 0.5rem 1.2rem 0.45rem;
     cursor: pointer;
     transition:
-      background-color 0.12s ease,
-      opacity 0.12s ease;
+      background-color 0.15s ease,
+      color 0.15s ease,
+      opacity 0.15s ease;
   }
 
   .pool-modal__submit:hover:not(:disabled) {
@@ -362,7 +390,9 @@
   }
 
   .pool-modal__submit:disabled {
-    opacity: 0.45;
+    background: #3a3a3a;
+    color: rgb(255 255 255 / 0.3);
+    opacity: 1;
     cursor: not-allowed;
   }
 

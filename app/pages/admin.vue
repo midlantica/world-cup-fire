@@ -1229,24 +1229,6 @@
     text-align: left;
     transition: background 0.12s;
   }
-
-  .dev-btn--preset:hover:not(:disabled) {
-    background: #2e1065;
-  }
-
-  .dev-btn--preset:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .dev-btn--active {
-    background: #4c1d95 !important;
-    border-color: #7c3aed !important;
-    color: #ede9fe !important;
-  }
-
-  .dev-divider {
-    border: none;
     border-top: 1px solid #2d1b69;
     margin: 1rem 0;
   }

@@ -205,7 +205,7 @@ export function usePools() {
     await Promise.all(ids.map((id) => fetchPool(id)))
   }
 
-  // Hydrate from the server on mount.
+  // Hydrate from localStorage on mount.
   //
   // IMPORTANT (SSR): `useState(...)` runs its initializer on the SERVER during
   // SSR, where `loadCreds()` / `loadCache()` can't see localStorage and return
@@ -216,6 +216,13 @@ export function usePools() {
   // exactly the "my pool disappeared after refresh" bug. So we re-hydrate from
   // localStorage on mount BEFORE refreshing from the server. (usePicks does the
   // same dance for the personal picks map.)
+  //
+  // NOTE: We do NOT call refreshPools() here. The pools page (pools.vue) calls
+  // `await refreshPools()` explicitly in its own onMounted after nextTick, which
+  // ensures creds are fully hydrated before the fetch. Calling refreshPools()
+  // here (unawaited) would race with that explicit call and could cause
+  // mergePool() to run with stale creds, producing incorrect isSelf flags or
+  // overwriting a correctly-merged pool with a stale version.
   if (import.meta.client) {
     onMounted(() => {
       if (Object.keys(creds.value).length === 0) {
@@ -226,7 +233,8 @@ export function usePools() {
         const storedCache = loadCache()
         if (storedCache.length > 0) pools.value = storedCache
       }
-      refreshPools()
+      // refreshPools() is intentionally NOT called here — pools.vue.onMounted
+      // awaits it explicitly after nextTick() so creds are fully hydrated first.
     })
   }
 
@@ -398,6 +406,32 @@ export function usePools() {
   }
 
   /**
+   * Rename the local user in a specific pool. Works for both owners and joined
+   * members — sends the new name via the picks endpoint (which any member can
+   * call with their token). Preserves existing picks unchanged.
+   */
+  async function renameSelf(id: string, newName: string): Promise<Pool | null> {
+    const c = creds.value[id]
+    if (!c) return null
+    try {
+      const res = await $fetch<{ pool: ApiPool }>(`/api/pools/${id}/picks`, {
+        method: 'PUT',
+        body: {
+          memberId: c.memberId,
+          token: c.token,
+          picks: {}, // no pick changes — name-only update
+          name: newName,
+        },
+      })
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * Sync the LOCAL user's picks into every pool they belong to. Sends each pool
    * the picks for the device's own member, with each pick's kickoff time so the
    * server can reject late edits. Called whenever personal picks change.
@@ -483,12 +517,16 @@ export function usePools() {
     return rows
   }
 
+  /** True if this device holds credentials for at least one pool. */
+  const hasAnyCreds = computed(() => Object.keys(creds.value).length > 0)
+
   return {
     pools,
     poolCount,
     ownedCount,
     canCreate,
     selfName,
+    hasAnyCreds,
     MAX_MEMBERS,
     MAX_POOLS,
 
@@ -500,6 +538,7 @@ export function usePools() {
     createPool,
     updatePool,
     deletePool,
+    renameSelf,
     syncOwnerPicks,
     refreshPools,
     leaderboard,

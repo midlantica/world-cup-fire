@@ -8,6 +8,10 @@
   defineProps<{
     rows: LeaderRow[]
   }>()
+
+  const emit = defineEmits<{
+    (e: 'rename'): void
+  }>()
 </script>
 
 <template>
@@ -34,11 +38,22 @@
         v-for="row in rows"
         :key="row.memberId"
         class="leaderboard__row"
-        :class="{ 'leaderboard__row--leader': row.rank === 1 }"
+        :class="{
+          'leaderboard__row--leader':
+            row.rank === 1 && (rows[0]?.score ?? 0) > 0,
+        }"
       >
         <span class="leaderboard__rank">{{ row.rank }}</span>
         <span class="leaderboard__name">
-          {{ row.name }}
+          <button
+            v-if="row.isSelf"
+            class="leaderboard__name-btn"
+            title="Edit your name"
+            @click="emit('rename')"
+          >
+            {{ row.name }}
+          </button>
+          <template v-else>{{ row.name }}</template>
           <span v-if="row.isSelf" class="leaderboard__you">you</span>
         </span>
 
@@ -145,6 +160,27 @@
       'wght' 300;
     font-size: 1rem;
     color: rgb(255 255 255 / 0.85);
+  }
+
+  /* Clickable self-name button */
+  .leaderboard__name-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-variation-settings: inherit;
+    font-size: inherit;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgb(255 255 255 / 0.35);
+    transition: text-decoration-color 0.12s ease;
+  }
+
+  .leaderboard__name-btn:hover {
+    text-decoration-color: rgb(255 255 255 / 0.85);
   }
 
   .leaderboard__you {

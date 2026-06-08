@@ -20,14 +20,23 @@
 
   const emit = defineEmits<{
     (e: 'edit', pool: Pool): void
+    (e: 'share', pool: Pool): void
     (e: 'delete', pool: Pool): void
     (e: 'leave', pool: Pool): void
     (e: 'edit-picks'): void
+    (e: 'rename', pool: Pool): void
   }>()
 
   const copied = ref(false)
 
   async function copyLink() {
+    // If the owner hasn't set a real name yet (≥3 chars), open the share modal
+    // so they set their name before the invite link goes out.
+    const ownerName = props.pool.ownerName?.trim() ?? ''
+    if (props.pool.owned && (ownerName.length < 3 || ownerName === 'You')) {
+      emit('share', props.pool)
+      return
+    }
     try {
       await navigator.clipboard.writeText(props.link)
     } catch {
@@ -84,7 +93,7 @@
 
     <!-- Leaderboard -->
     <div class="pool-card__board">
-      <PicksLeaderboard :rows="leaderRows" />
+      <PicksLeaderboard :rows="leaderRows" @rename="emit('rename', pool)" />
     </div>
   </section>
 </template>

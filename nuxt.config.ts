@@ -9,9 +9,6 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    optimizeDeps: {
-      include: ['culori'],
-    },
     server: {
       // Auto-open the browser when the dev server starts
       open: true,
