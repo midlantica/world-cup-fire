@@ -160,13 +160,23 @@
     joinModalOpen.value = false
   }
 
-  function onLeave(pool: Pool) {
+  async function onLeave(pool: Pool) {
     if (
       import.meta.client &&
       !window.confirm(`Leave "${pool.name}"? You can rejoin from the link.`)
     )
       return
     leavePool(pool.id)
+    // If the user just left their last pool, auto-create a default one so the
+    // right column is never empty — the area must always have a pool ready.
+    if (pools.value.length === 0) {
+      const name = selfName.value.trim()
+      const created = await createPool({
+        yourName: name && name !== 'You' ? name : 'You',
+        poolName: 'World Cup Fire Pool',
+      })
+      if (created) await syncOwnerPicks(picks.value)
+    }
   }
 
   // ── Keep owner picks synced ────────────────────────────────────────────────
