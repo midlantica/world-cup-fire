@@ -1,11 +1,10 @@
 <script setup lang="ts">
   import { usePicks } from '../composables/usePicks'
   import { usePools } from '../composables/usePools'
-  import { useTimezone } from '../composables/useTimezone'
   import { useMatchDetail } from '../composables/useMatchDetail'
   import { useCountryDetail } from '../composables/useCountryDetail'
   import { useGroupDetail } from '../composables/useGroupDetail'
-  import { useScores } from '../composables/useScores'
+  import { normaliseEvent } from '../composables/useScores'
   import type { PickOutcome } from '../composables/usePicks'
   import type { Pool } from '../composables/usePools'
 
@@ -13,13 +12,14 @@
     title: 'Pools — World Cup Fire 🔥',
   })
 
-  const { picks, picksReady } = usePicks()
+  const { picks } = usePicks()
 
   const {
     pools,
     canCreate,
     ownedCount,
     selfName,
+    hasAnyCreds,
     MAX_POOLS,
     hasPool,
     joinPool,
@@ -27,18 +27,30 @@
     createPool,
     updatePool,
     deletePool,
+    renameSelf,
     syncOwnerPicks,
+    refreshPools,
     leaderboard,
     poolLink,
   } = usePools()
 
-  const { iana } = useTimezone()
-  const { openMatch } = useMatchDetail()
-  const { openCountry } = useCountryDetail()
-  const { openGroupSilent: openGroup } = useGroupDetail()
-  const { matches } = useScores()
+  useMatchDetail()
+  useCountryDetail()
+  useGroupDetail()
+
+  // Fetch ALL tournament matches (full date range) so resolveResult works
+  // regardless of which week tab the user is currently viewing.
+  // Use an explicit key so Nuxt doesn't deduplicate this against the
+  // per-week fetch in useScores (same URL, different query).
+  const { data: allMatchEvents } = useFetch<unknown[]>('/api/schedule', {
+    key: 'pools-all-matches',
+    query: { dates: '20260611-20260719' },
+  })
+  const allMatches = computed<ReturnType<typeof normaliseEvent>[]>(() => {
+    if (!allMatchEvents.value) return []
+    return allMatchEvents.value.map(normaliseEvent)
+  })
   const route = useRoute()
-  const router = useRouter()
 
   // ── Pool / invite state ────────────────────────────────────────────────────
   const poolId = computed(() => {
@@ -61,21 +73,77 @@
   const poolsReady = ref(false)
 
   onMounted(async () => {
+    // Wait a tick so usePools' own onMounted has finished re-hydrating creds
+    // from localStorage (SSR hands the client an empty useState; usePools
+    // re-reads localStorage in its own onMounted which registers first but
+    // the reactive assignment may not be visible until the next tick).
+    await nextTick()
+
+    // Snapshot whether this device has ANY stored creds BEFORE refreshPools()
+    // runs. refreshPools() may call removeLocal() on a 404 (deleted pool),
+    // which would wipe creds and make hasAnyCreds false — causing the
+    // auto-create guard to fire incorrectly for returning users whose pool
+    // was temporarily unreachable. Reading localStorage here captures the
+    // "did this device ever belong to a pool?" truth before any server calls.
+    const hadStoredCreds = (() => {
+      if (!import.meta.client) return false
+      try {
+        const raw = localStorage.getItem('wc-pool-tokens-v1')
+        if (!raw) return false
+        const parsed = JSON.parse(raw) as Record<string, unknown>
+        return typeof parsed === 'object' && Object.keys(parsed).length > 0
+      } catch {
+        return false
+      }
+    })()
+
+    // Refresh all pools from the server now that creds are hydrated.
+    // usePools.onMounted re-hydrates localStorage but does NOT call
+    // refreshPools() — we do it here (awaited) so pools.value is fully
+    // populated before we decide whether to auto-create or show the join modal.
+    await refreshPools()
+
+    // Mark pools as ready AFTER the server fetch — this prevents the empty
+    // state from flashing while pools are still loading on refresh.
     poolsReady.value = true
 
-    // Auto-create the default "World Cup Fire Pool" for brand-new users who
-    // have no pools yet and aren't arriving via an invite link.
-    if (pools.value.length === 0 && !poolId.value) {
-      const name = selfName.value.trim() || 'You'
+    // Re-sync picks now that creds are hydrated and pools are loaded.
+    await syncOwnerPicks(picks.value)
+
+    // Brand-new users (no pools, not arriving via an invite link) always get
+    // a pool — gratis, whether they want one or not. Their picks auto-populate
+    // into it. Guard: only auto-create if pools is STILL empty after refreshPools
+    // AND we held no creds at all before the refresh — a returning user with
+    // creds (even if the pool fetch failed) should NOT get a new pool created.
+    if (pools.value.length === 0 && !poolId.value && !hadStoredCreds) {
+      const name = selfName.value.trim()
+      // Always auto-create — use whatever name we know, or fall back to 'You'.
+      // The user can rename via the edit modal at any time.
       const created = await createPool({
-        yourName: name,
+        yourName: name && name !== 'You' ? name : 'You',
         poolName: 'World Cup Fire Pool',
       })
       if (created) await syncOwnerPicks(picks.value)
     }
 
     if (poolId.value && !hasPool(poolId.value)) {
-      joinModalOpen.value = true
+      // Don't re-show the join modal if this browser already has a token for
+      // this pool — the user has already joined and is just refreshing with
+      // the invite URL still in the address bar.
+      const alreadyJoined = (() => {
+        if (!import.meta.client) return false
+        try {
+          const raw = localStorage.getItem('wc-pool-tokens-v1')
+          if (!raw) return false
+          const tokens = JSON.parse(raw) as Record<string, unknown>
+          return poolId.value! in tokens
+        } catch {
+          return false
+        }
+      })()
+      if (!alreadyJoined) {
+        joinModalOpen.value = true
+      }
     }
   })
 
@@ -101,11 +169,56 @@
   }
 
   // ── Keep owner picks synced ────────────────────────────────────────────────
-  watch(picks, (val) => syncOwnerPicks(val), { deep: true, immediate: true })
+  // NOTE: NOT immediate — the immediate watch would fire during setup with an
+  // empty picks map (SSR state, before usePicks re-hydrates from localStorage
+  // in its own onMounted), which would push {} to the server and wipe stored
+  // picks. Instead we do an explicit sync in onMounted after nextTick (below),
+  // and then watch for subsequent changes.
+  watch(picks, (val) => syncOwnerPicks(val), { deep: true })
+
+  // ── Live leaderboard: refresh pools when tab becomes visible + every 10s ──
+  // This ensures all members see each other's name changes and picks without
+  // a manual refresh. 10s keeps it snappy without hammering the server.
+  if (import.meta.client) {
+    const POLL_INTERVAL = 10_000
+    let pollTimer: ReturnType<typeof setInterval> | null = null
+
+    function startPolling() {
+      if (pollTimer) return
+      pollTimer = setInterval(() => refreshPools(), POLL_INTERVAL)
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer)
+        pollTimer = null
+      }
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        // Immediately fetch fresh data when the user tabs back in.
+        refreshPools()
+        startPolling()
+      } else {
+        stopPolling()
+      }
+    }
+
+    onMounted(() => {
+      document.addEventListener('visibilitychange', onVisibilityChange)
+      startPolling()
+    })
+
+    onUnmounted(() => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      stopPolling()
+    })
+  }
 
   // ── Resolve finished match outcome ────────────────────────────────────────
   function resolveResult(matchId: string): PickOutcome | null {
-    const m = matches.value.find((x) => x.id === matchId)
+    const m = allMatches.value.find((x) => x.id === matchId)
     if (!m || m.status.code !== 'ft') return null
     const h = Number(m.homeScore)
     const a = Number(m.awayScore)
@@ -125,6 +238,52 @@
       if (result !== null && result === outcome) correct++
     }
     return { made, correct }
+  }
+
+  // ── Edit-name modal (click your name in the leaderboard) ──────────────────
+  const editNameOpen = ref(false)
+  const editNamePool = ref<Pool | null>(null)
+
+  function openEditName(pool: Pool) {
+    editNamePool.value = pool
+    editNameOpen.value = true
+  }
+
+  async function onEditNameSubmit(newName: string) {
+    if (editNamePool.value) {
+      await renameSelf(editNamePool.value.id, newName)
+      // Immediately re-fetch all pools so every member's view reflects the
+      // new name as quickly as possible (don't wait for the next poll tick).
+      await refreshPools()
+    }
+    editNameOpen.value = false
+    editNamePool.value = null
+  }
+
+  // ── Share modal ────────────────────────────────────────────────────────────
+  const shareModalOpen = ref(false)
+  const sharingPool = ref<Pool | null>(null)
+
+  function openShare(pool: Pool) {
+    sharingPool.value = pool
+    shareModalOpen.value = true
+  }
+
+  async function onShareSubmit(value: { yourName: string; poolName: string }) {
+    if (sharingPool.value) {
+      // Save the name + pool name, then copy the link.
+      await updatePool(sharingPool.value.id, value)
+      // Re-fetch so poolLink() uses the updated pool name in the URL params.
+      await refreshPools()
+      const link = poolLink(sharingPool.value.id)
+      try {
+        await navigator.clipboard.writeText(link)
+      } catch {
+        // ignore clipboard errors
+      }
+    }
+    shareModalOpen.value = false
+    sharingPool.value = null
   }
 
   // ── Pool modal (create / edit) ─────────────────────────────────────────────
@@ -243,25 +402,8 @@
 
         <!-- RIGHT: pool cards / leaderboards ──────────────────────────────── -->
         <main class="pools-main">
-          <!-- Empty state -->
-          <div v-if="poolsReady && pools.length === 0" class="pools-empty">
-            <div class="pools-empty__icon">🏆</div>
-            <h3 class="pools-empty__title">No pools yet</h3>
-            <p class="pools-empty__text">
-              Hit <strong>+ New Pool</strong> to get started, then share the
-              invite link with your friends &amp; family.
-            </p>
-            <button
-              class="pools-empty__btn"
-              :disabled="!canCreate"
-              @click="openCreate"
-            >
-              New Pool
-            </button>
-          </div>
-
-          <!-- Pool cards -->
-          <div v-else class="pools-list">
+          <!-- Pool cards: shown once ready and there are pools -->
+          <div v-if="pools.length > 0" class="pools-list">
             <PicksPoolCard
               v-for="pool in pools"
               :key="pool.id"
@@ -271,9 +413,11 @@
               :picks-made="poolSummary(pool).made"
               :picks-correct="poolSummary(pool).correct"
               @edit="openEdit"
+              @share="openShare"
               @delete="onDelete"
               @leave="onLeave"
               @edit-picks="$router.push('/')"
+              @rename="openEditName"
             />
           </div>
         </main>
@@ -288,9 +432,20 @@
       :pool="editingPool"
       :known-name="selfName"
       :is-last-owned="ownedCount <= 1"
+      default-pool-name="World Cup Fire Pool"
       @close="modalOpen = false"
       @submit="onModalSubmit"
       @delete="onModalDelete"
+    />
+
+    <!-- Share dialog (name required before copying invite link) -->
+    <PicksPoolModal
+      :open="shareModalOpen"
+      mode="share"
+      :pool="sharingPool"
+      :known-name="selfName"
+      @close="shareModalOpen = false"
+      @submit="onShareSubmit"
     />
 
     <!-- Join dialog -->
@@ -301,6 +456,18 @@
       :known-name="selfName"
       @close="joinModalOpen = false"
       @submit="onJoinSubmit"
+    />
+
+    <!-- Edit name dialog (click your name in the leaderboard) -->
+    <PicksEditNameModal
+      :open="editNameOpen"
+      :current-name="
+        editNamePool
+          ? (editNamePool.members.find((m) => m.isSelf)?.name ?? '')
+          : ''
+      "
+      @close="editNameOpen = false"
+      @submit="onEditNameSubmit"
     />
 
     <!-- Modals -->
@@ -364,9 +531,15 @@
 
   /* ── LEFT: sidebar ───────────────────────────────────────────────────────── */
   .pools-sidebar {
-    /* Stick to the top as the right column scrolls */
+    /* Stick to the top as the right column scrolls (desktop only) */
     position: sticky;
     top: calc(var(--app-header-h, 4.5rem) + 1rem);
+  }
+
+  @media (max-width: 768px) {
+    .pools-sidebar {
+      position: static;
+    }
   }
 
   .pools-sidebar__content {

@@ -128,6 +128,220 @@
     return KNOWN_ROUTES.find((r) => r.path === path)?.label ?? path
   }
 
+  // ── Dev tools ──────────────────────────────────────────────────────────────
+  const clearPoolMsg = ref('')
+
+  function clearLocalPoolData() {
+    if (!import.meta.client) return
+    localStorage.removeItem('wc-pool-tokens-v1')
+    localStorage.removeItem('wc-pools-cache-v1')
+    clearPoolMsg.value =
+      '✅ Pool localStorage cleared — reload /pools to confirm.'
+  }
+
+  // ── Mock time controls ─────────────────────────────────────────────────────
+  const MOCK_PRESETS = [
+    {
+      label: 'Jun 10 (pre-tournament, all picks open)',
+      iso: '2026-06-10T12:00:00Z',
+    },
+    { label: 'Jun 11 23:59 (after Day 1)', iso: '2026-06-11T23:59:00Z' },
+    { label: 'Jun 12 23:59 (after Day 2)', iso: '2026-06-12T23:59:00Z' },
+    { label: 'Jun 13 23:59 (after Day 3)', iso: '2026-06-13T23:59:00Z' },
+    { label: 'Jun 14 23:59 (after Day 4)', iso: '2026-06-14T23:59:00Z' },
+    { label: 'Jun 15 23:59 (after Day 5)', iso: '2026-06-15T23:59:00Z' },
+    { label: 'Jun 21 23:59 (end of Week 2)', iso: '2026-06-21T23:59:00Z' },
+    { label: 'Jul 2 23:59 (end of Round of 32)', iso: '2026-07-02T23:59:00Z' },
+  ]
+
+  const mockTimeMsg = ref('')
+  const mockTimeCurrent = ref('')
+  const mockTimeLoading = ref(false)
+
+  async function loadMockTime() {
+    try {
+      const res = await $fetch<{ iso: string }>('/api/dev/mock-time')
+      mockTimeCurrent.value = res.iso
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function setMockTime(iso: string) {
+    mockTimeLoading.value = true
+    mockTimeMsg.value = ''
+    try {
+      await $fetch('/api/dev/mock-time', { method: 'POST', body: { iso } })
+      mockTimeCurrent.value = iso
+      mockTimeMsg.value = `✅ Mock time set to ${iso || '(real time)'} — server will hot-reload in a moment.`
+    } catch (e: unknown) {
+      mockTimeMsg.value = `❌ Failed: ${e instanceof Error ? e.message : String(e)}`
+    } finally {
+      mockTimeLoading.value = false
+    }
+  }
+
+  // ── Picks Simulator ────────────────────────────────────────────────────────
+  // Reads the schedule API, finds all STATUS_FINAL games, and writes picks
+  // into localStorage (wc-picks-v1) for this browser. Simulates what a user
+  // would have picked if they always backed the winner (or draw).
+  const simMsg = ref('')
+  const simLoading = ref(false)
+
+  // Scenario presets: pick all finished games up to a given date
+  const SIM_SCENARIOS = [
+    { label: 'All finished games (current mock time)', cutoff: null },
+    { label: 'Through Jun 11 23:59', cutoff: '2026-06-11T23:59:00Z' },
+    { label: 'Through Jun 12 23:59', cutoff: '2026-06-12T23:59:00Z' },
+    { label: 'Through Jun 13 23:59', cutoff: '2026-06-13T23:59:00Z' },
+    { label: 'Through Jun 14 23:59', cutoff: '2026-06-14T23:59:00Z' },
+    { label: 'Through Jun 15 23:59', cutoff: '2026-06-15T23:59:00Z' },
+    { label: 'Through Jun 21 23:59', cutoff: '2026-06-21T23:59:00Z' },
+    { label: 'Through Jul 2 23:59', cutoff: '2026-07-02T23:59:00Z' },
+  ]
+
+  interface RawEvent {
+    id: string
+    date: string
+    name: string
+    status: { type: { name: string; state: string; completed: boolean } }
+    competitions: Array<{
+      competitors: Array<{
+        homeAway: string
+        score: string
+        team: { displayName: string; abbreviation: string }
+      }>
+    }>
+  }
+
+  function resolveOutcome(ev: RawEvent): 'home' | 'away' | 'draw' | null {
+    const comp = ev.competitions[0]
+    if (!comp) return null
+    const home = comp.competitors.find((c) => c.homeAway === 'home')
+    const away = comp.competitors.find((c) => c.homeAway === 'away')
+    if (!home || !away) return null
+    const h = Number(home.score)
+    const a = Number(away.score)
+    if (Number.isNaN(h) || Number.isNaN(a)) return null
+    if (h === a) return 'draw'
+    return h > a ? 'home' : 'away'
+  }
+
+  async function runSimulator(
+    cutoffIso: string | null,
+    strategy: 'winner' | 'home' | 'away' | 'draw' = 'winner'
+  ) {
+    if (!import.meta.client) return
+    simLoading.value = true
+    simMsg.value = ''
+    try {
+      // Fetch all mock events (full tournament range)
+      const events = await $fetch<RawEvent[]>('/api/schedule', {
+        query: { dates: '20260611-20260719' },
+      })
+
+      const cutoff = cutoffIso ? new Date(cutoffIso) : null
+
+      // Load existing picks so we can merge
+      let existing: Record<string, unknown> = {}
+      try {
+        const raw = localStorage.getItem('wc-picks-v1')
+        if (raw) existing = JSON.parse(raw)
+      } catch {
+        /* ignore */
+      }
+
+      let added = 0
+      let skipped = 0
+
+      for (const ev of events) {
+        // Only pick STATUS_FINAL games
+        if (!ev.status.type.completed) {
+          skipped++
+          continue
+        }
+        // Respect cutoff date
+        if (cutoff && new Date(ev.date) > cutoff) {
+          skipped++
+          continue
+        }
+
+        const comp = ev.competitions[0]
+        if (!comp) {
+          skipped++
+          continue
+        }
+        const home = comp.competitors.find((c) => c.homeAway === 'home')
+        const away = comp.competitors.find((c) => c.homeAway === 'away')
+        if (!home || !away) {
+          skipped++
+          continue
+        }
+
+        let outcome: 'home' | 'away' | 'draw'
+        if (strategy === 'winner') {
+          const resolved = resolveOutcome(ev)
+          if (!resolved) {
+            skipped++
+            continue
+          }
+          outcome = resolved
+        } else {
+          outcome = strategy
+        }
+
+        const team =
+          outcome === 'home'
+            ? home.team.displayName
+            : outcome === 'away'
+              ? away.team.displayName
+              : ''
+
+        existing[ev.id] = {
+          matchId: ev.id,
+          team,
+          outcome,
+          pickedAt: new Date().toISOString(),
+          match: {
+            id: ev.id,
+            date: ev.date,
+            home: home.team.displayName,
+            away: away.team.displayName,
+            homeAbbr: home.team.abbreviation,
+            awayAbbr: away.team.abbreviation,
+            homeScore: home.score,
+            awayScore: away.score,
+            status: {
+              code: 'ft',
+              label: 'FT',
+              state: 'post',
+            },
+            group: null,
+            venue: '',
+            fire: 0,
+          },
+        }
+        added++
+      }
+
+      localStorage.setItem('wc-picks-v1', JSON.stringify(existing))
+      simMsg.value = `✅ Simulated ${added} picks (${skipped} skipped). Reload the page to see them.`
+    } catch (e: unknown) {
+      simMsg.value = `❌ Failed: ${e instanceof Error ? e.message : String(e)}`
+    } finally {
+      simLoading.value = false
+    }
+  }
+
+  function clearAllPicks() {
+    if (!import.meta.client) return
+    localStorage.removeItem('wc-picks-v1')
+    simMsg.value =
+      '🗑 All picks cleared from localStorage. Reload the page to confirm.'
+  }
+
+  onMounted(() => loadMockTime())
+
   useHead({ title: 'Admin — MLS Analytics' })
 </script>
 
@@ -220,91 +434,82 @@
         </div>
       </div>
 
-      <div class="admin-cols">
-        <!-- ── Daily breakdown ── -->
-        <div class="admin-section">
-          <h2 class="section-title">Daily Breakdown</h2>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Views</th>
-                  <th>Visitors</th>
-                  <th>Sessions</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="day in data.days"
-                  :key="day.date"
-                  :class="{ 'row-selected': selectedDay?.date === day.date }"
-                  @click="
-                    selectedDay = selectedDay?.date === day.date ? null : day
-                  "
-                  style="cursor: pointer"
-                >
-                  <td>{{ fmtDate(day.date) }}</td>
-                  <td>{{ day.pageViews.toLocaleString() }}</td>
-                  <td>{{ day.uniqueVisitors.toLocaleString() }}</td>
-                  <td>{{ day.sessions.toLocaleString() }}</td>
-                  <td class="td-arrow">
-                    {{ selectedDay?.date === day.date ? '▲' : '▼' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <!-- ── Daily breakdown ── -->
+      <div class="admin-section">
+        <h2 class="section-title">Daily Breakdown</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Views</th>
+                <th>Visitors</th>
+                <th>Sessions</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="day in data.days"
+                :key="day.date"
+                :class="{ 'row-selected': selectedDay?.date === day.date }"
+                @click="
+                  selectedDay = selectedDay?.date === day.date ? null : day
+                "
+                style="cursor: pointer"
+              >
+                <td>{{ fmtDate(day.date) }}</td>
+                <td>{{ day.pageViews.toLocaleString() }}</td>
+                <td>{{ day.uniqueVisitors.toLocaleString() }}</td>
+                <td>{{ day.sessions.toLocaleString() }}</td>
+                <td class="td-arrow">
+                  {{ selectedDay?.date === day.date ? '▲' : '▼' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Top Pages ── -->
+      <div class="admin-section">
+        <h2 class="section-title">
+          Top Pages
+          <span v-if="selectedDay" class="section-sub"
+            >— {{ fmtDate(selectedDay.date) }}</span
+          >
+          <span v-else class="section-sub">— 30 days</span>
+        </h2>
+        <div class="bar-list">
+          <div v-for="page in mergedTopPages" :key="page.path" class="bar-row">
+            <div class="bar-label-wrap">
+              <span class="bar-path">{{ page.path || '/' }}</span>
+              <span class="bar-route-label">{{ routeLabel(page.path) }}</span>
+            </div>
+            <div class="bar-track">
+              <div
+                class="bar-fill"
+                :class="{ 'bar-fill--zero': page.views === 0 }"
+                :style="{ width: barWidth(page.views, maxTopPage) }"
+              />
+            </div>
+            <div class="bar-val" :class="{ 'bar-val--zero': page.views === 0 }">
+              {{ page.views }}
+            </div>
           </div>
         </div>
 
-        <!-- ── Top Pages ── -->
-        <div class="admin-section">
-          <h2 class="section-title">
-            Top Pages
-            <span v-if="selectedDay" class="section-sub"
-              >— {{ fmtDate(selectedDay.date) }}</span
-            >
-            <span v-else class="section-sub">— 30 days</span>
-          </h2>
-          <div class="bar-list">
-            <div
-              v-for="page in mergedTopPages"
-              :key="page.path"
-              class="bar-row"
-            >
-              <div class="bar-label-wrap">
-                <span class="bar-path">{{ page.path || '/' }}</span>
-                <span class="bar-route-label">{{ routeLabel(page.path) }}</span>
-              </div>
-              <div class="bar-track">
-                <div
-                  class="bar-fill"
-                  :class="{ 'bar-fill--zero': page.views === 0 }"
-                  :style="{ width: barWidth(page.views, maxTopPage) }"
-                />
-              </div>
-              <div
-                class="bar-val"
-                :class="{ 'bar-val--zero': page.views === 0 }"
-              >
-                {{ page.views }}
-              </div>
-            </div>
+        <!-- ── Site Routes Reference ── -->
+        <div class="routes-divider" />
+        <h3 class="routes-title">All App Routes</h3>
+        <div class="routes-list">
+          <div v-for="r in KNOWN_ROUTES" :key="r.path" class="route-row">
+            <code class="route-path">{{ r.path }}</code>
+            <span class="route-desc">{{ r.label }}</span>
           </div>
-
-          <!-- ── Site Routes Reference ── -->
-          <div class="routes-divider" />
-          <h3 class="routes-title">All App Routes</h3>
-          <div class="routes-list">
-            <div v-for="r in KNOWN_ROUTES" :key="r.path" class="route-row">
-              <code class="route-path">{{ r.path }}</code>
-              <span class="route-desc">{{ r.label }}</span>
-            </div>
-            <div class="route-row route-row--admin">
-              <code class="route-path">/admin</code>
-              <span class="route-desc">Analytics Dashboard</span>
-            </div>
+          <div class="route-row route-row--admin">
+            <code class="route-path">/admin</code>
+            <span class="route-desc">Analytics Dashboard</span>
           </div>
         </div>
       </div>
@@ -347,12 +552,105 @@
         >
       </div>
     </template>
+
+    <!-- ── Dev Tools (always visible) ── -->
+    <h2 class="section-title dev-tools-heading">🛠 Dev Tools</h2>
+
+    <!-- Outer grid: two side-by-side column cards -->
+    <div class="dev-cols-wrap">
+      <!-- ── Mock Time column ── -->
+      <div class="dev-col-card dev-col-card--time">
+        <div class="dev-sub-title">⏱ Mock Time</div>
+        <div class="dev-current-time">
+          Current: <code>{{ mockTimeCurrent || '(loading…)' }}</code>
+        </div>
+        <div class="dev-btn-list">
+          <button
+            class="dev-btn dev-btn--real"
+            :class="{ 'dev-btn--active': !mockTimeCurrent }"
+            :disabled="mockTimeLoading"
+            @click="setMockTime('')"
+          >
+            🕐 Use Real Time
+          </button>
+          <button
+            v-for="preset in MOCK_PRESETS"
+            :key="preset.iso"
+            class="dev-btn dev-btn--preset"
+            :class="{ 'dev-btn--active': mockTimeCurrent === preset.iso }"
+            :disabled="mockTimeLoading"
+            @click="setMockTime(preset.iso)"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+        <p v-if="mockTimeMsg" class="dev-msg" style="margin-top: 0.5rem">
+          {{ mockTimeMsg }}
+        </p>
+        <p class="dev-note" style="margin-top: 0.5rem">
+          Patches <code>MOCK_NOW_ISO</code> in both <code>schedule.ts</code> and
+          <code>useMockTime.ts</code>. Nuxt will hot-reload automatically —
+          refresh the page after a second to see the change.
+        </p>
+      </div>
+
+      <!-- ── Picks Simulator column ── -->
+      <div class="dev-col-card dev-col-card--sim">
+        <div class="dev-sub-title">🎲 Picks Simulator</div>
+        <p class="dev-note" style="margin-bottom: 0.75rem">
+          Auto-fills <code>wc-picks-v1</code> in this browser's localStorage
+          with picks for all STATUS_FINAL games up to the chosen date. Strategy:
+          <strong style="color: #c4b5fd">winner</strong> always picks the actual
+          winning team (or draw). Reload the page after running.
+        </p>
+        <div class="dev-btn-list">
+          <button
+            v-for="scenario in SIM_SCENARIOS"
+            :key="scenario.label"
+            class="dev-btn dev-btn--sim"
+            :disabled="simLoading"
+            @click="runSimulator(scenario.cutoff)"
+          >
+            ✅ {{ scenario.label }}
+          </button>
+        </div>
+        <div style="margin-top: 0.75rem">
+          <button
+            class="dev-btn dev-btn--danger"
+            :disabled="simLoading"
+            @click="clearAllPicks"
+          >
+            🗑 Clear All Picks
+          </button>
+        </div>
+        <p v-if="simMsg" class="dev-msg" style="margin-top: 0.5rem">
+          {{ simMsg }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Pool Data -->
+    <div class="admin-section dev-tools-section" style="margin-top: 0">
+      <div class="dev-sub-title">🗄 Pool Data</div>
+      <div class="dev-tools-row">
+        <button class="dev-btn dev-btn--danger" @click="clearLocalPoolData">
+          🗑 Clear Pool localStorage
+        </button>
+        <span v-if="clearPoolMsg" class="dev-msg">{{ clearPoolMsg }}</span>
+      </div>
+      <p class="dev-note">
+        Removes <code>wc-pool-tokens-v1</code> and
+        <code>wc-pools-cache-v1</code> from this browser's localStorage. Use
+        this to reset the pools page to a fresh state (e.g. after deleting
+        server pool data).
+      </p>
+    </div>
   </div>
 </template>
 
 <style scoped>
   .admin-wrap {
-    max-width: 64rem;
+    max-width: 80rem;
     margin: 0 auto;
     padding: 1.5rem 1rem 4rem;
     font-family: var(--font-condensed);
@@ -364,20 +662,21 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .admin-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 1.25rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
     color: white;
   }
 
   .refresh-btn {
     background: #1e293b;
     border: 1px solid #334155;
-    color: #94a3b8;
+    color: #cbd5e1;
     padding: 0.35rem 0.75rem;
     border-radius: 0.375rem;
     cursor: pointer;
@@ -391,10 +690,10 @@
   .admin-error,
   .admin-loading,
   .admin-note {
-    padding: 1.5rem;
+    padding: 1rem 1.3rem;
     background: #1e293b;
     border-radius: 0.5rem;
-    color: #94a3b8;
+    color: #e2e8f0;
     font-size: 1rem;
   }
 
@@ -402,19 +701,13 @@
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
     margin-bottom: 1rem;
   }
 
   @media (max-width: 640px) {
     .stats-grid {
       grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 360px) {
-    .stats-grid {
-      grid-template-columns: 1fr;
     }
   }
 
@@ -429,7 +722,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #e2e8f0;
     margin-bottom: 0.25rem;
   }
 
@@ -442,7 +735,7 @@
 
   .stat-sub {
     font-size: 0.75rem;
-    color: #475569;
+    color: #e2e8f0;
     margin-top: 0.2rem;
   }
 
@@ -463,7 +756,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #e2e8f0;
     white-space: nowrap;
   }
 
@@ -488,7 +781,7 @@
 
   .today-key {
     font-size: 0.75rem;
-    color: #64748b;
+    color: #e2e8f0;
   }
 
   .today-trend {
@@ -514,16 +807,21 @@
     background: #334155;
   }
 
-  /* ── Two-column layout ── */
-  .admin-cols {
+  /* ── Page-level two-column layout ── */
+  .page-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    margin-bottom: 1rem;
+    align-items: start;
   }
 
-  @media (max-width: 640px) {
-    .admin-cols {
+  .page-col-left,
+  .page-col-right {
+    min-width: 0;
+  }
+
+  @media (max-width: 768px) {
+    .page-cols {
       grid-template-columns: 1fr;
     }
   }
@@ -546,20 +844,22 @@
 
   .hint-text {
     font-size: 0.8rem;
-    color: #475569;
+    color: #e2e8f0;
   }
 
   .section-title {
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #64748b;
+    font-size: 1.25rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    letter-spacing: 0.04em;
+    color: #e2e8f0;
     margin-bottom: 0.75rem;
   }
 
   .section-sub {
     font-weight: 400;
-    color: #475569;
+    color: #e2e8f0;
     text-transform: none;
     letter-spacing: 0;
   }
@@ -578,7 +878,7 @@
   .data-table th {
     text-align: left;
     padding: 0.4rem 0.5rem;
-    color: #475569;
+    color: #e2e8f0;
     font-size: 0.75rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -602,7 +902,7 @@
   }
 
   .td-arrow {
-    color: #475569;
+    color: #e2e8f0;
     font-size: 0.65rem;
     text-align: right;
   }
@@ -629,7 +929,7 @@
   }
 
   .bar-path {
-    color: #94a3b8;
+    color: #e2e8f0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -639,7 +939,7 @@
 
   .bar-route-label {
     font-size: 0.6rem;
-    color: #475569;
+    color: #e2e8f0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -665,7 +965,7 @@
   }
 
   .bar-val {
-    color: #64748b;
+    color: #e2e8f0;
     text-align: right;
     font-size: 0.75rem;
   }
@@ -685,7 +985,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #475569;
+    color: #e2e8f0;
     margin-bottom: 0.5rem;
   }
 
@@ -718,7 +1018,7 @@
   }
 
   .route-desc {
-    color: #64748b;
+    color: #e2e8f0;
     font-size: 0.72rem;
   }
 
@@ -761,13 +1061,217 @@
 
   .hour-label {
     font-size: 0.5rem;
-    color: #334155;
+    color: #64748b;
     margin-top: 0.25rem;
     white-space: nowrap;
   }
 
   /* Show every 3rd label to avoid crowding */
   .hour-col:nth-child(3n + 1) .hour-label {
-    color: #475569;
+    color: #e2e8f0;
+  }
+
+  /* ── Dev Tools heading outside the box ── */
+  .dev-tools-heading {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Dev Tools two separate column cards ── */
+  .dev-cols-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .dev-cols-wrap {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .dev-col-card {
+    border-radius: 0.5rem;
+    border: 1px solid;
+    padding: 1rem 1.25rem;
+  }
+
+  .dev-col-card--time {
+    background: #1a1033;
+    border-color: #4c1d95;
+    height: 100%;
+  }
+
+  .dev-col-card--sim {
+    background: #0a1f12;
+    border-color: #166534;
+  }
+
+  .dev-btn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  /* ── Dev Tools ── */
+  .dev-tools-section {
+    border-color: #7c3aed44;
+    background: #1a1033;
+  }
+
+  .dev-tools-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+
+  .dev-btn {
+    padding: 0.35rem 0.85rem;
+    border-radius: 0.375rem;
+    border: 1px solid;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: var(--font-condensed);
+    transition: opacity 0.15s;
+  }
+
+  .dev-btn--danger {
+    background: #450a0a;
+    border-color: #991b1b;
+    color: #fca5a5;
+  }
+
+  .dev-btn--danger:hover {
+    background: #7f1d1d;
+  }
+
+  .dev-msg {
+    font-size: 0.8rem;
+    color: #4ade80;
+  }
+
+  .dev-note {
+    font-size: 0.75rem;
+    color: #e2e8f0;
+    line-height: 1.5;
+  }
+
+  .dev-note code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: #e2e8f0;
+    background: #0f172a;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.2rem;
+  }
+
+  .dev-subsection {
+    margin-bottom: 0.25rem;
+  }
+
+  .dev-sub-title {
+    font-size: 1rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    letter-spacing: 0.07em;
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+  }
+
+  .dev-current-time {
+    font-size: 0.78rem;
+    color: #e2e8f0;
+    margin-bottom: 0.6rem;
+  }
+
+  .dev-current-time code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: #c4b5fd;
+    background: #0f172a;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.2rem;
+  }
+
+  .dev-preset-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .dev-btn--real {
+    background: #0f172a;
+    border-color: #475569;
+    color: #e2e8f0;
+    text-align: left;
+    transition: background 0.12s;
+    margin-bottom: 0.25rem;
+  }
+
+  .dev-btn--real:hover:not(:disabled) {
+    background: #1e293b;
+  }
+
+  .dev-btn--real:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .dev-btn--preset {
+    background: #1e1040;
+    border-color: #4c1d95;
+    color: #c4b5fd;
+    text-align: left;
+    transition: background 0.12s;
+  }
+
+  .dev-btn--preset:hover:not(:disabled) {
+    background: #2e1065;
+  }
+
+  .dev-btn--preset:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .dev-btn--active {
+    background: #4c1d95 !important;
+    border-color: #7c3aed !important;
+    color: #ede9fe !important;
+  }
+
+  .dev-divider {
+    border: none;
+    border-top: 1px solid #2d1b69;
+    margin: 1rem 0;
+  }
+
+  /* ── Picks Simulator ── */
+  .dev-sim-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .dev-btn--sim {
+    background: #0c2a1a;
+    border-color: #166534;
+    color: #86efac;
+    text-align: left;
+    transition: background 0.12s;
+  }
+
+  .dev-btn--sim:hover:not(:disabled) {
+    background: #14532d;
+  }
+
+  .dev-btn--sim:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
