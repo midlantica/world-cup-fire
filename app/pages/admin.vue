@@ -1,5 +1,7 @@
 <script setup lang="ts">
   // Simple analytics admin dashboard — /admin
+  // Dev-only: this page is hidden in production via the dev-only middleware.
+  definePageMeta({ middleware: 'dev-only' })
 
   interface DaySummary {
     date: string
