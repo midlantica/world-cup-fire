@@ -72,6 +72,10 @@
   // ── Join modal ─────────────────────────────────────────────────────────────
   const joinModalOpen = ref(false)
   const poolsReady = ref(false)
+  /** Set when the invite link's pool ID doesn't exist on the server. */
+  const inviteError = ref(false)
+  /** Real pool name fetched from the server (overrides the URL ?n= hint). */
+  const fetchedPoolName = ref('')
 
   onMounted(async () => {
     // Wait a tick so usePools' own onMounted has finished re-hydrating creds
@@ -143,7 +147,20 @@
         }
       })()
       if (!alreadyJoined) {
-        joinModalOpen.value = true
+        // Validate the pool ID against the server before opening the join modal.
+        // This catches tampered/deleted/made-up pool IDs and shows a clear error
+        // instead of a join modal that would fail silently.
+        try {
+          const res = await $fetch<{ pool: { name: string } }>(
+            `/api/pools/${poolId.value}`
+          )
+          // Pool exists — use the real server name (ignores tampered ?n= param)
+          fetchedPoolName.value = res.pool.name
+          joinModalOpen.value = true
+        } catch {
+          // Pool not found or server error — show the error banner, not the modal
+          inviteError.value = true
+        }
       }
     }
   })
@@ -352,8 +369,17 @@
 <template>
   <div class="pools-page">
     <div class="pools-page__inner">
+      <!-- ── Invite error banner — shown when the pool ID is invalid ───────── -->
+      <div v-if="inviteError" class="pools-invite-error">
+        <p class="pools-invite-error__title">⚠️ That pool doesn't exist.</p>
+        <p class="pools-invite-error__text">
+          This invite link is invalid or the pool has been deleted. Ask the pool
+          owner to share a fresh link.
+        </p>
+      </div>
+
       <!-- ── Invitee welcome banner (full-width, above the two columns) ──── -->
-      <div v-if="isInvitee" class="pools-welcome">
+      <div v-else-if="isInvitee" class="pools-welcome">
         <h2 class="pools-welcome__title">Welcome to World Cup Fire! 🔥</h2>
         <p class="pools-welcome__text">
           You were sent this link to make your picks and find out who brings the
@@ -469,11 +495,11 @@
       @submit="onShareSubmit"
     />
 
-    <!-- Join dialog -->
+    <!-- Join dialog — uses the real server pool name, not the URL param -->
     <PicksPoolModal
       :open="joinModalOpen"
       mode="join"
-      :join-pool-name="linkPoolName"
+      :join-pool-name="fetchedPoolName || linkPoolName"
       :known-name="selfName"
       @close="joinModalOpen = false"
       @submit="onJoinSubmit"
@@ -508,6 +534,33 @@
     max-width: 80rem;
     margin-inline: auto;
     padding-inline: 1.5rem;
+  }
+
+  /* ── Invite error banner ─────────────────────────────────────────────────── */
+  .pools-invite-error {
+    @apply border px-6 py-5;
+    border-color: rgb(239 68 68 / 0.5);
+    background: rgb(239 68 68 / 0.08);
+  }
+
+  .pools-invite-error__title {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    font-size: 1rem;
+    color: rgb(252 165 165);
+  }
+
+  .pools-invite-error__text {
+    margin-top: 0.25rem;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 300;
+    font-size: 0.9rem;
+    color: rgb(255 255 255 / 0.6);
+    line-height: 1.5;
   }
 
   /* ── Invitee welcome banner ──────────────────────────────────────────────── */
