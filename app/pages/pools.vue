@@ -27,6 +27,7 @@
     createPool,
     updatePool,
     deletePool,
+    deleteMember,
     renameSelf,
     syncOwnerPicks,
     refreshPools,
@@ -328,6 +329,12 @@
     modalOpen.value = false
     onDelete(editingPool.value)
   }
+
+  // ── Delete member (owner only) ─────────────────────────────────────────────
+  async function onDeleteMember(pool: Pool, memberId: string) {
+    await deleteMember(pool.id, memberId)
+    await refreshPools()
+  }
 </script>
 
 <template>
@@ -418,6 +425,9 @@
               @leave="onLeave"
               @edit-picks="$router.push('/')"
               @rename="openEditName"
+              @delete-member="
+                (pool, memberId) => onDeleteMember(pool, memberId)
+              "
             />
           </div>
         </main>

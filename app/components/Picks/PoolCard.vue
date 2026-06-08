@@ -25,6 +25,7 @@
     (e: 'leave', pool: Pool): void
     (e: 'edit-picks'): void
     (e: 'rename', pool: Pool): void
+    (e: 'delete-member', pool: Pool, memberId: string, name: string): void
   }>()
 
   const copied = ref(false)
@@ -93,7 +94,14 @@
 
     <!-- Leaderboard -->
     <div class="pool-card__board">
-      <PicksLeaderboard :rows="leaderRows" @rename="emit('rename', pool)" />
+      <PicksLeaderboard
+        :rows="leaderRows"
+        :is-owner="pool.owned"
+        @rename="emit('rename', pool)"
+        @delete-member="
+          (memberId, name) => emit('delete-member', pool, memberId, name)
+        "
+      />
     </div>
   </section>
 </template>

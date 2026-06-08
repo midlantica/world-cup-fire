@@ -389,6 +389,29 @@ export function usePools() {
     }
   }
 
+  /** Remove a member from a pool (owner only). */
+  async function deleteMember(
+    poolId: string,
+    memberId: string
+  ): Promise<Pool | null> {
+    const c = creds.value[poolId]
+    if (!c?.isOwner) return null
+    try {
+      const res = await $fetch<{ pool: ApiPool }>(
+        `/api/pools/${poolId}/members/${memberId}`,
+        {
+          method: 'DELETE',
+          headers: { 'x-pool-token': c.token },
+        }
+      )
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      return null
+    }
+  }
+
   /** Delete a pool (owner only). */
   async function deletePool(id: string): Promise<boolean> {
     const c = creds.value[id]
@@ -538,6 +561,7 @@ export function usePools() {
     createPool,
     updatePool,
     deletePool,
+    deleteMember,
     renameSelf,
     syncOwnerPicks,
     refreshPools,
