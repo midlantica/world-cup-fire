@@ -318,6 +318,10 @@ export function usePools() {
    * Join a pool from an invite link. Fetches the real pool from the server,
    * adds the local user as a member, and stores their token. Idempotent: if we
    * already hold creds for this pool we just refresh it.
+   *
+   * If we already hold a token for this pool (e.g. rejoining on a new device
+   * after clearing storage), we pass it to the server so it can re-attach us
+   * to our existing member slot rather than creating a duplicate.
    */
   async function joinPool(
     id: string,
@@ -337,7 +341,15 @@ export function usePools() {
         isOwner?: boolean
       }>(`/api/pools/${id}/join`, {
         method: 'POST',
-        body: { yourName: input.yourName },
+        // Pass our existing token (if any) so the server can re-attach us to
+        // our existing member slot instead of creating a duplicate row.
+        // (creds.value[id] is undefined here since we returned early above if
+        // it existed — this is a forward-looking hook for future callers that
+        // bypass the early-return, e.g. a forced re-join.)
+        body: {
+          yourName: input.yourName,
+          token: (creds.value[id] as PoolCreds | undefined)?.token,
+        },
       })
       creds.value = {
         ...creds.value,
@@ -389,13 +401,13 @@ export function usePools() {
     }
   }
 
-  /** Remove a member from a pool (any member can remove others). */
+  /** Remove a member from a pool (owner only). */
   async function deleteMember(
     poolId: string,
     memberId: string
   ): Promise<Pool | null> {
     const c = creds.value[poolId]
-    if (!c) return null
+    if (!c?.isOwner) return null
     try {
       const res = await $fetch<{ pool: ApiPool }>(
         `/api/pools/${poolId}/members/${memberId}`,

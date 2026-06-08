@@ -1,6 +1,7 @@
 // DELETE /api/pools/:id/members/:memberId
-// Any pool member can remove another member (but not themselves).
-// Requires x-pool-token header matching any valid member token.
+// OWNER ONLY — only the pool owner can remove other members.
+// Requires x-pool-token header matching the owner's token.
+// The owner cannot remove themselves (use DELETE /api/pools/:id to delete the whole pool).
 
 import { requirePool, writePool, toPublicPool } from '../../../../utils/pools'
 
@@ -12,18 +13,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing memberId' })
   }
 
-  // Verify the caller holds a valid token for ANY member of this pool.
+  // Verify the caller holds the OWNER token for this pool.
   const token = getHeader(event, 'x-pool-token')
-  const caller = pool.members.find((m) => m.token === token)
-  if (!caller) {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  const owner = pool.members.find((m) => m.isOwner)
+  if (!owner || owner.token !== token) {
+    throw createError({ statusCode: 403, statusMessage: 'Owner only' })
   }
 
-  // A member cannot delete themselves.
-  if (memberId === caller.id) {
+  // The owner cannot remove themselves via this endpoint.
+  // Use DELETE /api/pools/:id to delete the entire pool instead.
+  if (memberId === owner.id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Cannot remove yourself',
+      statusMessage: 'Cannot remove yourself — delete the pool instead',
     })
   }
 

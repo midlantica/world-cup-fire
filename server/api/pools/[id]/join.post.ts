@@ -1,16 +1,18 @@
 // POST /api/pools/:id/join — add the caller as a member of a pool (or re-attach
-// to an existing member that shares their name).
+// to an existing member slot using their secret token).
 //
-// Body: { yourName: string }
+// Body: { yourName: string, token?: string }
 // Returns: { pool: PublicPool, memberId, token } — the member's secret write
 // token (stored client-side). Capped at MAX_MEMBERS.
 //
-// RE-ATTACH BY NAME: if a member with the SAME (case-insensitive) name already
-// exists in the pool, we return that member's existing id + token instead of
-// creating a duplicate row. This is what lets someone who created/joined a pool
-// in another browser (or after clearing storage / in incognito) "rejoin" their
-// OWN pool from the invite link without spawning a second copy of themselves —
-// e.g. the owner re-opening their own share link on a different device.
+// RE-ATTACH BY TOKEN: if the caller supplies a token that matches an existing
+// member, we return that member's credentials (name may have drifted — we use
+// the stored name). This lets someone who created/joined a pool in another
+// browser (or after clearing storage / in incognito) "rejoin" their OWN slot
+// from the invite link without spawning a second copy of themselves.
+//
+// NOTE: re-attach by name alone was removed — it allowed name-squatting where
+// any user could claim another member's token just by knowing their display name.
 
 import {
   requirePool,
@@ -25,22 +27,25 @@ import {
 export default defineEventHandler(async (event) => {
   const { pool } = await requirePool(event)
 
-  const body = await readBody<{ yourName?: string }>(event)
+  const body = await readBody<{ yourName?: string; token?: string }>(event)
   const yourName = (body?.yourName ?? '').trim().slice(0, 40) || 'You'
+  const callerToken = (body?.token ?? '').trim()
 
-  // Re-attach by name: if a member with this name already exists, hand back its
-  // existing credentials instead of creating a duplicate. Lets the owner (or any
-  // member) rejoin their own pool from the link on a new device / browser.
-  const existing = pool.members.find(
-    (m) => m.name.trim().toLowerCase() === yourName.toLowerCase()
-  )
-  if (existing) {
-    return {
-      pool: toPublicPool(pool),
-      memberId: existing.id,
-      token: existing.token,
-      isOwner: existing.isOwner,
+  // Re-attach by token: if the caller already holds a valid member token for
+  // this pool, return their existing slot. This covers the "rejoining on a new
+  // device" case without exposing other members' credentials.
+  if (callerToken) {
+    const existing = pool.members.find((m) => m.token === callerToken)
+    if (existing) {
+      return {
+        pool: toPublicPool(pool),
+        memberId: existing.id,
+        token: existing.token,
+        isOwner: existing.isOwner,
+      }
     }
+    // Token supplied but not found — fall through and create a new member slot.
+    // (Don't 403 here: the token may be stale from a deleted/recreated pool.)
   }
 
   if (pool.members.length >= MAX_MEMBERS) {
