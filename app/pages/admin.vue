@@ -1229,9 +1229,6 @@
     text-align: left;
     transition: background 0.12s;
   }
-    border-top: 1px solid #2d1b69;
-    margin: 1rem 0;
-  }
 
   /* ── Picks Simulator ── */
   .dev-sim-grid {
