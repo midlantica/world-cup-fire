@@ -442,7 +442,8 @@
   /* No gap between teams and time-block — the separator inside time-block
      provides the visual divider, and the triangle can abut it directly. */
   .match-card__body {
-    @apply flex items-center px-4 py-3;
+    @apply flex items-center px-4;
+    padding-block: calc(var(--spacing, 0.25rem) * 2);
     gap: 0;
   }
 

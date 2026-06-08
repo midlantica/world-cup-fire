@@ -5,7 +5,7 @@
 // ── Mock data toggle ──────────────────────────────────────────────────────────
 // Set to true to serve fake match detail data (for design/pool testing).
 // Set to false when the real tournament starts and ESPN has live data.
-const USE_MOCK = true
+const USE_MOCK = false
 
 const CACHE_TTL_LIVE_MS = 30_000 // 30 s during live matches
 const CACHE_TTL_IDLE_MS = 5 * 60_000 // 5 min for completed/pre-match

@@ -348,257 +348,287 @@
         class="gd-backdrop"
         @click="onBackdrop"
       >
-        <div class="gd-panel">
-          <!-- Header -->
-          <div class="gd-header">
-            <!-- Group link -->
-            <button
-              v-if="selectedMatch.group"
-              class="gd-header__group-link"
-              @click="
-                () => {
-                  closeMatch()
-                  $router.push(`/group/${selectedMatch!.group!.toLowerCase()}`)
-                }
-              "
-            >
-              Group {{ selectedMatch.group }}
-            </button>
+        <div class="gd-panel-wrap">
+          <!-- Fire / wild badge — perched on the top-right corner of the panel -->
+          <span
+            v-if="
+              selectedMatch.badge === 'fire' &&
+              selectedMatch.status.code !== 'ft'
+            "
+            class="gd-panel-badge"
+            title="Fire match!"
+            >🔥</span
+          >
+          <span
+            v-else-if="
+              selectedMatch.badge === 'wild' &&
+              selectedMatch.status.code !== 'ft'
+            "
+            class="gd-panel-badge"
+            title="Could be good"
+            >🎲</span
+          >
 
-            <!-- Teams row: [pick] Name Flag | vs/score | Flag Name [pick] -->
-            <div class="gd-header__teams-row">
-              <!-- Home side -->
-              <div
-                class="gd-header__side gd-header__side--home"
-                @mouseenter="hoveredSide = 'home'"
-                @mouseleave="hoveredSide = null"
-              >
-                <!-- Unified Win·Tie·Lose pick control — anchored to home -->
-                <PicksWtlToggle
-                  v-if="showWtl"
-                  :outcome="matchWtl"
-                  :perspective="'home'"
-                  :caret="'right'"
-                  :allow-tie="matchAllowTie"
-                  :revealed="rowRevealed('home')"
-                  :readonly="!matchPickable"
-                  @pick="onWtlPick"
-                  @cancel="cancelPick"
-                />
-
-                <button
-                  class="gd-header__team-btn"
-                  :title="`View ${selectedMatch.home}`"
-                  @click="goToCountry(selectedMatch.home, 'home')"
-                >
-                  <span class="gd-header__team-name">
-                    <span class="gd-header__team-name-full">{{
-                      homeDisplay
-                    }}</span>
-                    <span class="gd-header__team-name-abbrev">{{
-                      homeAbbrev
-                    }}</span>
-                  </span>
-                  <CountryFlag :iso2="selectedMatch.homeIso2" :size="32" />
-                </button>
-              </div>
-
-              <!-- Centre: vs or score -->
-              <div class="gd-header__centre">
-                <template v-if="selectedMatch.status.code !== 'ns'">
-                  <span class="gd-header__score">{{
-                    selectedMatch.homeScore
-                  }}</span>
-                  <span
-                    class="gd-header__status"
-                    :class="{
-                      'gd-header__status--live':
-                        selectedMatch.status.code === 'live' ||
-                        selectedMatch.status.code === 'ht',
-                    }"
-                  >
-                    {{
-                      selectedMatch.status.code === 'ht'
-                        ? 'HT'
-                        : selectedMatch.status.code === 'ft'
-                          ? 'FT'
-                          : (selectedMatch.status.clock ?? 'LIVE')
-                    }}
-                  </span>
-                  <span class="gd-header__score">{{
-                    selectedMatch.awayScore
-                  }}</span>
-                </template>
-                <template v-else>
-                  <span class="gd-header__vs">vs</span>
-                </template>
-              </div>
-
-              <!-- Away side -->
-              <div
-                class="gd-header__side gd-header__side--away"
-                @mouseenter="hoveredSide = 'away'"
-                @mouseleave="hoveredSide = null"
-              >
-                <button
-                  class="gd-header__team-btn"
-                  :title="`View ${selectedMatch.away}`"
-                  @click="goToCountry(selectedMatch.away, 'away')"
-                >
-                  <CountryFlag :iso2="selectedMatch.awayIso2" :size="32" />
-                  <span class="gd-header__team-name">
-                    <span class="gd-header__team-name-full">{{
-                      awayDisplay
-                    }}</span>
-                    <span class="gd-header__team-name-abbrev">{{
-                      awayAbbrev
-                    }}</span>
-                  </span>
-                </button>
-
-                <!-- Unified Win·Tie·Lose pick control — anchored to away -->
-                <PicksWtlToggle
-                  v-if="showWtl"
-                  :outcome="matchWtl"
-                  :perspective="'away'"
-                  :caret="'left'"
-                  :allow-tie="matchAllowTie"
-                  :revealed="rowRevealed('away')"
-                  :readonly="!matchPickable"
-                  @pick="onWtlPick"
-                  @cancel="cancelPick"
-                />
-              </div>
-            </div>
-
-            <!-- Key events row: goals ⚽ / yellow 🟨 / red 🟥 cards -->
-            <div v-if="keyEvents.length > 0" class="gd-header__events">
-              <!-- Home side events -->
-              <div class="gd-header__events-side gd-header__events-side--home">
-                <template
-                  v-for="(ev, i) in keyEvents.filter(
-                    (e) => e.team === selectedMatch?.home
-                  )"
-                  :key="i"
-                >
-                  <span class="gd-event">
-                    <span class="gd-event__icon">{{
-                      ev.type === 'Goal' || ev.type === 'Penalty - Scored'
-                        ? '⚽'
-                        : ev.type === 'Yellow Card'
-                          ? '🟨'
-                          : '🟥'
-                    }}</span>
-                    <span class="gd-event__name">{{
-                      extractScorer(ev.text)
-                    }}</span>
-                    <span class="gd-event__clock">{{ ev.clock }}</span>
-                  </span>
-                </template>
-              </div>
-              <!-- Away side events -->
-              <div class="gd-header__events-side gd-header__events-side--away">
-                <template
-                  v-for="(ev, i) in keyEvents.filter(
-                    (e) => e.team === selectedMatch?.away
-                  )"
-                  :key="i"
-                >
-                  <span class="gd-event">
-                    <span class="gd-event__clock">{{ ev.clock }}</span>
-                    <span class="gd-event__name">{{
-                      extractScorer(ev.text)
-                    }}</span>
-                    <span class="gd-event__icon">{{
-                      ev.type === 'Goal' || ev.type === 'Penalty - Scored'
-                        ? '⚽'
-                        : ev.type === 'Yellow Card'
-                          ? '🟨'
-                          : '🟥'
-                    }}</span>
-                  </span>
-                </template>
-              </div>
-            </div>
-
-            <!-- Date + Venue -->
-            <div
-              v-if="kickoffLabel || selectedMatch.venue"
-              class="gd-header__meta"
-            >
-              <span v-if="kickoffLabel" class="gd-header__kickoff">{{
-                kickoffLabel
-              }}</span>
+          <div class="gd-panel">
+            <!-- Header -->
+            <div class="gd-header">
+              <!-- Group link -->
               <button
-                v-if="selectedMatch.venue"
-                class="gd-header__venue gd-header__venue--btn"
-                @click="openVenuePopup"
+                v-if="selectedMatch.group"
+                class="gd-header__group-link"
+                @click="
+                  () => {
+                    closeMatch()
+                    $router.push(
+                      `/group/${selectedMatch!.group!.toLowerCase()}`
+                    )
+                  }
+                "
               >
-                {{ selectedMatch.venue }}
+                Group {{ selectedMatch.group }}
               </button>
-              <span
-                v-if="selectedMatch.venueLocation"
-                class="gd-header__venue-location"
+
+              <!-- Teams row: [pick] Name Flag | vs/score | Flag Name [pick] -->
+              <div class="gd-header__teams-row">
+                <!-- Home side -->
+                <div
+                  class="gd-header__side gd-header__side--home"
+                  @mouseenter="hoveredSide = 'home'"
+                  @mouseleave="hoveredSide = null"
+                >
+                  <!-- Unified Win·Tie·Lose pick control — anchored to home -->
+                  <PicksWtlToggle
+                    v-if="showWtl"
+                    :outcome="matchWtl"
+                    :perspective="'home'"
+                    :caret="'right'"
+                    :allow-tie="matchAllowTie"
+                    :revealed="rowRevealed('home')"
+                    :readonly="!matchPickable"
+                    @pick="onWtlPick"
+                    @cancel="cancelPick"
+                  />
+
+                  <button
+                    class="gd-header__team-btn"
+                    :title="`View ${selectedMatch.home}`"
+                    @click="goToCountry(selectedMatch.home, 'home')"
+                  >
+                    <span class="gd-header__team-name">
+                      <span class="gd-header__team-name-full">{{
+                        homeDisplay
+                      }}</span>
+                      <span class="gd-header__team-name-abbrev">{{
+                        homeAbbrev
+                      }}</span>
+                    </span>
+                    <CountryFlag :iso2="selectedMatch.homeIso2" :size="32" />
+                  </button>
+                </div>
+
+                <!-- Centre: vs or score -->
+                <div class="gd-header__centre">
+                  <template v-if="selectedMatch.status.code !== 'ns'">
+                    <span class="gd-header__score">{{
+                      selectedMatch.homeScore
+                    }}</span>
+                    <span
+                      class="gd-header__status"
+                      :class="{
+                        'gd-header__status--live':
+                          selectedMatch.status.code === 'live' ||
+                          selectedMatch.status.code === 'ht',
+                      }"
+                    >
+                      {{
+                        selectedMatch.status.code === 'ht'
+                          ? 'HT'
+                          : selectedMatch.status.code === 'ft'
+                            ? 'FT'
+                            : (selectedMatch.status.clock ?? 'LIVE')
+                      }}
+                    </span>
+                    <span class="gd-header__score">{{
+                      selectedMatch.awayScore
+                    }}</span>
+                  </template>
+                  <template v-else>
+                    <span class="gd-header__vs">vs</span>
+                  </template>
+                </div>
+
+                <!-- Away side -->
+                <div
+                  class="gd-header__side gd-header__side--away"
+                  @mouseenter="hoveredSide = 'away'"
+                  @mouseleave="hoveredSide = null"
+                >
+                  <button
+                    class="gd-header__team-btn"
+                    :title="`View ${selectedMatch.away}`"
+                    @click="goToCountry(selectedMatch.away, 'away')"
+                  >
+                    <CountryFlag :iso2="selectedMatch.awayIso2" :size="32" />
+                    <span class="gd-header__team-name">
+                      <span class="gd-header__team-name-full">{{
+                        awayDisplay
+                      }}</span>
+                      <span class="gd-header__team-name-abbrev">{{
+                        awayAbbrev
+                      }}</span>
+                    </span>
+                  </button>
+
+                  <!-- Unified Win·Tie·Lose pick control — anchored to away -->
+                  <PicksWtlToggle
+                    v-if="showWtl"
+                    :outcome="matchWtl"
+                    :perspective="'away'"
+                    :caret="'left'"
+                    :allow-tie="matchAllowTie"
+                    :revealed="rowRevealed('away')"
+                    :readonly="!matchPickable"
+                    @pick="onWtlPick"
+                    @cancel="cancelPick"
+                  />
+                </div>
+              </div>
+
+              <!-- Key events row: goals ⚽ / yellow 🟨 / red 🟥 cards -->
+              <div v-if="keyEvents.length > 0" class="gd-header__events">
+                <!-- Home side events -->
+                <div
+                  class="gd-header__events-side gd-header__events-side--home"
+                >
+                  <template
+                    v-for="(ev, i) in keyEvents.filter(
+                      (e) => e.team === selectedMatch?.home
+                    )"
+                    :key="i"
+                  >
+                    <span class="gd-event">
+                      <span class="gd-event__icon">{{
+                        ev.type === 'Goal' || ev.type === 'Penalty - Scored'
+                          ? '⚽'
+                          : ev.type === 'Yellow Card'
+                            ? '🟨'
+                            : '🟥'
+                      }}</span>
+                      <span class="gd-event__name">{{
+                        extractScorer(ev.text)
+                      }}</span>
+                      <span class="gd-event__clock">{{ ev.clock }}</span>
+                    </span>
+                  </template>
+                </div>
+                <!-- Away side events -->
+                <div
+                  class="gd-header__events-side gd-header__events-side--away"
+                >
+                  <template
+                    v-for="(ev, i) in keyEvents.filter(
+                      (e) => e.team === selectedMatch?.away
+                    )"
+                    :key="i"
+                  >
+                    <span class="gd-event">
+                      <span class="gd-event__clock">{{ ev.clock }}</span>
+                      <span class="gd-event__name">{{
+                        extractScorer(ev.text)
+                      }}</span>
+                      <span class="gd-event__icon">{{
+                        ev.type === 'Goal' || ev.type === 'Penalty - Scored'
+                          ? '⚽'
+                          : ev.type === 'Yellow Card'
+                            ? '🟨'
+                            : '🟥'
+                      }}</span>
+                    </span>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Date + Venue -->
+              <div
+                v-if="kickoffLabel || selectedMatch.venue"
+                class="gd-header__meta"
               >
-                {{ selectedMatch.venueLocation }}
-              </span>
+                <span v-if="kickoffLabel" class="gd-header__kickoff">{{
+                  kickoffLabel
+                }}</span>
+                <button
+                  v-if="selectedMatch.venue"
+                  class="gd-header__venue gd-header__venue--btn"
+                  @click="openVenuePopup"
+                >
+                  {{ selectedMatch.venue }}
+                </button>
+                <span
+                  v-if="selectedMatch.venueLocation"
+                  class="gd-header__venue-location"
+                >
+                  {{ selectedMatch.venueLocation }}
+                </span>
+              </div>
+
+              <!-- Close button -->
+              <button class="gd-close" aria-label="Close" @click="closeMatch">
+                <IconsClose />
+              </button>
             </div>
 
-            <!-- Close button -->
-            <button class="gd-close" aria-label="Close" @click="closeMatch">
-              <IconsClose />
-            </button>
-          </div>
-
-          <!-- Tabs -->
-          <div class="gd-tabs">
-            <button
-              v-for="tab in tabs"
-              :key="tab.key"
-              class="gd-tab"
-              :class="{ 'gd-tab--active': activeTab === tab.key }"
-              @click="activeTab = tab.key"
-            >
-              {{ tab.label }}
-            </button>
-          </div>
-
-          <!-- Tab content -->
-          <div class="gd-body">
-            <div v-if="pending" class="gd-loading">
-              <div class="gd-spinner" />
-              <span>Loading match data…</span>
+            <!-- Tabs -->
+            <div class="gd-tabs">
+              <button
+                v-for="tab in tabs"
+                :key="tab.key"
+                class="gd-tab"
+                :class="{ 'gd-tab--active': activeTab === tab.key }"
+                @click="activeTab = tab.key"
+              >
+                {{ tab.label }}
+              </button>
             </div>
-            <template v-else>
-              <!-- Info tab: static data, always available -->
-              <GameDetailInfoTab
-                v-if="activeTab === 'info'"
-                :match="selectedMatch"
-              />
-              <!-- Lineups tab: always render so fallback data can show -->
-              <GameDetailLineupsTab
-                v-else-if="activeTab === 'lineups'"
-                :detail="detail ?? {}"
-                :match="selectedMatch"
-                :home-last-detail="homeLastDetail ?? undefined"
-                :away-last-detail="awayLastDetail ?? undefined"
-                :home-last-pending="homeLastPending"
-                :away-last-pending="awayLastPending"
-              />
-              <!-- Stats tab: requires live match detail data -->
-              <template v-else-if="activeTab === 'stats'">
-                <GameDetailStatsTab
-                  v-if="detail"
-                  :detail="detail"
+
+            <!-- Tab content -->
+            <div class="gd-body">
+              <div v-if="pending" class="gd-loading">
+                <div class="gd-spinner" />
+                <span>Loading match data…</span>
+              </div>
+              <template v-else>
+                <!-- Info tab: static data, always available -->
+                <GameDetailInfoTab
+                  v-if="activeTab === 'info'"
                   :match="selectedMatch"
                 />
-                <div v-else class="gd-empty">
-                  <p>Match data will be available closer to kick-off.</p>
-                </div>
+                <!-- Lineups tab: always render so fallback data can show -->
+                <GameDetailLineupsTab
+                  v-else-if="activeTab === 'lineups'"
+                  :detail="detail ?? {}"
+                  :match="selectedMatch"
+                  :home-last-detail="homeLastDetail ?? undefined"
+                  :away-last-detail="awayLastDetail ?? undefined"
+                  :home-last-pending="homeLastPending"
+                  :away-last-pending="awayLastPending"
+                />
+                <!-- Stats tab: requires live match detail data -->
+                <template v-else-if="activeTab === 'stats'">
+                  <GameDetailStatsTab
+                    v-if="detail"
+                    :detail="detail"
+                    :match="selectedMatch"
+                  />
+                  <div v-else class="gd-empty">
+                    <p>Match data will be available closer to kick-off.</p>
+                  </div>
+                </template>
               </template>
-            </template>
+            </div>
           </div>
+          <!-- /.gd-panel -->
         </div>
+        <!-- /.gd-panel-wrap -->
       </div>
     </Transition>
   </Teleport>
@@ -650,11 +680,28 @@
     overflow-y: auto;
   }
 
-  /* ── Panel ─────────────────────────────────────────────────────────────────── */
-  .gd-panel {
+  /* ── Panel wrap — positions the badge relative to the panel corner ─────────── */
+  .gd-panel-wrap {
+    position: relative;
     margin-top: 1rem;
     width: 100%;
     max-width: 44rem;
+  }
+
+  /* Fire / wild badge — perched on the top-right corner, half outside the panel */
+  .gd-panel-badge {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.3rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* ── Panel ─────────────────────────────────────────────────────────────────── */
+  .gd-panel {
+    width: 100%;
     max-height: 88dvh;
     display: flex;
     flex-direction: column;

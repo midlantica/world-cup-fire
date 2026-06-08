@@ -177,13 +177,13 @@
     padding: 12px 15px 9px 15px;
     border-radius: 0;
     border: none;
-    background: oklab(1 0 0 / 0.154);
+    background: rgb(255 255 255 / 0.1);
     cursor: pointer;
     transition:
       background 0.15s,
       color 0.15s;
     white-space: nowrap;
-    color: rgb(255 255 255 / 0.75);
+    color: rgb(255 255 255 / 0.85);
     font-family: 'Anybody', sans-serif;
   }
 

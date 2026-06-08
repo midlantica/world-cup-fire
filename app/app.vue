@@ -158,6 +158,7 @@
     <AppHeader />
     <NuxtPage />
     <AppFooter />
+    <FlagModal />
   </div>
 </template>
 

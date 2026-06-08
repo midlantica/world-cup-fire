@@ -35,9 +35,37 @@
   // pin themselves flush beneath the header without hard-coding a pixel offset
   // that would break across breakpoints (the logo shrinks on small screens).
   const headerEl = ref<HTMLElement | null>(null)
+  const canvasEl = ref<HTMLCanvasElement | null>(null)
+
+  // Canvas-based fire particles — avoids CSS compositing/GPU smear artifacts
+  interface Particle {
+    x: number
+    y: number
+    vy: number
+    radius: number
+    opacity: number
+    maxOpacity: number
+    life: number // 0..1 progress through lifetime
+    lifeSpeed: number // how fast life advances per frame
+  }
+
+  function makeParticle(w: number, h: number): Particle {
+    return {
+      x: Math.random() * w,
+      y: h + Math.random() * 20,
+      vy: 0.4 + Math.random() * 0.6, // px/frame upward speed
+      radius: 54 + Math.random() * 66, // blob radius in px
+      opacity: 0,
+      maxOpacity: 0.35 + Math.random() * 0.3,
+      life: Math.random(), // start at random phase
+      lifeSpeed: 0.004 + Math.random() * 0.004,
+    }
+  }
 
   onMounted(() => {
     if (!import.meta.client || !headerEl.value) return
+
+    // Publish header height CSS var
     const publish = () => {
       const h = headerEl.value?.offsetHeight ?? 0
       document.documentElement.style.setProperty('--app-header-h', `${h}px`)
@@ -45,7 +73,81 @@
     publish()
     const ro = new ResizeObserver(publish)
     ro.observe(headerEl.value)
-    onBeforeUnmount(() => ro.disconnect())
+
+    // Canvas fire
+    const canvas = canvasEl.value
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let rafId: number
+    let particles: Particle[] = []
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+      // Re-seed particles on resize
+      particles = Array.from({ length: 55 }, () =>
+        makeParticle(canvas.width, canvas.height)
+      )
+    }
+    resize()
+    const resizeObs = new ResizeObserver(resize)
+    resizeObs.observe(canvas)
+
+    const draw = () => {
+      const w = canvas.width
+      const h = canvas.height
+      ctx.clearRect(0, 0, w, h)
+
+      for (const p of particles) {
+        // Advance life
+        p.life += p.lifeSpeed
+        if (p.life >= 1) {
+          // Reset particle
+          p.x = Math.random() * w
+          p.y = h + Math.random() * 20
+          p.vy = 0.4 + Math.random() * 0.6
+          p.radius = 54 + Math.random() * 66
+          p.maxOpacity = 0.35 + Math.random() * 0.3
+          p.life = 0
+          p.lifeSpeed = 0.004 + Math.random() * 0.004
+        }
+
+        // Move upward
+        p.y -= p.vy
+
+        // Opacity envelope: fade in 0..15%, hold 15..75%, fade out 75..100%
+        if (p.life < 0.15) {
+          p.opacity = (p.life / 0.15) * p.maxOpacity
+        } else if (p.life < 0.75) {
+          p.opacity = p.maxOpacity
+        } else {
+          p.opacity = ((1 - p.life) / 0.25) * p.maxOpacity
+        }
+
+        // Draw radial gradient blob
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius)
+        grad.addColorStop(0, `hsla(45,100%,78%,${p.opacity})`)
+        grad.addColorStop(0.3, `hsla(35,100%,60%,${p.opacity * 0.75})`)
+        grad.addColorStop(0.6, `hsla(20,100%,45%,${p.opacity * 0.45})`)
+        grad.addColorStop(1, `hsla(15,100%,35%,0)`)
+
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+        ctx.fillStyle = grad
+        ctx.fill()
+      }
+
+      rafId = requestAnimationFrame(draw)
+    }
+    draw()
+
+    onBeforeUnmount(() => {
+      cancelAnimationFrame(rafId)
+      ro.disconnect()
+      resizeObs.disconnect()
+    })
   })
 </script>
 
@@ -99,6 +201,9 @@
         <TzPicker class="app-header__utility" />
       </div>
     </div>
+
+    <!-- Fire particle canvas -->
+    <canvas ref="canvasEl" class="fire-canvas" aria-hidden="true" />
 
     <!-- Stage + week tabs (only on matches page) -->
     <div v-if="showTabs" class="app-header__tabs">
@@ -167,78 +272,22 @@
     overflow: hidden;
   }
 
-  /* ── CSS fireball: wide pulsing orb, slow irregular drift ───────────────── */
-  .app-header::before {
-    content: '';
+  /* ── Fire canvas — always behind all header content ─────────────────────── */
+  .fire-canvas {
     position: absolute;
     inset: 0;
-    z-index: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
     pointer-events: none;
-
-    /* WHITE-HOT fire orb — near-white core bleeds into bright yellow/orange.
-       mix-blend-mode: screen punches through dark tab backgrounds. */
-    background: radial-gradient(
-      circle at 50% 130%,
-      hsl(60 100% 98% / 1) 0%,
-      hsl(55 100% 88% / 1) 5%,
-      hsl(46 100% 72% / 0.98) 12%,
-      hsl(34 100% 60% / 0.9) 24%,
-      hsl(22 100% 50% / 0.7) 40%,
-      hsl(14 100% 36% / 0.4) 58%,
-      transparent 76%
-    );
-
-    animation:
-      fireball-drift 9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate,
-      fireball-breathe 13s ease-in-out infinite alternate;
-
-    filter: blur(6px);
-    opacity: 1;
-    mix-blend-mode: screen;
+    z-index: 0;
+    overflow: hidden;
   }
 
-  /* Make sure all direct children sit above the fire layers */
-  .app-header > * {
+  /* All direct children of the header sit above the fire canvas */
+  .app-header > *:not(.fire-canvas) {
     position: relative;
-    z-index: 1;
-  }
-
-  /* Slow lateral + slight vertical drift — wide, lazy movement */
-  @keyframes fireball-drift {
-    0% {
-      transform: translate(-7%, 1%) scale(1.6);
-    }
-    25% {
-      transform: translate(2%, -2%) scale(1.75);
-    }
-    50% {
-      transform: translate(8%, 2%) scale(1.65);
-    }
-    75% {
-      transform: translate(-3%, -1%) scale(1.8);
-    }
-    100% {
-      transform: translate(-7%, 1%) scale(1.6);
-    }
-  }
-
-  /* Slow brightness/blur breathe — lingers at dim and bright extremes */
-  @keyframes fireball-breathe {
-    0% {
-      filter: blur(22px) brightness(0.78);
-    }
-    30% {
-      filter: blur(18px) brightness(0.92);
-    }
-    55% {
-      filter: blur(24px) brightness(0.72);
-    }
-    75% {
-      filter: blur(16px) brightness(1);
-    }
-    100% {
-      filter: blur(20px) brightness(0.82);
-    }
+    z-index: 2;
   }
 
   /* ── Wide layout (> 600px): single flex row ─────────────────────────────── */
@@ -290,6 +339,7 @@
     /* Inactive: warm white on the orange bg, no bg fill */
     color: hsl(30deg 100% 95% / 1);
     background: transparent;
+    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
     transition:
       color 0.15s ease,
       background 0.15s ease,
@@ -301,10 +351,10 @@
     background: oklab(0.62 0.13 0.14);
   }
 
-  /* Active: brighter orange fill — flat, no shadow */
+  /* Active: semi-transparent fill — lets fire show through */
   .app-header__nav-link--active {
     color: #ffffff;
-    background: oklab(0.62 0.13 0.14);
+    background: oklab(0.62 0.13 0.14 / 0.6);
   }
 
   .app-header__nav-link--soon {
@@ -368,7 +418,7 @@
     background: transparent;
     width: calc(100% - 1.5rem);
     position: relative;
-    z-index: 0;
+    z-index: 2;
   }
 
   .app-header__stage-row {
@@ -395,6 +445,7 @@
     color: hsl(30deg 100% 95% / 0.85);
     background: transparent;
     border: none;
+    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
     transition:
       color 0.15s ease,
       background 0.15s ease;
@@ -471,6 +522,7 @@
     color: hsl(30deg 100% 95% / 0.7);
     background: transparent;
     border: none;
+    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
     /* Right-side divider via box-shadow — zero layout impact, never jumps */
     box-shadow: 2px 0 0 0 oklab(1 0 0 / 0.15);
     cursor: pointer;
@@ -505,7 +557,7 @@
   }
 
   .app-header__week-tab--active .app-header__week-dates {
-    color: rgb(255 255 255 / 0.65);
+    color: rgb(255 255 255 / 1);
     opacity: 1;
   }
 

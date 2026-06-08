@@ -7,13 +7,13 @@
 // testing before the real tournament begins). Week 2, Week 3, and Knockout
 // date ranges fall through to the real ESPN API so upcoming matches are visible.
 // Set to false when the real tournament starts and ESPN has live data for all weeks.
-const USE_MOCK = true
+const USE_MOCK = false
 
 // ── Mock "now" — must match useMockTime.ts MOCK_NOW_ISO ──────────────────────
 // Games whose kickoff is AFTER this time are served as STATUS_SCHEDULED (0-0)
 // so picks remain open. Games before this time are served as STATUS_FINAL.
-// Set to '' to treat all mock events as already finished (show results).
-const MOCK_NOW_ISO = '2026-06-13T23:59:00Z'
+// Set to '' to use real current time as the cutoff (future games stay scheduled).
+const MOCK_NOW_ISO = ''
 
 const CACHE_TTL_LIVE_MS = 30_000 // 30 s during live matches
 const CACHE_TTL_IDLE_MS = 5 * 60_000 // 5 min otherwise
@@ -39,8 +39,8 @@ function toDate(yyyymmdd: string): Date {
 // advance MOCK_NOW_ISO to see results appear game by game.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyMockTime(events: any[]): any[] {
-  if (!MOCK_NOW_ISO) return events // '' = show all as-is (all final)
-  const mockNow = new Date(MOCK_NOW_ISO)
+  // '' = use real current time as the cutoff (so future games stay scheduled)
+  const mockNow = MOCK_NOW_ISO ? new Date(MOCK_NOW_ISO) : new Date()
   return events.map((ev) => {
     const kickoff = new Date(ev.date)
     if (kickoff <= mockNow) return ev // already in the past → keep STATUS_FINAL
