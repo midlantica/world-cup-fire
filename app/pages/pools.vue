@@ -634,8 +634,8 @@
   .pools-sidebar__heading-row .pools-sidebar__new-btn {
     width: auto;
     flex-shrink: 0;
-    font-size: 1.2rem;
-    padding: 0.3rem 1.05rem 0.25rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.65rem 0.25rem;
   }
 
   .pools-sidebar__trophy {
@@ -735,7 +735,7 @@
 
   .pools-sidebar__new-btn {
     width: 100%;
-    background: oklab(0.62 0.13 0.14 / 0.85);
+    background: oklab(0.62 0.13 0.14 / 0.65);
     color: #ffffff;
     border: none;
     border-radius: 0;

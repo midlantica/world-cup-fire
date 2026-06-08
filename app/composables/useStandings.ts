@@ -29,13 +29,69 @@ function statVal(stats: any[], name: string): number {
   return s ? Number(s.value) : 0
 }
 
+/**
+ * Sort entries by standard FIFA group-stage tiebreakers:
+ *   1. Points (desc)
+ *   2. Goal difference (desc)
+ *   3. Goals for (desc)
+ *   4. Goals against (asc — fewer conceded is better)
+ *   5. Alphabetical by team name (stable fallback)
+ *
+ * Note: head-to-head tiebreakers (FIFA's actual rule 5+) require match data
+ * we don't have here, so we fall back to alphabetical. ESPN's API order is
+ * checked against this sort and a warning is logged when they disagree —
+ * which may indicate a head-to-head or disciplinary tiebreaker is in play.
+ */
+function fifaSort(entries: StandingEntry[]): StandingEntry[] {
+  return [...entries].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points
+    if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff
+    if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor
+    if (a.goalsAgainst !== b.goalsAgainst)
+      return a.goalsAgainst - b.goalsAgainst
+    return a.teamName.localeCompare(b.teamName)
+  })
+}
+
+/**
+ * Compare our client-side sort order against ESPN's API order.
+ * Returns true if they agree, false if they disagree.
+ * Logs a warning when they disagree (head-to-head / disciplinary tiebreaker).
+ * In that case the caller should defer to ESPN's order.
+ */
+function espnAgrees(
+  groupName: string,
+  espnOrder: StandingEntry[],
+  ourOrder: StandingEntry[]
+): boolean {
+  let agrees = true
+  for (let i = 0; i < espnOrder.length; i++) {
+    const espn = espnOrder[i]
+    const ours = ourOrder[i]
+    if (!espn || !ours) continue
+    if (espn.teamName !== ours.teamName) {
+      if (import.meta.client) {
+        console.warn(
+          `[standings] ${groupName} order mismatch at position ${i + 1}: ` +
+            `ESPN says "${espn.teamName}", ` +
+            `our FIFA sort says "${ours.teamName}". ` +
+            `Deferring to ESPN (likely head-to-head or disciplinary tiebreaker).`
+        )
+      }
+      agrees = false
+    }
+  }
+  return agrees
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normaliseGroup(raw: any): GroupStanding {
   const groupName: string = raw.name ?? 'Group ?'
   const letter = groupName.replace('Group ', '')
-  const entries: StandingEntry[] = (raw.standings?.entries ?? [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((entry: any, idx: number) => {
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const espnEntries: StandingEntry[] = (raw.standings?.entries ?? []).map(
+    (entry: any, idx: number) => {
       const teamName: string = entry.team?.displayName ?? ''
       const stats: unknown[] = entry.stats ?? []
       const teamData = TEAM_BY_NAME.get(teamName)
@@ -56,7 +112,20 @@ function normaliseGroup(raw: any): GroupStanding {
         goalDiff: statVal(stats as never[], 'pointDifferential'),
         points: statVal(stats as never[], 'points'),
       }
-    })
+    }
+  )
+
+  // Apply our own FIFA sort as a cross-check.
+  const sorted = fifaSort(espnEntries)
+
+  // If ESPN's order disagrees with ours, defer to ESPN — they have head-to-head
+  // and disciplinary data we can't compute. Otherwise use our sorted order.
+  const finalOrder = espnAgrees(groupName, espnEntries, sorted)
+    ? sorted
+    : espnEntries
+
+  // Re-assign ranks based on the final order.
+  const entries = finalOrder.map((e, idx) => ({ ...e, rank: idx + 1 }))
 
   return { group: groupName, letter, entries }
 }
