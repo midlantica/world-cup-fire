@@ -7,7 +7,7 @@
 
   defineProps<{
     rows: LeaderRow[]
-    /** True if the local user owns this pool (shows delete buttons). */
+    /** Kept for API compatibility but no longer gates delete buttons. */
     isOwner?: boolean
   }>()
 
@@ -54,8 +54,6 @@
       <span class="leaderboard__col leaderboard__col--num" title="Accuracy %"
         >%</span
       >
-      <!-- Spacer column for delete button when owner -->
-      <span v-if="isOwner" class="leaderboard__col leaderboard__col--del" />
     </div>
 
     <div class="leaderboard__body">
@@ -66,7 +64,6 @@
         :class="{
           'leaderboard__row--leader':
             row.rank === 1 && (rows[0]?.score ?? 0) > 0,
-          'leaderboard__row--owner': isOwner,
         }"
       >
         <span class="leaderboard__rank">{{ row.rank }}</span>
@@ -81,6 +78,15 @@
           </button>
           <template v-else>{{ row.name }}</template>
           <span v-if="row.isSelf" class="leaderboard__you">you</span>
+          <!-- Delete button: inline after name, shown for all non-self rows -->
+          <button
+            v-if="!row.isSelf"
+            class="leaderboard__del-btn"
+            title="Remove player"
+            @click="askDelete(row.memberId, row.name)"
+          >
+            <IconsClose />
+          </button>
         </span>
 
         <span class="leaderboard__score">{{ row.score }}</span>
@@ -88,17 +94,6 @@
         <span class="leaderboard__num leaderboard__acc">{{
           row.decided > 0 ? Math.round(row.accuracy * 100) + '%' : '—'
         }}</span>
-
-        <!-- Delete button: only for owner, only on non-self rows -->
-        <button
-          v-if="isOwner && !row.isSelf"
-          class="leaderboard__del-btn"
-          title="Remove player"
-          @click="askDelete(row.memberId, row.name)"
-        >
-          <IconsClose />
-        </button>
-        <span v-else-if="isOwner" class="leaderboard__del-spacer" />
       </div>
 
       <div v-if="rows.length === 0" class="leaderboard__empty">
@@ -164,7 +159,7 @@
     border-bottom: 1px solid #3c3834;
   }
 
-  /* Shared row grid: rank | name | ✓ | picks | acc | [del] */
+  /* Shared row grid: rank | name | ✓ | picks | acc */
   .leaderboard__cols,
   .leaderboard__row {
     display: grid;
@@ -172,12 +167,6 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.45rem 0.85rem;
-  }
-
-  /* When owner: add a narrow column for the delete button */
-  .leaderboard__cols:has(.leaderboard__col--del),
-  .leaderboard__row--owner {
-    grid-template-columns: 1.25rem minmax(0, 1fr) 2rem 2.5rem 2.75rem 1.5rem;
   }
 
   .leaderboard__cols {
@@ -233,13 +222,25 @@
   }
 
   .leaderboard__name {
-    @apply min-w-0 truncate;
+    @apply min-w-0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    overflow: hidden;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 300;
     font-size: 1rem;
     color: rgb(255 255 255 / 0.85);
+  }
+
+  /* Name text truncates, button stays visible */
+  .leaderboard__name > .leaderboard__name-btn,
+  .leaderboard__name > template {
+    @apply truncate;
+    min-width: 0;
+    flex: 1 1 0;
   }
 
   /* Clickable self-name button */
@@ -330,13 +331,13 @@
     font-size: 0.85rem;
   }
 
-  /* ── Delete button ── */
+  /* ── Delete button (inline after name) ── */
   .leaderboard__del-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.35rem;
-    height: 1.35rem;
+    width: 1.2rem;
+    height: 1.2rem;
     border-radius: 50%;
     background: #7f1d1d;
     border: 1px solid #991b1b;
@@ -347,25 +348,18 @@
     transition:
       background 0.12s,
       border-color 0.12s;
-    /* Override the SVG size inside Close icon */
     line-height: 0;
   }
 
   .leaderboard__del-btn :deep(svg) {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     stroke-width: 2;
   }
 
   .leaderboard__del-btn:hover {
     background: #991b1b;
     border-color: #b91c1c;
-  }
-
-  .leaderboard__del-spacer {
-    width: 1.35rem;
-    height: 1.35rem;
-    flex-shrink: 0;
   }
 
   /* ── Confirm modal ── */

@@ -389,13 +389,13 @@ export function usePools() {
     }
   }
 
-  /** Remove a member from a pool (owner only). */
+  /** Remove a member from a pool (any member can remove others). */
   async function deleteMember(
     poolId: string,
     memberId: string
   ): Promise<Pool | null> {
     const c = creds.value[poolId]
-    if (!c?.isOwner) return null
+    if (!c) return null
     try {
       const res = await $fetch<{ pool: ApiPool }>(
         `/api/pools/${poolId}/members/${memberId}`,
