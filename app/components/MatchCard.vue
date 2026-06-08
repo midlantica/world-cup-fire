@@ -231,16 +231,6 @@
             <span class="match-card__name-short">{{ homeShortMobile }}</span>
           </span>
 
-          <!-- Score (live/FT) + winner triangle -->
-          <span v-if="!isNS" class="match-card__result">
-            <span
-              v-if="winner === 'home'"
-              class="match-card__tri"
-              aria-hidden="true"
-            />
-            <span class="match-card__score">{{ match.homeScore }}</span>
-          </span>
-
           <!-- Pick icon: placeholder / W chip / D chip — arms the picker on click.
                Only shown for not-started matches where picking is relevant. -->
           <span
@@ -267,6 +257,16 @@
               :readonly="true"
             />
           </span>
+
+          <!-- Score (live/FT) + winner triangle (caret) to the right of score -->
+          <span v-if="!isNS" class="match-card__result">
+            <span class="match-card__score">{{ match.homeScore }}</span>
+            <span
+              v-if="winner === 'home'"
+              class="match-card__tri"
+              aria-hidden="true"
+            />
+          </span>
         </div>
 
         <!-- Away row -->
@@ -285,16 +285,6 @@
           <span class="match-card__name match-card__name--hoverable">
             <span class="match-card__name-full">{{ match.awayShort }}</span>
             <span class="match-card__name-short">{{ awayShortMobile }}</span>
-          </span>
-
-          <!-- Score (live/FT) + winner triangle -->
-          <span v-if="!isNS" class="match-card__result">
-            <span
-              v-if="winner === 'away'"
-              class="match-card__tri"
-              aria-hidden="true"
-            />
-            <span class="match-card__score">{{ match.awayScore }}</span>
           </span>
 
           <!-- Pick icon: placeholder / W chip / D chip — arms the picker on click. -->
@@ -320,6 +310,16 @@
               :outcome="wtl"
               :perspective="'away'"
               :readonly="true"
+            />
+          </span>
+
+          <!-- Score (live/FT) + winner triangle (caret) to the right of score -->
+          <span v-if="!isNS" class="match-card__result">
+            <span class="match-card__score">{{ match.awayScore }}</span>
+            <span
+              v-if="winner === 'away'"
+              class="match-card__tri"
+              aria-hidden="true"
             />
           </span>
         </div>
@@ -439,13 +439,22 @@
   }
 
   /* ── Body: teams + time ──────────────────────────────────────────────────── */
+  /* No gap between teams and time-block — the separator inside time-block
+     provides the visual divider, and the triangle can abut it directly. */
   .match-card__body {
-    @apply flex items-center gap-3 px-4 py-3;
+    @apply flex items-center px-4 py-3;
+    gap: 0;
   }
 
   /* ── Teams column ────────────────────────────────────────────────────────── */
   .match-card__teams {
-    @apply flex min-w-0 flex-1 flex-col gap-1.5;
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(var(--spacing, 0.25rem) * 1.5);
+    padding-right: 0.7rem;
+    border-right: 1px solid #393939;
   }
 
   .match-card__team {
@@ -521,7 +530,6 @@
     /* Tighten the body padding a touch */
     .match-card__body {
       padding-inline: 0.65rem;
-      gap: 0.5rem;
     }
 
     /* Slightly smaller kickoff time */
@@ -544,21 +552,34 @@
 
   /* ── Finished result: score + winner triangle ───────────────────────────── */
 
+  /* Fixed-width so both scores align vertically across rows.
+     Score is right-aligned; triangle sits flush right, abutting the separator. */
   .match-card__result {
-    @apply flex shrink-0 items-center gap-1;
-  }
-
-  .match-card__tri {
-    width: 0;
-    height: 0;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 7px solid #006f0d;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 1rem;
+    gap: 0;
   }
 
   .match-card__score {
     @apply shrink-0 text-sm font-bold text-white/80 tabular-nums;
     @apply font-anybody-bold;
+    text-align: right;
+  }
+
+  /* Triangle sits to the RIGHT of the score, pointing LEFT (◄),
+     pulled flush against the separator with a small negative margin. */
+  .match-card__tri {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 7px solid #006f0d;
+    flex-shrink: 0;
+    margin-left: 4px;
+    margin-right: -11px;
   }
 
   /* ── Pick icon slot — sits at the right end of each team row ─────────────
@@ -573,16 +594,17 @@
   }
 
   /* ── Time / status block ─────────────────────────────────────────────────── */
-  /* Clicking always opens GameDetail. No WTL toggle here. */
+  /* Clicking always opens GameDetail. No WTL toggle here.
+     No left padding — the separator element provides the visual gap for
+     finished/live matches. For NS matches (no separator), a left margin
+     keeps the kickoff time from crowding the team name. */
   .match-card__time-block {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
     flex-shrink: 0;
-    gap: 0.4rem;
-    border-radius: 0.5rem;
-    padding: 0.35rem 0.5rem;
+    padding: 0.35rem 0rem 0.35rem 0.5rem;
   }
 
   /* Time text column: stacks kickoff time + date label */
@@ -610,9 +632,12 @@
     @apply font-anybody-copy;
   }
 
+  /* Grey pill on FT / HT / live clock status — not on kickoff time/date */
   .match-card__status {
     @apply rounded px-2 py-0.5 text-xs font-bold text-white/50 uppercase tabular-nums;
     @apply font-anybody-bold;
+    background: #383838;
+    border-radius: 2px;
   }
 
   .match-card__status--live {
@@ -620,6 +645,12 @@
   }
 
   .match-card__status--ft {
-    @apply text-white/30;
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-white, #fff) 50%, transparent);
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      padding: 0.5rem;
+    }
   }
 </style>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
   // ── Countdown state ────────────────────────────────────────────────────────
+  import { nowDate } from '../composables/useMockTime'
+
   const daysToGo = ref(0)
   const hoursToGo = ref(0)
   const minutesToGo = ref(0)
@@ -10,11 +12,16 @@
     return String(n).padStart(2, '0')
   }
 
+  const TOURNAMENT_START = new Date('2026-06-11T19:00:00Z')
+
+  /** Hide the banner once the tournament has kicked off. */
+  const started = ref(nowDate() >= TOURNAMENT_START)
+
   function updateCountdown() {
-    const now = new Date()
-    const start = new Date('2026-06-11T19:00:00Z')
-    const diff = start.getTime() - now.getTime()
+    const now = nowDate()
+    const diff = TOURNAMENT_START.getTime() - now.getTime()
     if (diff <= 0) {
+      started.value = true
       daysToGo.value = 0
       hoursToGo.value = 0
       minutesToGo.value = 0
@@ -31,7 +38,9 @@
   }
 
   function startTimer() {
+    if (started.value) return
     updateCountdown()
+    // Poll every second for the countdown; also re-check mock time
     timer = setInterval(updateCountdown, 1000)
   }
 

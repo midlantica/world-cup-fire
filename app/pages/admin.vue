@@ -229,13 +229,15 @@
 
   async function runSimulator(
     cutoffIso: string | null,
-    strategy: 'winner' | 'home' | 'away' | 'draw' = 'winner'
+    strategy: 'winner' | 'home' | 'away' | 'draw' = 'winner',
+    /** If true, also pick not-yet-started (ns) games — useful pre-tournament */
+    includeUpcoming = false
   ) {
     if (!import.meta.client) return
     simLoading.value = true
     simMsg.value = ''
     try {
-      // Fetch all mock events (full tournament range)
+      // Fetch all events (full tournament range)
       const events = await $fetch<RawEvent[]>('/api/schedule', {
         query: { dates: '20260611-20260719' },
       })
@@ -255,11 +257,17 @@
       let skipped = 0
 
       for (const ev of events) {
-        // Only pick STATUS_FINAL games
-        if (!ev.status.type.completed) {
+        const isFinished = ev.status.type.completed
+        const isNs =
+          ev.status.type.name === 'STATUS_SCHEDULED' ||
+          ev.status.type.state === 'pre'
+
+        // Skip games that are neither finished nor upcoming (e.g. live)
+        if (!isFinished && !(includeUpcoming && isNs)) {
           skipped++
           continue
         }
+
         // Respect cutoff date
         if (cutoff && new Date(ev.date) > cutoff) {
           skipped++
@@ -279,15 +287,19 @@
         }
 
         let outcome: 'home' | 'away' | 'draw'
-        if (strategy === 'winner') {
+        if (strategy === 'winner' && isFinished) {
           const resolved = resolveOutcome(ev)
           if (!resolved) {
             skipped++
             continue
           }
           outcome = resolved
+        } else if (strategy === 'winner' && isNs) {
+          // For upcoming games default to home pick
+          outcome = 'home'
         } else {
-          outcome = strategy
+          // strategy is 'home' | 'away' | 'draw' here (not 'winner')
+          outcome = strategy as 'home' | 'away' | 'draw'
         }
 
         const team =
@@ -296,6 +308,8 @@
             : outcome === 'away'
               ? away.team.displayName
               : ''
+
+        const statusCode = isFinished ? 'ft' : 'ns'
 
         existing[ev.id] = {
           matchId: ev.id,
@@ -306,19 +320,26 @@
             id: ev.id,
             date: ev.date,
             home: home.team.displayName,
+            homeShort: home.team.displayName,
+            homeScore: isFinished ? home.score : null,
+            homeColor: '888888',
+            homeAltColor: 'ffffff',
+            homeIso2: '',
+            homeAbbrev: home.team.abbreviation,
             away: away.team.displayName,
-            homeAbbr: home.team.abbreviation,
-            awayAbbr: away.team.abbreviation,
-            homeScore: home.score,
-            awayScore: away.score,
-            status: {
-              code: 'ft',
-              label: 'FT',
-              state: 'post',
-            },
+            awayShort: away.team.displayName,
+            awayScore: isFinished ? away.score : null,
+            awayColor: '888888',
+            awayAltColor: 'ffffff',
+            awayIso2: '',
+            awayAbbrev: away.team.abbreviation,
             group: null,
-            venue: '',
-            fire: 0,
+            venue: null,
+            venueLocation: null,
+            status: { code: statusCode },
+            qualityScore: 0,
+            badge: null,
+            kickoffSlot: new Date(ev.date).getTime(),
           },
         }
         added++
@@ -604,12 +625,21 @@
           winning team (or draw). Reload the page after running.
         </p>
         <div class="dev-btn-list">
+          <!-- Pre-tournament: pick all upcoming games (home wins) -->
+          <button
+            class="dev-btn dev-btn--sim dev-btn--upcoming"
+            :disabled="simLoading"
+            @click="runSimulator(null, 'winner', true)"
+          >
+            🗓 Pick ALL games (finished + upcoming)
+          </button>
+          <div style="border-top: 1px solid #166534; margin: 0.4rem 0" />
           <button
             v-for="scenario in SIM_SCENARIOS"
             :key="scenario.label"
             class="dev-btn dev-btn--sim"
             :disabled="simLoading"
-            @click="runSimulator(scenario.cutoff)"
+            @click="runSimulator(scenario.cutoff, 'winner', true)"
           >
             ✅ {{ scenario.label }}
           </button>

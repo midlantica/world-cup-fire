@@ -174,7 +174,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 2px;
-    padding: 10px 10px 9px 10px;
+    padding: 12px 15px 9px 15px;
     border-radius: 0;
     border: none;
     background: oklab(1 0 0 / 0.154);
@@ -197,9 +197,9 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     line-height: 1;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
   }

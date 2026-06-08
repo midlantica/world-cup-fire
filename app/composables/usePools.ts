@@ -479,7 +479,25 @@ export function usePools() {
               body: { memberId: c.memberId, token: c.token, picks: payload },
             }
           )
-          mergePool(toUiPool(res.pool))
+          // Merge the server response but preserve the locally-known member
+          // names — the response may be stale if it raced with a renameSelf
+          // call that completed just before this response arrived.
+          const incoming = toUiPool(res.pool)
+          const existing = pools.value.find((p: Pool) => p.id === id)
+          if (existing) {
+            // Preserve each member's name from the local cache if we have it,
+            // so a concurrent rename isn't overwritten by a stale picks sync.
+            incoming.members = incoming.members.map((m: PoolMember) => {
+              const local = existing.members.find(
+                (lm: PoolMember) => lm.id === m.id
+              )
+              return local ? { ...m, name: local.name } : m
+            })
+            // Also preserve pool-level ownerName from local cache.
+            incoming.ownerName = existing.ownerName
+            incoming.name = existing.name
+          }
+          mergePool(incoming)
         } catch {
           // ignore individual pool sync failures
         }

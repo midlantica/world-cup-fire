@@ -80,8 +80,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // Only replace picks if the caller actually sent some. An empty incoming
-  // picks map with a name field means "name-only update — keep existing picks".
-  if (Object.keys(incoming).length > 0 || !newName) {
+  // picks map (name-only update) means keep existing picks unchanged.
+  if (Object.keys(incoming).length > 0) {
     member.picks = next
   }
 

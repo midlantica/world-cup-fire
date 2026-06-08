@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { nowDate } from '~/composables/useMockTime'
+
   useHead({
     title: 'World Cup Fire 🔥 — 2026 FIFA World Cup Match Tracker',
     meta: [
@@ -9,6 +11,26 @@
       },
     ],
   })
+
+  const TOURNAMENT_START = new Date('2026-06-11T19:00:00Z')
+  const wcStarted = ref(nowDate() >= TOURNAMENT_START)
+
+  // Keep in sync with mock-time changes (polls every 5s like TournamentBanner)
+  let _timer: ReturnType<typeof setInterval> | null = null
+  onMounted(() => {
+    if (!wcStarted.value) {
+      _timer = setInterval(() => {
+        wcStarted.value = nowDate() >= TOURNAMENT_START
+        if (wcStarted.value && _timer) {
+          clearInterval(_timer)
+          _timer = null
+        }
+      }, 5_000)
+    }
+  })
+  onUnmounted(() => {
+    if (_timer) clearInterval(_timer)
+  })
 </script>
 
 <template>
@@ -16,8 +38,10 @@
     <div class="home-page__inner">
       <!-- Main: Scores wall -->
       <main class="home-page__main">
-        <CountdownBanner />
-        <TournamentBanner />
+        <!-- Pre-WC: yellow countdown banner only -->
+        <CountdownBanner v-if="!wcStarted" />
+        <!-- Post-WC start: dark "48 nations · Join a Pool" banner only -->
+        <TournamentBanner v-else />
         <PicksDeadlineBanner />
         <ScoresSection />
       </main>

@@ -261,12 +261,12 @@
   }
 
   async function onEditNameSubmit(newName: string) {
-    if (editNamePool.value) {
-      await renameSelf(editNamePool.value.id, newName)
-      // Immediately re-fetch all pools so every member's view reflects the
-      // new name as quickly as possible (don't wait for the next poll tick).
-      await refreshPools()
-    }
+    // Rename the user in ALL pools they belong to so the name stays consistent
+    // across every leaderboard, not just the one they clicked.
+    await Promise.all(pools.value.map((p: Pool) => renameSelf(p.id, newName)))
+    // Immediately re-fetch all pools so every member's view reflects the
+    // new name as quickly as possible (don't wait for the next poll tick).
+    await refreshPools()
     editNameOpen.value = false
     editNamePool.value = null
   }

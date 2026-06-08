@@ -6,8 +6,6 @@
   const router = useRouter()
   const route = useRoute()
 
-  const dismissed = ref(false)
-
   // ── Compute tomorrow's date (YYYY-MM-DD and YYYYMMDD) ─────────────────────
   const tomorrowDate = computed(() => {
     const d = nowDate()
@@ -50,10 +48,8 @@
     return 'week2' as const
   })
 
-  // ── Only show when picks are loaded, there are unpicked games, not dismissed
-  const show = computed(
-    () => picksReady.value && unpickedCount.value > 0 && !dismissed.value
-  )
+  // ── Only show when picks are loaded and there are unpicked games
+  const show = computed(() => picksReady.value && unpickedCount.value > 0)
 
   function goToPicks() {
     // Set the scores tab to the week containing tomorrow's games
@@ -93,7 +89,8 @@
               {{ unpickedCount }}
               {{ unpickedCount === 1 ? 'game' : 'games' }} unpicked
               <template v-if="hoursUntilFirst !== null">
-                · first game in {{ hoursUntilFirst }}h
+                , first game in {{ hoursUntilFirst }}
+                {{ hoursUntilFirst === 1 ? 'hour' : 'hours' }}
               </template>
             </span>
           </div>
@@ -101,13 +98,6 @@
         <div class="deadline-banner__actions">
           <button class="deadline-banner__cta" @click="goToPicks">
             Make Picks
-          </button>
-          <button
-            class="deadline-banner__dismiss"
-            aria-label="Dismiss"
-            @click="dismissed = true"
-          >
-            ✕
           </button>
         </div>
       </div>
@@ -124,9 +114,9 @@
 
   .deadline-banner__inner {
     @apply flex items-center justify-between gap-3 rounded-xl px-4 py-3;
-    background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+    background: linear-gradient(135deg, #f97316 0%, hwb(25deg 0% 33.91%) 100%);
     box-shadow:
-      0 4px 20px rgba(249, 115, 22, 0.45),
+      0 2px 10px rgba(249, 115, 22, 0.45),
       0 1px 4px rgba(0, 0, 0, 0.3);
   }
 
@@ -157,24 +147,21 @@
   }
 
   .deadline-banner__cta {
-    @apply rounded-lg px-4 py-1.5 text-sm font-bold text-orange-600 transition-all;
-    background: white;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    @apply px-4 py-1.5 text-sm transition-all;
+    border-radius: 0;
+    font-weight: 800;
+    color: #ffffff;
+    background: #f69000;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    letter-spacing: 0.07rem;
+    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 20%);
   }
 
   .deadline-banner__cta:hover {
     @apply scale-105;
-    background: #fff7ed;
-  }
-
-  .deadline-banner__dismiss {
-    @apply flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white/80 transition-all;
-    background: rgba(255, 255, 255, 0.15);
-  }
-
-  .deadline-banner__dismiss:hover {
-    @apply text-white;
-    background: rgba(255, 255, 255, 0.25);
+    background: #ffa020;
   }
 
   /* Slide-down transition */

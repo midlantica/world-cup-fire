@@ -30,7 +30,7 @@
 </script>
 
 <template>
-  <div v-if="started" class="tb-wrap">
+  <div class="tb-wrap">
     <div class="tb-banner">
       <div class="tb-inner">
         <!-- Left: FIFA logo + tournament label -->
@@ -48,16 +48,14 @@
             <strong>48 nations · 104 matches · 16 cities</strong> across USA,
             Canada &amp; Mexico. Make your picks, challenge your friends in a
             Pool, and follow every match with 🔥 fire ratings. The world's
-            biggest sporting event runs
-            <strong>June 11 – July 19</strong> — don't miss a kick.
+            biggest sporting event runs <strong>June 11 – July 19</strong> —
+            don't miss a kick.
           </p>
         </div>
 
         <!-- Right: CTA -->
         <div class="tb-cta-col">
-          <NuxtLink to="/pools" class="tb-cta-btn">
-            Join a Pool →
-          </NuxtLink>
+          <NuxtLink to="/pools" class="tb-cta-btn"> Join a Pool → </NuxtLink>
         </div>
       </div>
     </div>

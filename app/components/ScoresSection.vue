@@ -3,15 +3,11 @@
   import { useMatchDetail } from '../composables/useMatchDetail'
   import { useCountryDetail } from '../composables/useCountryDetail'
   import { useGroupDetail } from '../composables/useGroupDetail'
-  import { usePicks } from '../composables/usePicks'
-  import { useTimezone } from '../composables/useTimezone'
 
   const { matches, matchesByDay, pending, error } = useScores()
   const { openMatch } = useMatchDetail()
   const { openCountry } = useCountryDetail()
   const { openGroupSilent: openGroup } = useGroupDetail()
-  const { picks, picksReady } = usePicks()
-  const { iana } = useTimezone()
 
   function formatDayHeader(day: string): string {
     // day is already YYYY-MM-DD in the selected timezone — parse at noon UTC
@@ -82,19 +78,6 @@
   onUnmounted(() => {
     observer?.disconnect()
   })
-
-  // ── Picks status bar ──────────────────────────────────────────────────────
-  // Permanent status showing how many group-stage matches the user has picked
-  // out of the 72 total group-stage games (48 teams, 12 groups of 4, 6 matches
-  // per group). Derived from the stored picks map — each pick snapshot carries
-  // the match's group field so we can filter without re-fetching the schedule.
-  const GROUP_STAGE_TOTAL = 72
-
-  const groupStagePickCount = computed(() => {
-    if (!picksReady.value) return 0
-    return Object.values(picks.value).filter((p) => p.match.group !== null)
-      .length
-  })
 </script>
 
 <template>
@@ -116,19 +99,6 @@
     </div>
 
     <template v-else>
-      <!-- ── Permanent picks status bar ────────────────────────────────── -->
-      <div class="scores-status">
-        <span class="scores-status__icon">🎯</span>
-        <span class="scores-status__text">
-          <strong>{{ groupStagePickCount }} of {{ GROUP_STAGE_TOTAL }}</strong>
-          Group Stage matches picked.
-          <NuxtLink to="/pools" class="scores-status__link"
-            >Make your picks</NuxtLink
-          >
-          before they kick off!
-        </span>
-      </div>
-
       <!-- Matches by day -->
       <div class="scores-section__days">
         <div
@@ -196,53 +166,6 @@
 
   .scores-section__empty {
     @apply py-16 text-center text-white/40;
-  }
-
-  /* ── Permanent picks status bar ──────────────────────────────────────────── */
-  .scores-status {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.75rem;
-    background: rgb(5 105 0 / 0.1);
-    border: 1px solid rgb(74 222 128 / 0.2);
-  }
-
-  .scores-status__icon {
-    font-size: 0.9rem;
-    flex-shrink: 0;
-  }
-
-  .scores-status__text {
-    font-family: 'Anybody', sans-serif;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 300;
-    font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.7);
-    line-height: 1.4;
-  }
-
-  .scores-status__text strong {
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 700;
-    color: #ffffff;
-  }
-
-  .scores-status__link {
-    color: #86efac;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 600;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  .scores-status__link:hover {
-    color: #bbf7d0;
   }
 
   /* ── Day groups ──────────────────────────────────────────────────────────── */

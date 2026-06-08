@@ -46,13 +46,30 @@
     allGroupMatches.value.filter((m) => m.group === selectedGroupLetter.value)
   )
 
-  // Unique stadiums for this group, comma-separated
-  const stadiums = computed(() => {
+  // Unique stadiums for this group
+  const stadiumList = computed<string[]>(() => {
     const venues = new Set<string>()
     for (const m of groupMatches.value) {
       if (m.venue) venues.add(m.venue)
     }
-    return [...venues].join(', ')
+    return [...venues]
+  })
+
+  // ── Venue popup ───────────────────────────────────────────────────────────
+  const venuePopupOpen = ref(false)
+  const venuePopupName = ref<string | null>(null)
+
+  function openVenuePopup(name: string) {
+    venuePopupName.value = name
+    venuePopupOpen.value = true
+  }
+  function closeVenuePopup() {
+    venuePopupOpen.value = false
+  }
+
+  // Close venue popup when the group modal closes
+  watch(groupModalOpen, (open) => {
+    if (!open) venuePopupOpen.value = false
   })
 
   // Navigation: prev/next group
@@ -515,8 +532,15 @@
                   </div>
 
                   <!-- Venues -->
-                  <p v-if="stadiums" class="grd-header__stadiums">
-                    {{ stadiums }}
+                  <p v-if="stadiumList.length" class="grd-header__stadiums">
+                    <template v-for="(vName, i) in stadiumList" :key="vName">
+                      <button
+                        class="grd-venue-btn"
+                        @click="openVenuePopup(vName)"
+                      >
+                        {{ vName }}</button
+                      ><template v-if="i < stadiumList.length - 1">, </template>
+                    </template>
                   </p>
                 </div>
 
@@ -554,6 +578,11 @@
       </div>
     </Transition>
   </Teleport>
+  <VenueDetailModal
+    :venue-name="venuePopupName"
+    :open="venuePopupOpen"
+    @close="closeVenuePopup"
+  />
 </template>
 
 <style scoped>
@@ -639,6 +668,30 @@
     white-space: normal;
     text-wrap-style: balance;
     text-align: center;
+  }
+
+  /* ── Venue button (inside stadiums line) ──────────────────────────────── */
+  .grd-venue-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: oklab(100% 0 0 / 0.9);
+    text-decoration: underline;
+    text-decoration-color: oklab(100% 0 0 / 0.3);
+    text-underline-offset: 2px;
+    transition:
+      color 0.12s,
+      text-decoration-color 0.12s;
+  }
+
+  .grd-venue-btn:hover {
+    color: oklab(100% 0 0);
+    text-decoration-color: oklab(100% 0 0 / 0.7);
   }
 
   /* ── Nav arrows ────────────────────────────────────────────────────────── */

@@ -105,18 +105,23 @@
   const keyEvents = computed<KeyEvent[]>(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const events = (detail.value?.keyEvents as any[]) ?? []
-    return events
-      .filter((e: any) => {
-        const t = e?.type?.text as string | undefined
-        return t && ['Goal', 'Penalty - Scored', 'Red Card', 'Yellow Card'].includes(t)
-      })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((e: any) => ({
-        clock: (e?.clock?.displayValue as string) ?? '',
-        team: (e?.team?.displayName as string) ?? null,
-        text: (e?.text as string) ?? null,
-        type: (e?.type?.text as string) ?? '',
-      }))
+    return (
+      events
+        .filter((e: any) => {
+          const t = e?.type?.text as string | undefined
+          return (
+            t &&
+            ['Goal', 'Penalty - Scored', 'Red Card', 'Yellow Card'].includes(t)
+          )
+        })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((e: any) => ({
+          clock: (e?.clock?.displayValue as string) ?? '',
+          team: (e?.team?.displayName as string) ?? null,
+          text: (e?.text as string) ?? null,
+          type: (e?.type?.text as string) ?? '',
+        }))
+    )
   })
 
   /** Extract scorer name from ESPN event text like "Goal! Mexico 1, South Korea 0. Raúl Jiménez (Mexico) heads home..." */
@@ -126,6 +131,21 @@
     const m = text.match(/\.\s+([^(]+)\s+\(/)
     return m ? m[1]!.trim() : ''
   }
+
+  // ── Venue popup ───────────────────────────────────────────────────────────
+  const venuePopupOpen = ref(false)
+
+  function openVenuePopup() {
+    venuePopupOpen.value = true
+  }
+  function closeVenuePopup() {
+    venuePopupOpen.value = false
+  }
+
+  // Close venue popup when the match modal closes
+  watch(modalOpen, (open) => {
+    if (!open) venuePopupOpen.value = false
+  })
 
   const activeTab = ref<'info' | 'stats' | 'lineups'>('info')
 
@@ -452,10 +472,7 @@
             </div>
 
             <!-- Key events row: goals ⚽ / yellow 🟨 / red 🟥 cards -->
-            <div
-              v-if="keyEvents.length > 0"
-              class="gd-header__events"
-            >
+            <div v-if="keyEvents.length > 0" class="gd-header__events">
               <!-- Home side events -->
               <div class="gd-header__events-side gd-header__events-side--home">
                 <template
@@ -512,9 +529,13 @@
               <span v-if="kickoffLabel" class="gd-header__kickoff">{{
                 kickoffLabel
               }}</span>
-              <span v-if="selectedMatch.venue" class="gd-header__venue">
+              <button
+                v-if="selectedMatch.venue"
+                class="gd-header__venue gd-header__venue--btn"
+                @click="openVenuePopup"
+              >
                 {{ selectedMatch.venue }}
-              </span>
+              </button>
               <span
                 v-if="selectedMatch.venueLocation"
                 class="gd-header__venue-location"
@@ -581,9 +602,36 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Venue popup — sits above this modal (z-index 9200) -->
+  <VenueDetailModal
+    :venue-name="selectedMatch?.venue"
+    :open="venuePopupOpen"
+    @close="closeVenuePopup"
+  />
 </template>
 
 <style scoped>
+  .gd-header__venue--btn {
+    background: none !important;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-color: oklab(100% 0 0 / 0.3);
+    transition:
+      color 0.15s,
+      text-decoration-color 0.15s;
+  }
+
+  .gd-header__venue--btn:hover {
+    color: oklab(100% 0 0);
+    text-decoration-color: oklab(100% 0 0 / 0.6);
+  }
+
   @reference "~/assets/css/main.css";
 
   /* ── Backdrop ──────────────────────────────────────────────────────────────── */

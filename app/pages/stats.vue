@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { HOST_CITIES as hostCities } from '~/constants/venues'
+
   useHead({
     title: 'Stats — World Cup Fire 🔥',
     meta: [
@@ -299,138 +301,6 @@
     },
   ]
 
-  // ── 2026 host cities ───────────────────────────────────────────────────────
-  const hostCities = [
-    {
-      city: 'New York / New Jersey',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'MetLife Stadium',
-      capacity: 82_500,
-    },
-    {
-      city: 'Los Angeles',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'SoFi Stadium',
-      capacity: 70_240,
-    },
-    {
-      city: 'Dallas',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 9,
-      venue: 'AT&T Stadium',
-      capacity: 80_000,
-    },
-    {
-      city: 'San Francisco Bay Area',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: "Levi's Stadium",
-      capacity: 68_500,
-    },
-    {
-      city: 'Miami',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'Hard Rock Stadium',
-      capacity: 65_326,
-    },
-    {
-      city: 'Atlanta',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'Mercedes-Benz Stadium',
-      capacity: 71_000,
-    },
-    {
-      city: 'Seattle',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'Lumen Field',
-      capacity: 69_000,
-    },
-    {
-      city: 'Houston',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'NRG Stadium',
-      capacity: 72_220,
-    },
-    {
-      city: 'Kansas City',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'Arrowhead Stadium',
-      capacity: 76_416,
-    },
-    {
-      city: 'Boston',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'Gillette Stadium',
-      capacity: 65_878,
-    },
-    {
-      city: 'Philadelphia',
-      country: 'USA',
-      flag: '🇺🇸',
-      matches: 8,
-      venue: 'Lincoln Financial Field',
-      capacity: 69_796,
-    },
-    {
-      city: 'Mexico City',
-      country: 'Mexico',
-      flag: '🇲🇽',
-      matches: 5,
-      venue: 'Estadio Azteca',
-      capacity: 87_523,
-    },
-    {
-      city: 'Guadalajara',
-      country: 'Mexico',
-      flag: '🇲🇽',
-      matches: 5,
-      venue: 'Estadio Akron',
-      capacity: 49_850,
-    },
-    {
-      city: 'Monterrey',
-      country: 'Mexico',
-      flag: '🇲🇽',
-      matches: 5,
-      venue: 'Estadio BBVA',
-      capacity: 53_500,
-    },
-    {
-      city: 'Toronto',
-      country: 'Canada',
-      flag: '🇨🇦',
-      matches: 7,
-      venue: 'BMO Field',
-      capacity: 30_000,
-    },
-    {
-      city: 'Vancouver',
-      country: 'Canada',
-      flag: '🇨🇦',
-      matches: 7,
-      venue: 'BC Place',
-      capacity: 54_500,
-    },
-  ]
-
   // ── World Cup by the numbers ───────────────────────────────────────────────
   const byTheNumbers = [
     { number: '22', label: 'Tournaments held', sub: '1930 to 2022' },
@@ -451,10 +321,69 @@
     { number: '5B+', label: 'Viewers in 2022', sub: 'global TV audience' },
   ]
 
+  // ── FIFA Rankings for all 48 WC 2026 teams ────────────────────────────────
+  const fifaRankings = [
+    { rank: 1, country: 'France', iso2: 'FR' },
+    { rank: 2, country: 'Spain', iso2: 'ES' },
+    { rank: 3, country: 'Argentina', iso2: 'AR' },
+    { rank: 4, country: 'England', iso2: 'GB-ENG' },
+    { rank: 5, country: 'Portugal', iso2: 'PT' },
+    { rank: 6, country: 'Brazil', iso2: 'BR' },
+    { rank: 7, country: 'Netherlands', iso2: 'NL' },
+    { rank: 8, country: 'Morocco', iso2: 'MA' },
+    { rank: 9, country: 'Belgium', iso2: 'BE' },
+    { rank: 10, country: 'Germany', iso2: 'DE' },
+    { rank: 11, country: 'Croatia', iso2: 'HR' },
+    { rank: 13, country: 'Colombia', iso2: 'CO' },
+    { rank: 14, country: 'Senegal', iso2: 'SN' },
+    { rank: 15, country: 'Mexico', iso2: 'MX' },
+    { rank: 16, country: 'USA', iso2: 'US' },
+    { rank: 17, country: 'Uruguay', iso2: 'UY' },
+    { rank: 18, country: 'Japan', iso2: 'JP' },
+    { rank: 19, country: 'Switzerland', iso2: 'CH' },
+    { rank: 21, country: 'Iran', iso2: 'IR' },
+    { rank: 22, country: 'Turkey', iso2: 'TR' },
+    { rank: 23, country: 'Ecuador', iso2: 'EC' },
+    { rank: 24, country: 'Austria', iso2: 'AT' },
+    { rank: 25, country: 'South Korea', iso2: 'KR' },
+    { rank: 27, country: 'Australia', iso2: 'AU' },
+    { rank: 28, country: 'Algeria', iso2: 'DZ' },
+    { rank: 29, country: 'Egypt', iso2: 'EG' },
+    { rank: 30, country: 'Canada', iso2: 'CA' },
+    { rank: 31, country: 'Norway', iso2: 'NO' },
+    { rank: 33, country: 'Panama', iso2: 'PA' },
+    { rank: 34, country: 'Ivory Coast', iso2: 'CI' },
+    { rank: 38, country: 'Sweden', iso2: 'SE' },
+    { rank: 40, country: 'Paraguay', iso2: 'PY' },
+    { rank: 41, country: 'Czechia', iso2: 'CZ' },
+    { rank: 43, country: 'Scotland', iso2: 'GB-SCT' },
+    { rank: 44, country: 'Tunisia', iso2: 'TN' },
+    { rank: 46, country: 'DR Congo', iso2: 'CD' },
+    { rank: 50, country: 'Uzbekistan', iso2: 'UZ' },
+    { rank: 55, country: 'Qatar', iso2: 'QA' },
+    { rank: 57, country: 'Iraq', iso2: 'IQ' },
+    { rank: 60, country: 'South Africa', iso2: 'ZA' },
+    { rank: 61, country: 'Saudi Arabia', iso2: 'SA' },
+    { rank: 63, country: 'Jordan', iso2: 'JO' },
+    { rank: 65, country: 'Bosnia & Herzegovina', iso2: 'BA' },
+    { rank: 69, country: 'Cape Verde', iso2: 'CV' },
+    { rank: 74, country: 'Ghana', iso2: 'GH' },
+    { rank: 82, country: 'Curaçao', iso2: 'CW' },
+    { rank: 83, country: 'Haiti', iso2: 'HT' },
+    { rank: 85, country: 'New Zealand', iso2: 'NZ' },
+  ]
+
   // ── Active section for filter tabs ────────────────────────────────────────
-  const sections = ['Winners', 'Scorers', 'Records', 'Facts', 'Venues'] as const
+  const sections = [
+    'Ranking',
+    'Venues',
+    'Winners',
+    'Scorers',
+    'Records',
+    'Facts',
+  ] as const
   type Section = (typeof sections)[number]
-  const activeSection = ref<Section>('Winners')
+  const activeSection = ref<Section>('Ranking')
 
   function flagUrl(iso2: string): string {
     if (iso2 === 'GB-ENG') return '/flags/GB-ENG.svg'
@@ -499,6 +428,47 @@
           {{ s }}
         </button>
       </div>
+
+      <!-- ══════════════════════════════════════════════════════════════════════
+           FIFA RANKING
+           ══════════════════════════════════════════════════════════════════ -->
+      <section v-if="activeSection === 'Ranking'" class="stats-section">
+        <h2 class="stats-section__heading">
+          🌍 FIFA World Rankings — 2026 WC Teams
+        </h2>
+        <p class="stats-section__intro">
+          Official FIFA/Coca-Cola rankings for all 48 nations competing at the
+          2026 World Cup. Rankings as of June 2026.
+        </p>
+
+        <div class="ranking-grid">
+          <div
+            v-for="(team, i) in fifaRankings"
+            :key="team.country"
+            class="ranking-row"
+            :class="{
+              'ranking-row--top3': i < 3,
+              'ranking-row--top10': i >= 3 && i < 10,
+            }"
+          >
+            <span class="ranking-row__pos">{{ team.rank }}</span>
+            <img
+              :src="flagUrl(team.iso2)"
+              :alt="team.country"
+              class="ranking-row__flag"
+            />
+            <span class="ranking-row__country">{{ team.country }}</span>
+            <div class="ranking-row__bar-wrap">
+              <div
+                class="ranking-row__bar"
+                :style="{
+                  width: `${Math.max(4, Math.round((1 - i / fifaRankings.length) * 100))}%`,
+                }"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ══════════════════════════════════════════════════════════════════════
            WINNERS
@@ -803,7 +773,26 @@
         </p>
 
         <div class="venues-grid">
-          <div v-for="v in hostCities" :key="v.city" class="venue-card">
+          <div
+            v-for="v in hostCities"
+            :key="v.city"
+            class="venue-card"
+            :class="{ 'venue-card--final': v.isFinal }"
+          >
+            <!-- Stadium image -->
+            <div class="venue-card__img-wrap">
+              <img
+                :src="v.image"
+                :alt="`${v.venue} — ${v.city}`"
+                class="venue-card__img"
+                loading="lazy"
+              />
+              <div v-if="v.isFinal" class="venue-card__final-badge">
+                🏆 Final Venue
+              </div>
+            </div>
+
+            <!-- Header: flag, city, match count -->
             <div class="venue-card__header">
               <span class="venue-card__flag">{{ v.flag }}</span>
               <div class="venue-card__city-wrap">
@@ -815,12 +804,17 @@
                 <span class="venue-card__matches-label">matches</span></span
               >
             </div>
+
+            <!-- Venue name + capacity -->
             <div class="venue-card__footer">
               <span class="venue-card__venue">{{ v.venue }}</span>
               <span class="venue-card__capacity"
                 >{{ v.capacity.toLocaleString() }} cap.</span
               >
             </div>
+
+            <!-- Bio -->
+            <p class="venue-card__bio">{{ v.bio }}</p>
           </div>
         </div>
 
@@ -1572,10 +1566,10 @@
   .venues-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
+    gap: 0.75rem;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     .venues-grid {
       grid-template-columns: 1fr;
     }
@@ -1584,22 +1578,81 @@
   .venue-card {
     background: rgb(255 255 255 / 0.04);
     border: 1px solid rgb(255 255 255 / 0.07);
-    /* border-radius: 12px; */
-    padding: 0.85rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    transition: background 0.15s ease;
+    gap: 0;
+    overflow: hidden;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .venue-card:hover {
     background: rgb(255 255 255 / 0.07);
   }
 
+  /* Final venue gets a gold border */
+  .venue-card--final {
+    border-color: rgb(234 179 8 / 0.4);
+  }
+
+  /* ── Stadium image ── */
+  .venue-card__img-wrap {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgb(0 0 0 / 0.3);
+  }
+
+  .venue-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.4s ease;
+    /* Fallback gradient shown while image loads */
+    background: linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.05),
+      rgb(255 255 255 / 0.02)
+    );
+  }
+
+  .venue-card:hover .venue-card__img {
+    transform: scale(1.03);
+  }
+
+  /* "🏆 Final Venue" badge overlaid on the image */
+  .venue-card__final-badge {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: linear-gradient(
+      135deg,
+      rgb(234 179 8 / 0.95),
+      rgb(202 138 4 / 0.95)
+    );
+    color: #000;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.55rem;
+    pointer-events: none;
+  }
+
+  /* ── Card body (below image) ── */
   .venue-card__header {
     display: flex;
     align-items: center;
     gap: 0.65rem;
+    padding: 0.75rem 0.9rem 0;
   }
 
   .venue-card__flag {
@@ -1621,7 +1674,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: #ffffff;
     letter-spacing: 0.03em;
     white-space: nowrap;
@@ -1634,10 +1687,10 @@
     font-variation-settings:
       'wdth' 87.5,
       'wght' 300;
-    font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.75);
+    font-size: 0.72rem;
+    color: rgb(255 255 255 / 0.5);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
   }
 
   .venue-card__matches {
@@ -1645,40 +1698,41 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 800;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: #ffffff;
     flex-shrink: 0;
     text-align: right;
+    line-height: 1;
   }
 
   .venue-card__matches-label {
     font-variation-settings:
       'wdth' 87.5,
       'wght' 300;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     color: rgb(255 255 255 / 0.35);
     letter-spacing: 0.06em;
     display: block;
     text-align: right;
-    margin-top: -0.1rem;
+    margin-top: 0.1rem;
   }
 
   .venue-card__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid rgb(255 255 255 / 0.06);
-    padding-top: 0.4rem;
+    padding: 0.35rem 0.9rem 0.5rem;
+    gap: 0.5rem;
   }
 
   .venue-card__venue {
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
-      'wght' 400;
-    font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.85);
-    letter-spacing: 0.08em;
+      'wght' 500;
+    font-size: 0.78rem;
+    color: rgb(255 255 255 / 0.6);
+    letter-spacing: 0.06em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1691,11 +1745,125 @@
     font-variation-settings:
       'wdth' 87.5,
       'wght' 300;
-    font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.85);
+    font-size: 0.72rem;
+    color: rgb(255 255 255 / 0.4);
     letter-spacing: 0.04em;
     flex-shrink: 0;
-    margin-left: 0.5rem;
+    white-space: nowrap;
+  }
+
+  /* ── Bio text ── */
+  .venue-card__bio {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 300;
+    font-size: 0.8rem;
+    color: rgb(255 255 255 / 0.6);
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    padding: 0 0.9rem 0.9rem;
+    margin: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.06);
+    padding-top: 0.6rem;
+  }
+
+  /* ── FIFA Ranking grid ───────────────────────────────────────────────────── */
+  .ranking-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.35rem;
+  }
+
+  @media (max-width: 600px) {
+    .ranking-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ranking-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: rgb(255 255 255 / 0.04);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    padding: 0.5rem 0.75rem;
+    transition: background 0.15s ease;
+  }
+
+  .ranking-row:hover {
+    background: rgb(255 255 255 / 0.07);
+  }
+
+  .ranking-row--top3 {
+    background: linear-gradient(
+      135deg,
+      rgb(234 179 8 / 0.1),
+      rgb(234 179 8 / 0.03)
+    );
+    border-color: rgb(234 179 8 / 0.25);
+  }
+
+  .ranking-row--top10 {
+    border-color: rgb(255 255 255 / 0.1);
+  }
+
+  .ranking-row__pos {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.35);
+    width: 2rem;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .ranking-row--top3 .ranking-row__pos {
+    color: rgb(234 179 8 / 0.9);
+  }
+
+  .ranking-row__flag {
+    width: 2rem;
+    height: 1.5rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+  }
+
+  .ranking-row__country {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    font-size: 0.9rem;
+    color: #ffffff;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ranking-row__bar-wrap {
+    width: 4rem;
+    height: 3px;
+    background: rgb(255 255 255 / 0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 400px) {
+    .ranking-row__bar-wrap {
+      display: none;
+    }
+  }
+
+  .ranking-row__bar {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    transition: width 0.6s ease;
   }
 
   /* ── Coming soon banner ──────────────────────────────────────────────────── */
