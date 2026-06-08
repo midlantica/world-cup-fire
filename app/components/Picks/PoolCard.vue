@@ -162,14 +162,14 @@
     background: oklab(0.68 0.14 0.15);
   }
 
-  /* Copied state */
+  /* Copied state — slightly darker orange, no green */
   .pool-card__action-btn--copied {
-    background: #014d1c;
-    color: #86efac;
+    background: oklab(0.52 0.13 0.14);
+    color: rgb(255 255 255 / 0.9);
   }
 
   .pool-card__action-btn--copied:hover {
-    background: #014d1c;
+    background: oklab(0.52 0.13 0.14);
   }
 
   /* Edit pool — orange */
