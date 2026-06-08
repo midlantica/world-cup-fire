@@ -143,8 +143,8 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 0.85rem;
-    padding: 0.3rem 0.35rem 0.25rem;
+    font-size: 1rem;
+    padding: 0.5rem 0.45rem 0.35rem;
     cursor: pointer;
     transition:
       background-color 0.15s ease,

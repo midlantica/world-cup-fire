@@ -579,8 +579,8 @@
   .pools-sidebar__heading-row .pools-sidebar__new-btn {
     width: auto;
     flex-shrink: 0;
-    font-size: 0.85rem;
-    padding: 0.3rem 0.85rem 0.25rem;
+    font-size: 1.2rem;
+    padding: 0.3rem 1.05rem 0.25rem;
   }
 
   .pools-sidebar__trophy {
