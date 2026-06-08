@@ -318,6 +318,8 @@
   async function onModalSubmit(value: { yourName: string; poolName: string }) {
     if (modalMode.value === 'edit' && editingPool.value) {
       await updatePool(editingPool.value.id, value)
+      // Re-fetch so the pool card name/ownerName reflect the server state.
+      await refreshPools()
     } else {
       const created = await createPool(value)
       if (created) await syncOwnerPicks(picks.value)
