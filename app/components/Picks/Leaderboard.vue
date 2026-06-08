@@ -76,7 +76,7 @@
           >
             {{ row.name }}
           </button>
-          <template v-else>{{ row.name }}</template>
+          <span v-else class="leaderboard__name-text">{{ row.name }}</span>
           <span v-if="row.isSelf" class="leaderboard__you">you</span>
           <!-- Delete button: inline after name, shown for all non-self rows -->
           <button
@@ -235,16 +235,18 @@
     color: rgb(255 255 255 / 0.85);
   }
 
-  /* Name text truncates, button stays visible */
-  .leaderboard__name > .leaderboard__name-btn,
-  .leaderboard__name > template {
+  /* The plain text name (non-self) sits in a span so it can truncate */
+  .leaderboard__name-text {
     @apply truncate;
     min-width: 0;
-    flex: 1 1 0;
+    flex-shrink: 1;
   }
 
   /* Clickable self-name button */
   .leaderboard__name-btn {
+    @apply truncate;
+    min-width: 0;
+    flex-shrink: 1;
     background: none;
     border: none;
     padding: 0;
@@ -254,6 +256,7 @@
     font-variation-settings: inherit;
     font-size: inherit;
     color: inherit;
+    text-align: left;
     text-decoration: underline;
     text-underline-offset: 3px;
     text-decoration-color: rgb(255 255 255 / 0.35);
