@@ -23,7 +23,10 @@
   // Hydrate stub picks (written by the reverse-sync) with real match data as
   // soon as the schedule renders this card. This fills in the empty match
   // snapshot so W/D/L indicators display correctly and the pick syncs properly.
-  hydrateStub(props.match)
+  // Use watchEffect so this re-runs after usePicks.onMounted re-hydrates picks
+  // from localStorage (the initial call at setup time may fire before picks are
+  // loaded, since useState starts empty during SSR hydration).
+  watchEffect(() => hydrateStub(props.match))
 
   /** The current Win·Tie·Lose pick for this match (anchored to home), or null. */
   const wtl = computed(() => wtlOutcome(props.match.id))
