@@ -398,8 +398,8 @@
   }
 
   .kpi-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #94a3b8;
     margin-bottom: 0.2rem;
@@ -415,7 +415,7 @@
   }
 
   .kpi-sub {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     color: #64748b;
     margin-top: 0.2rem;
   }
@@ -434,10 +434,10 @@
   }
 
   .today-eyebrow {
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #94a3b8;
     white-space: nowrap;
   }
 
@@ -463,12 +463,12 @@
   }
 
   .today-key {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     color: #94a3b8;
   }
 
   .today-trend {
-    font-size: 0.68rem;
+    font-size: 0.85rem;
     font-weight: 600;
     padding: 0.1rem 0.3rem;
     border-radius: 0.25rem;
@@ -526,7 +526,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 400;
-    color: #64748b;
+    color: #94a3b8;
     letter-spacing: 0;
   }
 
@@ -538,16 +538,16 @@
   .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
   }
 
   .data-table th {
     text-align: left;
     padding: 0.35rem 0.5rem;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #94a3b8;
     border-bottom: 1px solid #334155;
   }
 
@@ -570,8 +570,8 @@
   }
 
   .td-chevron {
-    color: #475569;
-    font-size: 0.6rem;
+    color: #64748b;
+    font-size: 0.75rem;
     text-align: right;
   }
 
@@ -579,15 +579,14 @@
   .bar-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 
   .bar-row {
     display: grid;
-    grid-template-columns: 8rem 1fr 3rem;
+    grid-template-columns: 9rem 1fr 3rem;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.8rem;
   }
 
   .bar-label-wrap {
@@ -598,7 +597,7 @@
 
   .bar-path {
     font-family: ui-monospace, monospace;
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: #e2e8f0;
     white-space: nowrap;
     overflow: hidden;
@@ -606,8 +605,8 @@
   }
 
   .bar-route-label {
-    font-size: 0.6rem;
-    color: #64748b;
+    font-size: 0.85rem;
+    color: #94a3b8;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -634,16 +633,16 @@
   .bar-val {
     color: #94a3b8;
     text-align: right;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
   }
   .bar-val--zero {
-    color: #334155;
+    color: #475569;
   }
 
   .empty-note {
-    font-size: 0.85rem;
-    color: #475569;
+    font-size: 0.9rem;
+    color: #64748b;
     padding: 0.5rem 0;
   }
 
@@ -682,8 +681,9 @@
     background: #3b82f6;
   }
 
+  /* Hour labels: space-constrained axis ticks — exception to 0.85rem minimum */
   .hour-label {
-    font-size: 0.48rem;
+    font-size: 0.75rem;
     color: #334155;
     margin-top: 0.2rem;
     white-space: nowrap;
@@ -694,8 +694,8 @@
 
   /* ── Hint ── */
   .hint-row {
-    font-size: 0.8rem;
-    color: #475569;
+    font-size: 0.85rem;
+    color: #64748b;
     text-align: center;
     padding: 0.75rem 0 0.25rem;
   }

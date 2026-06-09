@@ -11,3 +11,23 @@ When performing any browser-related tasks using Playwright or browser_action too
    ```
 3. If the browser close action fails or throws an error, still attempt the pkill command to ensure cleanup.
 4. Never leave browser sessions open between tasks.
+
+When making function calls using tools that accept array or object parameters ensure those are structured using JSON. For example:
+
+```
+[{"color": "orange", "options": {"option_key_1": true, "option_key_2": "value"}}, {"color": "purple", "options": {"option_key_1": true, "option_key_2": "value"}}]
+```
+
+## UI & Accessibility Standards
+
+### Font sizes
+- Minimum readable text size is **0.85rem** — never go smaller for any label, caption, or secondary text
+- Chart axis tick labels are the only exception (space-constrained), minimum **0.75rem**
+- Monospace/code snippets: minimum **0.8rem**
+
+### Color contrast on dark backgrounds
+- Never use grey text on dark grey backgrounds — always ensure sufficient contrast
+- Secondary/muted text on dark surfaces (`#1e293b` etc.): use **`#94a3b8`** (slate-400) as the darkest acceptable value
+- Prefer **`#cbd5e1`** (slate-300) or **`#e2e8f0`** (slate-200) for secondary text
+- Zero/empty state values may use `#64748b` (slate-500) since they are intentionally de-emphasized, but should still be legible
+- Never use `#64748b` or darker for regular readable text on dark card surfaces
