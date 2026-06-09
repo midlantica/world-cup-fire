@@ -3,6 +3,7 @@
   import { useNationTheme } from '~/composables/useNationTheme'
   import { usePicks } from '~/composables/usePicks'
   import { usePools } from '~/composables/usePools'
+  import { useAnalytics } from '~/composables/useAnalytics'
   import {
     TEAM_BY_NAME,
     venueLocation as lookupVenueLocation,
@@ -15,6 +16,18 @@
   // Apply the selected nation's contrast-safe color theme (sets CSS vars on
   // <html> and toggles the .has-nation-theme class).
   useNationTheme()
+
+  // ── Analytics: track every route change ───────────────────────────────────
+  const { trackPageview } = useAnalytics()
+  // Track the initial page load
+  if (import.meta.client) {
+    onMounted(() => trackPageview(route.fullPath))
+  }
+  // Track subsequent navigations
+  watch(
+    () => route.fullPath,
+    (path) => trackPageview(path)
+  )
 
   // ── Global picks → pool sync ───────────────────────────────────────────────
   // 1. On mount: push the full local picks to the server once creds are ready.
