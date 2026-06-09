@@ -231,7 +231,7 @@
 
   /* ── Your picks summary ──────────────────────────────────────────────────── */
   .pool-card__summary {
-    margin: 0.9rem 0 0.3rem;
+    margin: 0.8rem 0 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 90,
