@@ -112,8 +112,8 @@
 
   .sync-modal__close {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: 0.5rem;
+    right: 0.5rem;
     background: none;
     border: none;
     color: oklab(100% 0 0 / 0.5);
