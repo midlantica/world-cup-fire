@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import { useMatchDetail } from '~/composables/useMatchDetail'
   import { useNationTheme } from '~/composables/useNationTheme'
+  import { usePicks } from '~/composables/usePicks'
+  import { usePools } from '~/composables/usePools'
   import {
     TEAM_BY_NAME,
     venueLocation as lookupVenueLocation,
@@ -12,6 +14,27 @@
   // Apply the selected nation's contrast-safe color theme (sets CSS vars on
   // <html> and toggles the .has-nation-theme class).
   useNationTheme()
+
+  // ── Global picks → pool sync ───────────────────────────────────────────────
+  // Watch for pick changes on ANY page and push them to the server immediately.
+  // Debounced 400ms so rapid successive picks batch into one request.
+  // NOTE: NOT immediate — usePicks re-hydrates localStorage in its own
+  // onMounted, so the initial state during SSR/hydration is empty. The explicit
+  // syncOwnerPicks() call in pools.vue onMounted handles the initial push once
+  // creds are fully hydrated.
+  if (import.meta.client) {
+    const { picks } = usePicks()
+    const { syncOwnerPicks } = usePools()
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    watch(
+      picks,
+      (val) => {
+        if (debounceTimer) clearTimeout(debounceTimer)
+        debounceTimer = setTimeout(() => syncOwnerPicks(val), 400)
+      },
+      { deep: true }
+    )
+  }
 
   const route = useRoute()
 

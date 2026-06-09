@@ -356,14 +356,6 @@
     }
   }
 
-  // ── Keep owner picks synced ────────────────────────────────────────────────
-  // NOTE: NOT immediate — the immediate watch would fire during setup with an
-  // empty picks map (SSR state, before usePicks re-hydrates from localStorage
-  // in its own onMounted), which would push {} to the server and wipe stored
-  // picks. Instead we do an explicit sync in onMounted after nextTick (below),
-  // and then watch for subsequent changes.
-  watch(picks, (val) => syncOwnerPicks(val), { deep: true })
-
   // ── Live leaderboard: refresh pools when tab becomes visible + every 10s ──
   // This ensures all members see each other's name changes and picks without
   // a manual refresh. 10s keeps it snappy without hammering the server.
