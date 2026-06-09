@@ -968,7 +968,7 @@ export function venueLocation(
 // ---------------------------------------------------------------------------
 const MATCH_VENUE: Record<string, string> = {
   '760414': 'Estadio Akron',
-  '760415': 'Estadio Banorte',
+  '760415': 'Estadio Azteca',
   '760416': 'BMO Field',
   '760417': 'SoFi Stadium',
   '760418': 'Gillette Stadium',
@@ -1073,8 +1073,15 @@ const MATCH_VENUE: Record<string, string> = {
   '760517': 'MetLife Stadium',
 }
 
-/** Look up the venue name for a match by its ESPN event ID. */
-function matchVenue(eventId: string | null | undefined): string | null {
+/**
+ * Look up the authoritative venue name for a match by its ESPN event ID.
+ * Use this as an OVERRIDE — our static map is more reliable than the ESPN API
+ * for known-wrong venues (e.g. ESPN returning 'Estadio Banorte' for a match
+ * that FIFA confirms is at Estadio Azteca).
+ */
+export function matchVenueOverride(
+  eventId: string | null | undefined
+): string | null {
   if (!eventId) return null
   return MATCH_VENUE[eventId] ?? null
 }

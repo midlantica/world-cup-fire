@@ -140,10 +140,10 @@ export const HOST_CITIES: VenueInfo[] = [
     country: 'Mexico',
     flag: '🇲🇽',
     matches: 5,
-    venue: 'Estadio Akron',
+    venue: 'Estadio Banorte',
     capacity: 49_850,
     image: '/venues/akron.jpg',
-    bio: "Opened in 2010, Estadio Akron is the modern home of Club Deportivo Guadalajara — known as Chivas — one of Mexico's most beloved clubs. Located in Zapopan on the outskirts of Guadalajara, the stadium's distinctive wave-shaped roof is an architectural landmark. Guadalajara is Mexico's second-largest city and a passionate football town.",
+    bio: "Home of Club Deportivo Guadalajara — known as Chivas — one of Mexico's most beloved clubs. Opened in 2010 and now known as Estadio Banorte under its current naming-rights sponsor, the stadium's distinctive wave-shaped roof is an architectural landmark in Zapopan on the outskirts of Guadalajara, Mexico's second-largest city.",
   },
   {
     city: 'Monterrey',
@@ -177,6 +177,18 @@ export const HOST_CITIES: VenueInfo[] = [
   },
 ]
 
+/**
+ * Naming-rights aliases: maps alternate/sponsor names → canonical venue name
+ * used in HOST_CITIES. Add entries here when a stadium gets a new sponsor name.
+ */
+const VENUE_ALIASES: Record<string, string> = {
+  // Guadalajara: formerly Estadio Akron, now Estadio Banorte (naming rights)
+  'estadio akron': 'Estadio Banorte',
+  'geha field at arrowhead stadium': 'Arrowhead Stadium',
+  // FIFA.com calls Estadio Azteca "Mexico City Stadium"
+  'mexico city stadium': 'Estadio Azteca',
+}
+
 /** Look up venue info by venue name (case-insensitive, partial match for
  *  variants like "GEHA Field at Arrowhead Stadium" → Arrowhead Stadium). */
 export function getVenueInfo(
@@ -184,7 +196,12 @@ export function getVenueInfo(
 ): VenueInfo | null {
   if (!venueName) return null
   const lower = venueName.toLowerCase()
-  // Exact match first
+  // Alias lookup first (naming-rights / alternate names)
+  const aliasTarget = VENUE_ALIASES[lower]
+  if (aliasTarget) {
+    return HOST_CITIES.find((v) => v.venue === aliasTarget) ?? null
+  }
+  // Exact match
   const exact = HOST_CITIES.find((v) => v.venue.toLowerCase() === lower)
   if (exact) return exact
   // Partial: ESPN sometimes uses "GEHA Field at Arrowhead Stadium"

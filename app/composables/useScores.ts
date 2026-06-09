@@ -4,6 +4,7 @@ import {
   WC_START,
   WC_FINAL,
   venueLocation,
+  matchVenueOverride,
 } from '../constants/worldcup'
 import { useTimezone } from './useTimezone'
 import { nowDate } from './useMockTime'
@@ -273,11 +274,25 @@ export function normaliseEvent(ev: any): Match {
     awayIso2: awayData?.iso2 ?? '',
     awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
     group,
-    venue:
-      ((comp.venue as Record<string, unknown>)?.fullName as string) ?? null,
-    venueLocation: venueLocation(
-      ((comp.venue as Record<string, unknown>)?.fullName as string) ?? null
-    ),
+    venue: (() => {
+      const eventId = String(ev.id ?? '')
+      // Prefer our static map — it's verified against FIFA and more reliable
+      // than the ESPN API which can return wrong venues (e.g. Banorte vs Azteca).
+      const override = matchVenueOverride(eventId)
+      if (override) return override
+      return (
+        ((comp.venue as Record<string, unknown>)?.fullName as string) ?? null
+      )
+    })(),
+    venueLocation: (() => {
+      const eventId = String(ev.id ?? '')
+      const override = matchVenueOverride(eventId)
+      const name =
+        override ??
+        ((comp.venue as Record<string, unknown>)?.fullName as string) ??
+        null
+      return venueLocation(name)
+    })(),
     status: { code, clock },
     qualityScore: quality,
     badge,
