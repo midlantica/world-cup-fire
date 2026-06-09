@@ -226,6 +226,7 @@
     white-space: nowrap;
     margin: 0.75rem 0 0;
     width: 100%;
+    justify-content: center;
   }
 
   .pool-card__sync-icon {
