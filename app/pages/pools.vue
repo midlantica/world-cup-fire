@@ -410,6 +410,10 @@
     let made = 0
     let correct = 0
     for (const [matchId, outcome] of Object.entries(self.picks)) {
+      // Only count group-stage picks (match.group !== null).
+      // Knockout picks are excluded from the "X of 72 Group matches" summary.
+      const match = allMatches.value.find((x) => x.id === matchId)
+      if (match && match.group === null) continue
       made++
       const result = resolveResult(matchId)
       if (result !== null && result === outcome) correct++

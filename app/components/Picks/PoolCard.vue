@@ -86,7 +86,7 @@
 
     <!-- Your picks summary -->
     <p class="pool-card__summary">
-      <strong>{{ picksMade }}</strong> of
+      <strong>{{ picksMade }}</strong> /
       <strong>{{ totalMatches ?? 72 }}</strong> picks made on Group matches —
       <button class="pool-card__check-picks" @click="emit('edit-picks')">
         {{ picksMade === 0 ? 'Make Picks!' : 'Check Picks' }}
