@@ -151,7 +151,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 1rem;
+    font-size: 0.85rem;
     padding: 0.5rem 0.45rem 0.35rem;
     cursor: pointer;
     transition:
@@ -216,12 +216,14 @@
       'wght' 400;
     font-size: 0.82rem;
     color: rgb(255 255 255 / 0.45);
-    padding: 0.3rem 0.7rem 0.25rem;
+    padding: 0.55rem 0.7rem;
     cursor: pointer;
     transition:
       border-color 0.15s ease,
       color 0.15s ease;
     white-space: nowrap;
+    margin: 0.75rem 0 0;
+    width: 100%;
   }
 
   .pool-card__sync-btn:hover {
@@ -234,8 +236,8 @@
     margin: 0.9rem 0 0.3rem;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
-      'wdth' 100,
-      'wght' 300;
+      'wdth' 90,
+      'wght' 200;
     font-size: 0.85rem;
     color: rgb(255 255 255 / 0.7);
     line-height: 1.5;
@@ -243,9 +245,8 @@
 
   .pool-card__summary strong {
     font-variation-settings:
-      'wdth' 100,
-      'wght' 700;
-    color: #fff;
+      'wdth' 90,
+      'wght' 200;
   }
 
   .pool-card__check-picks {
@@ -254,8 +255,8 @@
     cursor: pointer;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
-      'wdth' 100,
-      'wght' 600;
+      'wdth' 90,
+      'wght' 200;
     font-size: 0.8rem;
     color: #ffffff;
     padding: 0;
