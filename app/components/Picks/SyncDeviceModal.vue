@@ -45,8 +45,10 @@
             <IconsClose />
           </button>
 
-          <div class="sync-modal__icon"><IconsSync /></div>
-          <h2 class="sync-modal__title">Sync to Another Device</h2>
+          <div class="sync-modal__header">
+            <div class="sync-modal__icon"><IconsSync /></div>
+            <h2 class="sync-modal__title">Sync to Another Device</h2>
+          </div>
 
           <p class="sync-modal__copy">
             Open this link on your phone, tablet, or any other browser and
@@ -131,14 +133,21 @@
     height: 17px;
   }
 
+  .sync-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
   .sync-modal__icon {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
   }
 
   .sync-modal__icon :deep(svg) {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 1.4rem;
+    height: 1.4rem;
     color: rgb(255 255 255 / 0.6);
   }
 
@@ -148,7 +157,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     letter-spacing: 0.06rem;
     margin: 0;
   }
@@ -199,24 +208,25 @@
   }
 
   .sync-modal__copy-btn {
-    background: oklab(0.62 0.13 0.14);
+    background: oklab(0.54 0.12 0.12);
     color: #ffffff;
     border: none;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 1.1rem;
-    padding: 0.6rem 1.4rem 0.5rem;
+    font-size: 1rem;
+    padding: 0.6rem 1rem 0.5rem;
     cursor: pointer;
     transition:
       background-color 0.15s ease,
       color 0.15s ease;
     align-self: flex-start;
+    width: 100%;
   }
 
   .sync-modal__copy-btn:hover {
-    background: oklab(0.68 0.14 0.15);
+    background: oklab(0.62 0.13 0.14);
   }
 
   .sync-modal__copy-btn--copied {
