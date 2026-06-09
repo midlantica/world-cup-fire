@@ -68,7 +68,7 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website', tagPriority: 'critical' },
         {
           property: 'og:url',
-          content: 'https://worldcupfire.netlify.app/',
+          content: 'https://worldcupfire.com/',
           tagPriority: 'critical',
         },
         {
@@ -84,7 +84,7 @@ export default defineNuxtConfig({
         },
         {
           property: 'og:image',
-          content: 'https://worldcupfire.netlify.app/og-image.png',
+          content: 'https://worldcupfire.com/og-image.png',
           tagPriority: 'critical',
         },
         {
@@ -126,7 +126,7 @@ export default defineNuxtConfig({
         },
         {
           name: 'twitter:image',
-          content: 'https://worldcupfire.netlify.app/og-image.png',
+          content: 'https://worldcupfire.com/og-image.png',
           tagPriority: 'critical',
         },
       ],
