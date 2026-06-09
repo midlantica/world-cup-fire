@@ -174,6 +174,24 @@ export function usePicks() {
     return kickoff - mockNow() <= PICK_WINDOW_MS
   }
 
+  /**
+   * If a pick for this match exists but is a stub (match.home === ''), replace
+   * the stub's match snapshot with the real match data. Called by MatchCard
+   * whenever it renders a match that has a pick, so stubs get hydrated as soon
+   * as the schedule loads — without requiring the user to re-pick.
+   */
+  function hydrateStub(match: Match) {
+    const p = picks.value[match.id]
+    if (!p) return
+    // Only hydrate if it's a stub (empty home name) and the real match has data.
+    if (p.match.home !== '' || !match.home) return
+    picks.value = {
+      ...picks.value,
+      [match.id]: { ...p, match },
+    }
+    persist()
+  }
+
   /** Pick a team to WIN a match (replaces any existing pick for that match). */
   function pick(match: Match, team: string) {
     const outcome: PickOutcome = team === match.home ? 'home' : 'away'
@@ -286,6 +304,7 @@ export function usePicks() {
     pick,
     pickDraw,
 
+    hydrateStub,
     togglePick,
     toggleDraw,
     clearPick,

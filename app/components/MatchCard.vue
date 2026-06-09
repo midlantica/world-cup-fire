@@ -17,7 +17,13 @@
   const { myNation } = useMyNation()
 
   // ── Picks ────────────────────────────────────────────────────────────────
-  const { wtlOutcome, canPick, canPickDraw, pickWtl, clearPick } = usePicks()
+  const { wtlOutcome, canPick, canPickDraw, pickWtl, clearPick, hydrateStub } =
+    usePicks()
+
+  // Hydrate stub picks (written by the reverse-sync) with real match data as
+  // soon as the schedule renders this card. This fills in the empty match
+  // snapshot so W/D/L indicators display correctly and the pick syncs properly.
+  hydrateStub(props.match)
 
   /** The current Win·Tie·Lose pick for this match (anchored to home), or null. */
   const wtl = computed(() => wtlOutcome(props.match.id))
