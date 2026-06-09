@@ -29,15 +29,38 @@
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
     // Initial sync: push all local picks to server on every page load.
-    // Wait two ticks: first tick lets usePicks.onMounted re-hydrate picks from
-    // localStorage; second tick lets usePools.onMounted re-hydrate creds.
-    onMounted(async () => {
-      await nextTick()
-      await nextTick()
-      // Only sync if we actually have creds (belong to at least one pool).
-      if (hasAnyCreds.value && Object.keys(picks.value).length > 0) {
-        syncOwnerPicks(picks.value)
-      }
+    // Wait for both usePicks and usePools onMounted to finish re-hydrating
+    // from localStorage (they register their own onMounted hooks which run
+    // before this one, but the reactive state assignments may not be visible
+    // until the next tick). Use a small timeout to be safe — creds written
+    // directly to localStorage during reverse-sync (pools.vue) won't be in
+    // creds.value until usePools.onMounted re-reads them.
+    onMounted(() => {
+      setTimeout(async () => {
+        // Re-read creds directly from localStorage in case usePools.onMounted
+        // hasn't propagated them to creds.value yet (e.g. after reverse-sync
+        // redirect where creds were written directly to localStorage).
+        const rawCreds = (() => {
+          try {
+            const raw = localStorage.getItem('wc-pool-tokens-v1')
+            return raw ? JSON.parse(raw) : {}
+          } catch {
+            return {}
+          }
+        })()
+        const hasCreds = Object.keys(rawCreds).length > 0
+        const currentPicks = (() => {
+          try {
+            const raw = localStorage.getItem('wc-picks-v1')
+            return raw ? JSON.parse(raw) : {}
+          } catch {
+            return {}
+          }
+        })()
+        if (hasCreds && Object.keys(currentPicks).length > 0) {
+          syncOwnerPicks(currentPicks)
+        }
+      }, 300)
     })
 
     watch(
