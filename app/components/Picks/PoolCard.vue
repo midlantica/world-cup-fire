@@ -84,13 +84,6 @@
       </button>
     </div>
 
-    <!-- Sync to another device (owner only) -->
-    <div v-if="pool.owned" class="pool-card__sync-row">
-      <button class="pool-card__sync-btn" @click="emit('sync-device', pool)">
-        📲 Sync to Another Device
-      </button>
-    </div>
-
     <!-- Your picks summary -->
     <p class="pool-card__summary">
       <strong>{{ picksMade }}</strong> of
@@ -111,6 +104,15 @@
         "
       />
     </div>
+
+    <!-- Sync to another device (owner only) — last item in the card -->
+    <button
+      v-if="pool.owned"
+      class="pool-card__sync-btn"
+      @click="emit('sync-device', pool)"
+    >
+      📲 Sync to Another Device
+    </button>
   </section>
 </template>
 
@@ -201,11 +203,7 @@
     color: #ffffff;
   }
 
-  /* ── Sync to device ──────────────────────────────────────────────────────── */
-  .pool-card__sync-row {
-    margin-bottom: 0.5rem;
-  }
-
+  /* ── Sync to device (last item in card, owner only) ─────────────────────── */
   .pool-card__sync-btn {
     background: none;
     border: 1px solid rgb(255 255 255 / 0.12);
