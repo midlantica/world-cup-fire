@@ -177,7 +177,7 @@
   .sync-modal__copy strong {
     font-variation-settings:
       'wdth' 100,
-      'wght' 700;
+      'wght' 500;
     color: #ffffff;
   }
 
@@ -185,7 +185,7 @@
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
-      'wght' 400;
+      'wght' 300;
     font-size: 0.82rem;
     color: rgb(251 146 60 / 0.9);
     line-height: 1.5;
