@@ -45,7 +45,7 @@
             <IconsClose />
           </button>
 
-          <div class="sync-modal__icon">📲</div>
+          <div class="sync-modal__icon"><IconsSync /></div>
           <h2 class="sync-modal__title">Sync to Another Device</h2>
 
           <p class="sync-modal__copy">
@@ -132,8 +132,14 @@
   }
 
   .sync-modal__icon {
-    font-size: 2.5rem;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .sync-modal__icon :deep(svg) {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: rgb(255 255 255 / 0.6);
   }
 
   .sync-modal__title {

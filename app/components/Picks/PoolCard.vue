@@ -111,7 +111,8 @@
       class="pool-card__sync-btn"
       @click="emit('sync-device', pool)"
     >
-      📲 Sync to Another Device
+      <IconsSync class="pool-card__sync-icon" />
+      Sync to Another Device
     </button>
   </section>
 </template>
@@ -205,6 +206,9 @@
 
   /* ── Sync to device (last item in card, owner only) ─────────────────────── */
   .pool-card__sync-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     background: none;
     border: 1px solid rgb(255 255 255 / 0.12);
     border-radius: 0;
@@ -222,6 +226,12 @@
     white-space: nowrap;
     margin: 0.75rem 0 0;
     width: 100%;
+  }
+
+  .pool-card__sync-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex-shrink: 0;
   }
 
   .pool-card__sync-btn:hover {
