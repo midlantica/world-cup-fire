@@ -223,7 +223,13 @@
     background: #1b1917;
     border: 1px solid oklab(100% 0 0 / 0.1);
     box-shadow: none;
-    padding: 2rem 2.25rem 2.15rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+
+  @media (min-width: 500px) {
+    .pool-modal {
+      padding: 2rem 2.25rem 2.15rem;
+    }
   }
 
   .pool-modal__close {
@@ -312,14 +318,30 @@
   }
 
   .pool-modal__actions {
-    @apply mt-2 flex items-center justify-between gap-3;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+  }
+
+  @media (min-width: 500px) {
+    .pool-modal__actions {
+      gap: 0.75rem;
+    }
   }
 
   .pool-modal__actions-right {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
     margin-left: auto;
+  }
+
+  @media (min-width: 500px) {
+    .pool-modal__actions-right {
+      gap: 0.5rem;
+    }
   }
 
   .pool-modal__delete {
@@ -331,12 +353,20 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 1rem;
-    padding: 0.5rem 1rem 0.45rem;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem 0.45rem;
     cursor: pointer;
+    white-space: nowrap;
     transition:
       background-color 0.12s ease,
       opacity 0.12s ease;
+  }
+
+  @media (min-width: 500px) {
+    .pool-modal__delete {
+      font-size: 1rem;
+      padding: 0.5rem 1rem 0.45rem;
+    }
   }
 
   .pool-modal__delete:hover:not(:disabled) {
@@ -357,10 +387,18 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 1.25rem;
-    padding: 0.5rem 1.3rem 0.45rem;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.5rem 0.45rem;
     cursor: pointer;
+    white-space: nowrap;
     transition: color 0.12s ease;
+  }
+
+  @media (min-width: 500px) {
+    .pool-modal__cancel {
+      font-size: 1.25rem;
+      padding: 0.5rem 1.3rem 0.45rem;
+    }
   }
 
   .pool-modal__cancel:hover {
@@ -376,13 +414,21 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
-    font-size: 1.25rem;
-    padding: 0.5rem 1.2rem 0.45rem;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem 0.45rem;
     cursor: pointer;
+    white-space: nowrap;
     transition:
       background-color 0.15s ease,
       color 0.15s ease,
       opacity 0.15s ease;
+  }
+
+  @media (min-width: 500px) {
+    .pool-modal__submit {
+      font-size: 1.25rem;
+      padding: 0.5rem 1.2rem 0.45rem;
+    }
   }
 
   .pool-modal__submit:hover:not(:disabled) {
