@@ -19,6 +19,7 @@
 // device belongs to. It's hydrated on mount and after every mutation.
 
 import type { Pick, PickOutcome } from './usePicks'
+import { usePicks } from './usePicks'
 
 /** Local registry of the pools this device belongs to + its credentials. */
 const TOKENS_KEY = 'wc-pool-tokens-v1'
@@ -160,6 +161,75 @@ export function usePools() {
       const res = await $fetch<{ pool: ApiPool }>(`/api/pools/${id}`)
       const ui = toUiPool(res.pool)
       mergePool(ui)
+
+      // ── Bidirectional reverse-sync ────────────────────────────────────────
+      // If the server's self-member has picks that aren't in local picks
+      // (e.g. picks made on another device), merge them into local picks so
+      // the W/D chips show on this device and the next syncOwnerPicks push
+      // sends the full set back to the server.
+      if (import.meta.client) {
+        const c = creds.value[id]
+        if (c) {
+          const selfMember = ui.members.find((m) => m.isSelf)
+          if (selfMember && Object.keys(selfMember.picks).length > 0) {
+            const { picks: localPicks } = usePicks()
+            const currentPicks = localPicks.value
+            const serverPickIds = Object.keys(selfMember.picks)
+            const hasNewPicks = serverPickIds.some((mid) => !currentPicks[mid])
+            if (hasNewPicks) {
+              // Merge server picks into local picks. For picks not in local
+              // storage, write a stub — hydrateStub() will fill in the match
+              // snapshot when the MatchCard renders.
+              const merged: Record<string, Pick> = { ...currentPicks }
+              for (const [matchId, outcome] of Object.entries(
+                selfMember.picks
+              )) {
+                if (merged[matchId]) {
+                  // Update outcome in case it changed on the other device.
+                  merged[matchId] = { ...merged[matchId], outcome }
+                } else {
+                  // Write a stub — match snapshot filled in by hydrateStub().
+                  merged[matchId] = {
+                    matchId,
+                    team:
+                      outcome === 'home'
+                        ? '__home__'
+                        : outcome === 'away'
+                          ? '__away__'
+                          : '',
+                    outcome,
+                    pickedAt: new Date().toISOString(),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    match: {
+                      id: matchId,
+                      home: '',
+                      away: '',
+                      date: '',
+                      status: { code: 'ns' as const },
+                      group: null,
+                      homeScore: null,
+                      awayScore: null,
+                      venue: '',
+                      round: '',
+                    } as any,
+                  }
+                }
+              }
+              // Write merged picks to localStorage AND update reactive state.
+              // Updating picks.value triggers the watch(picks) in app.vue which
+              // will push the full merged set back to the server — completing
+              // the bidirectional sync loop.
+              try {
+                localStorage.setItem('wc-picks-v1', JSON.stringify(merged))
+              } catch {
+                // ignore storage errors
+              }
+              localPicks.value = merged
+            }
+          }
+        }
+      }
+
       return ui
     } catch (err) {
       // ONLY forget the pool on a definitive 404 (it was deleted upstream).

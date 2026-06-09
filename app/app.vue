@@ -10,6 +10,7 @@
   import type { Match } from '~/composables/useScores'
 
   const { modalOpen, openMatch } = useMatchDetail()
+  const route = useRoute()
 
   // Apply the selected nation's contrast-safe color theme (sets CSS vars on
   // <html> and toggles the .has-nation-theme class).
@@ -25,7 +26,7 @@
   //    handles the initial push after nextTick (when localStorage is readable).
   if (import.meta.client) {
     const { picks } = usePicks()
-    const { syncOwnerPicks, hasAnyCreds } = usePools()
+    const { syncOwnerPicks, refreshPools, hasAnyCreds } = usePools()
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
     // Initial sync: push all local picks to server on every page load.
@@ -71,9 +72,49 @@
       },
       { deep: true }
     )
-  }
 
-  const route = useRoute()
+    // ── Global background poll: pull server picks on all pages ───────────────
+    // The Pools page has its own 10s poll, but the Matches page doesn't.
+    // This global poll runs on every page so picks made on another device
+    // (e.g. Mobile) show up as W/D chips on this device without needing to
+    // visit the Pools page. We skip polling when on /pools to avoid doubling
+    // up with that page's own interval.
+    const GLOBAL_POLL_MS = 15_000
+    let globalPollTimer: ReturnType<typeof setInterval> | null = null
+
+    function startGlobalPoll() {
+      if (globalPollTimer) return
+      globalPollTimer = setInterval(() => {
+        // Don't double-poll on the Pools page — it has its own 10s interval.
+        if (route.path === '/pools') return
+        refreshPools()
+      }, GLOBAL_POLL_MS)
+    }
+
+    function stopGlobalPoll() {
+      if (globalPollTimer) {
+        clearInterval(globalPollTimer)
+        globalPollTimer = null
+      }
+    }
+
+    onMounted(() => {
+      startGlobalPoll()
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          // Immediately pull fresh data when the user tabs back in.
+          if (route.path !== '/pools') refreshPools()
+          startGlobalPoll()
+        } else {
+          stopGlobalPoll()
+        }
+      })
+    })
+
+    onUnmounted(() => {
+      stopGlobalPoll()
+    })
+  }
 
   // ── Deep-link: ?match=<eventId> opens the game detail modal on load ──────
   // Only restore the match modal if it was the active modal (modal=match),
