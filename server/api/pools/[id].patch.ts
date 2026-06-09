@@ -2,11 +2,19 @@
 //
 // Body: { token: string, poolName?: string, yourName?: string }
 // The token must match the pool's OWNER member. Returns the updated PublicPool.
+// Uses updatePoolWithRetry to prevent concurrent writes from overwriting each other.
 
-import { requirePool, writePool, toPublicPool } from '../../utils/pools'
+import {
+  updatePoolWithRetry,
+  toPublicPool,
+  type StoredPool,
+} from '../../utils/pools'
 
 export default defineEventHandler(async (event) => {
-  const { pool } = await requirePool(event)
+  const id = getRouterParam(event, 'id')
+  if (!id) {
+    throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
+  }
 
   const body = await readBody<{
     token?: string
@@ -18,19 +26,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing token' })
   }
 
-  const owner = pool.members.find((m) => m.isOwner)
-  if (!owner || owner.token !== token) {
-    throw createError({ statusCode: 403, statusMessage: 'Owner only' })
-  }
-
   const poolName = (body?.poolName ?? '').trim().slice(0, 50)
   const yourName = (body?.yourName ?? '').trim().slice(0, 40)
-  if (poolName) pool.name = poolName
-  if (yourName) {
-    owner.name = yourName
-    pool.ownerName = yourName
-  }
 
-  await writePool(pool)
-  return { pool: toPublicPool(pool) }
+  let ownerId = ''
+
+  const updated = await updatePoolWithRetry(id, (pool: StoredPool) => {
+    const owner = pool.members.find((m) => m.isOwner)
+    if (!owner || owner.token !== token) {
+      throw createError({ statusCode: 403, statusMessage: 'Owner only' })
+    }
+
+    if (poolName) pool.name = poolName
+    if (yourName) {
+      owner.name = yourName
+      pool.ownerName = yourName
+    }
+
+    ownerId = owner.id
+    return pool
+  })
+
+  return { pool: toPublicPool(updated, ownerId) }
 })

@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   await writePool(pool)
 
   return {
-    pool: toPublicPool(pool),
+    pool: toPublicPool(pool, owner.id),
     poolId: pool.id,
     memberId: owner.id,
     token: owner.token,

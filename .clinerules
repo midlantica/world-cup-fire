@@ -21,7 +21,7 @@ When making function calls using tools that accept array or object parameters en
 ## UI & Accessibility Standards
 
 ### Font sizes
-- Minimum readable text size is **0.85rem** — never go smaller for any label, caption, or secondary text
+- Minimum readable text size is **0.85rem** — never go smaller for any label, caption, or secondary text, unless on Mobile in desperate cases.
 - Chart axis tick labels are the only exception (space-constrained), minimum **0.75rem**
 - Monospace/code snippets: minimum **0.8rem**
 

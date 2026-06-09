@@ -155,11 +155,17 @@ export const WC_TABS: TabDef[] = [
  * - If today is within a WC week, return that week's tab
  * - If WC hasn't started yet, return 'week1'
  * - If WC is over, return 'week6'
+ *
+ * NOTE: tab.end is midnight (start of that day), so we compare now < the
+ * *next* midnight after tab.end (i.e. now < tab.end + 1 day) to include the
+ * full final day of each week.
  */
 function defaultTab(): WeekTab {
   const now = nowDate()
+  const DAY_MS = 24 * 60 * 60 * 1000
   for (const tab of WC_TABS) {
-    if (now >= tab.start && now <= tab.end) return tab.key
+    if (now >= tab.start && now < new Date(tab.end.getTime() + DAY_MS))
+      return tab.key
   }
   if (now < WC_START) return 'week1'
   return 'week6'
@@ -308,8 +314,15 @@ export function normaliseEvent(ev: any): Match {
 // Date helpers
 // ---------------------------------------------------------------------------
 
+/** Format a local-midnight Date as YYYYMMDD without UTC conversion.
+ *  Using toISOString() would shift the date in positive UTC timezones
+ *  (e.g. NZ UTC+12: local Jun 11 00:00 → UTC Jun 10 12:00 → "20260610").
+ */
 function toYYYYMMDD(d: Date): string {
-  return d.toISOString().slice(0, 10).replace(/-/g, '')
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}${m}${day}`
 }
 
 function tabDateRange(tab: WeekTab): string {

@@ -166,7 +166,13 @@ export function emptyDay(date: string): DayRecord {
 const VISITOR_CAP = 50_000
 
 /**
- * Record a single pageview. Returns the updated day record.
+ * Record a single pageview with optimistic-concurrency retry.
+ *
+ * Analytics counters use the same unversioned read-modify-write pattern as
+ * pools, so concurrent requests can silently drop counts. We retry up to
+ * MAX_RETRIES times on a version mismatch before giving up (a dropped count
+ * is acceptable; a crash is not).
+ *
  * `visitorHash` — truncated SHA-256 of IP+UA (computed by the API route).
  * `sessionId`   — opaque id from the client (localStorage, 30-min idle).
  */
@@ -180,30 +186,53 @@ export async function recordPageview(
   const date = utcDateStr(now)
   const hour = utcHourStr(now)
 
-  const rec = (await store.read(date)) ?? emptyDay(date)
+  const MAX_RETRIES = 3
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const rec = (await store.read(date)) ?? emptyDay(date)
+    const versionBefore = (rec as DayRecord & { version?: number }).version ?? 0
 
-  rec.pageViews++
+    rec.pageViews++
 
-  // Visitors (unique per day)
-  if (
-    !rec.visitors.includes(visitorHash) &&
-    rec.visitors.length < VISITOR_CAP
-  ) {
-    rec.visitors.push(visitorHash)
+    // Visitors (unique per day)
+    if (
+      !rec.visitors.includes(visitorHash) &&
+      rec.visitors.length < VISITOR_CAP
+    ) {
+      rec.visitors.push(visitorHash)
+    }
+
+    // Sessions (unique per day)
+    if (
+      !rec.sessions.includes(sessionId) &&
+      rec.sessions.length < VISITOR_CAP
+    ) {
+      rec.sessions.push(sessionId)
+    }
+
+    // Per-page counts
+    rec.pages[path] = (rec.pages[path] ?? 0) + 1
+
+    // Hourly counts
+    rec.hourly[hour] = (rec.hourly[hour] ?? 0) + 1
+
+    // Stamp a version so we can detect concurrent writes.
+    ;(rec as DayRecord & { version?: number }).version = versionBefore + 1
+
+    await store.write(rec)
+
+    // Verify our write won the race.
+    const verify = await store.read(date)
+    const verifyVersion = (verify as (DayRecord & { version?: number }) | null)
+      ?.version
+    if (verifyVersion === versionBefore + 1) return
+
+    // Another writer beat us — retry from a fresh read.
+    if (attempt < MAX_RETRIES) {
+      await new Promise((r) => setTimeout(r, 10 + Math.random() * 40))
+    }
+    // On the last attempt we accept the write as-is (a single dropped count
+    // is an acceptable trade-off vs. blocking the response indefinitely).
   }
-
-  // Sessions (unique per day)
-  if (!rec.sessions.includes(sessionId) && rec.sessions.length < VISITOR_CAP) {
-    rec.sessions.push(sessionId)
-  }
-
-  // Per-page counts
-  rec.pages[path] = (rec.pages[path] ?? 0) + 1
-
-  // Hourly counts
-  rec.hourly[hour] = (rec.hourly[hour] ?? 0) + 1
-
-  await store.write(rec)
 }
 
 // ── SHA-256 fingerprint (Web Crypto — available in Nitro/Netlify runtime) ─────

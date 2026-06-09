@@ -42,13 +42,10 @@
     const { syncOwnerPicks, refreshPools, hasAnyCreds } = usePools()
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-    // Initial sync: push all local picks to server on every page load.
-    // Wait for both usePicks and usePools onMounted to finish re-hydrating
-    // from localStorage (they register their own onMounted hooks which run
-    // before this one, but the reactive state assignments may not be visible
-    // until the next tick). Use a small timeout to be safe — creds written
-    // directly to localStorage during reverse-sync (pools.vue) won't be in
-    // creds.value until usePools.onMounted re-reads them.
+    // Initial sync: pull server state first, then push local picks.
+    // Pulling first ensures that picks made on another device are merged into
+    // local state before we push — preventing an older device from overwriting
+    // newer selections made elsewhere.
     onMounted(() => {
       setTimeout(async () => {
         // Re-read creds directly from localStorage in case usePools.onMounted
@@ -63,6 +60,13 @@
           }
         })()
         const hasCreds = Object.keys(rawCreds).length > 0
+        if (!hasCreds) return
+
+        // Step 1: pull server state (reverse-sync merges server picks into local).
+        await refreshPools()
+
+        // Step 2: push the now-merged local picks back to the server.
+        // Re-read from localStorage so we get the post-merge state.
         const currentPicks = (() => {
           try {
             const raw = localStorage.getItem('wc-picks-v1')
@@ -71,7 +75,7 @@
             return {}
           }
         })()
-        if (hasCreds && Object.keys(currentPicks).length > 0) {
+        if (Object.keys(currentPicks).length > 0) {
           syncOwnerPicks(currentPicks)
         }
       }, 300)

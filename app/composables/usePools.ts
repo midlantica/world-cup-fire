@@ -175,8 +175,14 @@ export function usePools() {
             const { picks: localPicks } = usePicks()
             const currentPicks = localPicks.value
             const serverPickIds = Object.keys(selfMember.picks)
-            const hasNewPicks = serverPickIds.some((mid) => !currentPicks[mid])
-            if (hasNewPicks) {
+            // Merge if the server has picks this device doesn't know about, OR
+            // if any outcome differs (pick changed on another device).
+            const needsSync = serverPickIds.some(
+              (mid) =>
+                !currentPicks[mid] ||
+                currentPicks[mid]!.outcome !== selfMember.picks[mid]
+            )
+            if (needsSync) {
               // Merge server picks into local picks. For picks not in local
               // storage, write a stub — hydrateStub() will fill in the match
               // snapshot when the MatchCard renders.
@@ -579,7 +585,15 @@ export function usePools() {
             `/api/pools/${id}/picks`,
             {
               method: 'PUT',
-              body: { memberId: c.memberId, token: c.token, picks: payload },
+              body: {
+                memberId: c.memberId,
+                token: c.token,
+                picks: payload,
+                // Always set picksProvided so the server knows this is an
+                // intentional picks update (even when the map is empty, which
+                // means "clear all picks" rather than "name-only update").
+                picksProvided: true,
+              },
             }
           )
           // Merge the server response but preserve the locally-known member

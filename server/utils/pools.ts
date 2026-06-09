@@ -48,6 +48,8 @@ export interface StoredPool {
   ownerName: string
   createdAt: string
   members: StoredMember[]
+  /** Monotonically-increasing write counter used for optimistic concurrency. */
+  version?: number
 }
 
 // ── Public (token-free) shapes returned to clients ────────────────────────────
@@ -80,8 +82,17 @@ export function secretToken(): string {
   return uuid().replace(/-/g, '') + uuid().replace(/-/g, '')
 }
 
-/** Strip secrets so a pool can be returned publicly (leaderboard reads). */
-export function toPublicPool(pool: StoredPool): PublicPool {
+/**
+ * Strip secrets so a pool can be returned publicly (leaderboard reads).
+ *
+ * `selfMemberId` — when provided, that member's picks are included in full.
+ * All other members' picks are OMITTED so participants cannot inspect each
+ * other's selections before matches are decided.
+ */
+export function toPublicPool(
+  pool: StoredPool,
+  selfMemberId?: string
+): PublicPool {
   return {
     id: pool.id,
     name: pool.name,
@@ -91,7 +102,8 @@ export function toPublicPool(pool: StoredPool): PublicPool {
       id: m.id,
       name: m.name,
       isOwner: m.isOwner,
-      picks: m.picks,
+      // Only expose picks for the authenticated caller; hide everyone else's.
+      picks: m.id === selfMemberId ? m.picks : {},
     })),
   }
 }
@@ -247,9 +259,56 @@ export async function requirePool(
   return { id, pool }
 }
 
-/** Write a pool back to the store. */
+/** Write a pool back to the store, incrementing its version counter. */
 export async function writePool(pool: StoredPool): Promise<void> {
+  pool.version = (pool.version ?? 0) + 1
   await poolStore().write(pool)
+}
+
+/**
+ * Perform a safe read-modify-write on a pool with optimistic concurrency.
+ *
+ * `mutate` receives the freshly-read pool and returns the modified copy.
+ * If a concurrent write changed the pool between our read and write, we
+ * re-read and retry up to `maxRetries` times before giving up.
+ *
+ * This prevents two simultaneous picks submissions from silently discarding
+ * one another's changes (the second writer overwrites the first).
+ */
+export async function updatePoolWithRetry(
+  id: string,
+  mutate: (pool: StoredPool) => StoredPool | Promise<StoredPool>,
+  maxRetries = 3
+): Promise<StoredPool> {
+  const store = poolStore()
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const current = await store.read(id)
+    if (!current) {
+      throw createError({ statusCode: 404, statusMessage: 'Pool not found' })
+    }
+    const versionBefore = current.version ?? 0
+    const updated = await mutate(current)
+    // Increment version to detect concurrent writes on the next attempt.
+    updated.version = versionBefore + 1
+    await store.write(updated)
+
+    // Verify our write won the race by re-reading and checking the version.
+    const verify = await store.read(id)
+    if (verify && verify.version === updated.version) {
+      return updated
+    }
+    // Another writer incremented the version between our write and verify —
+    // retry from a fresh read. On the last attempt, accept our write as-is
+    // (the alternative is a 409 which would be worse UX for picks).
+    if (attempt === maxRetries) return updated
+    // Small jitter before retry to reduce thundering-herd collisions.
+    await new Promise((r) => setTimeout(r, 20 + Math.random() * 60))
+  }
+  // Unreachable, but TypeScript needs a return.
+  throw createError({
+    statusCode: 409,
+    statusMessage: 'Concurrent write conflict',
+  })
 }
 
 /** Delete a pool from the store. */

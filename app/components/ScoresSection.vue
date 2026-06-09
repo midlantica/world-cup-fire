@@ -3,11 +3,14 @@
   import { useMatchDetail } from '../composables/useMatchDetail'
   import { useCountryDetail } from '../composables/useCountryDetail'
   import { useGroupDetail } from '../composables/useGroupDetail'
+  import { useTimezone } from '../composables/useTimezone'
+  import { nowDate } from '../composables/useMockTime'
 
-  const { matches, matchesByDay, pending, error } = useScores()
+  const { matches, matchesByDay, pending, error, activeTab } = useScores()
   const { openMatch } = useMatchDetail()
   const { openCountry } = useCountryDetail()
   const { openGroupSilent: openGroup } = useGroupDetail()
+  const { iana } = useTimezone()
 
   function formatDayHeader(day: string): string {
     // day is already YYYY-MM-DD in the selected timezone — parse at noon UTC
@@ -42,8 +45,87 @@
     else dayRefs.value.delete(day)
   }
 
+  // ── Scroll to today's day section after matches load ─────────────────────
+  // Computes today's date key (YYYY-MM-DD) in the user's timezone, then
+  // scrolls the matching day section into view once the DOM is ready.
+  // Falls back to the top of the page (Week 1) if today has no matches
+  // (e.g. before the tournament starts).
+  const scrolledToToday = ref(false)
+
+  // Tournament start date (first match day)
+  const WC_START_KEY = '2026-06-11'
+
+  async function scrollToToday() {
+    if (scrolledToToday.value) return
+    if (!matchesByDay.value.size) return
+
+    // Today's date key in the user's selected timezone
+    const todayKey = nowDate().toLocaleDateString('en-CA', {
+      timeZone: iana.value,
+    })
+
+    // Before the tournament starts: scroll to the very top (Week 1 header)
+    if (todayKey < WC_START_KEY) {
+      await nextTick()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      scrolledToToday.value = true
+      return
+    }
+
+    // Find the closest day: today if present, otherwise the nearest future day,
+    // otherwise the last day in the week (tournament is over / past this week).
+    const days = [...matchesByDay.value.keys()]
+    let targetDay = days.find((d) => d === todayKey)
+    if (!targetDay) {
+      // Pick the first day that is >= today (upcoming), or fall back to last day
+      targetDay = days.find((d) => d >= todayKey) ?? days[days.length - 1]
+    }
+
+    if (!targetDay) return
+
+    // Wait a tick for Vue to render the day refs
+    await nextTick()
+
+    const el = dayRefs.value.get(targetDay)
+    if (!el) return
+
+    const headerH =
+      parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--app-header-h'
+        )
+      ) || 80
+
+    const top = el.getBoundingClientRect().top + window.scrollY - headerH - 12
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+    scrolledToToday.value = true
+  }
+
+  // Reset scroll flag when the user manually switches week tabs so the new
+  // week's "today" section is found and scrolled to after data loads.
+  watch(activeTab, () => {
+    scrolledToToday.value = false
+  })
+
+  // Watch for matches to load (pending → data available) then scroll once
+  watch(
+    () => matchesByDay.value.size,
+    async (size) => {
+      if (size > 0) {
+        await scrollToToday()
+      }
+    }
+  )
+
   onMounted(() => {
-    // Only run on narrow viewports (≤ 640 px, i.e. Tailwind's "sm" breakpoint)
+    // If data is already available (cached), scroll immediately
+    if (matchesByDay.value.size > 0) {
+      scrollToToday()
+    }
+
+    // ── Mobile active-day detection ─────────────────────────────────────────
+    // On mobile, whichever day section is most visible in the viewport gets its
+    // header highlighted in yellow (same colour as the desktop hover state).
     const mq = window.matchMedia('(max-width: 640px)')
     if (!mq.matches) return
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { nowDate } from '~/composables/useMockTime'
+  import { useScores, WC_TABS } from '~/composables/useScores'
 
   useHead({
     title: 'World Cup Fire 🔥 — 2026 FIFA World Cup Match Tracker',
@@ -30,6 +31,28 @@
   })
   onUnmounted(() => {
     if (_timer) clearInterval(_timer)
+  })
+
+  // ── Reset to current week on every visit ─────────────────────────────────
+  // When navigating to the Matches page (e.g. from Pools), always jump to the
+  // week that contains today's matches so the user lands on live/upcoming games.
+  const { activeTab } = useScores()
+
+  function defaultTab() {
+    const now = nowDate()
+    const DAY_MS = 24 * 60 * 60 * 1000
+    for (const tab of WC_TABS) {
+      // tab.end is midnight (start of that day); add 1 day to include the full
+      // final day of each week (same fix as useScores.ts defaultTab).
+      if (now >= tab.start && now < new Date(tab.end.getTime() + DAY_MS))
+        return tab.key
+    }
+    if (now < WC_TABS[0]!.start) return 'week1'
+    return 'week6'
+  }
+
+  onMounted(() => {
+    activeTab.value = defaultTab()
   })
 </script>
 
