@@ -230,7 +230,9 @@ let _tzDetected = false
 
 export function useTimezone() {
   // On the client, detect the real browser timezone once after mount.
-  if (import.meta.client) {
+  // Guard with getCurrentInstance() so this is safe to call outside a
+  // component setup context (e.g. from useScores or server utilities).
+  if (import.meta.client && getCurrentInstance()) {
     onMounted(() => {
       // Only auto-detect if the user hasn't manually changed the timezone
       // (i.e. selectedTz is still the SSR default 'ET' and we haven't run yet).
@@ -240,6 +242,11 @@ export function useTimezone() {
         selectedTz.value = detectTzCode()
       }
     })
+  } else if (import.meta.client && !_tzDetected) {
+    // Called outside a component (e.g. in a composable chain) — detect
+    // immediately since we can't hook into onMounted.
+    _tzDetected = true
+    selectedTz.value = detectTzCode()
   }
 
   function setTz(code: TzCode) {

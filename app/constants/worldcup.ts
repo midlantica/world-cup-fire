@@ -967,7 +967,7 @@ export function venueLocation(
 // issues or API gaps). Keyed by ESPN event ID as a string.
 // ---------------------------------------------------------------------------
 const MATCH_VENUE: Record<string, string> = {
-  '760414': 'Estadio Akron',
+  '760414': 'Estadio Banorte',
   '760415': 'Estadio Azteca',
   '760416': 'BMO Field',
   '760417': 'SoFi Stadium',
@@ -994,7 +994,7 @@ const MATCH_VENUE: Record<string, string> = {
   '760438': 'Mercedes-Benz Stadium',
   '760439': 'SoFi Stadium',
   '760440': 'BC Place',
-  '760441': 'Estadio Akron',
+  '760441': 'Estadio Banorte',
   '760442': 'Lumen Field',
   '760443': "Levi's Stadium",
   '760444': 'Lincoln Financial Field',
@@ -1012,7 +1012,7 @@ const MATCH_VENUE: Record<string, string> = {
   '760456': 'AT&T Stadium',
   '760457': 'Lincoln Financial Field',
   '760458': 'Gillette Stadium',
-  '760459': 'Estadio Akron',
+  '760459': 'Estadio Banorte',
   '760460': 'BMO Field',
   '760461': 'NRG Stadium',
   '760462': 'Lumen Field',
@@ -1032,7 +1032,7 @@ const MATCH_VENUE: Record<string, string> = {
   '760476': 'Lumen Field',
   '760477': 'BC Place',
   '760478': 'NRG Stadium',
-  '760479': 'Estadio Akron',
+  '760479': 'Estadio Banorte',
   '760480': 'Lincoln Financial Field',
   '760481': 'Hard Rock Stadium',
   '760482': 'Mercedes-Benz Stadium',
