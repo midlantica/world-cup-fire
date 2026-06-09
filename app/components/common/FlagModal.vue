@@ -91,7 +91,7 @@
   }
 
   .modal-panel {
-    @apply flex w-full max-w-2xl flex-col rounded-2xl bg-zinc-900;
+    @apply flex w-full max-w-2xl flex-col bg-zinc-900;
     max-height: min(92vh, 92dvh);
   }
 
