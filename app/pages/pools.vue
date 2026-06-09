@@ -134,9 +134,6 @@
     // state from flashing while pools are still loading on refresh.
     poolsReady.value = true
 
-    // Re-sync picks now that creds are hydrated and pools are loaded.
-    await syncOwnerPicks(picks.value)
-
     // Brand-new users (no pools, not arriving via an invite link) always get
     // a pool — gratis, whether they want one or not. Their picks auto-populate
     // into it. Guard: only auto-create if pools is STILL empty after refreshPools
