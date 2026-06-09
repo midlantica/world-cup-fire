@@ -16,16 +16,30 @@
   useNationTheme()
 
   // ── Global picks → pool sync ───────────────────────────────────────────────
-  // Watch for pick changes on ANY page and push them to the server immediately.
-  // Debounced 400ms so rapid successive picks batch into one request.
-  // NOTE: NOT immediate — usePicks re-hydrates localStorage in its own
-  // onMounted, so the initial state during SSR/hydration is empty. The explicit
-  // syncOwnerPicks() call in pools.vue onMounted handles the initial push once
-  // creds are fully hydrated.
+  // 1. On mount: push the full local picks to the server once creds are ready.
+  //    This ensures picks made before this session (or on another page) are
+  //    always on the server, even if the user never visits the Pools page.
+  // 2. Watch: debounced 400ms so subsequent pick changes sync immediately.
+  //    NOT immediate — usePicks re-hydrates localStorage in its own onMounted,
+  //    so the initial state during SSR/hydration is empty. The onMounted below
+  //    handles the initial push after nextTick (when localStorage is readable).
   if (import.meta.client) {
     const { picks } = usePicks()
-    const { syncOwnerPicks } = usePools()
+    const { syncOwnerPicks, hasAnyCreds } = usePools()
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+    // Initial sync: push all local picks to server on every page load.
+    // Wait two ticks: first tick lets usePicks.onMounted re-hydrate picks from
+    // localStorage; second tick lets usePools.onMounted re-hydrate creds.
+    onMounted(async () => {
+      await nextTick()
+      await nextTick()
+      // Only sync if we actually have creds (belong to at least one pool).
+      if (hasAnyCreds.value && Object.keys(picks.value).length > 0) {
+        syncOwnerPicks(picks.value)
+      }
+    })
+
     watch(
       picks,
       (val) => {
