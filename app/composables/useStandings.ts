@@ -71,7 +71,7 @@ function espnAgrees(
     if (!espn || !ours) continue
     if (espn.teamName !== ours.teamName) {
       if (import.meta.client) {
-        console.warn(
+        console.debug(
           `[standings] ${groupName} order mismatch at position ${i + 1}: ` +
             `ESPN says "${espn.teamName}", ` +
             `our FIFA sort says "${ours.teamName}". ` +
