@@ -276,6 +276,27 @@ export function usePools() {
     return `${origin}/pools?${params.toString()}`
   }
 
+  /**
+   * Generate a private "sync to another device" URL for the pool owner.
+   * The URL embeds the owner's secret token so the receiving device can
+   * re-attach to the owner member slot and pull all picks from the server.
+   *
+   * IMPORTANT: this link is private — it should only be sent to the owner's
+   * own devices, never shared publicly. The token grants owner-level write
+   * access to the pool.
+   *
+   * Returns null if the caller doesn't hold owner creds for this pool.
+   */
+  function ownerSyncLink(id: string): string | null {
+    const c = creds.value[id]
+    if (!c?.isOwner) return null
+    const origin = import.meta.client
+      ? window.location.origin
+      : 'https://worldcupfire.netlify.app'
+    const params = new URLSearchParams({ p: id, sync: c.token })
+    return `${origin}/pools?${params.toString()}`
+  }
+
   /** Create a pool owned by the local user. Returns it, or null on failure/cap. */
   async function createPool(input: {
     yourName: string
@@ -588,6 +609,7 @@ export function usePools() {
     joinPool,
     leavePool,
     poolLink,
+    ownerSyncLink,
     createPool,
     updatePool,
     deletePool,

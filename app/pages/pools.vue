@@ -5,7 +5,7 @@
   import { useCountryDetail } from '../composables/useCountryDetail'
   import { useGroupDetail } from '../composables/useGroupDetail'
   import { normaliseEvent } from '../composables/useScores'
-  import type { PickOutcome } from '../composables/usePicks'
+  import type { PickOutcome, Pick } from '../composables/usePicks'
   import type { Pool } from '../composables/usePools'
 
   useHead({
@@ -33,6 +33,7 @@
     refreshPools,
     leaderboard,
     poolLink,
+    ownerSyncLink,
   } = usePools()
 
   useMatchDetail()
@@ -68,6 +69,27 @@
     const n = route.query.n
     return typeof n === 'string' ? n : ''
   })
+
+  // ── Sync token (owner re-attach from another device) ──────────────────────
+  // When the URL contains ?sync=<ownerToken>, this device is the owner's second
+  // device. We re-attach to the owner member slot silently (no name prompt),
+  // then reverse-sync the server picks into local localStorage so the Matches
+  // page shows all the picks the owner made on their first device.
+  const syncToken = computed(() => {
+    const s = route.query.sync
+    return typeof s === 'string' && s.length > 0 ? s : null
+  })
+
+  // ── Sync modal (shown when owner clicks "Sync to Another Device") ─────────
+  const syncModalOpen = ref(false)
+  const syncModalUrl = ref('')
+
+  function openSyncModal(pool: Pool) {
+    const url = ownerSyncLink(pool.id)
+    if (!url) return
+    syncModalUrl.value = url
+    syncModalOpen.value = true
+  }
 
   // ── Join modal ─────────────────────────────────────────────────────────────
   const joinModalOpen = ref(false)
@@ -129,6 +151,144 @@
         poolName: 'World Cup Fire Pool',
       })
       if (created) await syncOwnerPicks(picks.value)
+    }
+
+    // ── Owner sync: ?p=<poolId>&sync=<ownerToken> ─────────────────────────
+    // The owner opened their own sync link on this device. Re-attach to the
+    // owner member slot silently (no name prompt), then pull the server picks
+    // back into local localStorage so the Matches page shows them.
+    if (poolId.value && syncToken.value && !hasPool(poolId.value)) {
+      try {
+        const res = await $fetch<{
+          pool: {
+            id: string
+            name: string
+            ownerName: string
+            createdAt: string
+            members: Array<{
+              id: string
+              name: string
+              isOwner: boolean
+              picks: Record<string, PickOutcome>
+            }>
+          }
+          memberId: string
+          token: string
+          isOwner?: boolean
+        }>(`/api/pools/${poolId.value}/join`, {
+          method: 'POST',
+          body: {
+            yourName: 'owner', // placeholder — server uses stored name
+            token: syncToken.value,
+          },
+        })
+
+        // Store the re-attached creds (owner slot).
+        // We do this by calling joinPool's internal path — but since joinPool
+        // has an early-return guard for existing creds, we write directly here.
+        // The server already validated the token and returned the owner slot.
+        if (res.isOwner || res.token === syncToken.value) {
+          // Manually store creds so usePools recognises this device as owner.
+          const existingCreds = (() => {
+            try {
+              const raw = localStorage.getItem('wc-pool-tokens-v1')
+              return raw
+                ? (JSON.parse(raw) as Record<
+                    string,
+                    { memberId: string; token: string; isOwner: boolean }
+                  >)
+                : {}
+            } catch {
+              return {}
+            }
+          })()
+          existingCreds[poolId.value] = {
+            memberId: res.memberId,
+            token: res.token,
+            isOwner: res.isOwner ?? false,
+          }
+          localStorage.setItem(
+            'wc-pool-tokens-v1',
+            JSON.stringify(existingCreds)
+          )
+
+          // ── Reverse-sync: pull server picks → local wc-picks-v1 ──────────
+          // Find the owner member in the returned pool and write their picks
+          // into the local picks store so the Matches page shows them.
+          const ownerMember = res.pool.members.find(
+            (m) => m.id === res.memberId
+          )
+          if (ownerMember && Object.keys(ownerMember.picks).length > 0) {
+            // We need full Pick objects (with match snapshots) to write to
+            // wc-picks-v1. The server only stores outcomes, not match snapshots.
+            // Strategy: merge with any existing local picks (keep snapshots),
+            // and for picks we don't have locally, write a minimal stub that
+            // the Matches page can display (outcome only, match filled in later).
+            const existingPicks = (() => {
+              try {
+                const raw = localStorage.getItem('wc-picks-v1')
+                return raw ? (JSON.parse(raw) as Record<string, Pick>) : {}
+              } catch {
+                return {}
+              }
+            })()
+
+            // Merge: server picks take precedence for outcome; keep local
+            // match snapshots where available.
+            const merged: Record<string, Pick> = { ...existingPicks }
+            for (const [matchId, outcome] of Object.entries(
+              ownerMember.picks
+            )) {
+              if (merged[matchId]) {
+                // Update outcome in case it changed on the other device.
+                merged[matchId] = { ...merged[matchId], outcome }
+              } else {
+                // No local snapshot — write a stub. The match snapshot will
+                // be filled in the next time the schedule loads and the user
+                // makes or views a pick. For now the outcome is preserved.
+                merged[matchId] = {
+                  matchId,
+                  team:
+                    outcome === 'home'
+                      ? '__home__'
+                      : outcome === 'away'
+                        ? '__away__'
+                        : '',
+                  outcome,
+                  pickedAt: new Date().toISOString(),
+                  // Minimal match stub — enough for the picks store to hold it.
+                  // Cast to satisfy the Match type; real snapshot fills in later.
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  match: {
+                    id: matchId,
+                    home: '',
+                    away: '',
+                    date: '',
+                    status: { code: 'ns' as const },
+                    group: null,
+                    homeScore: null,
+                    awayScore: null,
+                    venue: '',
+                    round: '',
+                  } as any,
+                }
+              }
+            }
+            localStorage.setItem('wc-picks-v1', JSON.stringify(merged))
+            // Reload the page so the reactive picks state re-hydrates from
+            // the freshly-written localStorage. This is the simplest way to
+            // ensure the Matches page reflects the synced picks immediately.
+            window.location.replace(window.location.pathname + '?synced=1')
+            return // stop further onMounted logic — page is reloading
+          }
+
+          // No picks to reverse-sync — just reload to clean the URL.
+          window.location.replace(window.location.pathname + '?synced=1')
+          return
+        }
+      } catch {
+        // Sync token invalid or expired — fall through to normal join flow.
+      }
     }
 
     if (poolId.value && !hasPool(poolId.value)) {
@@ -462,6 +622,7 @@
               @leave="onLeave"
               @edit-picks="$router.push('/')"
               @rename="openEditName"
+              @sync-device="openSyncModal"
               @delete-member="
                 (pool, memberId) => onDeleteMember(pool, memberId)
               "
@@ -515,6 +676,13 @@
       "
       @close="editNameOpen = false"
       @submit="onEditNameSubmit"
+    />
+
+    <!-- Sync to another device modal (owner only) -->
+    <PicksSyncDeviceModal
+      :open="syncModalOpen"
+      :sync-url="syncModalUrl"
+      @close="syncModalOpen = false"
     />
 
     <!-- Modals -->

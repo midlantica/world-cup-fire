@@ -26,6 +26,7 @@
     (e: 'edit-picks'): void
     (e: 'rename', pool: Pool): void
     (e: 'delete-member', pool: Pool, memberId: string, name: string): void
+    (e: 'sync-device', pool: Pool): void
   }>()
 
   const copied = ref(false)
@@ -80,6 +81,13 @@
         @click="emit('leave', pool)"
       >
         Leave Pool
+      </button>
+    </div>
+
+    <!-- Sync to another device (owner only) -->
+    <div v-if="pool.owned" class="pool-card__sync-row">
+      <button class="pool-card__sync-btn" @click="emit('sync-device', pool)">
+        📲 Sync to Another Device
       </button>
     </div>
 
@@ -191,6 +199,34 @@
   .pool-card__action-btn--leave:hover {
     background: #e06464;
     color: #ffffff;
+  }
+
+  /* ── Sync to device ──────────────────────────────────────────────────────── */
+  .pool-card__sync-row {
+    margin-bottom: 0.5rem;
+  }
+
+  .pool-card__sync-btn {
+    background: none;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 0;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
+    font-size: 0.82rem;
+    color: rgb(255 255 255 / 0.45);
+    padding: 0.3rem 0.7rem 0.25rem;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .pool-card__sync-btn:hover {
+    border-color: rgb(255 255 255 / 0.3);
+    color: rgb(255 255 255 / 0.75);
   }
 
   /* ── Your picks summary ──────────────────────────────────────────────────── */
