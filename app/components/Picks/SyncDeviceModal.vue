@@ -73,8 +73,8 @@
           </button>
 
           <p class="sync-modal__note">
-            The link works once per device. After syncing, your picks stay in
-            sync automatically through your pool.
+            Open this link on any device to sync your picks. You can reuse it
+            any time — your picks stay in sync automatically through your pool.
           </p>
         </div>
       </div>

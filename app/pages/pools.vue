@@ -157,7 +157,7 @@
     // The owner opened their own sync link on this device. Re-attach to the
     // owner member slot silently (no name prompt), then pull the server picks
     // back into local localStorage so the Matches page shows them.
-    if (poolId.value && syncToken.value && !hasPool(poolId.value)) {
+    if (poolId.value && syncToken.value) {
       try {
         const res = await $fetch<{
           pool: {
