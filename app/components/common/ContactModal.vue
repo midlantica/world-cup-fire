@@ -185,7 +185,7 @@
   }
 
   .modal-close {
-    @apply rounded-lg p-1.5 text-white/50 transition-colors hover:text-white;
+    @apply rounded-none p-1.5 text-white/50 transition-colors hover:text-white;
   }
 
   /* Form */
@@ -202,7 +202,7 @@
   }
 
   .form-input {
-    @apply w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 transition-colors outline-none;
+    @apply w-full rounded-none border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 transition-colors outline-none;
     &:focus {
       @apply border-white/30 bg-white/8;
     }
@@ -214,7 +214,7 @@
   }
 
   .form-error {
-    @apply rounded-lg bg-red-900/40 px-3 py-2 text-sm text-red-300;
+    @apply rounded-none bg-red-900/40 px-3 py-2 text-sm text-red-300;
   }
 
   .modal-actions {
@@ -222,11 +222,15 @@
   }
 
   .btn-secondary {
-    @apply rounded-lg px-4 py-2 text-sm font-semibold text-white/60 transition-colors hover:bg-white/10 hover:text-white;
+    @apply rounded-none px-4 py-2 text-sm font-semibold text-white/60 transition-colors hover:bg-white/10 hover:text-white;
   }
 
   .btn-primary {
-    @apply rounded-lg bg-orange-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply rounded-none bg-orange-600 px-5 py-2 text-base font-bold text-white transition-colors hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-50;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    letter-spacing: 0.07rem;
   }
 
   /* Success */
