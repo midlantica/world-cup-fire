@@ -1,12 +1,64 @@
-// Analytics API stub — returns a message when not configured.
-// To enable real analytics, implement this endpoint with your analytics provider.
+// GET /api/analytics
+// Returns 30-day analytics summary for the /analytics dashboard page.
 
-export default defineEventHandler(() => {
+import { analyticsStore } from '../../utils/analytics'
+
+const DAYS = 30
+
+export default defineEventHandler(async () => {
+  const store = analyticsStore()
+  const days = await store.list(DAYS)
+
+  // Totals across all days
+  let totalPageViews = 0
+  const allVisitors = new Set<string>()
+  const allSessions = new Set<string>()
+  const allPages: Record<string, number> = {}
+
+  for (const day of days) {
+    totalPageViews += day.pageViews
+    for (const v of day.visitors) allVisitors.add(v)
+    for (const s of day.sessions) allSessions.add(s)
+    for (const [path, count] of Object.entries(day.pages)) {
+      allPages[path] = (allPages[path] ?? 0) + count
+    }
+  }
+
+  // Top pages (sorted desc)
+  const topPages = Object.entries(allPages)
+    .map(([path, views]) => ({ path, views }))
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 20)
+
+  // Per-day summaries (most recent first)
+  const daySummaries = days.map((day) => {
+    const dayTopPages = Object.entries(day.pages)
+      .map(([path, views]) => ({ path, views }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10)
+
+    const hourly = Object.entries(day.hourly).map(([hour, views]) => ({
+      hour,
+      views,
+    }))
+
+    return {
+      date: day.date,
+      pageViews: day.pageViews,
+      uniqueVisitors: day.visitors.length,
+      sessions: day.sessions.length,
+      topPages: dayTopPages,
+      hourly,
+    }
+  })
+
   return {
-    message:
-      'Analytics not configured. Set up your analytics provider to see data here.',
-    days: [],
-    totals: { pageViews: 0, uniqueVisitors: 0, sessions: 0 },
-    topPages: [],
+    days: daySummaries,
+    totals: {
+      pageViews: totalPageViews,
+      uniqueVisitors: allVisitors.size,
+      sessions: allSessions.size,
+    },
+    topPages,
   }
 })
