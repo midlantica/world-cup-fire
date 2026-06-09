@@ -19,6 +19,9 @@ function getSessionId(): string {
 
 export function useAnalytics() {
   function trackPageview(path: string) {
+    // Never track in local dev — keeps analytics clean and avoids self-inflation
+    if (import.meta.dev) return
+
     // Strip query strings — we only care about the path, not the specific game/team
     const cleanPath = path.split('?')[0] || '/'
     const url = '/api/analytics/pageview'
