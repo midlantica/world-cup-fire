@@ -412,10 +412,6 @@
     // The server-side pool member picks can lag behind (they're only pushed on
     // syncOwnerPicks) and would show 0 immediately after a refreshPools() call
     // before the next sync completes — causing the count to flash from 72 → 0.
-    console.log(
-      '[poolSummary] picks.value count:',
-      Object.keys(picks.value).length
-    )
     let made = 0
     let correct = 0
     for (const [matchId, pick] of Object.entries(picks.value)) {
