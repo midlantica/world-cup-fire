@@ -195,6 +195,33 @@
             {{ data.totals.pageViews.toLocaleString() }}
           </div>
           <div class="kpi-sub">last 30 days</div>
+          <template v-if="todayStats">
+            <div class="kpi-divider" />
+            <div class="kpi-daily-label">Today</div>
+            <div class="kpi-daily-row">
+              <span class="kpi-daily-val">{{
+                todayStats.pageViews.toLocaleString()
+              }}</span>
+              <span
+                v-if="
+                  trend(todayStats.pageViews, yesterdayStats?.pageViews) !==
+                  null
+                "
+                class="kpi-delta"
+                :class="
+                  trend(todayStats.pageViews, yesterdayStats?.pageViews)! >= 0
+                    ? 'kpi-delta--up'
+                    : 'kpi-delta--down'
+                "
+              >
+                {{
+                  trend(todayStats.pageViews, yesterdayStats?.pageViews)! >= 0
+                    ? '+'
+                    : ''
+                }}{{ trend(todayStats.pageViews, yesterdayStats?.pageViews) }}%
+              </span>
+            </div>
+          </template>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Unique Visitors</div>
@@ -202,6 +229,46 @@
             {{ data.totals.uniqueVisitors.toLocaleString() }}
           </div>
           <div class="kpi-sub">last 30 days</div>
+          <template v-if="todayStats">
+            <div class="kpi-divider" />
+            <div class="kpi-daily-label">Today</div>
+            <div class="kpi-daily-row">
+              <span class="kpi-daily-val">{{
+                todayStats.uniqueVisitors.toLocaleString()
+              }}</span>
+              <span
+                v-if="
+                  trend(
+                    todayStats.uniqueVisitors,
+                    yesterdayStats?.uniqueVisitors
+                  ) !== null
+                "
+                class="kpi-delta"
+                :class="
+                  trend(
+                    todayStats.uniqueVisitors,
+                    yesterdayStats?.uniqueVisitors
+                  )! >= 0
+                    ? 'kpi-delta--up'
+                    : 'kpi-delta--down'
+                "
+              >
+                {{
+                  trend(
+                    todayStats.uniqueVisitors,
+                    yesterdayStats?.uniqueVisitors
+                  )! >= 0
+                    ? '+'
+                    : ''
+                }}{{
+                  trend(
+                    todayStats.uniqueVisitors,
+                    yesterdayStats?.uniqueVisitors
+                  )
+                }}%
+              </span>
+            </div>
+          </template>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Sessions</div>
@@ -209,11 +276,46 @@
             {{ data.totals.sessions.toLocaleString() }}
           </div>
           <div class="kpi-sub">last 30 days</div>
+          <template v-if="todayStats">
+            <div class="kpi-divider" />
+            <div class="kpi-daily-label">Today</div>
+            <div class="kpi-daily-row">
+              <span class="kpi-daily-val">{{
+                todayStats.sessions.toLocaleString()
+              }}</span>
+              <span
+                v-if="
+                  trend(todayStats.sessions, yesterdayStats?.sessions) !== null
+                "
+                class="kpi-delta"
+                :class="
+                  trend(todayStats.sessions, yesterdayStats?.sessions)! >= 0
+                    ? 'kpi-delta--up'
+                    : 'kpi-delta--down'
+                "
+              >
+                {{
+                  trend(todayStats.sessions, yesterdayStats?.sessions)! >= 0
+                    ? '+'
+                    : ''
+                }}{{ trend(todayStats.sessions, yesterdayStats?.sessions) }}%
+              </span>
+            </div>
+          </template>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Pages / Session</div>
           <div class="kpi-value">{{ avgPagesPerSession }}</div>
           <div class="kpi-sub">engagement · 30 days</div>
+          <template v-if="todayStats && todayStats.sessions > 0">
+            <div class="kpi-divider" />
+            <div class="kpi-daily-label">Today</div>
+            <div class="kpi-daily-row">
+              <span class="kpi-daily-val">{{
+                (todayStats.pageViews / todayStats.sessions).toFixed(1)
+              }}</span>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -552,12 +654,62 @@
 
   .kpi-sub {
     font-size: 0.85rem;
-    color: #64748b;
+    color: #94a2b5;
     margin-top: 0.2rem;
     display: flex;
     align-items: center;
     gap: 0.4rem;
     flex-wrap: wrap;
+  }
+
+  .kpi-divider {
+    height: 1px;
+    background: #334155;
+    margin: 0.65rem 0 0.5rem;
+  }
+
+  .kpi-daily-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a2b5;
+    margin-bottom: 0.3rem;
+  }
+
+  .kpi-daily-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .kpi-daily-val {
+    font-size: 1.1rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kpi-delta {
+    font-size: 0.8rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kpi-delta--up {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.12);
+  }
+
+  .kpi-delta--down {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.12);
   }
 
   .kpi-card--pools {
@@ -724,7 +876,7 @@
   }
 
   .td-chevron {
-    color: #64748b;
+    color: #94a2b5;
     font-size: 0.75rem;
     text-align: right;
   }
@@ -796,7 +948,7 @@
 
   .empty-note {
     font-size: 0.9rem;
-    color: #64748b;
+    color: #94a2b5;
     padding: 0.5rem 0;
   }
 
@@ -843,7 +995,7 @@
     white-space: nowrap;
   }
   .hour-col:nth-child(3n + 1) .hour-label {
-    color: #64748b;
+    color: #94a2b5;
   }
 
   /* ── Pools engagement card ── */
@@ -906,7 +1058,7 @@
   }
 
   .pool-stat-hint {
-    color: #64748b;
+    color: #94a2b5;
     font-size: 0.8rem;
   }
 
@@ -963,7 +1115,7 @@
   /* ── Hint ── */
   .hint-row {
     font-size: 0.85rem;
-    color: #64748b;
+    color: #94a2b5;
     text-align: center;
     padding: 0.75rem 0 0.25rem;
   }
