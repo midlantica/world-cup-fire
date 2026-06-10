@@ -44,7 +44,6 @@
     totals: { pageViews: number; uniqueVisitors: number; sessions: number }
     topPages: { path: string; views: number }[]
     poolsTotal: number
-    poolsToday: number
     message?: string
   }
 
@@ -213,12 +212,7 @@
           <div class="kpi-value">
             {{ data.poolsTotal.toLocaleString() }}
           </div>
-          <div class="kpi-sub">
-            all time
-            <span v-if="data.poolsToday > 0" class="kpi-today-badge">
-              +{{ data.poolsToday }} today
-            </span>
-          </div>
+          <div class="kpi-sub">all time</div>
         </div>
       </div>
 

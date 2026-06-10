@@ -18,7 +18,7 @@
 // match that has already started. (Enforced in the picks route via the schedule.)
 
 import { getStore } from '@netlify/blobs'
-import { mkdir, readFile, writeFile, unlink } from 'node:fs/promises'
+import { mkdir, readFile, writeFile, unlink, readdir } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 
 // Use the Web Crypto global (available in Nitro / Netlify Functions runtime) so
@@ -314,4 +314,30 @@ export async function updatePoolWithRetry(
 /** Delete a pool from the store. */
 export async function deletePoolBlob(id: string): Promise<void> {
   await poolStore().remove(id)
+}
+
+/**
+ * Count the total number of pools currently in the store.
+ * Uses Netlify Blobs list() in production, readdir in dev.
+ */
+export async function countPools(): Promise<number> {
+  try {
+    if (blobsConfigured()) {
+      const store = getStore({ name: 'pools', consistency: 'strong' })
+      const { blobs } = await store.list()
+      return blobs.length
+    } else {
+      // Dev: count .json files in .data/pools/
+      const dir = resolve(process.cwd(), '.data', 'pools')
+      try {
+        const files = await readdir(dir)
+        return files.filter((f) => f.endsWith('.json')).length
+      } catch {
+        return 0
+      }
+    }
+  } catch (e) {
+    console.error('[pools] countPools error:', e)
+    return 0
+  }
 }
