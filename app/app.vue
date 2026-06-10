@@ -284,6 +284,7 @@
     <NuxtPage />
     <AppFooter />
     <FlagModal />
+    <GameDetailModal />
   </div>
 </template>
 

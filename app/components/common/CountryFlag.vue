@@ -63,6 +63,8 @@
       width: `${size}px`,
       height: `${Math.round(size * 0.667)}px`,
       border: '1px solid #ffffff2b',
+      position: 'relative',
+      top: '-1px',
     }"
   >
     <!-- Primary: purecatamphetamine CDN -->

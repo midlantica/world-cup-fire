@@ -286,6 +286,10 @@
     left: 0;
   }
 
+  .wtl--pop-right .wtl__btns {
+    flex-direction: row-reverse;
+  }
+
   .wtl__btns {
     display: inline-flex;
     align-items: center;

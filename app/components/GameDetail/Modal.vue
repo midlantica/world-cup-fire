@@ -3,10 +3,22 @@
   import { useCountryDetail } from '../../composables/useCountryDetail'
   import { useModalNav } from '../../composables/useModalNav'
   import { usePicks } from '../../composables/usePicks'
+  import { useScores } from '../../composables/useScores'
   import { TEAM_BY_NAME } from '~/constants/worldcup'
 
   const { selectedMatch, modalOpen, closeMatch, detail, pending } =
     useMatchDetail()
+
+  // ── Keep selectedMatch in sync with live score updates ────────────────────
+  // selectedMatch is set once at openMatch() time. When the scores list polls
+  // and gets updated status/score, we sync it here so the modal header, pick
+  // lock state, and live polling all reflect the current match state.
+  const { matches } = useScores()
+  watch(matches, (updatedMatches) => {
+    if (!selectedMatch.value || !modalOpen.value) return
+    const updated = updatedMatches.find((m) => m.id === selectedMatch.value!.id)
+    if (updated) selectedMatch.value = updated
+  })
   const { openCountry } = useCountryDetail()
   const { pushHistory, popHistory, clearHistory, canGoBack } = useModalNav()
 
@@ -124,12 +136,40 @@
     )
   })
 
-  /** Extract scorer name from ESPN event text like "Goal! Mexico 1, South Korea 0. Raúl Jiménez (Mexico) heads home..." */
-  function extractScorer(text: string | null): string {
+  /** Extract player name from ESPN event text.
+   *  Goals:  "Goal! Brazil 1, Argentina 0. Vinicius Jr. (Brazil) cuts inside…"
+   *  Cards:  "Rodrigo De Paul (Argentina) is shown the yellow card…"
+   *  Both patterns have "Name (Team)" — grab the part before the first "(".
+   */
+  function extractName(text: string | null): string {
     if (!text) return ''
-    // Match "Name (Team)" pattern after the score line
-    const m = text.match(/\.\s+([^(]+)\s+\(/)
-    return m ? m[1]!.trim() : ''
+    // After a score line: ". Name (Team)"
+    const afterScore = text.match(/\.\s+([^(]+)\s+\(/)
+    if (afterScore) return afterScore[1]!.trim()
+    // Card / sub at start of sentence: "Name (Team) is shown…"
+    const atStart = text.match(/^([^(]+)\s+\(/)
+    if (atStart) return atStart[1]!.trim()
+    return ''
+  }
+
+  /** Goals and penalties for one side, sorted by clock */
+  function sideGoals(teamName: string | undefined) {
+    if (!teamName) return []
+    return keyEvents.value.filter(
+      (e) =>
+        e.team === teamName &&
+        (e.type === 'Goal' || e.type === 'Penalty - Scored')
+    )
+  }
+
+  /** Cards (yellow + red) for one side */
+  function sideCards(teamName: string | undefined) {
+    if (!teamName) return []
+    return keyEvents.value.filter(
+      (e) =>
+        e.team === teamName &&
+        (e.type === 'Yellow Card' || e.type === 'Red Card')
+    )
   }
 
   // ── Venue popup ───────────────────────────────────────────────────────────
@@ -494,58 +534,93 @@
                 </div>
               </div>
 
-              <!-- Key events row: goals ⚽ / yellow 🟨 / red 🟥 cards -->
+              <!-- Key events: goals row + cards row, each spanning both sides -->
               <div v-if="keyEvents.length > 0" class="gd-header__events">
-                <!-- Home side events -->
-                <div
-                  class="gd-header__events-side gd-header__events-side--home"
+                <!-- Goals row (only if either side has goals) -->
+                <template
+                  v-if="
+                    sideGoals(selectedMatch?.home).length > 0 ||
+                    sideGoals(selectedMatch?.away).length > 0
+                  "
                 >
-                  <template
-                    v-for="(ev, i) in keyEvents.filter(
-                      (e) => e.team === selectedMatch?.home
-                    )"
-                    :key="i"
+                  <!-- Home goals: name clock | icon (icon on inside/right) -->
+                  <div
+                    class="gd-header__events-side gd-header__events-side--home"
                   >
-                    <span class="gd-event">
-                      <span class="gd-event__icon">{{
-                        ev.type === 'Goal' || ev.type === 'Penalty - Scored'
-                          ? '⚽'
-                          : ev.type === 'Yellow Card'
-                            ? '🟨'
-                            : '🟥'
-                      }}</span>
+                    <span
+                      v-for="(ev, i) in sideGoals(selectedMatch?.home)"
+                      :key="'hg' + i"
+                      class="gd-event"
+                    >
                       <span class="gd-event__name">{{
-                        extractScorer(ev.text)
+                        extractName(ev.text)
                       }}</span>
                       <span class="gd-event__clock">{{ ev.clock }}</span>
+                      <span class="gd-event__icon">⚽</span>
                     </span>
-                  </template>
-                </div>
-                <!-- Away side events -->
-                <div
-                  class="gd-header__events-side gd-header__events-side--away"
-                >
-                  <template
-                    v-for="(ev, i) in keyEvents.filter(
-                      (e) => e.team === selectedMatch?.away
-                    )"
-                    :key="i"
+                  </div>
+                  <!-- Away goals: icon · clock · name -->
+                  <div
+                    class="gd-header__events-side gd-header__events-side--away"
                   >
-                    <span class="gd-event">
+                    <span
+                      v-for="(ev, i) in sideGoals(selectedMatch?.away)"
+                      :key="'ag' + i"
+                      class="gd-event"
+                    >
+                      <span class="gd-event__icon">⚽</span>
                       <span class="gd-event__clock">{{ ev.clock }}</span>
                       <span class="gd-event__name">{{
-                        extractScorer(ev.text)
-                      }}</span>
-                      <span class="gd-event__icon">{{
-                        ev.type === 'Goal' || ev.type === 'Penalty - Scored'
-                          ? '⚽'
-                          : ev.type === 'Yellow Card'
-                            ? '🟨'
-                            : '🟥'
+                        extractName(ev.text)
                       }}</span>
                     </span>
-                  </template>
-                </div>
+                  </div>
+                </template>
+
+                <!-- Cards row (only if either side has cards) -->
+                <template
+                  v-if="
+                    sideCards(selectedMatch?.home).length > 0 ||
+                    sideCards(selectedMatch?.away).length > 0
+                  "
+                >
+                  <!-- Home cards: name clock | icon (icon on inside/right) -->
+                  <div
+                    class="gd-header__events-side gd-header__events-side--home"
+                  >
+                    <span
+                      v-for="(ev, i) in sideCards(selectedMatch?.home)"
+                      :key="'hc' + i"
+                      class="gd-event"
+                    >
+                      <span class="gd-event__name">{{
+                        extractName(ev.text)
+                      }}</span>
+                      <span class="gd-event__clock">{{ ev.clock }}</span>
+                      <span class="gd-event__icon">{{
+                        ev.type === 'Yellow Card' ? '🟨' : '🟥'
+                      }}</span>
+                    </span>
+                  </div>
+                  <!-- Away cards: icon · clock · name -->
+                  <div
+                    class="gd-header__events-side gd-header__events-side--away"
+                  >
+                    <span
+                      v-for="(ev, i) in sideCards(selectedMatch?.away)"
+                      :key="'ac' + i"
+                      class="gd-event"
+                    >
+                      <span class="gd-event__icon">{{
+                        ev.type === 'Yellow Card' ? '🟨' : '🟥'
+                      }}</span>
+                      <span class="gd-event__clock">{{ ev.clock }}</span>
+                      <span class="gd-event__name">{{
+                        extractName(ev.text)
+                      }}</span>
+                    </span>
+                  </div>
+                </template>
               </div>
 
               <!-- Date + Venue -->
@@ -738,7 +813,6 @@
   /* Group link — tight rounded outline button */
   .gd-header__group-link {
     font-size: 0.7rem;
-
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
@@ -746,10 +820,8 @@
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.6);
     text-decoration: none;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.4rem;
     background: hsl(0deg 0% 100% / 12%);
-    /* border: 1px solid oklab(100% 0 0 / 0.085); */
-
     border-radius: 9999px;
     padding: 0.2rem 0.75rem 0.1rem;
     cursor: pointer;
@@ -771,7 +843,7 @@
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     width: 100%;
-    gap: 0.3rem;
+    gap: 0.5rem;
     /* Prevent overflow from long team names */
     min-width: 0;
   }
@@ -821,13 +893,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.65rem;
     flex-shrink: 0;
   }
 
   .gd-header__team-name {
     font-size: 1.3rem;
-    line-height: 1.2;
+    line-height: 1;
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
@@ -907,20 +979,23 @@
   }
 
   .gd-header__status {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-variation-settings:
-      'wdth' 100,
+      'wdth' 85,
       'wght' 600;
-    color: oklab(100% 0 0 / 0.6);
+    color: oklab(0 0 0 / 1);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 0.15rem 0.4rem;
-    border-radius: 0.25rem;
+    border-radius: 2px;
+    background: hsl(0deg 0% 73.03%);
+    padding: 2px 4px 1px 6px;
+    position: relative;
+    top: -1px;
   }
 
   .gd-header__status--live {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    background: oklab(50% -0.1 0.1 / 0.2);
+    background: oklab(50% -0.1 0.1 / 1);
     color: #4ade80;
   }
 
@@ -1090,31 +1165,33 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
-    gap: 0.25rem 0.5rem;
-    padding: 0.15rem 0;
+    gap: 0.25rem 1.25rem;
+    padding: 0.3rem 0 0;
   }
 
   .gd-header__events-side {
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    line-height: 1.2;
   }
 
   .gd-header__events-side--home {
-    align-items: flex-end;
+    justify-content: flex-end;
   }
 
   .gd-header__events-side--away {
-    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .gd-event {
     display: flex;
     align-items: baseline;
-    gap: 0.3rem;
-    font-size: 0.72rem;
-    line-height: 1.3;
-    color: oklab(100% 0 0 / 0.65);
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    color: oklab(100% 0 0 / 0.85);
   }
 
   .gd-event__icon {
@@ -1124,17 +1201,18 @@
 
   .gd-event__name {
     font-variation-settings:
-      'wdth' 100,
-      'wght' 500;
+      'wdth' 90,
+      'wght' 200;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 10rem;
+    letter-spacing: 0.08rem;
   }
 
   .gd-event__clock {
-    font-size: 0.65rem;
-    color: oklab(100% 0 0 / 0.4);
+    font-size: 0.75rem;
+    color: oklab(100% 0 0 / 0.65);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
   }

@@ -34,8 +34,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'eventId is required' })
   }
 
-  // ── Mock mode: return fake match detail keyed by mock event ID ───────────────
-  if (USE_MOCK) {
+  // ── Demo game: always serve mock data for any 'demo-game*' ID ────────────────
+  // This lets the /admin page open a rich fake match regardless of USE_MOCK.
+  if (eventId.startsWith('demo-game') || USE_MOCK) {
     const { MOCK_DETAILS } = await import('./match-detail.mock')
     const mockDetail = MOCK_DETAILS[eventId]
     // Return mock detail if we have it, otherwise empty object (NS matches)

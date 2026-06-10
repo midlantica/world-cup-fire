@@ -24,6 +24,11 @@
     starter: boolean
   }
 
+  interface SubEvent {
+    type: 'on' | 'off'
+    minute: string
+  }
+
   function extractRoster(teamData: unknown): Player[] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const entry = teamData as any
@@ -125,6 +130,48 @@
     getLastMatchLabel(props.awayLastDetail, props.match.away)
   )
 
+  // ── Substitution map: playerName → { type, minute } ────────────────────────
+  // Only include subs that have already happened (minute ≤ current match clock).
+  // For FT/HT we show all subs. For live matches we filter by the clock.
+  const subMap = computed<Map<string, SubEvent>>(() => {
+    const map = new Map<string, SubEvent>()
+    if (!props.detail) return map
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const events = (props.detail.keyEvents as any[]) ?? []
+
+    // Parse current match clock (e.g. "58'" → 58). For FT use Infinity.
+    const statusCode = props.match.status.code
+    let currentMinute = Infinity
+    if (statusCode === 'live' || statusCode === 'ht') {
+      const clockStr = props.match.status.clock ?? ''
+      const parsed = parseInt(clockStr.replace(/[^0-9]/g, ''), 10)
+      if (!isNaN(parsed)) currentMinute = parsed
+    }
+
+    for (const e of events) {
+      if (e?.type?.text !== 'Substitution') continue
+      const minute = (e?.clock?.displayValue as string) ?? ''
+      const text = (e?.text as string) ?? ''
+
+      // Only show this sub if it has already happened
+      const subMinute = parseInt(minute.replace(/[^0-9]/g, ''), 10)
+      if (!isNaN(subMinute) && subMinute > currentMinute) continue
+
+      // ESPN real:  "PlayerOn replaces PlayerOff" or "PlayerOn (Team) replaces PlayerOff"
+      // Mock format: "Substitution: PlayerOn replaces PlayerOff for Team."
+      // Strip leading "Substitution: " prefix if present
+      const stripped = text.replace(/^Substitution:\s*/i, '')
+      const m = stripped.match(/^(.+?)\s+replaces\s+(.+?)(?:\s+for\s|\s*\(|$)/i)
+      if (m) {
+        const playerOn = m[1]!.trim()
+        const playerOff = m[2]!.trim()
+        map.set(playerOn, { type: 'on', minute })
+        map.set(playerOff, { type: 'off', minute })
+      }
+    }
+    return map
+  })
+
   // ── Display rosters (WC data takes priority) ────────────────────────────────
   const displayHomeRoster = computed(() =>
     hasData.value ? homeRoster.value : homeFallbackRoster.value
@@ -188,6 +235,22 @@
         >
           <span class="player-row__jersey">{{ player.jersey }}</span>
           <span class="player-row__name">{{ player.name }}</span>
+          <span
+            v-if="subMap.get(player.name)"
+            class="player-row__sub"
+            :class="
+              subMap.get(player.name)!.type === 'on'
+                ? 'player-row__sub--on'
+                : 'player-row__sub--off'
+            "
+          >
+            <span class="player-row__sub-arrow">{{
+              subMap.get(player.name)!.type === 'on' ? '▲' : '▼'
+            }}</span>
+            <span class="player-row__sub-min">{{
+              subMap.get(player.name)!.minute
+            }}</span>
+          </span>
           <span class="player-row__pos">{{ player.position }}</span>
         </div>
         <div
@@ -218,6 +281,22 @@
         >
           <span class="player-row__jersey">{{ player.jersey }}</span>
           <span class="player-row__name">{{ player.name }}</span>
+          <span
+            v-if="subMap.get(player.name)"
+            class="player-row__sub"
+            :class="
+              subMap.get(player.name)!.type === 'on'
+                ? 'player-row__sub--on'
+                : 'player-row__sub--off'
+            "
+          >
+            <span class="player-row__sub-arrow">{{
+              subMap.get(player.name)!.type === 'on' ? '▲' : '▼'
+            }}</span>
+            <span class="player-row__sub-min">{{
+              subMap.get(player.name)!.minute
+            }}</span>
+          </span>
           <span class="player-row__pos">{{ player.position }}</span>
         </div>
         <div
@@ -283,5 +362,28 @@
 
   .player-row__pos {
     @apply rounded bg-white/10 px-1 py-0.5 text-xs font-bold text-white/40;
+  }
+
+  .player-row__sub {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
+  .player-row__sub--on .player-row__sub-arrow {
+    color: #4ade80;
+    font-size: 0.55rem;
+  }
+
+  .player-row__sub--off .player-row__sub-arrow {
+    color: #f87171;
+    font-size: 0.55rem;
+  }
+
+  .player-row__sub-min {
+    color: oklab(100% 0 0 / 0.45);
   }
 </style>

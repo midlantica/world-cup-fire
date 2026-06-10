@@ -335,6 +335,25 @@ function tabDateRange(tab: WeekTab): string {
 // Composable
 // ---------------------------------------------------------------------------
 
+const LIVE_POLL_INTERVAL_MS = 10_000 // 10 s client-side polling during live matches
+
+// ── Singleton polling state ────────────────────────────────────────────────
+// useScores() is called by multiple components (ScoresSection, AppHeader, etc.)
+// but they all share the same useState/useFetch data. We keep the timer at
+// module level so only ONE interval ever runs, regardless of how many
+// components mount.
+let scoresLiveTimer: ReturnType<typeof setInterval> | null = null
+let scoresWatcherStop: (() => void) | null = null
+// Only count client-side instances — SSR has no timers/watchers to manage.
+let scoresInstanceCount = 0
+
+function stopScoresPolling() {
+  if (scoresLiveTimer) {
+    clearInterval(scoresLiveTimer)
+    scoresLiveTimer = null
+  }
+}
+
 export function useScores() {
   const { iana } = useTimezone()
   const activeTab = useState<WeekTab>('scores-tab', () => defaultTab())
@@ -369,6 +388,57 @@ export function useScores() {
     }
     return groups
   })
+
+  // Auto-refresh every 10 s when there are live/HT matches on the current tab.
+  // The server cache (30 s TTL) means ESPN is only hit at most once per 30 s
+  // regardless of how many clients are polling.
+  //
+  // The watcher and timer are module-level singletons — only set up once even
+  // though multiple components call useScores().
+  const hasLiveMatches = computed(() =>
+    matches.value.some(
+      (m) => m.status.code === 'live' || m.status.code === 'ht'
+    )
+  )
+
+  // Only set up timers/watchers on the client — SSR has no setInterval and
+  // module-level variables persist across requests on the server, so counting
+  // SSR instances would permanently block the client-side singleton guard.
+  if (import.meta.client) {
+    scoresInstanceCount++
+    if (scoresInstanceCount === 1) {
+      // First client instance: set up the singleton watcher
+      scoresWatcherStop = watch(
+        hasLiveMatches,
+        (live) => {
+          if (live) {
+            if (!scoresLiveTimer) {
+              scoresLiveTimer = setInterval(() => {
+                if (hasLiveMatches.value) {
+                  refresh()
+                } else {
+                  stopScoresPolling()
+                }
+              }, LIVE_POLL_INTERVAL_MS)
+            }
+          } else {
+            stopScoresPolling()
+          }
+        },
+        { immediate: true }
+      )
+    }
+
+    onUnmounted(() => {
+      scoresInstanceCount--
+      if (scoresInstanceCount === 0) {
+        // Last client instance unmounted — tear down everything
+        stopScoresPolling()
+        scoresWatcherStop?.()
+        scoresWatcherStop = null
+      }
+    })
+  }
 
   return {
     activeTab,

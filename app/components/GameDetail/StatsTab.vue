@@ -52,8 +52,8 @@
       <!-- Column headers: flag + team name -->
       <div class="stats-head">
         <div class="stats-th stats-th--home">
-          <CountryFlag :iso2="match.homeIso2" :size="22" />
           <span class="stats-th__name">{{ match.home }}</span>
+          <CountryFlag :iso2="match.homeIso2" :size="22" />
         </div>
         <div class="stats-th-center" />
         <div class="stats-th stats-th--away">
@@ -133,7 +133,6 @@
 
   .stats-th--home {
     justify-content: flex-end;
-    flex-direction: row-reverse;
   }
 
   .stats-th--away {

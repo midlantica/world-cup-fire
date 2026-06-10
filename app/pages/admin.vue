@@ -1,145 +1,7 @@
 <script setup lang="ts">
-  // Simple analytics admin dashboard — /admin
+  // Dev-only admin dashboard — /admin
   // Dev-only: this page is hidden in production via the dev-only middleware.
   definePageMeta({ middleware: 'dev-only' })
-
-  interface DaySummary {
-    date: string
-    pageViews: number
-    uniqueVisitors: number
-    sessions: number
-    topPages: { path: string; views: number }[]
-    hourly: { hour: string; views: number }[]
-  }
-
-  interface AnalyticsData {
-    days: DaySummary[]
-    totals: { pageViews: number; uniqueVisitors: number; sessions: number }
-    topPages: { path: string; views: number }[]
-    message?: string
-  }
-
-  // All hard-coded routes in the app
-  const KNOWN_ROUTES = [
-    { path: '/', label: 'Home / Scores' },
-    { path: '/standings', label: 'Standings' },
-    { path: '/stats', label: 'Stats' },
-    { path: '/team', label: 'Team Modal' },
-    { path: '/game', label: 'Game Detail' },
-  ]
-
-  const { data, pending, error, refresh } = await useFetch<AnalyticsData>(
-    '/api/analytics',
-    { lazy: true }
-  )
-
-  const selectedDay = ref<DaySummary | null>(null)
-
-  function fmtDate(iso: string) {
-    return new Date(iso + 'T12:00:00Z').toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  function fmtHour(h: string) {
-    const hour = parseInt(h.slice(11, 13))
-    if (hour === 0) return '12am'
-    if (hour < 12) return `${hour}am`
-    if (hour === 12) return '12pm'
-    return `${hour - 12}pm`
-  }
-
-  function barWidth(val: number, max: number) {
-    if (!max) return '0%'
-    return `${Math.round((val / max) * 100)}%`
-  }
-
-  // Merge known routes into top pages so all routes always appear
-  const mergedTopPages = computed(() => {
-    const source = selectedDay.value
-      ? selectedDay.value.topPages
-      : (data.value?.topPages ?? [])
-
-    const map = new Map<string, number>()
-    // Seed with known routes at 0
-    for (const r of KNOWN_ROUTES) map.set(r.path, 0)
-    // Fill in actual data
-    for (const p of source) map.set(p.path, p.views)
-
-    return Array.from(map.entries())
-      .map(([path, views]) => ({ path, views }))
-      .sort((a, b) => b.views - a.views)
-  })
-
-  const maxTopPage = computed(() =>
-    Math.max(1, ...mergedTopPages.value.map((p) => p.views))
-  )
-
-  // Full 24-hour array for the hourly chart
-  const fullHourly = computed(() => {
-    if (!selectedDay.value) return []
-    const map = new Map<number, number>()
-    for (const h of selectedDay.value.hourly) {
-      map.set(parseInt(h.hour.slice(11, 13)), h.views)
-    }
-    return Array.from({ length: 24 }, (_, i) => ({
-      hour: i,
-      views: map.get(i) ?? 0,
-    }))
-  })
-
-  const maxHourly = computed(() =>
-    Math.max(1, ...fullHourly.value.map((h) => h.views))
-  )
-
-  function hourTitle(hour: number, views: number) {
-    const label =
-      hour === 0
-        ? '12am'
-        : hour === 12
-          ? '12pm'
-          : hour < 12
-            ? `${hour}am`
-            : `${hour - 12}pm`
-    return `${label}: ${views} views`
-  }
-
-  // Today's stats (first day in the array = most recent)
-  const todayStats = computed(() => data.value?.days[0] ?? null)
-
-  // Yesterday for trend comparison
-  const yesterdayStats = computed(() => data.value?.days[1] ?? null)
-
-  function trend(today: number, yesterday: number | undefined) {
-    if (yesterday == null || yesterday === 0) return null
-    const pct = Math.round(((today - yesterday) / yesterday) * 100)
-    return pct
-  }
-
-  // Avg pages per session (engagement proxy)
-  const avgPagesPerSession = computed(() => {
-    const t = data.value?.totals
-    if (!t || !t.sessions) return '—'
-    return (t.pageViews / t.sessions).toFixed(1)
-  })
-
-  // Route label helper
-  function routeLabel(path: string) {
-    return KNOWN_ROUTES.find((r) => r.path === path)?.label ?? path
-  }
-
-  // ── Dev tools ──────────────────────────────────────────────────────────────
-  const clearPoolMsg = ref('')
-
-  function clearLocalPoolData() {
-    if (!import.meta.client) return
-    localStorage.removeItem('wc-pool-tokens-v1')
-    localStorage.removeItem('wc-pools-cache-v1')
-    clearPoolMsg.value =
-      '✅ Pool localStorage cleared — reload /pools to confirm.'
-  }
 
   // ── Mock time controls ─────────────────────────────────────────────────────
   const MOCK_PRESETS = [
@@ -184,13 +46,9 @@
   }
 
   // ── Picks Simulator ────────────────────────────────────────────────────────
-  // Reads the schedule API, finds all STATUS_FINAL games, and writes picks
-  // into localStorage (wc-picks-v1) for this browser. Simulates what a user
-  // would have picked if they always backed the winner (or draw).
   const simMsg = ref('')
   const simLoading = ref(false)
 
-  // Scenario presets: pick all finished games up to a given date
   const SIM_SCENARIOS = [
     { label: 'All finished games (current mock time)', cutoff: null },
     { label: 'Through Jun 11 23:59', cutoff: '2026-06-11T23:59:00Z' },
@@ -232,21 +90,18 @@
   async function runSimulator(
     cutoffIso: string | null,
     strategy: 'winner' | 'home' | 'away' | 'draw' = 'winner',
-    /** If true, also pick not-yet-started (ns) games — useful pre-tournament */
     includeUpcoming = false
   ) {
     if (!import.meta.client) return
     simLoading.value = true
     simMsg.value = ''
     try {
-      // Fetch all events (full tournament range)
       const events = await $fetch<RawEvent[]>('/api/schedule', {
         query: { dates: '20260611-20260719' },
       })
 
       const cutoff = cutoffIso ? new Date(cutoffIso) : null
 
-      // Load existing picks so we can merge
       let existing: Record<string, unknown> = {}
       try {
         const raw = localStorage.getItem('wc-picks-v1')
@@ -264,13 +119,11 @@
           ev.status.type.name === 'STATUS_SCHEDULED' ||
           ev.status.type.state === 'pre'
 
-        // Skip games that are neither finished nor upcoming (e.g. live)
         if (!isFinished && !(includeUpcoming && isNs)) {
           skipped++
           continue
         }
 
-        // Respect cutoff date
         if (cutoff && new Date(ev.date) > cutoff) {
           skipped++
           continue
@@ -297,10 +150,8 @@
           }
           outcome = resolved
         } else if (strategy === 'winner' && isNs) {
-          // For upcoming games default to home pick
           outcome = 'home'
         } else {
-          // strategy is 'home' | 'away' | 'draw' here (not 'winner')
           outcome = strategy as 'home' | 'away' | 'draw'
         }
 
@@ -363,221 +214,153 @@
       '🗑 All picks cleared from localStorage. Reload the page to confirm.'
   }
 
+  // ── Pool Data ──────────────────────────────────────────────────────────────
+  const clearPoolMsg = ref('')
+
+  function clearLocalPoolData() {
+    if (!import.meta.client) return
+    localStorage.removeItem('wc-pool-tokens-v1')
+    localStorage.removeItem('wc-pools-cache-v1')
+    clearPoolMsg.value =
+      '✅ Pool localStorage cleared — reload /pools to confirm.'
+  }
+
+  // ── Demo Game ──────────────────────────────────────────────────────────────
+  // Opens a fake completed match in the GameDetail modal so you can preview
+  // the full match detail UI (goals, cards, subs, stats, lineups).
+  const { openMatch, modalOpen } = useMatchDetail()
+
+  const DEMO_BASE = {
+    id: 'demo-game',
+    date: '2026-06-14T19:00:00Z',
+    home: 'Brazil',
+    homeShort: 'Brazil',
+    homeColor: '009c3b',
+    homeAltColor: 'ffdf00',
+    homeIso2: 'BR',
+    homeAbbrev: 'BRA',
+    away: 'Argentina',
+    awayShort: 'Argentina',
+    awayColor: '74acdf',
+    awayAltColor: 'ffffff',
+    awayIso2: 'AR',
+    awayAbbrev: 'ARG',
+    group: 'C',
+    venue: 'MetLife Stadium',
+    venueLocation: 'East Rutherford, New Jersey',
+    qualityScore: 95,
+    badge: null,
+    kickoffSlot: new Date('2026-06-14T19:00:00Z').getTime(),
+  } as const
+
+  // Time-state snapshots for the demo game buttons.
+  // Scores reflect what's happened up to that point in the mock keyEvents:
+  //   12' Vinicius (BRA 1-0), 28' Messi pen (1-1), 41' Rodrygo (2-1),
+  //   63' Álvarez (2-2), 84' Endrick (3-2)
+  //
+  // All states share the same id ('demo-game') so picks made in Pre-Game
+  // persist correctly when the game state advances to live/HT/FT.
+  const DEMO_STATES = [
+    {
+      label: 'Pre-Game',
+      homeScore: null,
+      awayScore: null,
+      status: { code: 'ns' as const },
+    },
+    {
+      label: "10'",
+      homeScore: '0',
+      awayScore: '0',
+      status: { code: 'live' as const, clock: "10'" },
+    },
+    {
+      label: "30'",
+      homeScore: '1',
+      awayScore: '0',
+      status: { code: 'live' as const, clock: "30'" },
+    },
+    {
+      label: 'HT',
+      homeScore: '2',
+      awayScore: '1',
+      status: { code: 'ht' as const },
+    },
+    {
+      label: "58'",
+      homeScore: '2',
+      awayScore: '1',
+      status: { code: 'live' as const, clock: "58'" },
+    },
+    {
+      label: "83'",
+      homeScore: '2',
+      awayScore: '2',
+      status: { code: 'live' as const, clock: "83'" },
+    },
+    {
+      label: 'FT',
+      homeScore: '3',
+      awayScore: '2',
+      status: { code: 'ft' as const },
+    },
+  ]
+
+  const activeDemoState = ref('FT')
+
+  function openDemoGame(stateLabel = 'FT') {
+    const state = DEMO_STATES.find((s) => s.label === stateLabel)
+    if (!state) return
+    activeDemoState.value = stateLabel
+    openMatch({
+      ...DEMO_BASE,
+      homeScore: state.homeScore,
+      awayScore: state.awayScore,
+      status: state.status,
+    })
+  }
+
   onMounted(() => loadMockTime())
 
-  useHead({ title: 'Admin — MLS Analytics' })
+  useHead({ title: 'Admin — Dev Tools' })
 </script>
 
 <template>
   <div class="admin-wrap">
     <div class="admin-header">
-      <h1 class="admin-title">📊 MLS Analytics</h1>
-      <button class="refresh-btn" @click="refresh()">↻ Refresh</button>
+      <h1 class="admin-title">🛠 Dev Tools</h1>
     </div>
 
-    <div v-if="error" class="admin-error">
-      <p>Error loading analytics: {{ error.message }}</p>
-    </div>
-
-    <div v-else-if="pending" class="admin-loading">Loading…</div>
-
-    <div v-else-if="data?.message" class="admin-note">{{ data.message }}</div>
-
-    <template v-else-if="data">
-      <!-- ── Totals (30-day) ── -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Page Views</div>
-          <div class="stat-value">
-            {{ data.totals.pageViews.toLocaleString() }}
-          </div>
-          <div class="stat-sub">last 30 days</div>
+    <!-- ── Demo Game ── -->
+    <div class="admin-section demo-section">
+      <div class="demo-section-inner">
+        <div>
+          <div class="dev-sub-title">🎮 Demo Game</div>
+          <p class="dev-note" style="margin-bottom: 0.75rem">
+            Opens a fake Brazil 3–2 Argentina match in the GameDetail modal.
+            Pick a game-state to preview how the UI looks at that moment.
+          </p>
+          <button class="dev-btn dev-btn--demo" @click="openDemoGame('FT')">
+            ⚽ Open Demo Game Modal
+          </button>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Unique Visitors</div>
-          <div class="stat-value">
-            {{ data.totals.uniqueVisitors.toLocaleString() }}
-          </div>
-          <div class="stat-sub">last 30 days</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Sessions</div>
-          <div class="stat-value">
-            {{ data.totals.sessions.toLocaleString() }}
-          </div>
-          <div class="stat-sub">last 30 days</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Pages / Session</div>
-          <div class="stat-value">{{ avgPagesPerSession }}</div>
-          <div class="stat-sub">engagement · 30 days</div>
-        </div>
-      </div>
-
-      <!-- ── Today so far ── -->
-      <div v-if="todayStats" class="today-strip">
-        <div class="today-label">Today so far</div>
-        <div class="today-stats">
-          <div class="today-stat">
-            <span class="today-num">{{ todayStats.pageViews }}</span>
-            <span class="today-key">views</span>
-            <span
-              v-if="
-                trend(todayStats.pageViews, yesterdayStats?.pageViews) !== null
-              "
-              class="today-trend"
-              :class="
-                trend(todayStats.pageViews, yesterdayStats?.pageViews)! >= 0
-                  ? 'up'
-                  : 'down'
-              "
+        <div class="demo-time-panel">
+          <span class="demo-time-label">Game State</span>
+          <div class="demo-time-btns">
+            <button
+              v-for="state in DEMO_STATES"
+              :key="state.label"
+              class="demo-time-btn"
+              :class="{
+                'demo-time-btn--active': activeDemoState === state.label,
+              }"
+              @click="openDemoGame(state.label)"
             >
-              {{
-                trend(todayStats.pageViews, yesterdayStats?.pageViews)! >= 0
-                  ? '▲'
-                  : '▼'
-              }}
-              {{
-                Math.abs(
-                  trend(todayStats.pageViews, yesterdayStats?.pageViews)!
-                )
-              }}%
-            </span>
-          </div>
-          <div class="today-divider" />
-          <div class="today-stat">
-            <span class="today-num">{{ todayStats.uniqueVisitors }}</span>
-            <span class="today-key">visitors</span>
-          </div>
-          <div class="today-divider" />
-          <div class="today-stat">
-            <span class="today-num">{{ todayStats.sessions }}</span>
-            <span class="today-key">sessions</span>
+              {{ state.label }}
+            </button>
           </div>
         </div>
       </div>
-
-      <!-- ── Daily breakdown ── -->
-      <div class="admin-section">
-        <h2 class="section-title">Daily Breakdown</h2>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Views</th>
-                <th>Visitors</th>
-                <th>Sessions</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="day in data.days"
-                :key="day.date"
-                :class="{ 'row-selected': selectedDay?.date === day.date }"
-                @click="
-                  selectedDay = selectedDay?.date === day.date ? null : day
-                "
-                style="cursor: pointer"
-              >
-                <td>{{ fmtDate(day.date) }}</td>
-                <td>{{ day.pageViews.toLocaleString() }}</td>
-                <td>{{ day.uniqueVisitors.toLocaleString() }}</td>
-                <td>{{ day.sessions.toLocaleString() }}</td>
-                <td class="td-arrow">
-                  {{ selectedDay?.date === day.date ? '▲' : '▼' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ── Top Pages ── -->
-      <div class="admin-section">
-        <h2 class="section-title">
-          Top Pages
-          <span v-if="selectedDay" class="section-sub"
-            >— {{ fmtDate(selectedDay.date) }}</span
-          >
-          <span v-else class="section-sub">— 30 days</span>
-        </h2>
-        <div class="bar-list">
-          <div v-for="page in mergedTopPages" :key="page.path" class="bar-row">
-            <div class="bar-label-wrap">
-              <span class="bar-path">{{ page.path || '/' }}</span>
-              <span class="bar-route-label">{{ routeLabel(page.path) }}</span>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill"
-                :class="{ 'bar-fill--zero': page.views === 0 }"
-                :style="{ width: barWidth(page.views, maxTopPage) }"
-              />
-            </div>
-            <div class="bar-val" :class="{ 'bar-val--zero': page.views === 0 }">
-              {{ page.views }}
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Site Routes Reference ── -->
-        <div class="routes-divider" />
-        <h3 class="routes-title">All App Routes</h3>
-        <div class="routes-list">
-          <div v-for="r in KNOWN_ROUTES" :key="r.path" class="route-row">
-            <code class="route-path">{{ r.path }}</code>
-            <span class="route-desc">{{ r.label }}</span>
-          </div>
-          <div class="route-row route-row--admin">
-            <code class="route-path">/admin</code>
-            <span class="route-desc">Analytics Dashboard</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Hourly breakdown for selected day ── -->
-      <div v-if="selectedDay" class="admin-section">
-        <h2 class="section-title">
-          Hourly — {{ fmtDate(selectedDay.date) }}
-          <span class="section-sub">· click a day row to view</span>
-        </h2>
-        <div class="hourly-chart">
-          <div v-for="h in fullHourly" :key="h.hour" class="hour-col">
-            <div class="hour-bar-wrap">
-              <div
-                class="hour-bar"
-                :class="{ 'hour-bar--active': h.views > 0 }"
-                :style="{ height: barWidth(h.views, maxHourly) }"
-                :title="hourTitle(h.hour, h.views)"
-              />
-            </div>
-            <div class="hour-label">
-              {{
-                h.hour === 0
-                  ? '12a'
-                  : h.hour === 12
-                    ? '12p'
-                    : h.hour < 12
-                      ? `${h.hour}a`
-                      : `${h.hour - 12}p`
-              }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-else class="admin-section admin-section--hint">
-        <span class="hint-text"
-          >💡 Click any day row to see hourly breakdown &amp; per-day top
-          pages</span
-        >
-      </div>
-    </template>
-
-    <!-- ── Dev Tools (always visible) ── -->
-    <h2 class="section-title dev-tools-heading">🛠 Dev Tools</h2>
+    </div>
 
     <!-- Outer grid: two side-by-side column cards -->
     <div class="dev-cols-wrap">
@@ -627,7 +410,6 @@
           winning team (or draw). Reload the page after running.
         </p>
         <div class="dev-btn-list">
-          <!-- Pre-tournament: pick all upcoming games (home wins) -->
           <button
             class="dev-btn dev-btn--sim dev-btn--upcoming"
             :disabled="simLoading"
@@ -678,6 +460,26 @@
       </p>
     </div>
   </div>
+
+  <!-- GameDetail modal is rendered globally via app.vue — openMatch() triggers it -->
+
+  <!-- ── Floating demo time-control panel (visible when modal is open) ── -->
+  <Teleport to="body">
+    <Transition name="demo-panel">
+      <div v-if="modalOpen" class="demo-float-panel">
+        <span class="demo-float-label">Game State</span>
+        <button
+          v-for="state in DEMO_STATES"
+          :key="state.label"
+          class="demo-float-btn"
+          :class="{ 'demo-float-btn--active': activeDemoState === state.label }"
+          @click="openDemoGame(state.label)"
+        >
+          {{ state.label }}
+        </button>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -705,159 +507,6 @@
     color: white;
   }
 
-  .refresh-btn {
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #cbd5e1;
-    padding: 0.35rem 0.75rem;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: color 0.15s;
-  }
-  .refresh-btn:hover {
-    color: white;
-  }
-
-  .admin-error,
-  .admin-loading,
-  .admin-note {
-    padding: 1rem 1.3rem;
-    background: #1e293b;
-    border-radius: 0.5rem;
-    color: #e2e8f0;
-    font-size: 1rem;
-  }
-
-  /* ── Stat cards ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  @media (max-width: 640px) {
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  .stat-card {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 0.5rem;
-    padding: 1rem 1.25rem;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #e2e8f0;
-    margin-bottom: 0.25rem;
-  }
-
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 600;
-    color: white;
-    line-height: 1.1;
-  }
-
-  .stat-sub {
-    font-size: 0.75rem;
-    color: #e2e8f0;
-    margin-top: 0.2rem;
-  }
-
-  /* ── Today strip ── */
-  .today-strip {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .today-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #e2e8f0;
-    white-space: nowrap;
-  }
-
-  .today-stats {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .today-stat {
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-  }
-
-  .today-num {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
-  }
-
-  .today-key {
-    font-size: 0.75rem;
-    color: #e2e8f0;
-  }
-
-  .today-trend {
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.1rem 0.3rem;
-    border-radius: 0.25rem;
-  }
-
-  .today-trend.up {
-    color: #4ade80;
-    background: rgba(74, 222, 128, 0.1);
-  }
-
-  .today-trend.down {
-    color: #f87171;
-    background: rgba(248, 113, 113, 0.1);
-  }
-
-  .today-divider {
-    width: 1px;
-    height: 1.25rem;
-    background: #334155;
-  }
-
-  /* ── Page-level two-column layout ── */
-  .page-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    align-items: start;
-  }
-
-  .page-col-left,
-  .page-col-right {
-    min-width: 0;
-  }
-
-  @media (max-width: 768px) {
-    .page-cols {
-      grid-template-columns: 1fr;
-    }
-  }
-
   /* ── Section ── */
   .admin-section {
     background: #1e293b;
@@ -865,18 +514,6 @@
     border-radius: 0.5rem;
     padding: 1rem 1.25rem;
     margin-bottom: 1rem;
-  }
-
-  .admin-section--hint {
-    padding: 0.75rem 1.25rem;
-    border-style: dashed;
-    border-color: #1e3a5f;
-    background: transparent;
-  }
-
-  .hint-text {
-    font-size: 0.8rem;
-    color: #e2e8f0;
   }
 
   .section-title {
@@ -889,224 +526,68 @@
     margin-bottom: 0.75rem;
   }
 
-  .section-sub {
-    font-weight: 400;
-    color: #e2e8f0;
-    text-transform: none;
-    letter-spacing: 0;
+  /* ── Demo Game section ── */
+  .demo-section {
+    background: #0f1f2e;
+    border-color: #1d4ed8;
   }
 
-  /* ── Table ── */
-  .table-wrap {
-    overflow-x: auto;
+  .demo-section-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
   }
 
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-  }
-
-  .data-table th {
-    text-align: left;
-    padding: 0.4rem 0.5rem;
-    color: #e2e8f0;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-bottom: 1px solid #334155;
-  }
-
-  .data-table td {
-    padding: 0.45rem 0.5rem;
-    border-bottom: 1px solid #1e293b;
-    color: #cbd5e1;
-  }
-
-  .data-table tbody tr:hover td {
-    background: #0f172a;
-    color: white;
-  }
-
-  .row-selected td {
-    background: #0f172a;
-    color: white;
-  }
-
-  .td-arrow {
-    color: #e2e8f0;
-    font-size: 0.65rem;
-    text-align: right;
-  }
-
-  /* ── Bar chart ── */
-  .bar-list {
+  .demo-time-panel {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    align-items: flex-end;
+    gap: 0.4rem;
+    flex-shrink: 0;
   }
 
-  .bar-row {
-    display: grid;
-    grid-template-columns: 7.5rem 1fr 2.5rem;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-  }
-
-  .bar-label-wrap {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .bar-path {
-    color: #e2e8f0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 0.75rem;
-    font-family: ui-monospace, monospace;
-  }
-
-  .bar-route-label {
-    font-size: 0.6rem;
-    color: #e2e8f0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .bar-track {
-    background: #0f172a;
-    border-radius: 2px;
-    height: 0.5rem;
-    overflow: hidden;
-  }
-
-  .bar-fill {
-    height: 100%;
-    background: #3b82f6;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-
-  .bar-fill--zero {
-    background: #1e3a5f;
-    width: 2px !important;
-  }
-
-  .bar-val {
-    color: #e2e8f0;
-    text-align: right;
-    font-size: 0.75rem;
-  }
-
-  .bar-val--zero {
-    color: #334155;
-  }
-
-  /* ── Routes reference ── */
-  .routes-divider {
-    border: none;
-    border-top: 1px solid #334155;
-    margin: 1rem 0 0.75rem;
-  }
-
-  .routes-title {
+  .demo-time-label {
     font-size: 0.7rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #e2e8f0;
-    margin-bottom: 0.5rem;
-  }
-
-  .routes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  .route-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.75rem;
-  }
-
-  .route-row--admin {
-    opacity: 0.5;
-  }
-
-  .route-path {
-    font-family: ui-monospace, monospace;
-    font-size: 0.7rem;
-    color: #60a5fa;
-    background: #0f172a;
-    padding: 0.1rem 0.35rem;
-    border-radius: 0.2rem;
-    min-width: 5rem;
-    display: inline-block;
-  }
-
-  .route-desc {
-    color: #e2e8f0;
-    font-size: 0.72rem;
-  }
-
-  /* ── Hourly chart ── */
-  .hourly-chart {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.2rem;
-    height: 7rem;
-    padding-bottom: 1.5rem;
-    position: relative;
-  }
-
-  .hour-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-  }
-
-  .hour-bar-wrap {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-  }
-
-  .hour-bar {
-    width: 100%;
-    background: #1e3a5f;
-    border-radius: 2px 2px 0 0;
-    min-height: 2px;
-    transition: height 0.3s ease;
-  }
-
-  .hour-bar--active {
-    background: #3b82f6;
-  }
-
-  .hour-label {
-    font-size: 0.5rem;
     color: #64748b;
-    margin-top: 0.25rem;
+  }
+
+  .demo-time-btns {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .demo-time-btn {
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    border: 1px solid #1e40af;
+    background: #0c1e3a;
+    color: #93c5fd;
+    font-size: 0.78rem;
+    font-family: var(--font-condensed);
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      border-color 0.12s,
+      color 0.12s;
     white-space: nowrap;
   }
 
-  /* Show every 3rd label to avoid crowding */
-  .hour-col:nth-child(3n + 1) .hour-label {
-    color: #e2e8f0;
+  .demo-time-btn:hover {
+    background: #1e3a5f;
+    border-color: #3b82f6;
   }
 
-  /* ── Dev Tools heading outside the box ── */
-  .dev-tools-heading {
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
+  .demo-time-btn--active {
+    background: #1d4ed8;
+    border-color: #60a5fa;
+    color: #ffffff;
+    font-weight: 600;
   }
 
   /* ── Dev Tools two separate column cards ── */
@@ -1181,6 +662,19 @@
     background: #7f1d1d;
   }
 
+  .dev-btn--demo {
+    background: #0c1e3a;
+    border-color: #1d4ed8;
+    color: #93c5fd;
+    font-size: 0.9rem;
+    padding: 0.5rem 1.25rem;
+    transition: background 0.15s;
+  }
+
+  .dev-btn--demo:hover {
+    background: #1e3a5f;
+  }
+
   .dev-msg {
     font-size: 0.8rem;
     color: #4ade80;
@@ -1199,10 +693,6 @@
     background: #0f172a;
     padding: 0.1rem 0.3rem;
     border-radius: 0.2rem;
-  }
-
-  .dev-subsection {
-    margin-bottom: 0.25rem;
   }
 
   .dev-sub-title {
@@ -1228,12 +718,6 @@
     background: #0f172a;
     padding: 0.1rem 0.35rem;
     border-radius: 0.2rem;
-  }
-
-  .dev-preset-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
   }
 
   .dev-btn--real {
@@ -1262,11 +746,13 @@
     transition: background 0.12s;
   }
 
-  /* ── Picks Simulator ── */
-  .dev-sim-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+  .dev-btn--preset:hover:not(:disabled) {
+    background: #2d1b69;
+  }
+
+  .dev-btn--preset:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .dev-btn--sim {
@@ -1284,5 +770,81 @@
   .dev-btn--sim:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* ── Floating demo time-control panel ── */
+  /* Note: uses :global() because the element is teleported outside this component's scope */
+  :global(.demo-float-panel) {
+    position: fixed;
+    top: 50%;
+    right: 1.25rem;
+    transform: translateY(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+    background: #0a1628;
+    border: 1px solid #1d4ed8;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.5rem;
+    box-shadow:
+      0 0 0 1px #1e40af44,
+      0 8px 32px rgba(0, 0, 0, 0.6);
+    min-width: 5.5rem;
+  }
+
+  :global(.demo-float-label) {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #475569;
+    text-align: center;
+    margin-bottom: 0.2rem;
+    font-family: var(--font-condensed);
+  }
+
+  :global(.demo-float-btn) {
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.3rem;
+    border: 1px solid #1e3a6e;
+    background: #0c1e3a;
+    color: #93c5fd;
+    font-size: 0.8rem;
+    font-family: var(--font-condensed);
+    cursor: pointer;
+    text-align: center;
+    transition:
+      background 0.12s,
+      border-color 0.12s,
+      color 0.12s;
+    white-space: nowrap;
+  }
+
+  :global(.demo-float-btn:hover) {
+    background: #1e3a5f;
+    border-color: #3b82f6;
+    color: #bfdbfe;
+  }
+
+  :global(.demo-float-btn--active) {
+    background: #1d4ed8 !important;
+    border-color: #60a5fa !important;
+    color: #ffffff !important;
+    font-weight: 700;
+  }
+
+  /* Slide-in from right */
+  :global(.demo-panel-enter-active),
+  :global(.demo-panel-leave-active) {
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  :global(.demo-panel-enter-from),
+  :global(.demo-panel-leave-to) {
+    opacity: 0;
+    transform: translateY(-50%) translateX(1rem);
   }
 </style>

@@ -25,19 +25,86 @@ function mkStats(
   const poss2 = Math.round((100 - possession) * 10) / 10
   const poss1 = Math.round(possession * 10) / 10
   return [
-    { name: 'foulsCommitted', label: 'Fouls', displayValue: String(fouls), value: fouls },
-    { name: 'yellowCards', label: 'Yellow Cards', displayValue: String(yellows), value: yellows },
-    { name: 'redCards', label: 'Red Cards', displayValue: String(reds), value: reds },
-    { name: 'offsides', label: 'Offsides', displayValue: String(offsides), value: offsides },
-    { name: 'wonCorners', label: 'Corner Kicks', displayValue: String(corners), value: corners },
-    { name: 'saves', label: 'Saves', displayValue: String(saves), value: saves },
-    { name: 'possessionPct', label: 'Possession', displayValue: String(poss1), value: poss1 },
-    { name: 'totalShots', label: 'SHOTS', displayValue: String(shots), value: shots },
-    { name: 'shotsOnTarget', label: 'ON GOAL', displayValue: String(onTarget), value: onTarget },
-    { name: 'shotPct', label: 'On Target %', displayValue: String(Math.round((onTarget / Math.max(shots, 1)) * 100) / 100), value: Math.round((onTarget / Math.max(shots, 1)) * 100) / 100 },
-    { name: 'totalPasses', label: 'Passes', displayValue: String(passes), value: passes },
-    { name: 'effectiveTackles', label: 'Effective Tackles', displayValue: String(tackles), value: tackles },
-    { name: 'effectiveClearance', label: 'Effective Clearances', displayValue: String(clearances), value: clearances },
+    {
+      name: 'foulsCommitted',
+      label: 'Fouls',
+      displayValue: String(fouls),
+      value: fouls,
+    },
+    {
+      name: 'yellowCards',
+      label: 'Yellow Cards',
+      displayValue: String(yellows),
+      value: yellows,
+    },
+    {
+      name: 'redCards',
+      label: 'Red Cards',
+      displayValue: String(reds),
+      value: reds,
+    },
+    {
+      name: 'offsides',
+      label: 'Offsides',
+      displayValue: String(offsides),
+      value: offsides,
+    },
+    {
+      name: 'wonCorners',
+      label: 'Corner Kicks',
+      displayValue: String(corners),
+      value: corners,
+    },
+    {
+      name: 'saves',
+      label: 'Saves',
+      displayValue: String(saves),
+      value: saves,
+    },
+    {
+      name: 'possessionPct',
+      label: 'Possession',
+      displayValue: String(poss1),
+      value: poss1,
+    },
+    {
+      name: 'totalShots',
+      label: 'SHOTS',
+      displayValue: String(shots),
+      value: shots,
+    },
+    {
+      name: 'shotsOnTarget',
+      label: 'ON GOAL',
+      displayValue: String(onTarget),
+      value: onTarget,
+    },
+    {
+      name: 'shotPct',
+      label: 'On Target %',
+      displayValue: String(
+        Math.round((onTarget / Math.max(shots, 1)) * 100) / 100
+      ),
+      value: Math.round((onTarget / Math.max(shots, 1)) * 100) / 100,
+    },
+    {
+      name: 'totalPasses',
+      label: 'Passes',
+      displayValue: String(passes),
+      value: passes,
+    },
+    {
+      name: 'effectiveTackles',
+      label: 'Effective Tackles',
+      displayValue: String(tackles),
+      value: tackles,
+    },
+    {
+      name: 'effectiveClearance',
+      label: 'Effective Clearances',
+      displayValue: String(clearances),
+      value: clearances,
+    },
   ]
 }
 
@@ -57,23 +124,1163 @@ function mkAwayStats(
 ) {
   const poss = Math.round((100 - homePossession) * 10) / 10
   return [
-    { name: 'foulsCommitted', label: 'Fouls', displayValue: String(fouls), value: fouls },
-    { name: 'yellowCards', label: 'Yellow Cards', displayValue: String(yellows), value: yellows },
-    { name: 'redCards', label: 'Red Cards', displayValue: String(reds), value: reds },
-    { name: 'offsides', label: 'Offsides', displayValue: String(offsides), value: offsides },
-    { name: 'wonCorners', label: 'Corner Kicks', displayValue: String(corners), value: corners },
-    { name: 'saves', label: 'Saves', displayValue: String(saves), value: saves },
-    { name: 'possessionPct', label: 'Possession', displayValue: String(poss), value: poss },
-    { name: 'totalShots', label: 'SHOTS', displayValue: String(shots), value: shots },
-    { name: 'shotsOnTarget', label: 'ON GOAL', displayValue: String(onTarget), value: onTarget },
-    { name: 'shotPct', label: 'On Target %', displayValue: String(Math.round((onTarget / Math.max(shots, 1)) * 100) / 100), value: Math.round((onTarget / Math.max(shots, 1)) * 100) / 100 },
-    { name: 'totalPasses', label: 'Passes', displayValue: String(passes), value: passes },
-    { name: 'effectiveTackles', label: 'Effective Tackles', displayValue: String(tackles), value: tackles },
-    { name: 'effectiveClearance', label: 'Effective Clearances', displayValue: String(clearances), value: clearances },
+    {
+      name: 'foulsCommitted',
+      label: 'Fouls',
+      displayValue: String(fouls),
+      value: fouls,
+    },
+    {
+      name: 'yellowCards',
+      label: 'Yellow Cards',
+      displayValue: String(yellows),
+      value: yellows,
+    },
+    {
+      name: 'redCards',
+      label: 'Red Cards',
+      displayValue: String(reds),
+      value: reds,
+    },
+    {
+      name: 'offsides',
+      label: 'Offsides',
+      displayValue: String(offsides),
+      value: offsides,
+    },
+    {
+      name: 'wonCorners',
+      label: 'Corner Kicks',
+      displayValue: String(corners),
+      value: corners,
+    },
+    {
+      name: 'saves',
+      label: 'Saves',
+      displayValue: String(saves),
+      value: saves,
+    },
+    {
+      name: 'possessionPct',
+      label: 'Possession',
+      displayValue: String(poss),
+      value: poss,
+    },
+    {
+      name: 'totalShots',
+      label: 'SHOTS',
+      displayValue: String(shots),
+      value: shots,
+    },
+    {
+      name: 'shotsOnTarget',
+      label: 'ON GOAL',
+      displayValue: String(onTarget),
+      value: onTarget,
+    },
+    {
+      name: 'shotPct',
+      label: 'On Target %',
+      displayValue: String(
+        Math.round((onTarget / Math.max(shots, 1)) * 100) / 100
+      ),
+      value: Math.round((onTarget / Math.max(shots, 1)) * 100) / 100,
+    },
+    {
+      name: 'totalPasses',
+      label: 'Passes',
+      displayValue: String(passes),
+      value: passes,
+    },
+    {
+      name: 'effectiveTackles',
+      label: 'Effective Tackles',
+      displayValue: String(tackles),
+      value: tackles,
+    },
+    {
+      name: 'effectiveClearance',
+      label: 'Effective Clearances',
+      displayValue: String(clearances),
+      value: clearances,
+    },
   ]
 }
 
+// ── Shared demo-game rosters & h2h (reused across all demo-game-* states) ────
+const DEMO_ROSTERS = [
+  {
+    team: { displayName: 'Brazil' },
+    roster: [
+      {
+        athlete: { displayName: 'Alisson', jersey: '1' },
+        position: { abbreviation: 'GK' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Danilo', jersey: '2' },
+        position: { abbreviation: 'RB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Marquinhos', jersey: '4' },
+        position: { abbreviation: 'CB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Gabriel Magalhães', jersey: '5' },
+        position: { abbreviation: 'CB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Guilherme Arana', jersey: '6' },
+        position: { abbreviation: 'LB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Casemiro', jersey: '5' },
+        position: { abbreviation: 'CDM' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Bruno Guimarães', jersey: '8' },
+        position: { abbreviation: 'CM' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Lucas Paquetá', jersey: '10' },
+        position: { abbreviation: 'CAM' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Raphinha', jersey: '11' },
+        position: { abbreviation: 'RW' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Rodrygo', jersey: '9' },
+        position: { abbreviation: 'ST' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Vinicius Jr.', jersey: '7' },
+        position: { abbreviation: 'LW' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Endrick', jersey: '19' },
+        position: { abbreviation: 'ST' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Gabriel Martinelli', jersey: '11' },
+        position: { abbreviation: 'LW' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Éder Militão', jersey: '3' },
+        position: { abbreviation: 'CB' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Gerson', jersey: '8' },
+        position: { abbreviation: 'CM' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Weverton', jersey: '23' },
+        position: { abbreviation: 'GK' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Yan Couto', jersey: '22' },
+        position: { abbreviation: 'RB' },
+        starter: false,
+      },
+    ],
+  },
+  {
+    team: { displayName: 'Argentina' },
+    roster: [
+      {
+        athlete: { displayName: 'Emiliano Martínez', jersey: '23' },
+        position: { abbreviation: 'GK' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Nahuel Molina', jersey: '26' },
+        position: { abbreviation: 'RB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Cristian Romero', jersey: '13' },
+        position: { abbreviation: 'CB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Lisandro Martínez', jersey: '14' },
+        position: { abbreviation: 'CB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Nicolás Tagliafico', jersey: '3' },
+        position: { abbreviation: 'LB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Rodrigo De Paul', jersey: '7' },
+        position: { abbreviation: 'CM' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Alexis Mac Allister', jersey: '10' },
+        position: { abbreviation: 'CM' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Nicolás Otamendi', jersey: '19' },
+        position: { abbreviation: 'CB' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Lionel Messi', jersey: '10' },
+        position: { abbreviation: 'RW' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Julián Álvarez', jersey: '9' },
+        position: { abbreviation: 'ST' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Ángel Di María', jersey: '11' },
+        position: { abbreviation: 'LW' },
+        starter: true,
+      },
+      {
+        athlete: { displayName: 'Lautaro Martínez', jersey: '22' },
+        position: { abbreviation: 'ST' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Leandro Paredes', jersey: '5' },
+        position: { abbreviation: 'CDM' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Paulo Dybala', jersey: '21' },
+        position: { abbreviation: 'CAM' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Gerónimo Rulli', jersey: '12' },
+        position: { abbreviation: 'GK' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Marcos Acuña', jersey: '8' },
+        position: { abbreviation: 'LB' },
+        starter: false,
+      },
+      {
+        athlete: { displayName: 'Exequiel Palacios', jersey: '14' },
+        position: { abbreviation: 'CM' },
+        starter: false,
+      },
+    ],
+  },
+]
+
+const DEMO_H2H = {
+  events: [
+    {
+      date: '2022-12-13T00:00Z',
+      name: 'Argentina vs Croatia',
+      competitions: [
+        {
+          competitors: [
+            {
+              homeAway: 'home',
+              score: '3',
+              team: { displayName: 'Argentina' },
+            },
+            { homeAway: 'away', score: '0', team: { displayName: 'Croatia' } },
+          ],
+        },
+      ],
+      season: { displayName: '2022 FIFA World Cup' },
+    },
+    {
+      date: '2021-07-10T00:00Z',
+      name: 'Argentina vs Brazil',
+      competitions: [
+        {
+          competitors: [
+            {
+              homeAway: 'home',
+              score: '1',
+              team: { displayName: 'Argentina' },
+            },
+            { homeAway: 'away', score: '0', team: { displayName: 'Brazil' } },
+          ],
+        },
+      ],
+      season: { displayName: '2021 Copa América Final' },
+    },
+    {
+      date: '2019-07-02T00:00Z',
+      name: 'Brazil vs Argentina',
+      competitions: [
+        {
+          competitors: [
+            { homeAway: 'home', score: '2', team: { displayName: 'Brazil' } },
+            {
+              homeAway: 'away',
+              score: '0',
+              team: { displayName: 'Argentina' },
+            },
+          ],
+        },
+      ],
+      season: { displayName: '2019 Copa América Semi-Final' },
+    },
+    {
+      date: '2018-11-16T00:00Z',
+      name: 'Brazil vs Argentina',
+      competitions: [
+        {
+          competitors: [
+            { homeAway: 'home', score: '1', team: { displayName: 'Brazil' } },
+            {
+              homeAway: 'away',
+              score: '0',
+              team: { displayName: 'Argentina' },
+            },
+          ],
+        },
+      ],
+      season: { displayName: 'International Friendly' },
+    },
+  ],
+}
+
 export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
+  // ── demo-game: Brazil 3–2 Argentina (Group C) ────────────────────────────
+  // Full showcase match: goals, penalties, yellow/red cards, substitutions,
+  // stats, leaders, lineups, and head-to-head history.
+  'demo-game': {
+    boxscore: {
+      teams: [
+        {
+          team: { displayName: 'Brazil' },
+          statistics: mkStats(13, 2, 0, 3, 7, 3, 57, 18, 9, 498, 20, 11),
+        },
+        {
+          team: { displayName: 'Argentina' },
+          statistics: mkAwayStats(15, 3, 1, 2, 5, 6, 57, 14, 6, 421, 17, 14),
+        },
+      ],
+    },
+    keyEvents: [
+      // Goals
+      {
+        clock: { displayValue: "12'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 1, Argentina 0. Vinicius Jr. (Brazil) cuts inside from the left and curls a brilliant effort into the top corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "28'" },
+        team: { displayName: 'Argentina' },
+        text: 'Goal! Brazil 1, Argentina 1. Lionel Messi (Argentina) converts a penalty after a foul by Marquinhos in the box.',
+        type: { text: 'Penalty - Scored' },
+      },
+      {
+        clock: { displayValue: "41'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 2, Argentina 1. Rodrygo (Brazil) heads home from a Raphinha cross at the back post.',
+        type: { text: 'Goal' },
+      },
+      // Yellow cards
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'Argentina' },
+        text: 'Rodrigo De Paul (Argentina) is shown the yellow card for a cynical foul on Casemiro.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "55'" },
+        team: { displayName: 'Brazil' },
+        text: 'Marquinhos (Brazil) is shown the yellow card for a foul on Julián Álvarez.',
+        type: { text: 'Yellow Card' },
+      },
+      // Argentina equalise
+      {
+        clock: { displayValue: "63'" },
+        team: { displayName: 'Argentina' },
+        text: 'Goal! Brazil 2, Argentina 2. Julián Álvarez (Argentina) pounces on a loose ball and fires low into the corner.',
+        type: { text: 'Goal' },
+      },
+      // More cards
+      {
+        clock: { displayValue: "71'" },
+        team: { displayName: 'Argentina' },
+        text: 'Nicolás Otamendi (Argentina) is shown the yellow card for a foul on Endrick.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "76'" },
+        team: { displayName: 'Argentina' },
+        text: 'Lisandro Martínez (Argentina) is shown the red card for a last-man tackle on Vinicius Jr.',
+        type: { text: 'Red Card' },
+      },
+      // Brazil winner
+      {
+        clock: { displayValue: "84'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 3, Argentina 2. Endrick (Brazil) latches onto a through ball and slots past Emiliano Martínez to win it.',
+        type: { text: 'Goal' },
+      },
+      // Substitutions
+      {
+        clock: { displayValue: "60'" },
+        team: { displayName: 'Brazil' },
+        text: 'Substitution: Endrick replaces Rodrygo for Brazil.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "60'" },
+        team: { displayName: 'Argentina' },
+        text: 'Substitution: Ángel Di María replaces Alexis Mac Allister for Argentina.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "72'" },
+        team: { displayName: 'Brazil' },
+        text: 'Substitution: Gabriel Martinelli replaces Raphinha for Brazil.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "80'" },
+        team: { displayName: 'Argentina' },
+        text: 'Substitution: Lautaro Martínez replaces Julián Álvarez for Argentina.',
+        type: { text: 'Substitution' },
+      },
+    ],
+    leaders: [
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Rodrygo' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Endrick' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi' },
+            team: { displayName: 'Argentina' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Julián Álvarez' },
+            team: { displayName: 'Argentina' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '6',
+            value: 6,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi' },
+            team: { displayName: 'Argentina' },
+            displayValue: '5',
+            value: 5,
+          },
+          {
+            athlete: { displayName: 'Endrick' },
+            team: { displayName: 'Brazil' },
+            displayValue: '4',
+            value: 4,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Casemiro' },
+            team: { displayName: 'Brazil' },
+            displayValue: '88',
+            value: 88,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi' },
+            team: { displayName: 'Argentina' },
+            displayValue: '79',
+            value: 79,
+          },
+          {
+            athlete: { displayName: 'Rodrigo De Paul' },
+            team: { displayName: 'Argentina' },
+            displayValue: '64',
+            value: 64,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Alisson' },
+            team: { displayName: 'Brazil' },
+            displayValue: '3',
+            value: 3,
+          },
+          {
+            athlete: { displayName: 'Emiliano Martínez' },
+            team: { displayName: 'Argentina' },
+            displayValue: '6',
+            value: 6,
+          },
+        ],
+      },
+    ],
+    rosters: [
+      {
+        team: { displayName: 'Brazil' },
+        roster: [
+          {
+            athlete: { displayName: 'Alisson', jersey: '1' },
+            position: { abbreviation: 'GK' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Danilo', jersey: '2' },
+            position: { abbreviation: 'RB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Marquinhos', jersey: '4' },
+            position: { abbreviation: 'CB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Gabriel Magalhães', jersey: '5' },
+            position: { abbreviation: 'CB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Guilherme Arana', jersey: '6' },
+            position: { abbreviation: 'LB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Casemiro', jersey: '5' },
+            position: { abbreviation: 'CDM' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Bruno Guimarães', jersey: '8' },
+            position: { abbreviation: 'CM' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Lucas Paquetá', jersey: '10' },
+            position: { abbreviation: 'CAM' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Raphinha', jersey: '11' },
+            position: { abbreviation: 'RW' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Rodrygo', jersey: '9' },
+            position: { abbreviation: 'ST' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Vinicius Jr.', jersey: '7' },
+            position: { abbreviation: 'LW' },
+            starter: true,
+          },
+          // Subs
+          {
+            athlete: { displayName: 'Endrick', jersey: '19' },
+            position: { abbreviation: 'ST' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Gabriel Martinelli', jersey: '11' },
+            position: { abbreviation: 'LW' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Éder Militão', jersey: '3' },
+            position: { abbreviation: 'CB' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Gerson', jersey: '8' },
+            position: { abbreviation: 'CM' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Weverton', jersey: '23' },
+            position: { abbreviation: 'GK' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Yan Couto', jersey: '22' },
+            position: { abbreviation: 'RB' },
+            starter: false,
+          },
+        ],
+      },
+      {
+        team: { displayName: 'Argentina' },
+        roster: [
+          {
+            athlete: { displayName: 'Emiliano Martínez', jersey: '23' },
+            position: { abbreviation: 'GK' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Nahuel Molina', jersey: '26' },
+            position: { abbreviation: 'RB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Cristian Romero', jersey: '13' },
+            position: { abbreviation: 'CB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Lisandro Martínez', jersey: '14' },
+            position: { abbreviation: 'CB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Nicolás Tagliafico', jersey: '3' },
+            position: { abbreviation: 'LB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Rodrigo De Paul', jersey: '7' },
+            position: { abbreviation: 'CM' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Alexis Mac Allister', jersey: '10' },
+            position: { abbreviation: 'CM' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Nicolás Otamendi', jersey: '19' },
+            position: { abbreviation: 'CB' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi', jersey: '10' },
+            position: { abbreviation: 'RW' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Julián Álvarez', jersey: '9' },
+            position: { abbreviation: 'ST' },
+            starter: true,
+          },
+          {
+            athlete: { displayName: 'Ángel Di María', jersey: '11' },
+            position: { abbreviation: 'LW' },
+            starter: true,
+          },
+          // Subs
+          {
+            athlete: { displayName: 'Lautaro Martínez', jersey: '22' },
+            position: { abbreviation: 'ST' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Leandro Paredes', jersey: '5' },
+            position: { abbreviation: 'CDM' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Paulo Dybala', jersey: '21' },
+            position: { abbreviation: 'CAM' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Gerónimo Rulli', jersey: '12' },
+            position: { abbreviation: 'GK' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Marcos Acuña', jersey: '8' },
+            position: { abbreviation: 'LB' },
+            starter: false,
+          },
+          {
+            athlete: { displayName: 'Exequiel Palacios', jersey: '14' },
+            position: { abbreviation: 'CM' },
+            starter: false,
+          },
+        ],
+      },
+    ],
+    h2h: {
+      events: [
+        {
+          date: '2022-12-13T00:00Z',
+          name: 'Argentina vs Croatia',
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: 'home',
+                  score: '3',
+                  team: { displayName: 'Argentina' },
+                },
+                {
+                  homeAway: 'away',
+                  score: '0',
+                  team: { displayName: 'Croatia' },
+                },
+              ],
+            },
+          ],
+          season: { displayName: '2022 FIFA World Cup' },
+        },
+        {
+          date: '2021-07-10T00:00Z',
+          name: 'Argentina vs Brazil',
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: 'home',
+                  score: '1',
+                  team: { displayName: 'Argentina' },
+                },
+                {
+                  homeAway: 'away',
+                  score: '0',
+                  team: { displayName: 'Brazil' },
+                },
+              ],
+            },
+          ],
+          season: { displayName: '2021 Copa América Final' },
+        },
+        {
+          date: '2019-07-02T00:00Z',
+          name: 'Brazil vs Argentina',
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: 'home',
+                  score: '2',
+                  team: { displayName: 'Brazil' },
+                },
+                {
+                  homeAway: 'away',
+                  score: '0',
+                  team: { displayName: 'Argentina' },
+                },
+              ],
+            },
+          ],
+          season: { displayName: '2019 Copa América Semi-Final' },
+        },
+        {
+          date: '2018-11-16T00:00Z',
+          name: 'Brazil vs Argentina',
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: 'home',
+                  score: '1',
+                  team: { displayName: 'Brazil' },
+                },
+                {
+                  homeAway: 'away',
+                  score: '0',
+                  team: { displayName: 'Argentina' },
+                },
+              ],
+            },
+          ],
+          season: { displayName: 'International Friendly' },
+        },
+      ],
+    },
+  },
+
+  // ── demo-game-pre: Pre-Game (no events yet) ──────────────────────────────────
+  'demo-game-pre': {
+    boxscore: { teams: [] },
+    keyEvents: [],
+    leaders: [],
+    rosters: DEMO_ROSTERS,
+    h2h: DEMO_H2H,
+  },
+
+  // ── demo-game-10: 10' — 0-0, no goals yet ────────────────────────────────────
+  'demo-game-10': {
+    boxscore: {
+      teams: [
+        {
+          team: { displayName: 'Brazil' },
+          statistics: mkStats(2, 0, 0, 0, 1, 0, 52, 3, 1, 98, 4, 2),
+        },
+        {
+          team: { displayName: 'Argentina' },
+          statistics: mkAwayStats(3, 0, 0, 0, 0, 1, 52, 2, 1, 87, 3, 1),
+        },
+      ],
+    },
+    keyEvents: [],
+    leaders: [],
+    rosters: DEMO_ROSTERS,
+    h2h: DEMO_H2H,
+  },
+
+  // ── demo-game-30: 30' — BRA 1-0 (Vinicius 12') ───────────────────────────────
+  'demo-game-30': {
+    boxscore: {
+      teams: [
+        {
+          team: { displayName: 'Brazil' },
+          statistics: mkStats(5, 0, 0, 1, 3, 1, 55, 8, 4, 198, 9, 5),
+        },
+        {
+          team: { displayName: 'Argentina' },
+          statistics: mkAwayStats(6, 0, 0, 1, 1, 3, 55, 5, 2, 167, 7, 4),
+        },
+      ],
+    },
+    keyEvents: [
+      {
+        clock: { displayValue: "12'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 1, Argentina 0. Vinicius Jr. (Brazil) cuts inside from the left and curls a brilliant effort into the top corner.',
+        type: { text: 'Goal' },
+      },
+    ],
+    leaders: [
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+    ],
+    rosters: DEMO_ROSTERS,
+    h2h: DEMO_H2H,
+  },
+
+  // ── demo-game-ht: Half Time — BRA 2-1 (Vinicius 12', Messi pen 28', Rodrygo 41') ──
+  'demo-game-ht': {
+    boxscore: {
+      teams: [
+        {
+          team: { displayName: 'Brazil' },
+          statistics: mkStats(7, 0, 0, 2, 4, 2, 56, 11, 6, 248, 12, 7),
+        },
+        {
+          team: { displayName: 'Argentina' },
+          statistics: mkAwayStats(8, 1, 0, 1, 2, 4, 56, 7, 3, 209, 10, 6),
+        },
+      ],
+    },
+    keyEvents: [
+      {
+        clock: { displayValue: "12'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 1, Argentina 0. Vinicius Jr. (Brazil) cuts inside from the left and curls a brilliant effort into the top corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "28'" },
+        team: { displayName: 'Argentina' },
+        text: 'Goal! Brazil 1, Argentina 1. Lionel Messi (Argentina) converts a penalty after a foul by Marquinhos in the box.',
+        type: { text: 'Penalty - Scored' },
+      },
+      {
+        clock: { displayValue: "41'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 2, Argentina 1. Rodrygo (Brazil) heads home from a Raphinha cross at the back post.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'Argentina' },
+        text: 'Rodrigo De Paul (Argentina) is shown the yellow card for a cynical foul on Casemiro.',
+        type: { text: 'Yellow Card' },
+      },
+    ],
+    leaders: [
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Rodrygo' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi' },
+            team: { displayName: 'Argentina' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+    ],
+    rosters: DEMO_ROSTERS,
+    h2h: DEMO_H2H,
+  },
+
+  // ── demo-game-58: 58' — BRA 2-1 (yellow for Marquinhos 55') ─────────────────
+  'demo-game-58': {
+    boxscore: {
+      teams: [
+        {
+          team: { displayName: 'Brazil' },
+          statistics: mkStats(9, 1, 0, 2, 5, 2, 57, 13, 7, 318, 15, 8),
+        },
+        {
+          team: { displayName: 'Argentina' },
+          statistics: mkAwayStats(10, 1, 0, 1, 3, 4, 57, 9, 4, 271, 13, 9),
+        },
+      ],
+    },
+    keyEvents: [
+      {
+        clock: { displayValue: "12'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 1, Argentina 0. Vinicius Jr. (Brazil) cuts inside from the left and curls a brilliant effort into the top corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "28'" },
+        team: { displayName: 'Argentina' },
+        text: 'Goal! Brazil 1, Argentina 1. Lionel Messi (Argentina) converts a penalty after a foul by Marquinhos in the box.',
+        type: { text: 'Penalty - Scored' },
+      },
+      {
+        clock: { displayValue: "41'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 2, Argentina 1. Rodrygo (Brazil) heads home from a Raphinha cross at the back post.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'Argentina' },
+        text: 'Rodrigo De Paul (Argentina) is shown the yellow card for a cynical foul on Casemiro.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "55'" },
+        team: { displayName: 'Brazil' },
+        text: 'Marquinhos (Brazil) is shown the yellow card for a foul on Julián Álvarez.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "60'" },
+        team: { displayName: 'Brazil' },
+        text: 'Substitution: Endrick replaces Rodrygo for Brazil.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "60'" },
+        team: { displayName: 'Argentina' },
+        text: 'Substitution: Ángel Di María replaces Alexis Mac Allister for Argentina.',
+        type: { text: 'Substitution' },
+      },
+    ],
+    leaders: [
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Rodrygo' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi' },
+            team: { displayName: 'Argentina' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+    ],
+    rosters: DEMO_ROSTERS,
+    h2h: DEMO_H2H,
+  },
+
+  // ── demo-game-83: 83' — 2-2 (Álvarez 63', red card Martínez 76') ─────────────
+  'demo-game-83': {
+    boxscore: {
+      teams: [
+        {
+          team: { displayName: 'Brazil' },
+          statistics: mkStats(11, 1, 0, 3, 6, 3, 57, 16, 8, 418, 18, 10),
+        },
+        {
+          team: { displayName: 'Argentina' },
+          statistics: mkAwayStats(13, 3, 1, 2, 4, 5, 57, 12, 5, 361, 15, 12),
+        },
+      ],
+    },
+    keyEvents: [
+      {
+        clock: { displayValue: "12'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 1, Argentina 0. Vinicius Jr. (Brazil) cuts inside from the left and curls a brilliant effort into the top corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "28'" },
+        team: { displayName: 'Argentina' },
+        text: 'Goal! Brazil 1, Argentina 1. Lionel Messi (Argentina) converts a penalty after a foul by Marquinhos in the box.',
+        type: { text: 'Penalty - Scored' },
+      },
+      {
+        clock: { displayValue: "41'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 2, Argentina 1. Rodrygo (Brazil) heads home from a Raphinha cross at the back post.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'Argentina' },
+        text: 'Rodrigo De Paul (Argentina) is shown the yellow card for a cynical foul on Casemiro.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "55'" },
+        team: { displayName: 'Brazil' },
+        text: 'Marquinhos (Brazil) is shown the yellow card for a foul on Julián Álvarez.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "60'" },
+        team: { displayName: 'Brazil' },
+        text: 'Substitution: Endrick replaces Rodrygo for Brazil.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "60'" },
+        team: { displayName: 'Argentina' },
+        text: 'Substitution: Ángel Di María replaces Alexis Mac Allister for Argentina.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "63'" },
+        team: { displayName: 'Argentina' },
+        text: 'Goal! Brazil 2, Argentina 2. Julián Álvarez (Argentina) pounces on a loose ball and fires low into the corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "71'" },
+        team: { displayName: 'Argentina' },
+        text: 'Nicolás Otamendi (Argentina) is shown the yellow card for a foul on Endrick.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "72'" },
+        team: { displayName: 'Brazil' },
+        text: 'Substitution: Gabriel Martinelli replaces Raphinha for Brazil.',
+        type: { text: 'Substitution' },
+      },
+      {
+        clock: { displayValue: "76'" },
+        team: { displayName: 'Argentina' },
+        text: 'Lisandro Martínez (Argentina) is shown the red card for a last-man tackle on Vinicius Jr.',
+        type: { text: 'Red Card' },
+      },
+    ],
+    leaders: [
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Rodrygo' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Lionel Messi' },
+            team: { displayName: 'Argentina' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Julián Álvarez' },
+            team: { displayName: 'Argentina' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+    ],
+    rosters: DEMO_ROSTERS,
+    h2h: DEMO_H2H,
+  },
 
   // ── mock-001: Mexico 2–1 South Korea ─────────────────────────────────────────
   'mock-001': {
@@ -90,23 +1297,163 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "23'" }, team: { displayName: 'Mexico' }, text: "Goal! Mexico 1, South Korea 0. Raúl Jiménez (Mexico) heads home from a corner kick.", type: { text: 'Goal' } },
-      { clock: { displayValue: "38'" }, team: { displayName: 'South Korea' }, text: "Hwang In-beom (South Korea) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "51'" }, team: { displayName: 'South Korea' }, text: "Goal! Mexico 1, South Korea 1. Son Heung-min (South Korea) curls a brilliant free kick into the top corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "67'" }, team: { displayName: 'Mexico' }, text: "Hirving Lozano (Mexico) is shown the yellow card for simulation.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "78'" }, team: { displayName: 'Mexico' }, text: "Goal! Mexico 2, South Korea 1. Edson Álvarez (Mexico) fires home from the edge of the box.", type: { text: 'Goal' } },
-      { clock: { displayValue: "85'" }, team: { displayName: 'South Korea' }, text: "Kim Min-jae (South Korea) is shown the red card for a last-man foul.", type: { text: 'Red Card' } },
+      {
+        clock: { displayValue: "23'" },
+        team: { displayName: 'Mexico' },
+        text: 'Goal! Mexico 1, South Korea 0. Raúl Jiménez (Mexico) heads home from a corner kick.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "38'" },
+        team: { displayName: 'South Korea' },
+        text: 'Hwang In-beom (South Korea) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "51'" },
+        team: { displayName: 'South Korea' },
+        text: 'Goal! Mexico 1, South Korea 1. Son Heung-min (South Korea) curls a brilliant free kick into the top corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "67'" },
+        team: { displayName: 'Mexico' },
+        text: 'Hirving Lozano (Mexico) is shown the yellow card for simulation.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "78'" },
+        team: { displayName: 'Mexico' },
+        text: 'Goal! Mexico 2, South Korea 1. Edson Álvarez (Mexico) fires home from the edge of the box.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "85'" },
+        team: { displayName: 'South Korea' },
+        text: 'Kim Min-jae (South Korea) is shown the red card for a last-man foul.',
+        type: { text: 'Red Card' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Raúl Jiménez' }, team: { displayName: 'Mexico' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Edson Álvarez' }, team: { displayName: 'Mexico' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Son Heung-min' }, team: { displayName: 'South Korea' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Raúl Jiménez' }, team: { displayName: 'Mexico' }, displayValue: '4', value: 4 }, { athlete: { displayName: 'Son Heung-min' }, team: { displayName: 'South Korea' }, displayValue: '3', value: 3 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Edson Álvarez' }, team: { displayName: 'Mexico' }, displayValue: '68', value: 68 }, { athlete: { displayName: 'Hwang In-beom' }, team: { displayName: 'South Korea' }, displayValue: '54', value: 54 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Guillermo Ochoa' }, team: { displayName: 'Mexico' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Kim Seung-gyu' }, team: { displayName: 'South Korea' }, displayValue: '3', value: 3 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Raúl Jiménez' },
+            team: { displayName: 'Mexico' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Edson Álvarez' },
+            team: { displayName: 'Mexico' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Son Heung-min' },
+            team: { displayName: 'South Korea' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Raúl Jiménez' },
+            team: { displayName: 'Mexico' },
+            displayValue: '4',
+            value: 4,
+          },
+          {
+            athlete: { displayName: 'Son Heung-min' },
+            team: { displayName: 'South Korea' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Edson Álvarez' },
+            team: { displayName: 'Mexico' },
+            displayValue: '68',
+            value: 68,
+          },
+          {
+            athlete: { displayName: 'Hwang In-beom' },
+            team: { displayName: 'South Korea' },
+            displayValue: '54',
+            value: 54,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Guillermo Ochoa' },
+            team: { displayName: 'Mexico' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Kim Seung-gyu' },
+            team: { displayName: 'South Korea' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
     ],
     h2h: {
       events: [
-        { date: '2022-11-26T00:00Z', name: 'South Korea vs Mexico', competitions: [{ competitors: [{ homeAway: 'home', score: '2', team: { displayName: 'South Korea' } }, { homeAway: 'away', score: '1', team: { displayName: 'Mexico' } }] }], season: { displayName: '2022 FIFA World Cup' } },
-        { date: '2018-06-23T00:00Z', name: 'Mexico vs South Korea', competitions: [{ competitors: [{ homeAway: 'home', score: '2', team: { displayName: 'Mexico' } }, { homeAway: 'away', score: '1', team: { displayName: 'South Korea' } }] }], season: { displayName: '2018 FIFA World Cup' } },
+        {
+          date: '2022-11-26T00:00Z',
+          name: 'South Korea vs Mexico',
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: 'home',
+                  score: '2',
+                  team: { displayName: 'South Korea' },
+                },
+                {
+                  homeAway: 'away',
+                  score: '1',
+                  team: { displayName: 'Mexico' },
+                },
+              ],
+            },
+          ],
+          season: { displayName: '2022 FIFA World Cup' },
+        },
+        {
+          date: '2018-06-23T00:00Z',
+          name: 'Mexico vs South Korea',
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: 'home',
+                  score: '2',
+                  team: { displayName: 'Mexico' },
+                },
+                {
+                  homeAway: 'away',
+                  score: '1',
+                  team: { displayName: 'South Korea' },
+                },
+              ],
+            },
+          ],
+          season: { displayName: '2018 FIFA World Cup' },
+        },
       ],
     },
   },
@@ -126,18 +1473,118 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "14'" }, team: { displayName: 'Switzerland' }, text: "Goal! Switzerland 1, Qatar 0. Granit Xhaka (Switzerland) drives a low shot into the bottom corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "29'" }, team: { displayName: 'Qatar' }, text: "Assim Madibo (Qatar) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "44'" }, team: { displayName: 'Switzerland' }, text: "Goal! Switzerland 2, Qatar 0. Breel Embolo (Switzerland) taps in from close range.", type: { text: 'Goal' } },
-      { clock: { displayValue: "58'" }, team: { displayName: 'Qatar' }, text: "Boualem Khoukhi (Qatar) is shown the yellow card for dissent.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "71'" }, team: { displayName: 'Qatar' }, text: "Karim Boudiaf (Qatar) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "83'" }, team: { displayName: 'Switzerland' }, text: "Goal! Switzerland 3, Qatar 0. Ruben Vargas (Switzerland) finishes a swift counter-attack.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "14'" },
+        team: { displayName: 'Switzerland' },
+        text: 'Goal! Switzerland 1, Qatar 0. Granit Xhaka (Switzerland) drives a low shot into the bottom corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "29'" },
+        team: { displayName: 'Qatar' },
+        text: 'Assim Madibo (Qatar) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'Switzerland' },
+        text: 'Goal! Switzerland 2, Qatar 0. Breel Embolo (Switzerland) taps in from close range.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "58'" },
+        team: { displayName: 'Qatar' },
+        text: 'Boualem Khoukhi (Qatar) is shown the yellow card for dissent.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "71'" },
+        team: { displayName: 'Qatar' },
+        text: 'Karim Boudiaf (Qatar) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "83'" },
+        team: { displayName: 'Switzerland' },
+        text: 'Goal! Switzerland 3, Qatar 0. Ruben Vargas (Switzerland) finishes a swift counter-attack.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Granit Xhaka' }, team: { displayName: 'Switzerland' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Breel Embolo' }, team: { displayName: 'Switzerland' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Ruben Vargas' }, team: { displayName: 'Switzerland' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Breel Embolo' }, team: { displayName: 'Switzerland' }, displayValue: '5', value: 5 }, { athlete: { displayName: 'Granit Xhaka' }, team: { displayName: 'Switzerland' }, displayValue: '3', value: 3 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Granit Xhaka' }, team: { displayName: 'Switzerland' }, displayValue: '82', value: 82 }, { athlete: { displayName: 'Assim Madibo' }, team: { displayName: 'Qatar' }, displayValue: '51', value: 51 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Yann Sommer' }, team: { displayName: 'Switzerland' }, displayValue: '0', value: 0 }, { athlete: { displayName: 'Meshaal Barsham' }, team: { displayName: 'Qatar' }, displayValue: '5', value: 5 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Granit Xhaka' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Breel Embolo' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Ruben Vargas' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Breel Embolo' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '5',
+            value: 5,
+          },
+          {
+            athlete: { displayName: 'Granit Xhaka' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Granit Xhaka' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '82',
+            value: 82,
+          },
+          {
+            athlete: { displayName: 'Assim Madibo' },
+            team: { displayName: 'Qatar' },
+            displayValue: '51',
+            value: 51,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Yann Sommer' },
+            team: { displayName: 'Switzerland' },
+            displayValue: '0',
+            value: 0,
+          },
+          {
+            athlete: { displayName: 'Meshaal Barsham' },
+            team: { displayName: 'Qatar' },
+            displayValue: '5',
+            value: 5,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -157,19 +1604,124 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "11'" }, team: { displayName: 'Brazil' }, text: "Goal! Brazil 1, Scotland 0. Vinicius Jr. (Brazil) cuts inside and fires into the far corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "27'" }, team: { displayName: 'Brazil' }, text: "Goal! Brazil 2, Scotland 0. Rodrygo (Brazil) converts a penalty after a handball in the box.", type: { text: 'Penalty - Scored' } },
-      { clock: { displayValue: "34'" }, team: { displayName: 'Scotland' }, text: "Ryan Christie (Scotland) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "52'" }, team: { displayName: 'Scotland' }, text: "Goal! Brazil 2, Scotland 1. Scott McTominay (Scotland) heads home from a corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "63'" }, team: { displayName: 'Brazil' }, text: "Goal! Brazil 3, Scotland 1. Endrick (Brazil) rounds the keeper and slots home.", type: { text: 'Goal' } },
-      { clock: { displayValue: "74'" }, team: { displayName: 'Scotland' }, text: "John McGinn (Scotland) is shown the yellow card for a late challenge.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "88'" }, team: { displayName: 'Brazil' }, text: "Goal! Brazil 4, Scotland 1. Vinicius Jr. (Brazil) completes his brace with a clinical finish.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "11'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 1, Scotland 0. Vinicius Jr. (Brazil) cuts inside and fires into the far corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "27'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 2, Scotland 0. Rodrygo (Brazil) converts a penalty after a handball in the box.',
+        type: { text: 'Penalty - Scored' },
+      },
+      {
+        clock: { displayValue: "34'" },
+        team: { displayName: 'Scotland' },
+        text: 'Ryan Christie (Scotland) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "52'" },
+        team: { displayName: 'Scotland' },
+        text: 'Goal! Brazil 2, Scotland 1. Scott McTominay (Scotland) heads home from a corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "63'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 3, Scotland 1. Endrick (Brazil) rounds the keeper and slots home.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "74'" },
+        team: { displayName: 'Scotland' },
+        text: 'John McGinn (Scotland) is shown the yellow card for a late challenge.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "88'" },
+        team: { displayName: 'Brazil' },
+        text: 'Goal! Brazil 4, Scotland 1. Vinicius Jr. (Brazil) completes his brace with a clinical finish.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Vinicius Jr.' }, team: { displayName: 'Brazil' }, displayValue: '2', value: 2 }, { athlete: { displayName: 'Rodrygo' }, team: { displayName: 'Brazil' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Scott McTominay' }, team: { displayName: 'Scotland' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Vinicius Jr.' }, team: { displayName: 'Brazil' }, displayValue: '6', value: 6 }, { athlete: { displayName: 'Endrick' }, team: { displayName: 'Brazil' }, displayValue: '4', value: 4 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Casemiro' }, team: { displayName: 'Brazil' }, displayValue: '91', value: 91 }, { athlete: { displayName: 'Andy Robertson' }, team: { displayName: 'Scotland' }, displayValue: '47', value: 47 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Alisson' }, team: { displayName: 'Brazil' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Angus Gunn' }, team: { displayName: 'Scotland' }, displayValue: '6', value: 6 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '2',
+            value: 2,
+          },
+          {
+            athlete: { displayName: 'Rodrygo' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Scott McTominay' },
+            team: { displayName: 'Scotland' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Vinicius Jr.' },
+            team: { displayName: 'Brazil' },
+            displayValue: '6',
+            value: 6,
+          },
+          {
+            athlete: { displayName: 'Endrick' },
+            team: { displayName: 'Brazil' },
+            displayValue: '4',
+            value: 4,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Casemiro' },
+            team: { displayName: 'Brazil' },
+            displayValue: '91',
+            value: 91,
+          },
+          {
+            athlete: { displayName: 'Andy Robertson' },
+            team: { displayName: 'Scotland' },
+            displayValue: '47',
+            value: 47,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Alisson' },
+            team: { displayName: 'Brazil' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Angus Gunn' },
+            team: { displayName: 'Scotland' },
+            displayValue: '6',
+            value: 6,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -189,16 +1741,100 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "19'" }, team: { displayName: 'United States' }, text: "Goal! United States 1, Australia 0. Christian Pulisic (United States) slots home after a brilliant run.", type: { text: 'Goal' } },
-      { clock: { displayValue: "33'" }, team: { displayName: 'Australia' }, text: "Harry Souttar (Australia) is shown the yellow card for a foul on Pulisic.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "48'" }, team: { displayName: 'Australia' }, text: "Mathew Leckie (Australia) is shown the yellow card for dissent.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "72'" }, team: { displayName: 'United States' }, text: "Goal! United States 2, Australia 0. Weston McKennie (United States) fires home from 20 yards.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "19'" },
+        team: { displayName: 'United States' },
+        text: 'Goal! United States 1, Australia 0. Christian Pulisic (United States) slots home after a brilliant run.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "33'" },
+        team: { displayName: 'Australia' },
+        text: 'Harry Souttar (Australia) is shown the yellow card for a foul on Pulisic.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "48'" },
+        team: { displayName: 'Australia' },
+        text: 'Mathew Leckie (Australia) is shown the yellow card for dissent.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "72'" },
+        team: { displayName: 'United States' },
+        text: 'Goal! United States 2, Australia 0. Weston McKennie (United States) fires home from 20 yards.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Christian Pulisic' }, team: { displayName: 'United States' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Weston McKennie' }, team: { displayName: 'United States' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Christian Pulisic' }, team: { displayName: 'United States' }, displayValue: '5', value: 5 }, { athlete: { displayName: 'Mathew Leckie' }, team: { displayName: 'Australia' }, displayValue: '3', value: 3 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Tyler Adams' }, team: { displayName: 'United States' }, displayValue: '74', value: 74 }, { athlete: { displayName: 'Aaron Mooy' }, team: { displayName: 'Australia' }, displayValue: '58', value: 58 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Matt Turner' }, team: { displayName: 'United States' }, displayValue: '2', value: 2 }, { athlete: { displayName: 'Mathew Ryan' }, team: { displayName: 'Australia' }, displayValue: '4', value: 4 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Christian Pulisic' },
+            team: { displayName: 'United States' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Weston McKennie' },
+            team: { displayName: 'United States' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Christian Pulisic' },
+            team: { displayName: 'United States' },
+            displayValue: '5',
+            value: 5,
+          },
+          {
+            athlete: { displayName: 'Mathew Leckie' },
+            team: { displayName: 'Australia' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Tyler Adams' },
+            team: { displayName: 'United States' },
+            displayValue: '74',
+            value: 74,
+          },
+          {
+            athlete: { displayName: 'Aaron Mooy' },
+            team: { displayName: 'Australia' },
+            displayValue: '58',
+            value: 58,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Matt Turner' },
+            team: { displayName: 'United States' },
+            displayValue: '2',
+            value: 2,
+          },
+          {
+            athlete: { displayName: 'Mathew Ryan' },
+            team: { displayName: 'Australia' },
+            displayValue: '4',
+            value: 4,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -218,18 +1854,118 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "17'" }, team: { displayName: 'Germany' }, text: "Goal! Germany 1, Ivory Coast 0. Florian Wirtz (Germany) curls a stunning effort into the top corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "31'" }, team: { displayName: 'Ivory Coast' }, text: "Goal! Germany 1, Ivory Coast 1. Sébastien Haller (Ivory Coast) heads home from a cross.", type: { text: 'Goal' } },
-      { clock: { displayValue: "44'" }, team: { displayName: 'Germany' }, text: "Toni Kroos (Germany) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "59'" }, team: { displayName: 'Germany' }, text: "Goal! Germany 2, Ivory Coast 1. Jamal Musiala (Germany) dribbles past two defenders and finishes.", type: { text: 'Goal' } },
-      { clock: { displayValue: "76'" }, team: { displayName: 'Ivory Coast' }, text: "Franck Kessié (Ivory Coast) is shown the yellow card for a late tackle.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "89'" }, team: { displayName: 'Ivory Coast' }, text: "Goal! Germany 2, Ivory Coast 2. Wilfried Zaha (Ivory Coast) equalises with a powerful header in stoppage time.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "17'" },
+        team: { displayName: 'Germany' },
+        text: 'Goal! Germany 1, Ivory Coast 0. Florian Wirtz (Germany) curls a stunning effort into the top corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "31'" },
+        team: { displayName: 'Ivory Coast' },
+        text: 'Goal! Germany 1, Ivory Coast 1. Sébastien Haller (Ivory Coast) heads home from a cross.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'Germany' },
+        text: 'Toni Kroos (Germany) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "59'" },
+        team: { displayName: 'Germany' },
+        text: 'Goal! Germany 2, Ivory Coast 1. Jamal Musiala (Germany) dribbles past two defenders and finishes.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "76'" },
+        team: { displayName: 'Ivory Coast' },
+        text: 'Franck Kessié (Ivory Coast) is shown the yellow card for a late tackle.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "89'" },
+        team: { displayName: 'Ivory Coast' },
+        text: 'Goal! Germany 2, Ivory Coast 2. Wilfried Zaha (Ivory Coast) equalises with a powerful header in stoppage time.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Florian Wirtz' }, team: { displayName: 'Germany' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Jamal Musiala' }, team: { displayName: 'Germany' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Sébastien Haller' }, team: { displayName: 'Ivory Coast' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Florian Wirtz' }, team: { displayName: 'Germany' }, displayValue: '5', value: 5 }, { athlete: { displayName: 'Sébastien Haller' }, team: { displayName: 'Ivory Coast' }, displayValue: '4', value: 4 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Toni Kroos' }, team: { displayName: 'Germany' }, displayValue: '88', value: 88 }, { athlete: { displayName: 'Franck Kessié' }, team: { displayName: 'Ivory Coast' }, displayValue: '67', value: 67 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Manuel Neuer' }, team: { displayName: 'Germany' }, displayValue: '2', value: 2 }, { athlete: { displayName: 'Yahia Fofana' }, team: { displayName: 'Ivory Coast' }, displayValue: '5', value: 5 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Florian Wirtz' },
+            team: { displayName: 'Germany' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Jamal Musiala' },
+            team: { displayName: 'Germany' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Sébastien Haller' },
+            team: { displayName: 'Ivory Coast' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Florian Wirtz' },
+            team: { displayName: 'Germany' },
+            displayValue: '5',
+            value: 5,
+          },
+          {
+            athlete: { displayName: 'Sébastien Haller' },
+            team: { displayName: 'Ivory Coast' },
+            displayValue: '4',
+            value: 4,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Toni Kroos' },
+            team: { displayName: 'Germany' },
+            displayValue: '88',
+            value: 88,
+          },
+          {
+            athlete: { displayName: 'Franck Kessié' },
+            team: { displayName: 'Ivory Coast' },
+            displayValue: '67',
+            value: 67,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Manuel Neuer' },
+            team: { displayName: 'Germany' },
+            displayValue: '2',
+            value: 2,
+          },
+          {
+            athlete: { displayName: 'Yahia Fofana' },
+            team: { displayName: 'Ivory Coast' },
+            displayValue: '5',
+            value: 5,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -249,16 +1985,100 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "36'" }, team: { displayName: 'Netherlands' }, text: "Goal! Netherlands 1, Japan 0. Cody Gakpo (Netherlands) heads home from a corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "41'" }, team: { displayName: 'Japan' }, text: "Wataru Endo (Japan) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "55'" }, team: { displayName: 'Netherlands' }, text: "Virgil van Dijk (Netherlands) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "68'" }, team: { displayName: 'Japan' }, text: "Goal! Netherlands 1, Japan 1. Ritsu Doan (Japan) fires a low shot into the corner after a quick counter-attack.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "36'" },
+        team: { displayName: 'Netherlands' },
+        text: 'Goal! Netherlands 1, Japan 0. Cody Gakpo (Netherlands) heads home from a corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "41'" },
+        team: { displayName: 'Japan' },
+        text: 'Wataru Endo (Japan) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "55'" },
+        team: { displayName: 'Netherlands' },
+        text: 'Virgil van Dijk (Netherlands) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "68'" },
+        team: { displayName: 'Japan' },
+        text: 'Goal! Netherlands 1, Japan 1. Ritsu Doan (Japan) fires a low shot into the corner after a quick counter-attack.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Cody Gakpo' }, team: { displayName: 'Netherlands' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Ritsu Doan' }, team: { displayName: 'Japan' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Cody Gakpo' }, team: { displayName: 'Netherlands' }, displayValue: '4', value: 4 }, { athlete: { displayName: 'Takefusa Kubo' }, team: { displayName: 'Japan' }, displayValue: '4', value: 4 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Frenkie de Jong' }, team: { displayName: 'Netherlands' }, displayValue: '79', value: 79 }, { athlete: { displayName: 'Wataru Endo' }, team: { displayName: 'Japan' }, displayValue: '71', value: 71 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Bart Verbruggen' }, team: { displayName: 'Netherlands' }, displayValue: '3', value: 3 }, { athlete: { displayName: 'Shuichi Gonda' }, team: { displayName: 'Japan' }, displayValue: '3', value: 3 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Cody Gakpo' },
+            team: { displayName: 'Netherlands' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Ritsu Doan' },
+            team: { displayName: 'Japan' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Cody Gakpo' },
+            team: { displayName: 'Netherlands' },
+            displayValue: '4',
+            value: 4,
+          },
+          {
+            athlete: { displayName: 'Takefusa Kubo' },
+            team: { displayName: 'Japan' },
+            displayValue: '4',
+            value: 4,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Frenkie de Jong' },
+            team: { displayName: 'Netherlands' },
+            displayValue: '79',
+            value: 79,
+          },
+          {
+            athlete: { displayName: 'Wataru Endo' },
+            team: { displayName: 'Japan' },
+            displayValue: '71',
+            value: 71,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Bart Verbruggen' },
+            team: { displayName: 'Netherlands' },
+            displayValue: '3',
+            value: 3,
+          },
+          {
+            athlete: { displayName: 'Shuichi Gonda' },
+            team: { displayName: 'Japan' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -278,19 +2098,124 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "22'" }, team: { displayName: 'Belgium' }, text: "Goal! Belgium 1, Egypt 0. Kevin De Bruyne (Belgium) scores with a precise low drive.", type: { text: 'Goal' } },
-      { clock: { displayValue: "35'" }, team: { displayName: 'Egypt' }, text: "Ahmed Hegazi (Egypt) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "47'" }, team: { displayName: 'Egypt' }, text: "Goal! Belgium 1, Egypt 1. Mohamed Salah (Egypt) converts a penalty with a cool finish.", type: { text: 'Penalty - Scored' } },
-      { clock: { displayValue: "61'" }, team: { displayName: 'Belgium' }, text: "Goal! Belgium 2, Egypt 1. Romelu Lukaku (Belgium) powers home a header from a corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "73'" }, team: { displayName: 'Egypt' }, text: "Omar Marmoush (Egypt) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "79'" }, team: { displayName: 'Egypt' }, text: "Mahmoud Trezeguet (Egypt) is shown the red card for a dangerous tackle.", type: { text: 'Red Card' } },
-      { clock: { displayValue: "86'" }, team: { displayName: 'Belgium' }, text: "Goal! Belgium 3, Egypt 1. Dodi Lukebakio (Belgium) finishes a swift break to seal the win.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "22'" },
+        team: { displayName: 'Belgium' },
+        text: 'Goal! Belgium 1, Egypt 0. Kevin De Bruyne (Belgium) scores with a precise low drive.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "35'" },
+        team: { displayName: 'Egypt' },
+        text: 'Ahmed Hegazi (Egypt) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "47'" },
+        team: { displayName: 'Egypt' },
+        text: 'Goal! Belgium 1, Egypt 1. Mohamed Salah (Egypt) converts a penalty with a cool finish.',
+        type: { text: 'Penalty - Scored' },
+      },
+      {
+        clock: { displayValue: "61'" },
+        team: { displayName: 'Belgium' },
+        text: 'Goal! Belgium 2, Egypt 1. Romelu Lukaku (Belgium) powers home a header from a corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "73'" },
+        team: { displayName: 'Egypt' },
+        text: 'Omar Marmoush (Egypt) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "79'" },
+        team: { displayName: 'Egypt' },
+        text: 'Mahmoud Trezeguet (Egypt) is shown the red card for a dangerous tackle.',
+        type: { text: 'Red Card' },
+      },
+      {
+        clock: { displayValue: "86'" },
+        team: { displayName: 'Belgium' },
+        text: 'Goal! Belgium 3, Egypt 1. Dodi Lukebakio (Belgium) finishes a swift break to seal the win.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Kevin De Bruyne' }, team: { displayName: 'Belgium' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Romelu Lukaku' }, team: { displayName: 'Belgium' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Mohamed Salah' }, team: { displayName: 'Egypt' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Romelu Lukaku' }, team: { displayName: 'Belgium' }, displayValue: '5', value: 5 }, { athlete: { displayName: 'Mohamed Salah' }, team: { displayName: 'Egypt' }, displayValue: '4', value: 4 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Kevin De Bruyne' }, team: { displayName: 'Belgium' }, displayValue: '94', value: 94 }, { athlete: { displayName: 'Mohamed Salah' }, team: { displayName: 'Egypt' }, displayValue: '52', value: 52 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Koen Casteels' }, team: { displayName: 'Belgium' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Mohamed El-Shenawy' }, team: { displayName: 'Egypt' }, displayValue: '5', value: 5 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Kevin De Bruyne' },
+            team: { displayName: 'Belgium' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Romelu Lukaku' },
+            team: { displayName: 'Belgium' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Mohamed Salah' },
+            team: { displayName: 'Egypt' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Romelu Lukaku' },
+            team: { displayName: 'Belgium' },
+            displayValue: '5',
+            value: 5,
+          },
+          {
+            athlete: { displayName: 'Mohamed Salah' },
+            team: { displayName: 'Egypt' },
+            displayValue: '4',
+            value: 4,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Kevin De Bruyne' },
+            team: { displayName: 'Belgium' },
+            displayValue: '94',
+            value: 94,
+          },
+          {
+            athlete: { displayName: 'Mohamed Salah' },
+            team: { displayName: 'Egypt' },
+            displayValue: '52',
+            value: 52,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Koen Casteels' },
+            team: { displayName: 'Belgium' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Mohamed El-Shenawy' },
+            team: { displayName: 'Egypt' },
+            displayValue: '5',
+            value: 5,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -310,16 +2235,100 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "28'" }, team: { displayName: 'Spain' }, text: "Goal! Spain 1, Uruguay 0. Lamine Yamal (Spain) cuts inside and fires into the far corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "39'" }, team: { displayName: 'Uruguay' }, text: "José María Giménez (Uruguay) is shown the yellow card for a foul on Yamal.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "53'" }, team: { displayName: 'Uruguay' }, text: "Darwin Núñez (Uruguay) is shown the yellow card for dissent.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "71'" }, team: { displayName: 'Spain' }, text: "Goal! Spain 2, Uruguay 0. Nico Williams (Spain) slots home after a brilliant team move.", type: { text: 'Goal' } },
+      {
+        clock: { displayValue: "28'" },
+        team: { displayName: 'Spain' },
+        text: 'Goal! Spain 1, Uruguay 0. Lamine Yamal (Spain) cuts inside and fires into the far corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "39'" },
+        team: { displayName: 'Uruguay' },
+        text: 'José María Giménez (Uruguay) is shown the yellow card for a foul on Yamal.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "53'" },
+        team: { displayName: 'Uruguay' },
+        text: 'Darwin Núñez (Uruguay) is shown the yellow card for dissent.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "71'" },
+        team: { displayName: 'Spain' },
+        text: 'Goal! Spain 2, Uruguay 0. Nico Williams (Spain) slots home after a brilliant team move.',
+        type: { text: 'Goal' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Lamine Yamal' }, team: { displayName: 'Spain' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Nico Williams' }, team: { displayName: 'Spain' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Lamine Yamal' }, team: { displayName: 'Spain' }, displayValue: '5', value: 5 }, { athlete: { displayName: 'Darwin Núñez' }, team: { displayName: 'Uruguay' }, displayValue: '3', value: 3 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Pedri' }, team: { displayName: 'Spain' }, displayValue: '97', value: 97 }, { athlete: { displayName: 'Rodrigo Bentancur' }, team: { displayName: 'Uruguay' }, displayValue: '44', value: 44 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Unai Simón' }, team: { displayName: 'Spain' }, displayValue: '0', value: 0 }, { athlete: { displayName: 'Sergio Rochet' }, team: { displayName: 'Uruguay' }, displayValue: '5', value: 5 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Lamine Yamal' },
+            team: { displayName: 'Spain' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Nico Williams' },
+            team: { displayName: 'Spain' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Lamine Yamal' },
+            team: { displayName: 'Spain' },
+            displayValue: '5',
+            value: 5,
+          },
+          {
+            athlete: { displayName: 'Darwin Núñez' },
+            team: { displayName: 'Uruguay' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Pedri' },
+            team: { displayName: 'Spain' },
+            displayValue: '97',
+            value: 97,
+          },
+          {
+            athlete: { displayName: 'Rodrigo Bentancur' },
+            team: { displayName: 'Uruguay' },
+            displayValue: '44',
+            value: 44,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Unai Simón' },
+            team: { displayName: 'Spain' },
+            displayValue: '0',
+            value: 0,
+          },
+          {
+            athlete: { displayName: 'Sergio Rochet' },
+            team: { displayName: 'Uruguay' },
+            displayValue: '5',
+            value: 5,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -339,16 +2348,100 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "32'" }, team: { displayName: 'Czechia' }, text: "Goal! Czechia 1, South Africa 0. Tomáš Souček (Czechia) heads home from a corner.", type: { text: 'Goal' } },
-      { clock: { displayValue: "44'" }, team: { displayName: 'South Africa' }, text: "Themba Zwane (South Africa) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
-      { clock: { displayValue: "58'" }, team: { displayName: 'South Africa' }, text: "Goal! Czechia 1, South Africa 1. Percy Tau (South Africa) equalises with a cool finish.", type: { text: 'Goal' } },
-      { clock: { displayValue: "64'" }, team: { displayName: 'Czechia' }, text: "Vladimír Coufal (Czechia) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
+      {
+        clock: { displayValue: "32'" },
+        team: { displayName: 'Czechia' },
+        text: 'Goal! Czechia 1, South Africa 0. Tomáš Souček (Czechia) heads home from a corner.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "44'" },
+        team: { displayName: 'South Africa' },
+        text: 'Themba Zwane (South Africa) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
+      {
+        clock: { displayValue: "58'" },
+        team: { displayName: 'South Africa' },
+        text: 'Goal! Czechia 1, South Africa 1. Percy Tau (South Africa) equalises with a cool finish.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "64'" },
+        team: { displayName: 'Czechia' },
+        text: 'Vladimír Coufal (Czechia) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Tomáš Souček' }, team: { displayName: 'Czechia' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Percy Tau' }, team: { displayName: 'South Africa' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Tomáš Souček' }, team: { displayName: 'Czechia' }, displayValue: '3', value: 3 }, { athlete: { displayName: 'Percy Tau' }, team: { displayName: 'South Africa' }, displayValue: '3', value: 3 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Tomáš Souček' }, team: { displayName: 'Czechia' }, displayValue: '58', value: 58 }, { athlete: { displayName: 'Themba Zwane' }, team: { displayName: 'South Africa' }, displayValue: '52', value: 52 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Jiří Staněk' }, team: { displayName: 'Czechia' }, displayValue: '2', value: 2 }, { athlete: { displayName: 'Ronwen Williams' }, team: { displayName: 'South Africa' }, displayValue: '2', value: 2 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Tomáš Souček' },
+            team: { displayName: 'Czechia' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Percy Tau' },
+            team: { displayName: 'South Africa' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Tomáš Souček' },
+            team: { displayName: 'Czechia' },
+            displayValue: '3',
+            value: 3,
+          },
+          {
+            athlete: { displayName: 'Percy Tau' },
+            team: { displayName: 'South Africa' },
+            displayValue: '3',
+            value: 3,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Tomáš Souček' },
+            team: { displayName: 'Czechia' },
+            displayValue: '58',
+            value: 58,
+          },
+          {
+            athlete: { displayName: 'Themba Zwane' },
+            team: { displayName: 'South Africa' },
+            displayValue: '52',
+            value: 52,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Jiří Staněk' },
+            team: { displayName: 'Czechia' },
+            displayValue: '2',
+            value: 2,
+          },
+          {
+            athlete: { displayName: 'Ronwen Williams' },
+            team: { displayName: 'South Africa' },
+            displayValue: '2',
+            value: 2,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
@@ -368,14 +2461,82 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
       ],
     },
     keyEvents: [
-      { clock: { displayValue: "38'" }, team: { displayName: 'Canada' }, text: "Goal! Canada 1, Bosnia-Herzegovina 0. Alphonso Davies (Canada) fires home from the edge of the box.", type: { text: 'Goal' } },
-      { clock: { displayValue: "42'" }, team: { displayName: 'Bosnia-Herzegovina' }, text: "Edin Džeko (Bosnia-Herzegovina) is shown the yellow card for a foul.", type: { text: 'Yellow Card' } },
+      {
+        clock: { displayValue: "38'" },
+        team: { displayName: 'Canada' },
+        text: 'Goal! Canada 1, Bosnia-Herzegovina 0. Alphonso Davies (Canada) fires home from the edge of the box.',
+        type: { text: 'Goal' },
+      },
+      {
+        clock: { displayValue: "42'" },
+        team: { displayName: 'Bosnia-Herzegovina' },
+        text: 'Edin Džeko (Bosnia-Herzegovina) is shown the yellow card for a foul.',
+        type: { text: 'Yellow Card' },
+      },
     ],
     leaders: [
-      { displayName: 'Goals', leaders: [{ athlete: { displayName: 'Alphonso Davies' }, team: { displayName: 'Canada' }, displayValue: '1', value: 1 }] },
-      { displayName: 'Shots', leaders: [{ athlete: { displayName: 'Alphonso Davies' }, team: { displayName: 'Canada' }, displayValue: '3', value: 3 }, { athlete: { displayName: 'Edin Džeko' }, team: { displayName: 'Bosnia-Herzegovina' }, displayValue: '2', value: 2 }] },
-      { displayName: 'Passes', leaders: [{ athlete: { displayName: 'Jonathan David' }, team: { displayName: 'Canada' }, displayValue: '44', value: 44 }, { athlete: { displayName: 'Miralem Pjanić' }, team: { displayName: 'Bosnia-Herzegovina' }, displayValue: '48', value: 48 }] },
-      { displayName: 'Saves', leaders: [{ athlete: { displayName: 'Maxime Crépeau' }, team: { displayName: 'Canada' }, displayValue: '1', value: 1 }, { athlete: { displayName: 'Kenan Pirić' }, team: { displayName: 'Bosnia-Herzegovina' }, displayValue: '2', value: 2 }] },
+      {
+        displayName: 'Goals',
+        leaders: [
+          {
+            athlete: { displayName: 'Alphonso Davies' },
+            team: { displayName: 'Canada' },
+            displayValue: '1',
+            value: 1,
+          },
+        ],
+      },
+      {
+        displayName: 'Shots',
+        leaders: [
+          {
+            athlete: { displayName: 'Alphonso Davies' },
+            team: { displayName: 'Canada' },
+            displayValue: '3',
+            value: 3,
+          },
+          {
+            athlete: { displayName: 'Edin Džeko' },
+            team: { displayName: 'Bosnia-Herzegovina' },
+            displayValue: '2',
+            value: 2,
+          },
+        ],
+      },
+      {
+        displayName: 'Passes',
+        leaders: [
+          {
+            athlete: { displayName: 'Jonathan David' },
+            team: { displayName: 'Canada' },
+            displayValue: '44',
+            value: 44,
+          },
+          {
+            athlete: { displayName: 'Miralem Pjanić' },
+            team: { displayName: 'Bosnia-Herzegovina' },
+            displayValue: '48',
+            value: 48,
+          },
+        ],
+      },
+      {
+        displayName: 'Saves',
+        leaders: [
+          {
+            athlete: { displayName: 'Maxime Crépeau' },
+            team: { displayName: 'Canada' },
+            displayValue: '1',
+            value: 1,
+          },
+          {
+            athlete: { displayName: 'Kenan Pirić' },
+            team: { displayName: 'Bosnia-Herzegovina' },
+            displayValue: '2',
+            value: 2,
+          },
+        ],
+      },
     ],
     h2h: { events: [] },
   },
