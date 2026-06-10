@@ -404,19 +404,21 @@
     return h > a ? 'home' : 'away'
   }
 
-  function poolSummary(pool: Pool): { made: number; correct: number } {
-    const self = pool.members.find((m) => m.isSelf)
-    if (!self) return { made: 0, correct: 0 }
+  function poolSummary(_pool: Pool): { made: number; correct: number } {
+    // Use LOCAL picks as the source of truth for the "X / 72 picks made" summary.
+    // The server-side pool member picks can lag behind (they're only pushed on
+    // syncOwnerPicks) and would show 0 immediately after a refreshPools() call
+    // before the next sync completes — causing the count to flash from 72 → 0.
     let made = 0
     let correct = 0
-    for (const [matchId, outcome] of Object.entries(self.picks)) {
+    for (const [matchId, pick] of Object.entries(picks.value)) {
       // Only count group-stage picks (match.group !== null).
       // Knockout picks are excluded from the "X of 72 Group matches" summary.
       const match = allMatches.value.find((x) => x.id === matchId)
       if (match && match.group === null) continue
       made++
       const result = resolveResult(matchId)
-      if (result !== null && result === outcome) correct++
+      if (result !== null && result === pick.outcome) correct++
     }
     return { made, correct }
   }
