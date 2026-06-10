@@ -2,25 +2,41 @@
   // ── Countdown state ────────────────────────────────────────────────────────
   import { nowDate } from '../composables/useMockTime'
 
-  const daysToGo = ref(0)
-  const hoursToGo = ref(0)
-  const minutesToGo = ref(0)
-  const secondsToGo = ref(0)
-  let timer: ReturnType<typeof setInterval> | null = null
-
   function pad(n: number) {
     return String(n).padStart(2, '0')
   }
 
   const TOURNAMENT_START = new Date('2026-06-11T19:00:00Z')
 
+  /** Compute the current countdown values from real/mock time. */
+  function computeValues() {
+    const diff = TOURNAMENT_START.getTime() - nowDate().getTime()
+    if (diff <= 0) return { days: 0, hours: 0, mins: 0, secs: 0 }
+    const totalSecs = Math.floor(diff / 1000)
+    const days = Math.floor(totalSecs / 86400)
+    const remainSecs = totalSecs % 86400
+    return {
+      days,
+      hours: Math.floor(remainSecs / 3600),
+      mins: Math.floor((remainSecs % 3600) / 60),
+      secs: remainSecs % 60,
+    }
+  }
+
+  // Initialize refs with the correct values immediately (avoids 00:00:00:00 flash on SSR)
+  const _init = computeValues()
+  const daysToGo = ref(_init.days)
+  const hoursToGo = ref(_init.hours)
+  const minutesToGo = ref(_init.mins)
+  const secondsToGo = ref(_init.secs)
+  let timer: ReturnType<typeof setInterval> | null = null
+
   /** Hide the banner once the tournament has kicked off. */
   const started = ref(nowDate() >= TOURNAMENT_START)
 
   function updateCountdown() {
-    const now = nowDate()
-    const diff = TOURNAMENT_START.getTime() - now.getTime()
-    if (diff <= 0) {
+    const { days, hours, mins, secs } = computeValues()
+    if (days === 0 && hours === 0 && mins === 0 && secs === 0) {
       started.value = true
       daysToGo.value = 0
       hoursToGo.value = 0
@@ -28,13 +44,10 @@
       secondsToGo.value = 0
       return
     }
-    const totalSecs = Math.floor(diff / 1000)
-    const days = Math.floor(totalSecs / 86400)
-    const remainSecs = totalSecs % 86400
     daysToGo.value = days
-    hoursToGo.value = Math.floor(remainSecs / 3600)
-    minutesToGo.value = Math.floor((remainSecs % 3600) / 60)
-    secondsToGo.value = remainSecs % 60
+    hoursToGo.value = hours
+    minutesToGo.value = mins
+    secondsToGo.value = secs
   }
 
   function startTimer() {
@@ -68,7 +81,7 @@
   })
 
   // ── SVG / clock-rect geometry ──────────────────────────────────────────────
-  // Narrow SVG viewBox: 328 × 105 (public/countdown-block-narrow.svg).
+  // Narrow SVG viewBox: 328 × 105 (public/countdown-narrow.svg).
   // The white "fake container" rect is the final <rect> in that SVG:
   //   x=81.0381  y=54.085  w=246.813  h=50.331
   // We position the clock overlay exactly over that rect (as a percentage of
@@ -130,7 +143,7 @@
         <!-- Left column: narrow SVG (FIFA logo + heading + clock) -->
         <div class="cb-svg-wrap">
           <img
-            src="/countdown-block-narrow.svg"
+            src="/countdown-narrow.svg"
             class="cb-svg"
             alt=""
             aria-hidden="true"
