@@ -39,11 +39,19 @@
     hourly: { hour: string; views: number }[]
   }
 
+  interface PoolsStats {
+    total: number
+    solo: number
+    active: number
+    totalMembers: number
+    avgMembersPerActivePool: number
+  }
+
   interface AnalyticsData {
     days: DaySummary[]
     totals: { pageViews: number; uniqueVisitors: number; sessions: number }
     topPages: { path: string; views: number }[]
-    poolsTotal: number
+    pools: PoolsStats
     message?: string
   }
 
@@ -207,14 +215,80 @@
           <div class="kpi-value">{{ avgPagesPerSession }}</div>
           <div class="kpi-sub">engagement · 30 days</div>
         </div>
-        <div class="kpi-card kpi-card--pools">
-          <div class="kpi-label">Pools Created</div>
-          <div class="kpi-value">
-            {{ data.poolsTotal.toLocaleString() }}
-          </div>
-          <div class="kpi-sub">all time</div>
-        </div>
       </div>
+
+      <!-- ── Pools engagement ── -->
+      <section class="card pools-card">
+        <h2 class="card-title">🏆 Pools Engagement</h2>
+        <div class="pools-grid">
+          <div class="pool-stat">
+            <div class="pool-stat-value">{{ data.pools.total }}</div>
+            <div class="pool-stat-label">Total Pools</div>
+          </div>
+          <div class="pool-stat pool-stat--active">
+            <div class="pool-stat-value">{{ data.pools.active }}</div>
+            <div class="pool-stat-label">
+              Active <span class="pool-stat-hint">(2+ members)</span>
+            </div>
+          </div>
+          <div class="pool-stat pool-stat--solo">
+            <div class="pool-stat-value">{{ data.pools.solo }}</div>
+            <div class="pool-stat-label">
+              Solo <span class="pool-stat-hint">(invite unused)</span>
+            </div>
+          </div>
+          <div class="pool-stat">
+            <div class="pool-stat-value">{{ data.pools.totalMembers }}</div>
+            <div class="pool-stat-label">Total Members</div>
+          </div>
+          <div class="pool-stat">
+            <div class="pool-stat-value">
+              {{
+                data.pools.active > 0 ? data.pools.avgMembersPerActivePool : '—'
+              }}
+            </div>
+            <div class="pool-stat-label">
+              Avg Members <span class="pool-stat-hint">(active pools)</span>
+            </div>
+          </div>
+          <div class="pool-stat">
+            <div class="pool-stat-value pool-stat-value--pct">
+              {{
+                data.pools.total > 0
+                  ? Math.round((data.pools.active / data.pools.total) * 100)
+                  : 0
+              }}%
+            </div>
+            <div class="pool-stat-label">Invite Uptake</div>
+          </div>
+        </div>
+        <div v-if="data.pools.total > 0" class="pools-bar-wrap">
+          <div
+            class="pools-bar-fill pools-bar-fill--active"
+            :style="{
+              width:
+                data.pools.total > 0
+                  ? `${Math.round((data.pools.active / data.pools.total) * 100)}%`
+                  : '0%',
+            }"
+          />
+          <div
+            class="pools-bar-fill pools-bar-fill--solo"
+            :style="{
+              width:
+                data.pools.total > 0
+                  ? `${Math.round((data.pools.solo / data.pools.total) * 100)}%`
+                  : '0%',
+            }"
+          />
+        </div>
+        <div class="pools-bar-legend">
+          <span class="legend-dot legend-dot--active" />
+          <span class="legend-label">Active (joined)</span>
+          <span class="legend-dot legend-dot--solo" />
+          <span class="legend-label">Solo (no joiners)</span>
+        </div>
+      </section>
 
       <!-- ── Today strip ── -->
       <div v-if="todayStats" class="today-strip">
@@ -441,15 +515,9 @@
   /* ── KPI cards ── */
   .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.75rem;
     margin-bottom: 0.875rem;
-  }
-
-  @media (max-width: 900px) {
-    .kpi-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
   }
 
   @media (max-width: 640px) {
@@ -776,6 +844,120 @@
   }
   .hour-col:nth-child(3n + 1) .hour-label {
     color: #64748b;
+  }
+
+  /* ── Pools engagement card ── */
+  .pools-card {
+    border-color: #1e3a5f;
+  }
+
+  .pools-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+  }
+
+  @media (max-width: 768px) {
+    .pools-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .pools-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .pool-stat {
+    background: #0f172a;
+    border-radius: 0.375rem;
+    padding: 0.65rem 0.75rem;
+    text-align: center;
+  }
+
+  .pool-stat-value {
+    font-size: 1.6rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    color: #fff;
+    line-height: 1.1;
+  }
+
+  .pool-stat-value--pct {
+    color: #60a5fa;
+  }
+
+  .pool-stat--active .pool-stat-value {
+    color: #4ade80;
+  }
+
+  .pool-stat--solo .pool-stat-value {
+    color: #94a3b8;
+  }
+
+  .pool-stat-label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-top: 0.2rem;
+    line-height: 1.3;
+  }
+
+  .pool-stat-hint {
+    color: #64748b;
+    font-size: 0.8rem;
+  }
+
+  /* Stacked bar: active (green) + solo (slate) */
+  .pools-bar-wrap {
+    display: flex;
+    height: 0.5rem;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #0f172a;
+    margin-bottom: 0.5rem;
+  }
+
+  .pools-bar-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+
+  .pools-bar-fill--active {
+    background: #4ade80;
+  }
+
+  .pools-bar-fill--solo {
+    background: #475569;
+  }
+
+  .pools-bar-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  .legend-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-dot--active {
+    background: #4ade80;
+  }
+
+  .legend-dot--solo {
+    background: #475569;
+  }
+
+  .legend-label {
+    margin-right: 0.5rem;
   }
 
   /* ── Hint ── */

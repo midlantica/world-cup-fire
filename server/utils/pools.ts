@@ -316,28 +316,83 @@ export async function deletePoolBlob(id: string): Promise<void> {
   await poolStore().remove(id)
 }
 
+export interface PoolsStats {
+  /** Total pools in the store. */
+  total: number
+  /** Pools with only the owner — invite link was never used. */
+  solo: number
+  /** Pools with 2+ members — at least one person joined. */
+  active: number
+  /** Total members across all pools (owners + joiners). */
+  totalMembers: number
+  /** Average members per active pool (2+ member pools only). */
+  avgMembersPerActivePool: number
+}
+
 /**
- * Count the total number of pools currently in the store.
- * Uses Netlify Blobs list() in production, readdir in dev.
+ * Scan all pools and return engagement stats.
+ * Uses Netlify Blobs list() + get() in production, readdir in dev.
  */
-export async function countPools(): Promise<number> {
+export async function getPoolsStats(): Promise<PoolsStats> {
   try {
+    let pools: StoredPool[] = []
+
     if (blobsConfigured()) {
       const store = getStore({ name: 'pools', consistency: 'strong' })
       const { blobs } = await store.list()
-      return blobs.length
+      // Fetch all pools in parallel (capped to avoid overwhelming the runtime)
+      const chunks: (typeof blobs)[] = []
+      for (let i = 0; i < blobs.length; i += 20) {
+        chunks.push(blobs.slice(i, i + 20))
+      }
+      for (const chunk of chunks) {
+        const results = await Promise.all(
+          chunk.map((b) => store.get(b.key, { type: 'json' }))
+        )
+        for (const r of results) {
+          if (r) pools.push(r as StoredPool)
+        }
+      }
     } else {
-      // Dev: count .json files in .data/pools/
+      // Dev: read all .json files in .data/pools/
       const dir = resolve(process.cwd(), '.data', 'pools')
       try {
         const files = await readdir(dir)
-        return files.filter((f) => f.endsWith('.json')).length
+        const jsonFiles = files.filter((f) => f.endsWith('.json'))
+        pools = await Promise.all(
+          jsonFiles.map(async (f) => {
+            const raw = await readFile(join(dir, f), 'utf8')
+            return JSON.parse(raw) as StoredPool
+          })
+        )
       } catch {
-        return 0
+        pools = []
       }
     }
+
+    const total = pools.length
+    const solo = pools.filter((p) => p.members.length <= 1).length
+    const active = pools.filter((p) => p.members.length >= 2).length
+    const totalMembers = pools.reduce((sum, p) => sum + p.members.length, 0)
+    const activePools = pools.filter((p) => p.members.length >= 2)
+    const avgMembersPerActivePool =
+      activePools.length === 0
+        ? 0
+        : Math.round(
+            (activePools.reduce((sum, p) => sum + p.members.length, 0) /
+              activePools.length) *
+              10
+          ) / 10
+
+    return { total, solo, active, totalMembers, avgMembersPerActivePool }
   } catch (e) {
-    console.error('[pools] countPools error:', e)
-    return 0
+    console.error('[pools] getPoolsStats error:', e)
+    return {
+      total: 0,
+      solo: 0,
+      active: 0,
+      totalMembers: 0,
+      avgMembersPerActivePool: 0,
+    }
   }
 }

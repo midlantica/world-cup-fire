@@ -2,13 +2,16 @@
 // Returns 30-day analytics summary for the /analytics dashboard page.
 
 import { analyticsStore } from '../../utils/analytics'
-import { countPools } from '../../utils/pools'
+import { getPoolsStats } from '../../utils/pools'
 
 const DAYS = 30
 
 export default defineEventHandler(async () => {
   const store = analyticsStore()
-  const [days, poolsTotal] = await Promise.all([store.list(DAYS), countPools()])
+  const [days, poolsStats] = await Promise.all([
+    store.list(DAYS),
+    getPoolsStats(),
+  ])
 
   // Totals across all days
   let totalPageViews = 0
@@ -61,6 +64,6 @@ export default defineEventHandler(async () => {
       sessions: allSessions.size,
     },
     topPages,
-    poolsTotal,
+    pools: poolsStats,
   }
 })
