@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { usePicks } from '../composables/usePicks'
-  import { usePools } from '../composables/usePools'
+  import { usePools, mergeServerPicks } from '../composables/usePools'
   import { useMatchDetail } from '../composables/useMatchDetail'
   import { useCountryDetail } from '../composables/useCountryDetail'
   import { useGroupDetail } from '../composables/useGroupDetail'
@@ -235,45 +235,7 @@
 
             // Merge: server picks take precedence for outcome; keep local
             // match snapshots where available.
-            const merged: Record<string, UserPick> = { ...existingPicks }
-            for (const [matchId, outcome] of Object.entries(
-              ownerMember.picks
-            )) {
-              if (merged[matchId]) {
-                // Update outcome in case it changed on the other device.
-                merged[matchId] = { ...merged[matchId], outcome }
-              } else {
-                // No local snapshot — write a stub. The match snapshot will
-                // be filled in the next time the schedule loads and the user
-                // makes or views a pick. For now the outcome is preserved.
-                merged[matchId] = {
-                  matchId,
-                  team:
-                    outcome === 'home'
-                      ? '__home__'
-                      : outcome === 'away'
-                        ? '__away__'
-                        : '',
-                  outcome,
-                  pickedAt: new Date().toISOString(),
-                  // Minimal match stub — enough for the picks store to hold it.
-                  // Cast to satisfy the Match type; real snapshot fills in later.
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  match: {
-                    id: matchId,
-                    home: '',
-                    away: '',
-                    date: '',
-                    status: { code: 'ns' as const },
-                    group: null,
-                    homeScore: null,
-                    awayScore: null,
-                    venue: '',
-                    round: '',
-                  } as any,
-                }
-              }
-            }
+            const merged = mergeServerPicks(ownerMember.picks, existingPicks)
             localStorage.setItem('wc-picks-v1', JSON.stringify(merged))
             // Reload the page so the reactive picks state re-hydrates from
             // the freshly-written localStorage. This is the simplest way to

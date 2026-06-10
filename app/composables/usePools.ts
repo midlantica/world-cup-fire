@@ -21,6 +21,60 @@
 import type { Pick as UserPick, PickOutcome } from './usePicks'
 import { usePicks } from './usePicks'
 
+/**
+ * Merge a map of server-side pick outcomes into the local picks store.
+ * For picks already in local storage the outcome is updated (in case it
+ * changed on another device). For picks not yet in local storage a minimal
+ * stub is written so the Matches page can display the outcome immediately;
+ * the full match snapshot is filled in the next time the schedule loads.
+ *
+ * Returns the merged picks map (does NOT write to localStorage or reactive
+ * state — the caller decides how to persist).
+ */
+export function mergeServerPicks(
+  serverPicks: Record<string, PickOutcome>,
+  localPicks: Record<string, UserPick>
+): Record<string, UserPick> {
+  const merged: Record<string, UserPick> = { ...localPicks }
+  for (const [matchId, outcome] of Object.entries(serverPicks)) {
+    if (merged[matchId]) {
+      // Update outcome in case it changed on the other device.
+      merged[matchId] = { ...merged[matchId], outcome }
+    } else {
+      // No local snapshot — write a stub. The match snapshot will be
+      // filled in the next time the schedule loads and the user makes or
+      // views a pick. For now the outcome is preserved.
+      merged[matchId] = {
+        matchId,
+        team:
+          outcome === 'home'
+            ? '__home__'
+            : outcome === 'away'
+              ? '__away__'
+              : '',
+        outcome,
+        pickedAt: new Date().toISOString(),
+        // Minimal match stub — enough for the picks store to hold it.
+        // Cast to satisfy the Match type; real snapshot fills in later.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        match: {
+          id: matchId,
+          home: '',
+          away: '',
+          date: '',
+          status: { code: 'ns' as const },
+          group: null,
+          homeScore: null,
+          awayScore: null,
+          venue: '',
+          round: '',
+        } as any,
+      }
+    }
+  }
+  return merged
+}
+
 /** Local registry of the pools this device belongs to + its credentials. */
 const TOKENS_KEY = 'wc-pool-tokens-v1'
 /** Cache of the last-known server pools (so the UI paints instantly on load). */
@@ -183,44 +237,10 @@ export function usePools() {
                 currentPicks[mid]!.outcome !== selfMember.picks[mid]
             )
             if (needsSync) {
-              // Merge server picks into local picks. For picks not in local
-              // storage, write a stub — hydrateStub() will fill in the match
-              // snapshot when the MatchCard renders.
-              const merged: Record<string, UserPick> = { ...currentPicks }
-              for (const [matchId, outcome] of Object.entries(
-                selfMember.picks
-              )) {
-                if (merged[matchId]) {
-                  // Update outcome in case it changed on the other device.
-                  merged[matchId] = { ...merged[matchId], outcome }
-                } else {
-                  // Write a stub — match snapshot filled in by hydrateStub().
-                  merged[matchId] = {
-                    matchId,
-                    team:
-                      outcome === 'home'
-                        ? '__home__'
-                        : outcome === 'away'
-                          ? '__away__'
-                          : '',
-                    outcome,
-                    pickedAt: new Date().toISOString(),
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    match: {
-                      id: matchId,
-                      home: '',
-                      away: '',
-                      date: '',
-                      status: { code: 'ns' as const },
-                      group: null,
-                      homeScore: null,
-                      awayScore: null,
-                      venue: '',
-                      round: '',
-                    } as any,
-                  }
-                }
-              }
+              // Merge server picks into local picks using the shared helper.
+              // For picks not in local storage a stub is written; hydrateStub()
+              // fills in the match snapshot when the MatchCard renders.
+              const merged = mergeServerPicks(selfMember.picks, currentPicks)
               // Write merged picks to localStorage AND update reactive state.
               // Updating picks.value triggers the watch(picks) in app.vue which
               // will push the full merged set back to the server — completing
