@@ -1,4 +1,35 @@
 <script setup lang="ts">
+  // ── Password gate ─────────────────────────────────────────────────────────────
+  // A lightweight client-side passphrase check. Not a security boundary — just
+  // keeps casual visitors from stumbling onto the dashboard.
+  const STORAGE_KEY = 'wc-analytics-auth'
+  const CORRECT = 'ghy!ynd!btn0epc4KVX'
+
+  const unlocked = ref(false)
+  const pinInput = ref('')
+  const pinError = ref(false)
+
+  onMounted(() => {
+    if (typeof localStorage !== 'undefined') {
+      unlocked.value = localStorage.getItem(STORAGE_KEY) === '1'
+    }
+  })
+
+  function tryUnlock() {
+    if (pinInput.value.trim() === CORRECT) {
+      unlocked.value = true
+      pinError.value = false
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, '1')
+      }
+    } else {
+      pinError.value = true
+      pinInput.value = ''
+    }
+  }
+
+  // ── Analytics data ────────────────────────────────────────────────────────────
+
   interface DaySummary {
     date: string
     pageViews: number
@@ -107,7 +138,30 @@
 </script>
 
 <template>
-  <div class="analytics-wrap">
+  <!-- ── Lock screen ── -->
+  <div v-if="!unlocked" class="lock-wrap">
+    <div class="lock-card">
+      <div class="lock-icon">🔒</div>
+      <h1 class="lock-title">Analytics</h1>
+      <p class="lock-sub">Enter the passphrase to continue</p>
+      <form class="lock-form" @submit.prevent="tryUnlock">
+        <input
+          v-model="pinInput"
+          class="lock-input"
+          :class="{ 'lock-input--error': pinError }"
+          type="password"
+          placeholder="Passphrase"
+          autocomplete="current-password"
+          autofocus
+        />
+        <p v-if="pinError" class="lock-error">Incorrect passphrase</p>
+        <button type="submit" class="lock-btn">Unlock</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Dashboard ── -->
+  <div v-else class="analytics-wrap">
     <div class="page-header">
       <h1 class="page-title">Analytics</h1>
       <button class="refresh-btn" :disabled="pending" @click="refresh()">
@@ -736,5 +790,111 @@
     color: #64748b;
     text-align: center;
     padding: 0.75rem 0 0.25rem;
+  }
+
+  /* ── Lock screen ── */
+  .lock-wrap {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    font-family: var(--font-condensed);
+  }
+
+  .lock-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 0.75rem;
+    padding: 2rem 2.25rem;
+    width: 100%;
+    max-width: 22rem;
+    text-align: center;
+  }
+
+  .lock-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .lock-title {
+    font-size: 1.4rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    color: #fff;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+
+  .lock-sub {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 1.25rem;
+  }
+
+  .lock-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .lock-input {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0.375rem;
+    color: #e2e8f0;
+    font-size: 1rem;
+    padding: 0.55rem 0.85rem;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: var(--font-condensed);
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+  .lock-input:focus {
+    border-color: #3b82f6;
+  }
+  .lock-input--error {
+    border-color: #ef4444;
+    animation: shake 0.3s ease;
+  }
+
+  .lock-error {
+    font-size: 0.875rem;
+    color: #f87171;
+    margin: 0;
+  }
+
+  .lock-btn {
+    background: #3b82f6;
+    border: none;
+    border-radius: 0.375rem;
+    color: #fff;
+    font-size: 0.95rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: var(--font-condensed);
+    letter-spacing: 0.04em;
+  }
+  .lock-btn:hover {
+    background: #2563eb;
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-6px);
+    }
+    75% {
+      transform: translateX(6px);
+    }
   }
 </style>
