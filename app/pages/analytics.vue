@@ -12,6 +12,8 @@
     days: DaySummary[]
     totals: { pageViews: number; uniqueVisitors: number; sessions: number }
     topPages: { path: string; views: number }[]
+    poolsTotal: number
+    poolsToday: number
     message?: string
   }
 
@@ -151,6 +153,18 @@
           <div class="kpi-label">Pages / Session</div>
           <div class="kpi-value">{{ avgPagesPerSession }}</div>
           <div class="kpi-sub">engagement · 30 days</div>
+        </div>
+        <div class="kpi-card kpi-card--pools">
+          <div class="kpi-label">Pools Created</div>
+          <div class="kpi-value">
+            {{ data.poolsTotal.toLocaleString() }}
+          </div>
+          <div class="kpi-sub">
+            all time
+            <span v-if="data.poolsToday > 0" class="kpi-today-badge">
+              +{{ data.poolsToday }} today
+            </span>
+          </div>
         </div>
       </div>
 
@@ -379,9 +393,15 @@
   /* ── KPI cards ── */
   .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.75rem;
     margin-bottom: 0.875rem;
+  }
+
+  @media (max-width: 900px) {
+    .kpi-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   @media (max-width: 640px) {
@@ -418,6 +438,24 @@
     font-size: 0.85rem;
     color: #64748b;
     margin-top: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .kpi-card--pools {
+    border-color: #1e3a5f;
+  }
+
+  .kpi-today-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
   }
 
   /* ── Today strip ── */

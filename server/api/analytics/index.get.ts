@@ -1,13 +1,16 @@
 // GET /api/analytics
 // Returns 30-day analytics summary for the /analytics dashboard page.
 
-import { analyticsStore } from '../../utils/analytics'
+import { analyticsStore, readPoolsCounter } from '../../utils/analytics'
 
 const DAYS = 30
 
 export default defineEventHandler(async () => {
   const store = analyticsStore()
-  const days = await store.list(DAYS)
+  const [days, poolsCounter] = await Promise.all([
+    store.list(DAYS),
+    readPoolsCounter(),
+  ])
 
   // Totals across all days
   let totalPageViews = 0
@@ -52,6 +55,8 @@ export default defineEventHandler(async () => {
     }
   })
 
+  const todayStr = new Date().toISOString().slice(0, 10)
+
   return {
     days: daySummaries,
     totals: {
@@ -60,5 +65,7 @@ export default defineEventHandler(async () => {
       sessions: allSessions.size,
     },
     topPages,
+    poolsTotal: poolsCounter.total,
+    poolsToday: poolsCounter.daily[todayStr] ?? 0,
   }
 })

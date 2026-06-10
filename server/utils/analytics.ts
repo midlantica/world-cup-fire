@@ -235,6 +235,102 @@ export async function recordPageview(
   }
 }
 
+// ── Pools-created counter ─────────────────────────────────────────────────────
+//
+// A single blob/file keyed "pools-counter" that holds a running total of how
+// many pools have ever been created, plus a per-day breakdown so the analytics
+// dashboard can show a sparkline or daily delta.
+
+export interface PoolsCounter {
+  total: number
+  /** date → pools created that day */
+  daily: Record<string, number>
+}
+
+interface CounterStore {
+  read(): Promise<PoolsCounter>
+  write(c: PoolsCounter): Promise<void>
+}
+
+const COUNTER_KEY = 'pools-counter'
+
+function makeCounterBlobStore(): CounterStore {
+  const store = getStore({ name: 'analytics', consistency: 'strong' })
+  return {
+    async read() {
+      const raw = await store.get(COUNTER_KEY, { type: 'json' })
+      return (raw as PoolsCounter | null) ?? { total: 0, daily: {} }
+    },
+    async write(c) {
+      await store.setJSON(COUNTER_KEY, c)
+    },
+  }
+}
+
+function makeCounterFileStore(): CounterStore {
+  const dir = resolve(process.cwd(), '.data', 'analytics')
+  const file = join(dir, `${COUNTER_KEY}.json`)
+
+  async function ensureDir() {
+    await mkdir(dir, { recursive: true })
+  }
+
+  return {
+    async read() {
+      await ensureDir()
+      try {
+        const raw = await readFile(file, 'utf8')
+        return JSON.parse(raw) as PoolsCounter
+      } catch {
+        return { total: 0, daily: {} }
+      }
+    },
+    async write(c) {
+      await ensureDir()
+      await writeFile(file, JSON.stringify(c), 'utf8')
+    },
+  }
+}
+
+let _counterStore: CounterStore | null = null
+
+function counterStore(): CounterStore {
+  if (_counterStore) return _counterStore
+  if (blobsConfigured()) {
+    try {
+      _counterStore = makeCounterBlobStore()
+    } catch {
+      _counterStore = makeCounterFileStore()
+    }
+  } else {
+    _counterStore = makeCounterFileStore()
+  }
+  return _counterStore
+}
+
+/** Atomically increment the pools-created counter by 1. */
+export async function incrementPoolsCreated(): Promise<void> {
+  const store = counterStore()
+  const today = utcDateStr(new Date())
+  try {
+    const c = await store.read()
+    c.total += 1
+    c.daily[today] = (c.daily[today] ?? 0) + 1
+    await store.write(c)
+  } catch (e) {
+    console.error('[analytics] incrementPoolsCreated error:', e)
+  }
+}
+
+/** Read the current pools counter (for the analytics dashboard). */
+export async function readPoolsCounter(): Promise<PoolsCounter> {
+  try {
+    return await counterStore().read()
+  } catch {
+    return { total: 0, daily: {} }
+  }
+}
+
 // ── SHA-256 fingerprint (Web Crypto — available in Nitro/Netlify runtime) ─────
 
 export async function hashFingerprint(ip: string, ua: string): Promise<string> {

@@ -12,6 +12,7 @@ import {
   type StoredPool,
   type StoredMember,
 } from '../../utils/pools'
+import { incrementPoolsCreated } from '../../utils/analytics'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ yourName?: string; poolName?: string }>(event)
@@ -35,6 +36,8 @@ export default defineEventHandler(async (event) => {
   }
 
   await writePool(pool)
+  // Fire-and-forget — a counter failure must never block pool creation.
+  incrementPoolsCreated().catch(() => {})
 
   return {
     pool: toPublicPool(pool, owner.id),
