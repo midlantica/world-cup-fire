@@ -5,7 +5,7 @@
   import { useCountryDetail } from '../composables/useCountryDetail'
   import { useGroupDetail } from '../composables/useGroupDetail'
   import { normaliseEvent } from '../composables/useScores'
-  import type { PickOutcome, Pick } from '../composables/usePicks'
+  import type { PickOutcome, Pick as UserPick } from '../composables/usePicks'
   import type { Pool } from '../composables/usePools'
 
   useHead({
@@ -224,7 +224,7 @@
             const existingPicks = (() => {
               try {
                 const raw = localStorage.getItem('wc-picks-v1')
-                return raw ? (JSON.parse(raw) as Record<string, Pick>) : {}
+                return raw ? (JSON.parse(raw) as Record<string, UserPick>) : {}
               } catch {
                 return {}
               }
@@ -232,7 +232,7 @@
 
             // Merge: server picks take precedence for outcome; keep local
             // match snapshots where available.
-            const merged: Record<string, Pick> = { ...existingPicks }
+            const merged: Record<string, UserPick> = { ...existingPicks }
             for (const [matchId, outcome] of Object.entries(
               ownerMember.picks
             )) {
@@ -608,7 +608,7 @@
               :key="pool.id"
               :pool="pool"
               :link="poolLink(pool.id)"
-              :leader-rows="leaderboard(pool.id, resolveResult)"
+              :leader-rows="leaderboard(pool.id, resolveResult, picks.value)"
               :picks-made="poolSummary(pool).made"
               :picks-correct="poolSummary(pool).correct"
               @edit="openEdit"

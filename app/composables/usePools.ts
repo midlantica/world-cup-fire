@@ -18,7 +18,7 @@
 // The reactive `pools` array is a CACHE of the server state for the pools this
 // device belongs to. It's hydrated on mount and after every mutation.
 
-import type { Pick, PickOutcome } from './usePicks'
+import type { Pick as UserPick, PickOutcome } from './usePicks'
 import { usePicks } from './usePicks'
 
 /** Local registry of the pools this device belongs to + its credentials. */
@@ -186,7 +186,7 @@ export function usePools() {
               // Merge server picks into local picks. For picks not in local
               // storage, write a stub — hydrateStub() will fill in the match
               // snapshot when the MatchCard renders.
-              const merged: Record<string, Pick> = { ...currentPicks }
+              const merged: Record<string, UserPick> = { ...currentPicks }
               for (const [matchId, outcome] of Object.entries(
                 selfMember.picks
               )) {
@@ -568,7 +568,7 @@ export function usePools() {
    * the picks for the device's own member, with each pick's kickoff time so the
    * server can reject late edits. Called whenever personal picks change.
    */
-  async function syncOwnerPicks(personalPicks: Record<string, Pick>) {
+  async function syncOwnerPicks(personalPicks: Record<string, UserPick>) {
     const payload: Record<string, { outcome: PickOutcome; kickoff: string }> =
       {}
     for (const [matchId, pick] of Object.entries(personalPicks)) {
@@ -626,18 +626,33 @@ export function usePools() {
    * Compute a ranked leaderboard for a pool. A member scores a point for each
    * FINISHED match where their backed OUTCOME matches the actual result.
    * `resolveResult` maps a matchId → the finished outcome (or null).
+   *
+   * `selfPicks` — when provided, the self member's picks are taken from this
+   * local map instead of the server pool data. This prevents the leaderboard
+   * from flashing 0 picks for the local user when the server hasn't been
+   * synced yet (e.g. immediately after page load before syncOwnerPicks runs).
    */
   function leaderboard(
     id: string,
-    resolveResult: (matchId: string) => PickOutcome | null
+    resolveResult: (matchId: string) => PickOutcome | null,
+    selfPicks?: Record<string, UserPick>
   ): LeaderRow[] {
     const pool = getPool(id)
     if (!pool) return []
     const rows: LeaderRow[] = pool.members.map((m) => {
+      // For the self member, prefer local picks over server picks so the
+      // leaderboard always reflects the user's actual selections even before
+      // the server sync has completed.
+      const effectivePicks: Record<string, PickOutcome> =
+        m.isSelf && selfPicks
+          ? Object.fromEntries(
+              Object.entries(selfPicks).map(([mid, p]) => [mid, p.outcome])
+            )
+          : m.picks
       let score = 0
       let decided = 0
-      const picksMade = Object.keys(m.picks).length
-      for (const [matchId, outcome] of Object.entries(m.picks)) {
+      const picksMade = Object.keys(effectivePicks).length
+      for (const [matchId, outcome] of Object.entries(effectivePicks)) {
         const result = resolveResult(matchId)
         if (result === null) continue
         decided++
