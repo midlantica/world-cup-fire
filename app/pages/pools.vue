@@ -13,6 +13,9 @@
   })
 
   const { picks } = usePicks()
+  // Typed alias so the template can pass picks to leaderboard() without
+  // hitting the Pick/UserPick name-collision in Volar's template type checker.
+  const localPicks = computed(() => picks.value as Record<string, UserPick>)
 
   const {
     pools,
@@ -409,6 +412,10 @@
     // The server-side pool member picks can lag behind (they're only pushed on
     // syncOwnerPicks) and would show 0 immediately after a refreshPools() call
     // before the next sync completes — causing the count to flash from 72 → 0.
+    console.log(
+      '[poolSummary] picks.value count:',
+      Object.keys(picks.value).length
+    )
     let made = 0
     let correct = 0
     for (const [matchId, pick] of Object.entries(picks.value)) {
@@ -608,7 +615,7 @@
               :key="pool.id"
               :pool="pool"
               :link="poolLink(pool.id)"
-              :leader-rows="leaderboard(pool.id, resolveResult, picks.value)"
+              :leader-rows="leaderboard(pool.id, resolveResult, localPicks)"
               :picks-made="poolSummary(pool).made"
               :picks-correct="poolSummary(pool).correct"
               @edit="openEdit"
