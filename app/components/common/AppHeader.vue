@@ -632,7 +632,7 @@
       border-right: 1px solid rgb(255 255 255 / 0.08);
       min-height: unset;
       align-self: stretch;
-      background: rgb(255 255 255 / 0.06);
+      /* background: rgb(255 255 255 / 0.06); */
     }
 
     .app-header__nav-link:last-child {
