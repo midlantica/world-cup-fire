@@ -121,9 +121,16 @@
       events
         .filter((e: any) => {
           const t = e?.type?.text as string | undefined
+          if (!t) return false
+          // Match any goal variant (e.g. "Goal", "Goal - Header", "Goal - Free Kick", "Own Goal")
+          // plus penalties, and cards.
           return (
-            t &&
-            ['Goal', 'Penalty - Scored', 'Red Card', 'Yellow Card'].includes(t)
+            t === 'Goal' ||
+            t.startsWith('Goal') ||
+            t.includes('Goal') ||
+            t === 'Penalty - Scored' ||
+            t === 'Red Card' ||
+            t === 'Yellow Card'
           )
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,7 +165,7 @@
     return keyEvents.value.filter(
       (e) =>
         e.team === teamName &&
-        (e.type === 'Goal' || e.type === 'Penalty - Scored')
+        (e.type.includes('Goal') || e.type === 'Penalty - Scored')
     )
   }
 
