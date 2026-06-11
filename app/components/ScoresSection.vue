@@ -164,19 +164,25 @@
 
 <template>
   <section class="scores-section">
-    <!-- Loading -->
-    <div v-if="pending" class="scores-section__loading">
+    <!-- Loading — only show spinner on initial load (no data yet) -->
+    <div v-if="pending && matches.length === 0" class="scores-section__loading">
       <div class="scores-section__spinner" />
       <span>Loading matches…</span>
     </div>
 
-    <!-- Error -->
-    <div v-else-if="error" class="scores-section__error">
+    <!-- Error (only when no data to fall back on) -->
+    <div
+      v-else-if="error && matches.length === 0"
+      class="scores-section__error"
+    >
       Failed to load matches. Please try again.
     </div>
 
     <!-- No matches -->
-    <div v-else-if="matches.length === 0" class="scores-section__empty">
+    <div
+      v-else-if="!pending && matches.length === 0"
+      class="scores-section__empty"
+    >
       <p>No matches scheduled for this period.</p>
     </div>
 
