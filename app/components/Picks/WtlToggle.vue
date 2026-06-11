@@ -364,6 +364,8 @@
   /* ── CLOSED leftover chip: the dark-marked colour box for this row ───────── */
 
   .wtl__chip {
+    position: relative;
+    top: -1px;
     width: 1.3rem;
     height: 1.3rem;
     padding: 0;
