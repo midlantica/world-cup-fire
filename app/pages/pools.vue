@@ -527,34 +527,45 @@
               </button>
             </div>
             <p class="pools-sidebar__lead">
-              Compete with friends &amp; family all tournament long. Create a
-              pool, share the link, and see who really knows their football.
+              This is your Pool — compete with friends &amp; family all
+              tournament long and see who really knows their football. Here's
+              how it works:
             </p>
 
             <ul class="pools-sidebar__steps">
               <li>
                 <span class="pools-sidebar__step-num">1</span>
-                <span
-                  >Edit the Pool or create a new pool and give it a name.</span
-                >
+                <span>
+                  Make your picks on the
+                  <NuxtLink to="/" class="pools-sidebar__link"
+                    >Matches</NuxtLink
+                  >
+                  page — win, lose, or draw for each game.
+                </span>
               </li>
               <li>
                 <span class="pools-sidebar__step-num">2</span>
-                <span>Share the invite link with your crew.</span>
+                <span>
+                  Click <strong>Copy Invite Link</strong> on your pool.
+                </span>
               </li>
               <li>
                 <span class="pools-sidebar__step-num">3</span>
                 <span>
-                  Everyone picks match results on the
-                  <NuxtLink to="/" class="pools-sidebar__link"
-                    >Matches</NuxtLink
-                  >
-                  page.
+                  Send the link to your crew — when they join, their name shows
+                  up in your pool.
                 </span>
               </li>
               <li>
                 <span class="pools-sidebar__step-num">4</span>
-                <span>Watch the leaderboard update in real time. ⚽️</span>
+                <span>They make their own picks for every match.</span>
+              </li>
+              <li>
+                <span class="pools-sidebar__step-num">5</span>
+                <span>
+                  Watch the leaderboard update in real time — let's see who
+                  picks best! ⚽️
+                </span>
               </li>
             </ul>
 
@@ -863,7 +874,7 @@
 
   .pools-sidebar__new-btn {
     width: 100%;
-    background: oklab(0.62 0.13 0.14 / 0.65);
+    background: rgb(221 85 0 / 0.65);
     color: #ffffff;
     border: none;
     border-radius: 0;
@@ -881,7 +892,7 @@
   }
 
   .pools-sidebar__new-btn:hover:not(:disabled) {
-    background: oklab(0.68 0.14 0.15);
+    background: rgb(248 99 0);
   }
 
   .pools-sidebar__new-btn:disabled {
@@ -944,7 +955,7 @@
 
   .pools-empty__btn {
     @apply mt-3;
-    background: oklab(0.62 0.13 0.14);
+    background: rgb(221 85 0);
     color: #ffffff;
     border: none;
     border-radius: 0;
@@ -962,7 +973,7 @@
   }
 
   .pools-empty__btn:hover:not(:disabled) {
-    background: oklab(0.68 0.14 0.15);
+    background: rgb(248 99 0);
   }
 
   .pools-empty__btn:disabled {

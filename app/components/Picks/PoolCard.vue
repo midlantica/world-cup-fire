@@ -123,8 +123,8 @@
   .pool-card {
     @apply border p-4;
     border-radius: 0;
-    border-color: rgb(255 255 255 / 0.08);
-    background: rgb(255 255 255 / 0.03);
+    border-color: #3c3834;
+    background: #1e1a18;
   }
 
   .pool-card__name {
@@ -135,7 +135,7 @@
       'wght' 600;
     font-size: 1.05rem;
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.07em;
     margin: 0 0.2rem 0.4rem;
   }
 
@@ -165,32 +165,32 @@
 
   /* Copy invite link — orange */
   .pool-card__action-btn--copy {
-    background: oklab(0.62 0.13 0.14 / 0.8);
+    background: rgb(221 85 0 / 0.8);
     color: rgb(255 255 255 / 0.82);
   }
 
   .pool-card__action-btn--copy:hover {
-    background: oklab(0.68 0.14 0.15);
+    background: rgb(248 99 0);
   }
 
   /* Copied state — slightly darker orange, no green */
   .pool-card__action-btn--copied {
-    background: oklab(0.52 0.13 0.14);
+    background: rgb(186 51 0);
     color: rgb(255 255 255 / 0.9);
   }
 
   .pool-card__action-btn--copied:hover {
-    background: oklab(0.52 0.13 0.14);
+    background: rgb(186 51 0);
   }
 
   /* Edit pool — orange */
   .pool-card__action-btn--edit {
-    background: oklab(0.62 0.13 0.14 / 0.8);
+    background: rgb(221 85 0 / 0.8);
     color: rgb(255 255 255 / 0.82);
   }
 
   .pool-card__action-btn--edit:hover {
-    background: oklab(0.68 0.14 0.15);
+    background: rgb(248 99 0);
   }
 
   /* Leave pool — muted danger */
