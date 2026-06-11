@@ -324,7 +324,7 @@
     justify-content: center;
     gap: 0.5rem;
     text-decoration: none;
-    padding: 0.7rem 1.1rem;
+    padding: 0.75rem 1.1rem;
     border-radius: 0;
 
     font-family: 'Anybody', sans-serif;
