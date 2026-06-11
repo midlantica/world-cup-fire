@@ -669,11 +669,25 @@
     line-height: 1;
   }
 
+  @keyframes status-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
   .match-card__status--live {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    /* Use a local keyframe + longhand animation to avoid Tailwind v4's
+       --animate-pulse CSS variable which injects height: 2rem. */
+    animation-name: status-pulse;
+    animation-duration: 2s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+    animation-iteration-count: infinite;
     background-color: color-mix(in srgb, #22c55e 20%, transparent);
     color: #4ade80;
-    height: auto;
   }
 
   .match-card__status--ft {
