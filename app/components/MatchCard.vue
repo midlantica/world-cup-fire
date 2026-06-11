@@ -670,7 +670,10 @@
   }
 
   .match-card__status--live {
-    @apply animate-pulse bg-green-500/20 text-green-400;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    background-color: color-mix(in srgb, #22c55e 20%, transparent);
+    color: #4ade80;
+    height: auto;
   }
 
   .match-card__status--ft {
