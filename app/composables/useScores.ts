@@ -244,9 +244,7 @@ export function normaliseEvent(ev: any): Match {
   )?.name as string
 
   const code = statusCode(espnStatusName)
-  const clock = normaliseClock(
-    (ev.status as Record<string, unknown>)?.type as Record<string, unknown>
-  )
+  const clock = normaliseClock(ev.status as Record<string, unknown>)
 
   const homeScore = code !== 'ns' ? ((homeComp.score as string) ?? '0') : null
   const awayScore = code !== 'ns' ? ((awayComp.score as string) ?? '0') : null
