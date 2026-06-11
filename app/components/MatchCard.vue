@@ -656,11 +656,16 @@
 
   /* Grey pill on FT / HT / live clock status — not on kickoff time/date */
   .match-card__status {
-    @apply rounded px-2 py-0.5 text-xs font-bold text-white/50 uppercase tabular-nums;
+    @apply text-xs font-bold text-white/50 uppercase tabular-nums;
     @apply font-anybody-bold;
     background: #383838;
-    border-radius: 2px;
+    border-radius: 4px;
     min-width: 2.8rem; /* same width as clock so column stays stable */
+    width: 2.8rem;
+    height: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
   }
 
@@ -669,12 +674,6 @@
   }
 
   .match-card__status--ft {
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--color-white, #fff) 50%, transparent);
-      padding: 0;
-      width: 2rem;
-      height: 2rem;
-      padding: 0.5rem;
-    }
+    color: color-mix(in oklab, var(--color-white, #fff) 50%, transparent);
   }
 </style>
