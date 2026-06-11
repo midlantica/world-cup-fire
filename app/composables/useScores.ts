@@ -369,6 +369,8 @@ export function useScores() {
   } = useFetch<unknown[]>('/api/schedule', {
     query: computed(() => ({ dates: dateRange.value })),
     watch: [dateRange],
+    // Keep existing data visible while re-fetching (no blank/pending flash)
+    dedupe: 'defer',
   })
 
   const matches = computed<Match[]>(() => {

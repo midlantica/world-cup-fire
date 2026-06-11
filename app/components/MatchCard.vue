@@ -153,10 +153,14 @@
   const isFT = computed(() => props.match.status.code === 'ft')
   const isNS = computed(() => props.match.status.code === 'ns')
 
+  const clockLabel = computed(() =>
+    isLive.value ? (props.match.status.clock ?? null) : null
+  )
+
   const statusLabel = computed(() => {
     if (isHT.value) return 'HT'
     if (isFT.value) return 'FT'
-    if (isLive.value) return props.match.status.clock ?? 'LIVE'
+    if (isLive.value) return 'LIVE'
     return null
   })
 
@@ -341,6 +345,10 @@
         <!-- Time / status text column -->
         <div class="match-card__time-col">
           <template v-if="!isNS">
+            <!-- Live: clock minute on top, LIVE pill below -->
+            <span v-if="isLive && clockLabel" class="match-card__clock">{{
+              clockLabel
+            }}</span>
             <span
               class="match-card__status"
               :class="{
@@ -350,6 +358,8 @@
             >
               {{ statusLabel }}
             </span>
+            <!-- Spacer to keep non-live finished cards the same height as NS cards -->
+            <span v-if="!isLive" class="match-card__status-spacer" />
           </template>
           <template v-else>
             <!-- eslint-disable-next-line vue/no-v-html -->
@@ -390,14 +400,6 @@
 
   .match-card--mine:hover {
     box-shadow: 0 0 0 1px var(--nation-accent, transparent);
-  }
-
-  .match-card.live {
-    background-color: oklch(0.16 0.02 160);
-  }
-
-  .match-card.live:hover {
-    background-color: oklch(0.2 0.02 160);
   }
 
   /* ── Top bar — semi-transparent darkening overlay ───────────────────────── */
@@ -642,12 +644,25 @@
     @apply font-anybody-copy;
   }
 
+  /* ── Live clock (minute) — shown above the LIVE pill ────────────────────── */
+  .match-card__clock {
+    @apply font-anybody-bold tabular-nums;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #4ade80; /* green-400 */
+    line-height: 1.1;
+    min-width: 2.8rem; /* fits "110'" without wrapping */
+    text-align: center;
+  }
+
   /* Grey pill on FT / HT / live clock status — not on kickoff time/date */
   .match-card__status {
     @apply rounded px-2 py-0.5 text-xs font-bold text-white/50 uppercase tabular-nums;
     @apply font-anybody-bold;
     background: #383838;
     border-radius: 2px;
+    min-width: 2.8rem; /* same width as clock so column stays stable */
+    text-align: center;
   }
 
   .match-card__status--live {
@@ -662,5 +677,12 @@
       height: 2rem;
       padding: 0.5rem;
     }
+  }
+
+  /* Invisible spacer that matches the height of .match-card__kickoff so FT/HT
+     cards are the same total height as NS cards (which show time + date). */
+  .match-card__status-spacer {
+    display: block;
+    height: 0.9rem; /* approx line-height of the date-label row */
   }
 </style>
