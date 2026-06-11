@@ -646,13 +646,14 @@
 
   /* ── Live clock (minute) — shown above the LIVE pill ────────────────────── */
   .match-card__clock {
-    @apply font-anybody-bold tabular-nums;
-    font-size: 0.9rem;
+    @apply font-anybody-copy tabular-nums;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #4ade80; /* green-400 */
+    color: #fff;
     line-height: 1.1;
     min-width: 2.8rem; /* fits "110'" without wrapping */
     text-align: center;
+    margin-bottom: 0.15rem;
   }
 
   /* Grey pill on FT / HT / live clock status — not on kickoff time/date */
