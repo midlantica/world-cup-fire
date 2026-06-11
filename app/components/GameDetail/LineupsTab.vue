@@ -163,22 +163,33 @@
     for (const e of events) {
       if (e?.type?.text !== 'Substitution') continue
       const minute = (e?.clock?.displayValue as string) ?? ''
-      const text = (e?.text as string) ?? ''
 
       // Only show this sub if it has already happened
       const subMinute = parseInt(minute.replace(/[^0-9]/g, ''), 10)
       if (!isNaN(subMinute) && subMinute > currentMinute) continue
 
-      // ESPN real:  "PlayerOn replaces PlayerOff" or "PlayerOn (Team) replaces PlayerOff"
-      // Mock format: "Substitution: PlayerOn replaces PlayerOff for Team."
-      const stripped = text.replace(/^Substitution:\s*/i, '')
-      const m = stripped.match(/^(.+?)\s+replaces\s+(.+?)(?:\s+for\s|\s*\(|$)/i)
-      if (m) {
-        const playerOn = m[1]!.trim()
-        const playerOff = m[2]!.trim()
-        // Store by normalized key so accent mismatches still resolve
-        map.set(normName(playerOn), { type: 'on', minute })
-        map.set(normName(playerOff), { type: 'off', minute })
+      // ESPN WC format: participants[0] = player coming ON, participants[1] = player coming OFF
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const participants = (e?.participants as any[]) ?? []
+      if (participants.length >= 2) {
+        const playerOn = (participants[0]?.athlete?.displayName as string) ?? ''
+        const playerOff =
+          (participants[1]?.athlete?.displayName as string) ?? ''
+        if (playerOn) map.set(normName(playerOn), { type: 'on', minute })
+        if (playerOff) map.set(normName(playerOff), { type: 'off', minute })
+      } else {
+        // Fallback: parse "PlayerOn replaces PlayerOff" text format (mock data)
+        const text = (e?.text as string) ?? ''
+        const stripped = text.replace(/^Substitution:\s*/i, '')
+        const m = stripped.match(
+          /^(.+?)\s+replaces\s+(.+?)(?:\s+for\s|\s*\(|$)/i
+        )
+        if (m) {
+          const playerOn = m[1]!.trim()
+          const playerOff = m[2]!.trim()
+          map.set(normName(playerOn), { type: 'on', minute })
+          map.set(normName(playerOff), { type: 'off', minute })
+        }
       }
     }
     return map
