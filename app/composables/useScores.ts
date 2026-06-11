@@ -411,18 +411,25 @@ export function useScores() {
       // First client instance: set up the singleton watcher
       scoresWatcherStop = watch(
         hasLiveMatches,
-        (live) => {
+        (live, wasLive) => {
           if (live) {
             if (!scoresLiveTimer) {
               scoresLiveTimer = setInterval(() => {
                 if (hasLiveMatches.value) {
                   refresh()
                 } else {
+                  // Do one final refresh to capture the FT score, then stop
+                  refresh()
                   stopScoresPolling()
                 }
               }, LIVE_POLL_INTERVAL_MS)
             }
           } else {
+            // Transition from live → not-live: fire one final refresh to lock
+            // in the final score before stopping the polling interval.
+            if (wasLive) {
+              refresh()
+            }
             stopScoresPolling()
           }
         },

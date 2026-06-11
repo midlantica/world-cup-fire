@@ -16,7 +16,7 @@ const USE_MOCK = false
 const MOCK_NOW_ISO = ''
 
 const CACHE_TTL_LIVE_MS = 30_000 // 30 s during live matches
-const CACHE_TTL_IDLE_MS = 5 * 60_000 // 5 min otherwise
+const CACHE_TTL_IDLE_MS = 60_000 // 60 s otherwise (was 5 min — kept short so FT scores appear promptly)
 
 interface CacheEntry {
   data: unknown[]
@@ -145,6 +145,7 @@ export default defineEventHandler(async (event) => {
     const type = status?.type as Record<string, unknown> | undefined
     return (
       type?.state === 'in' ||
+      type?.name === 'STATUS_IN_PROGRESS' ||
       type?.name === 'STATUS_HALFTIME' ||
       type?.name === 'STATUS_FIRST_HALF' ||
       type?.name === 'STATUS_SECOND_HALF'
