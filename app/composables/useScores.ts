@@ -204,12 +204,19 @@ function computeQuality(home: string, away: string): number {
 // ---------------------------------------------------------------------------
 
 function statusCode(espnStatus: string): MatchStatus['code'] {
-  if (espnStatus === 'STATUS_FINAL') return 'ft'
+  if (
+    espnStatus === 'STATUS_FINAL' ||
+    espnStatus === 'STATUS_FULL_TIME' ||
+    espnStatus === 'STATUS_FULL_PEN'
+  )
+    return 'ft'
   if (espnStatus === 'STATUS_HALFTIME') return 'ht'
   if (
     espnStatus === 'STATUS_IN_PROGRESS' ||
     espnStatus === 'STATUS_FIRST_HALF' ||
-    espnStatus === 'STATUS_SECOND_HALF'
+    espnStatus === 'STATUS_SECOND_HALF' ||
+    espnStatus === 'STATUS_EXTRA_TIME' ||
+    espnStatus === 'STATUS_SHOOTOUT'
   )
     return 'live'
   return 'ns'
