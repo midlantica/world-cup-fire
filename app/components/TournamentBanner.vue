@@ -33,24 +33,24 @@
   <div class="tb-wrap">
     <div class="tb-banner">
       <div class="tb-inner">
-        <!-- Left: FIFA logo + tournament label -->
-        <div class="tb-logo-col">
-          <img
-            src="/FIFA-WC-2026-white.svg"
-            class="tb-logo"
-            alt="FIFA World Cup 2026"
-          />
-        </div>
-
-        <!-- Centre: explainer copy -->
-        <div class="tb-copy-col">
-          <p class="tb-copy">
-            <strong>48 nations · 104 matches · 16 cities</strong> across USA,
-            Canada &amp; Mexico. Make your picks, challenge your friends in a
-            Pool, and follow every match with 🔥 fire ratings. The world's
-            biggest sporting event runs <strong>June 11 – July 19</strong> —
-            don't miss a kick.
-          </p>
+        <!-- Left group: FIFA logo + explainer copy together -->
+        <div class="tb-content-group">
+          <div class="tb-logo-col">
+            <img
+              src="/FIFA-WC-2026-white.svg"
+              class="tb-logo"
+              alt="FIFA World Cup 2026"
+            />
+          </div>
+          <div class="tb-copy-col">
+            <p class="tb-copy">
+              <strong>48 nations · 104 matches · 16 cities</strong> across USA,
+              Canada &amp; Mexico. Make your picks, challenge your friends in a
+              Pool, and follow every match with 🔥 fire ratings. The world's
+              biggest sporting event runs <strong>June 11 – July 19</strong> —
+              don't miss a kick.
+            </p>
+          </div>
         </div>
 
         <!-- Right: CTA -->
@@ -82,6 +82,7 @@
     overflow: hidden;
   }
 
+  /* Outer row: [logo+copy group] [cta] */
   .tb-inner {
     display: flex;
     flex-direction: row;
@@ -90,14 +91,25 @@
     padding: 0.9rem 1.25rem;
   }
 
+  /* Logo + copy grouped together, takes all remaining space */
+  .tb-content-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   /* ── Logo column ─────────────────────────────────────────────────────────── */
   .tb-logo-col {
     flex-shrink: 0;
+    align-self: flex-start;
   }
 
   .tb-logo {
     display: block;
-    height: 3rem;
+    height: 6rem;
     width: auto;
     opacity: 0.9;
   }
@@ -114,9 +126,9 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 350;
-    font-size: clamp(0.75rem, 1.5cqw, 0.875rem);
+    font-size: 1rem;
     line-height: 1.55;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.08rem;
     color: rgb(255 255 255 / 0.85);
   }
 
@@ -153,21 +165,25 @@
     background: oklab(0.68 0.14 0.15);
   }
 
-  /* ── Mobile: stack vertically ────────────────────────────────────────────── */
+  /* ── Mobile: button drops below the logo+copy group ─────────────────────── */
   @container (max-width: 560px) {
     .tb-inner {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
       gap: 0.75rem;
       padding: 0.85rem 1rem;
     }
 
+    .tb-content-group {
+      align-items: flex-start;
+    }
+
     .tb-logo {
-      height: 2.25rem;
+      height: 4rem;
     }
 
     .tb-copy {
-      font-size: clamp(0.8rem, 3.5cqw, 0.875rem);
+      font-size: clamp(0.85rem, 3.5cqw, 1rem);
     }
 
     .tb-cta-btn {
