@@ -85,13 +85,17 @@ export function secretToken(): string {
 /**
  * Strip secrets so a pool can be returned publicly (leaderboard reads).
  *
- * `selfMemberId` — when provided, that member's picks are included in full.
- * All other members' picks are OMITTED so participants cannot inspect each
- * other's selections before matches are decided.
+ * ALL members' picks are included — the client-side leaderboard needs every
+ * member's picks to compute scores/accuracy, so hiding them would render the
+ * pool useless (everyone but the local user would show 0 picks forever).
+ * Member write-tokens (the actual secrets) are still stripped.
+ *
+ * `_selfMemberId` is retained for call-site compatibility but no longer
+ * affects the output.
  */
 export function toPublicPool(
   pool: StoredPool,
-  selfMemberId?: string
+  _selfMemberId?: string
 ): PublicPool {
   return {
     id: pool.id,
@@ -102,8 +106,7 @@ export function toPublicPool(
       id: m.id,
       name: m.name,
       isOwner: m.isOwner,
-      // Only expose picks for the authenticated caller; hide everyone else's.
-      picks: m.id === selfMemberId ? m.picks : {},
+      picks: m.picks ?? {},
     })),
   }
 }
