@@ -667,7 +667,7 @@
 
             <!-- Tab content -->
             <div class="gd-body">
-              <div v-if="pending" class="gd-loading">
+              <div v-if="pending && !detail" class="gd-loading">
                 <div class="gd-spinner" />
                 <span>Loading match data…</span>
               </div>
