@@ -654,19 +654,19 @@
     margin-bottom: 0.15rem;
   }
 
-  /* Grey pill on FT / HT / live clock status — not on kickoff time/date */
+  /* Grey square badge on FT / HT / LIVE — hugs the text with equal padding */
   .match-card__status {
     @apply text-xs font-bold text-white/50 uppercase tabular-nums;
     @apply font-anybody-bold;
     background: #383838;
     border-radius: 4px;
-    min-width: 2.8rem; /* same width as clock so column stays stable */
-    width: 2.8rem;
-    height: 2.8rem;
-    display: flex;
+    padding: 0.35rem 0.45rem;
+    min-width: 2.2rem;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    line-height: 1;
   }
 
   .match-card__status--live {
