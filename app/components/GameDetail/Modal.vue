@@ -939,8 +939,8 @@
     }
   }
 
-  /* Narrow phones (≤375px): switch to 3-letter abbreviations */
-  @media (max-width: 375px) {
+  /* Narrow phones (≤425px): switch to 3-letter abbreviations */
+  @media (max-width: 425px) {
     .gd-header {
       padding: 0.85rem 1.5rem 0.3rem;
     }
