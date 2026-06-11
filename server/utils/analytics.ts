@@ -65,8 +65,16 @@ function makeBlobStore(): AnalyticsStore {
         const d = new Date()
         d.setUTCDate(d.getUTCDate() - i)
         const date = utcDateStr(d)
-        const rec = await store.get(date, { type: 'json' })
-        if (rec) results.push(rec as DayRecord)
+        // RESILIENCE: a transient Blobs API failure (or a corrupt blob) on a
+        // single day must NOT 500 the whole analytics endpoint — skip the day
+        // and keep aggregating. Previously one throw here took down /analytics.
+        let rec: unknown = null
+        try {
+          rec = await store.get(date, { type: 'json' })
+        } catch (e) {
+          console.warn(`[analytics] Failed to read day blob ${date}:`, e)
+        }
+        if (rec) results.push(normalizeDay(rec as Partial<DayRecord>, date))
         else if (date === today) {
           // Always include today even if empty
           results.push(emptyDay(date))
@@ -113,7 +121,9 @@ function makeFileStore(): AnalyticsStore {
         const date = utcDateStr(d)
         try {
           const raw = await readFile(filePath(date), 'utf8')
-          results.push(JSON.parse(raw) as DayRecord)
+          results.push(
+            normalizeDay(JSON.parse(raw) as Partial<DayRecord>, date)
+          )
         } catch {
           if (date === today) results.push(emptyDay(date))
         }
@@ -160,6 +170,28 @@ export function emptyDay(date: string): DayRecord {
     sessions: [],
     pages: {},
     hourly: {},
+  }
+}
+
+/**
+ * Coerce a possibly partial/legacy day record into a fully-shaped DayRecord
+ * so downstream aggregation (`.length`, `Object.entries`, `for…of`) never
+ * throws on a missing field. Defensive against blobs written by older code.
+ */
+export function normalizeDay(rec: Partial<DayRecord>, date: string): DayRecord {
+  return {
+    date: typeof rec.date === 'string' ? rec.date : date,
+    pageViews: typeof rec.pageViews === 'number' ? rec.pageViews : 0,
+    visitors: Array.isArray(rec.visitors) ? rec.visitors : [],
+    sessions: Array.isArray(rec.sessions) ? rec.sessions : [],
+    pages:
+      rec.pages && typeof rec.pages === 'object' && !Array.isArray(rec.pages)
+        ? rec.pages
+        : {},
+    hourly:
+      rec.hourly && typeof rec.hourly === 'object' && !Array.isArray(rec.hourly)
+        ? rec.hourly
+        : {},
   }
 }
 

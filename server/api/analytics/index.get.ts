@@ -67,11 +67,25 @@ export default defineEventHandler(async () => {
     }
   }
 
+  // ── Aggregate from the store ────────────────────────────────────────────────
+  // Wrapped so a transient Blobs failure degrades gracefully (empty data)
+  // instead of 500ing the dashboard. getPoolsStats() already self-catches.
   const store = analyticsStore()
-  const [days, poolsStats] = await Promise.all([
-    store.list(DAYS),
-    getPoolsStats(),
-  ])
+  let days: Awaited<ReturnType<typeof store.list>> = []
+  let poolsStats: Awaited<ReturnType<typeof getPoolsStats>>
+  try {
+    ;[days, poolsStats] = await Promise.all([store.list(DAYS), getPoolsStats()])
+  } catch (e) {
+    console.error('[analytics] aggregation error:', e)
+    days = []
+    poolsStats = {
+      total: 0,
+      solo: 0,
+      active: 0,
+      totalMembers: 0,
+      avgMembersPerActivePool: 0,
+    }
+  }
 
   // Totals across all days
   let totalPageViews = 0
