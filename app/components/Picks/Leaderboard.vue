@@ -222,10 +222,10 @@
   }
 
   .leaderboard__name {
-    @apply min-w-0;
+    min-width: 0;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.4rem;
     overflow: hidden;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
@@ -339,19 +339,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.1rem;
+    height: 1.1rem;
     border-radius: 50%;
     background: #7f1d1d;
-    border: 1px solid #991b1b;
-    color: #fca5a5;
+    color: #ffffff;
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
-    transition:
-      background 0.12s,
-      border-color 0.12s;
+    transition: background 0.12s;
     line-height: 0;
+    position: relative;
+    top: -2px;
   }
 
   .leaderboard__del-btn :deep(svg) {
@@ -362,7 +361,6 @@
 
   .leaderboard__del-btn:hover {
     background: #991b1b;
-    border-color: #b91c1c;
   }
 
   /* ── Confirm modal ── */
