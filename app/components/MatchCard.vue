@@ -358,8 +358,6 @@
             >
               {{ statusLabel }}
             </span>
-            <!-- Spacer to keep non-live finished cards the same height as NS cards -->
-            <span v-if="!isLive" class="match-card__status-spacer" />
           </template>
           <template v-else>
             <!-- eslint-disable-next-line vue/no-v-html -->
@@ -647,7 +645,7 @@
   /* ── Live clock (minute) — shown above the LIVE pill ────────────────────── */
   .match-card__clock {
     @apply font-anybody-copy tabular-nums;
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #fff;
     line-height: 1.1;
@@ -678,12 +676,5 @@
       height: 2rem;
       padding: 0.5rem;
     }
-  }
-
-  /* Invisible spacer that matches the height of .match-card__kickoff so FT/HT
-     cards are the same total height as NS cards (which show time + date). */
-  .match-card__status-spacer {
-    display: block;
-    height: 0.9rem; /* approx line-height of the date-label row */
   }
 </style>
