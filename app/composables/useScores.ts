@@ -203,22 +203,32 @@ function computeQuality(home: string, away: string): number {
 // ESPN event → Match normalisation
 // ---------------------------------------------------------------------------
 
-function statusCode(espnStatus: string): MatchStatus['code'] {
+function statusCode(
+  espnStatusName: string,
+  espnState?: string,
+  completed?: boolean
+): MatchStatus['code'] {
+  // Primary: match by name (most reliable)
   if (
-    espnStatus === 'STATUS_FINAL' ||
-    espnStatus === 'STATUS_FULL_TIME' ||
-    espnStatus === 'STATUS_FULL_PEN'
+    espnStatusName === 'STATUS_FINAL' ||
+    espnStatusName === 'STATUS_FULL_TIME' ||
+    espnStatusName === 'STATUS_FULL_PEN'
   )
     return 'ft'
-  if (espnStatus === 'STATUS_HALFTIME') return 'ht'
+  if (espnStatusName === 'STATUS_HALFTIME') return 'ht'
   if (
-    espnStatus === 'STATUS_IN_PROGRESS' ||
-    espnStatus === 'STATUS_FIRST_HALF' ||
-    espnStatus === 'STATUS_SECOND_HALF' ||
-    espnStatus === 'STATUS_EXTRA_TIME' ||
-    espnStatus === 'STATUS_SHOOTOUT'
+    espnStatusName === 'STATUS_IN_PROGRESS' ||
+    espnStatusName === 'STATUS_FIRST_HALF' ||
+    espnStatusName === 'STATUS_SECOND_HALF' ||
+    espnStatusName === 'STATUS_EXTRA_TIME' ||
+    espnStatusName === 'STATUS_SHOOTOUT'
   )
     return 'live'
+
+  // Fallback: use state + completed flags so unknown name variants still work
+  if (espnState === 'post' && completed) return 'ft'
+  if (espnState === 'in') return 'live'
+
   return 'ns'
 }
 
@@ -246,11 +256,14 @@ export function normaliseEvent(ev: any): Match {
   const homeData = TEAM_BY_NAME.get(homeName)
   const awayData = TEAM_BY_NAME.get(awayName)
 
-  const espnStatusName = (
-    (ev.status as Record<string, unknown>)?.type as Record<string, unknown>
-  )?.name as string
+  const espnStatusType =
+    ((ev.status as Record<string, unknown>)?.type as Record<string, unknown>) ??
+    {}
+  const espnStatusName = espnStatusType?.name as string
+  const espnState = espnStatusType?.state as string | undefined
+  const espnCompleted = espnStatusType?.completed as boolean | undefined
 
-  const code = statusCode(espnStatusName)
+  const code = statusCode(espnStatusName, espnState, espnCompleted)
   const clock = normaliseClock(ev.status as Record<string, unknown>)
 
   const homeScore = code !== 'ns' ? ((homeComp.score as string) ?? '0') : null
