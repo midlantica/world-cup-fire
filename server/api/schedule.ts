@@ -143,7 +143,12 @@ export default defineEventHandler(async (event) => {
     const ev = e as Record<string, unknown>
     const status = ev.status as Record<string, unknown> | undefined
     const type = status?.type as Record<string, unknown> | undefined
-    return type?.state === 'in' || type?.name === 'STATUS_HALFTIME'
+    return (
+      type?.state === 'in' ||
+      type?.name === 'STATUS_HALFTIME' ||
+      type?.name === 'STATUS_FIRST_HALF' ||
+      type?.name === 'STATUS_SECOND_HALF'
+    )
   })
 
   cache.set(cacheKey, { data: events, fetchedAt: now, hasLive })

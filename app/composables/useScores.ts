@@ -208,6 +208,7 @@ function statusCode(espnStatus: string): MatchStatus['code'] {
   if (espnStatus === 'STATUS_HALFTIME') return 'ht'
   if (
     espnStatus === 'STATUS_IN_PROGRESS' ||
+    espnStatus === 'STATUS_FIRST_HALF' ||
     espnStatus === 'STATUS_SECOND_HALF'
   )
     return 'live'
@@ -218,7 +219,7 @@ function normaliseClock(
   espnStatus: Record<string, unknown>
 ): string | undefined {
   const detail = espnStatus?.displayClock as string | undefined
-  return detail && detail !== '0:00' ? detail : undefined
+  return detail && detail !== '0:00' && detail !== "0'" ? detail : undefined
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
