@@ -19,6 +19,7 @@
 
   interface Player {
     name: string
+    shortName: string
     position: string
     jersey: string
     starter: boolean
@@ -29,6 +30,15 @@
     minute: string
   }
 
+  /** Normalize a name for fuzzy matching: strip accents, lowercase, collapse spaces */
+  function normName(s: string): string {
+    return s
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+  }
+
   function extractRoster(teamData: unknown): Player[] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const entry = teamData as any
@@ -37,6 +47,7 @@
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return list.map((a: any) => ({
       name: a.athlete?.displayName ?? a.athlete?.shortName ?? '—',
+      shortName: a.athlete?.shortName ?? a.athlete?.displayName ?? '—',
       position: a.position?.abbreviation ?? '',
       jersey: a.athlete?.jersey ?? a.jersey ?? '',
       starter: a.starter ?? false,
@@ -130,9 +141,10 @@
     getLastMatchLabel(props.awayLastDetail, props.match.away)
   )
 
-  // ── Substitution map: playerName → { type, minute } ────────────────────────
+  // ── Substitution map: normalized playerName → { type, minute } ─────────────
+  // Keys are accent-stripped lowercase so roster names with accents (e.g.
+  // "Raúl Jiménez") match event text that may omit accents ("Raul Jimenez").
   // Only include subs that have already happened (minute ≤ current match clock).
-  // For FT/HT we show all subs. For live matches we filter by the clock.
   const subMap = computed<Map<string, SubEvent>>(() => {
     const map = new Map<string, SubEvent>()
     if (!props.detail) return map
@@ -159,18 +171,26 @@
 
       // ESPN real:  "PlayerOn replaces PlayerOff" or "PlayerOn (Team) replaces PlayerOff"
       // Mock format: "Substitution: PlayerOn replaces PlayerOff for Team."
-      // Strip leading "Substitution: " prefix if present
       const stripped = text.replace(/^Substitution:\s*/i, '')
       const m = stripped.match(/^(.+?)\s+replaces\s+(.+?)(?:\s+for\s|\s*\(|$)/i)
       if (m) {
         const playerOn = m[1]!.trim()
         const playerOff = m[2]!.trim()
-        map.set(playerOn, { type: 'on', minute })
-        map.set(playerOff, { type: 'off', minute })
+        // Store by normalized key so accent mismatches still resolve
+        map.set(normName(playerOn), { type: 'on', minute })
+        map.set(normName(playerOff), { type: 'off', minute })
       }
     }
     return map
   })
+
+  /** Look up a player in the subMap by normalized display name or short name */
+  function getSubEvent(player: Player): SubEvent | undefined {
+    return (
+      subMap.value.get(normName(player.name)) ??
+      subMap.value.get(normName(player.shortName))
+    )
+  }
 
   // ── Display rosters (WC data takes priority) ────────────────────────────────
   const displayHomeRoster = computed(() =>
@@ -236,19 +256,19 @@
           <span class="player-row__jersey">{{ player.jersey }}</span>
           <span class="player-row__name">{{ player.name }}</span>
           <span
-            v-if="subMap.get(player.name)"
+            v-if="getSubEvent(player)"
             class="player-row__sub"
             :class="
-              subMap.get(player.name)!.type === 'on'
+              getSubEvent(player)!.type === 'on'
                 ? 'player-row__sub--on'
                 : 'player-row__sub--off'
             "
           >
             <span class="player-row__sub-arrow">{{
-              subMap.get(player.name)!.type === 'on' ? '▲' : '▼'
+              getSubEvent(player)!.type === 'on' ? '▲' : '▼'
             }}</span>
             <span class="player-row__sub-min">{{
-              subMap.get(player.name)!.minute
+              getSubEvent(player)!.minute
             }}</span>
           </span>
           <span class="player-row__pos">{{ player.position }}</span>
@@ -282,19 +302,19 @@
           <span class="player-row__jersey">{{ player.jersey }}</span>
           <span class="player-row__name">{{ player.name }}</span>
           <span
-            v-if="subMap.get(player.name)"
+            v-if="getSubEvent(player)"
             class="player-row__sub"
             :class="
-              subMap.get(player.name)!.type === 'on'
+              getSubEvent(player)!.type === 'on'
                 ? 'player-row__sub--on'
                 : 'player-row__sub--off'
             "
           >
             <span class="player-row__sub-arrow">{{
-              subMap.get(player.name)!.type === 'on' ? '▲' : '▼'
+              getSubEvent(player)!.type === 'on' ? '▲' : '▼'
             }}</span>
             <span class="player-row__sub-min">{{
-              subMap.get(player.name)!.minute
+              getSubEvent(player)!.minute
             }}</span>
           </span>
           <span class="player-row__pos">{{ player.position }}</span>
