@@ -519,7 +519,7 @@
     transition:
       color 0.15s ease,
       background 0.15s ease;
-    color: hsl(30deg 100% 95% / 0.7);
+    color: hsl(29deg 100% 95% / 85%);
     background: transparent;
     border: none;
     text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
