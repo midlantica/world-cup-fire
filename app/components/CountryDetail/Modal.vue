@@ -29,13 +29,29 @@
   }
 
   const { pushHistory, popHistory, clearHistory, canGoBack } = useModalNav()
-  const { openGroup } = useGroupDetail()
+  const { openGroup, openGroupSilent } = useGroupDetail()
+
+  const route = useRoute()
 
   function goToGroup() {
     const g = countryData.value?.group
     if (!g) return
     closeCountry({ silent: true })
-    openGroup(g)
+    // If we're already on a /group/ route, avoid router.push (which would
+    // remount the page and blank the screen). Instead open silently and sync
+    // the URL with replaceState — same technique used by switchGroup().
+    if (route.path.startsWith('/group/')) {
+      openGroupSilent(g)
+      if (import.meta.client) {
+        window.history.replaceState(
+          window.history.state,
+          '',
+          `/group/${g.toLowerCase()}`
+        )
+      }
+    } else {
+      openGroup(g)
+    }
   }
 
   function goBack() {
