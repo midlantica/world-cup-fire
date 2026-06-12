@@ -3,7 +3,7 @@
   import { useStandings } from '~/composables/useStandings'
   import { useMatchDetail } from '~/composables/useMatchDetail'
   import { useCountryDetail } from '~/composables/useCountryDetail'
-  import { normaliseEvent } from '~/composables/useScores'
+  import { normaliseEvent, useScores } from '~/composables/useScores'
   import type { Match } from '~/composables/useScores'
   import { TEAM_BY_NAME } from '~/constants/worldcup'
 
@@ -19,16 +19,44 @@
   const { openMatch } = useMatchDetail()
   const { openCountry } = useCountryDetail()
 
+  // Live-polled matches from useScores (covers the current week tab).
+  // We use this to overlay real-time status/scores onto the schedule data.
+  const { matches: liveMatches } = useScores()
+
+  // Build a lookup map: match id → live Match (with real status/scores)
+  const liveMatchMap = computed<Map<string, Match>>(() => {
+    const map = new Map<string, Match>()
+    for (const m of liveMatches.value) {
+      map.set(m.id, m)
+    }
+    return map
+  })
+
   // Fetch ALL group-stage matches (Jun 11–27) — covers all 3 group-stage weeks
   const { data: allGroupEvents } = useFetch<unknown[]>('/api/schedule', {
     query: { dates: '20260611-20260627' },
   })
 
-  // Full Match objects for every group-stage match (all weeks)
+  // Full Match objects for every group-stage match (all weeks).
+  // Live status/scores from useScores are overlaid when available so that
+  // matches currently in progress show as LIVE (not as scheduled).
   const allGroupMatches = computed<Match[]>(() => {
     if (!allGroupEvents.value) return []
     return allGroupEvents.value
-      .map(normaliseEvent)
+      .map((ev) => {
+        const m = normaliseEvent(ev)
+        // Overlay live data if useScores has a fresher version of this match
+        const live = liveMatchMap.value.get(m.id)
+        if (live) {
+          return {
+            ...m,
+            homeScore: live.homeScore,
+            awayScore: live.awayScore,
+            status: live.status,
+          }
+        }
+        return m
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   })
 
