@@ -239,6 +239,44 @@ function normaliseClock(
   return detail && detail !== '0:00' && detail !== "0'" ? detail : undefined
 }
 
+/**
+ * Optimistic LIVE: at kickoff, instantly promote a still-scheduled match to
+ * `live` so the UI reflects the start with zero perceived delay, while the API
+ * catches up in the background.
+ *
+ * Guard rails:
+ *  • Only applies to matches the API still reports as `ns`. Any real status
+ *    (live/ht/ft) always wins — the API is the source of truth.
+ *  • Only applies once kickoff time has actually passed (diff >= 0).
+ *  • Only applies within OPTIMISTIC_GRACE_MS of kickoff. If the match still
+ *    hasn't started after that window, it's assumed delayed/postponed and we
+ *    fall back to the scheduled view (no fake live game lingering).
+ *
+ * @param m       the normalised match
+ * @param nowMs   current wall-clock time (passed in so this stays pure/testable)
+ */
+function applyOptimisticLive(m: Match, nowMs: number): Match {
+  if (m.status.code !== 'ns') return m
+  if (!m.date) return m
+
+  const kickoff = new Date(m.date).getTime()
+  if (Number.isNaN(kickoff)) return m
+
+  const sinceKickoff = nowMs - kickoff
+  // Not started yet, or past the grace window (likely delayed) → leave as-is
+  if (sinceKickoff < 0 || sinceKickoff > OPTIMISTIC_GRACE_MS) return m
+
+  // Within the window: optimistically show LIVE at 0-0, clock at the elapsed
+  // minute (1' minimum, so it never shows "0'").
+  const minute = Math.max(1, Math.floor(sinceKickoff / 60_000) + 1)
+  return {
+    ...m,
+    homeScore: '0',
+    awayScore: '0',
+    status: { code: 'live', clock: `${minute}'` },
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normaliseEvent(ev: any): Match {
   const comp = ev.competitions?.[0] ?? {}
@@ -355,6 +393,24 @@ function tabDateRange(tab: WeekTab): string {
 // ---------------------------------------------------------------------------
 
 const LIVE_POLL_INTERVAL_MS = 10_000 // 10 s client-side polling during live matches
+const KICKOFF_POLL_INTERVAL_MS = 10_000 // 10 s polling when kickoff is imminent
+/** How far before kickoff (ms) to start aggressive polling */
+const KICKOFF_LEAD_MS = 3 * 60_000 // 3 minutes
+/** Interval to check whether any kickoff is now imminent (time-based, not reactive) */
+const KICKOFF_CHECK_INTERVAL_MS = 30_000 // check every 30 s
+
+// ── Optimistic LIVE ──────────────────────────────────────────────────────────
+// At kickoff, flip a scheduled match to LIVE *instantly* (zero perceived delay)
+// while the real API "catches up" in the background. The API stays the source
+// of truth: the moment it reports real live/ht/ft, that wins.
+//
+// Safeguard for delays/postponements (weather, etc.): we only stay optimistic
+// for a grace window. If kickoff has passed by more than OPTIMISTIC_GRACE_MS and
+// the API STILL says the match hasn't started, we assume it's delayed and revert
+// to showing the scheduled time (rather than a fake live game forever).
+const OPTIMISTIC_GRACE_MS = 5 * 60_000 // 5 minutes
+/** Reactive 1-Hz clock that drives the optimistic-status recompute. */
+let optimisticTickTimer: ReturnType<typeof setInterval> | null = null
 
 // ── Singleton polling state ────────────────────────────────────────────────
 // useScores() is called by multiple components (ScoresSection, AppHeader, etc.)
@@ -362,6 +418,8 @@ const LIVE_POLL_INTERVAL_MS = 10_000 // 10 s client-side polling during live mat
 // module level so only ONE interval ever runs, regardless of how many
 // components mount.
 let scoresLiveTimer: ReturnType<typeof setInterval> | null = null
+let scoresKickoffTimer: ReturnType<typeof setInterval> | null = null
+let scoresKickoffCheckTimer: ReturnType<typeof setInterval> | null = null
 let scoresWatcherStop: (() => void) | null = null
 // Only count client-side instances — SSR has no timers/watchers to manage.
 let scoresInstanceCount = 0
@@ -370,6 +428,20 @@ function stopScoresPolling() {
   if (scoresLiveTimer) {
     clearInterval(scoresLiveTimer)
     scoresLiveTimer = null
+  }
+}
+
+function stopKickoffPolling() {
+  if (scoresKickoffTimer) {
+    clearInterval(scoresKickoffTimer)
+    scoresKickoffTimer = null
+  }
+}
+
+function stopKickoffCheckTimer() {
+  if (scoresKickoffCheckTimer) {
+    clearInterval(scoresKickoffCheckTimer)
+    scoresKickoffCheckTimer = null
   }
 }
 
@@ -391,11 +463,24 @@ export function useScores() {
     dedupe: 'defer',
   })
 
-  const matches = computed<Match[]>(() => {
+  // Raw matches straight from the API (the source of truth).
+  const rawMatches = computed<Match[]>(() => {
     if (!rawEvents.value) return []
     return rawEvents.value
       .map(normaliseEvent)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  })
+
+  // Reactive 1-Hz "tick" so the optimistic-live computed re-evaluates as the
+  // wall clock crosses each kickoff (computed values don't re-run on time alone).
+  // SSR: seed from nowDate() and never tick (no timers on the server).
+  const tick = useState<number>('scores-tick', () => nowDate().getTime())
+
+  // Public matches list = raw API data + optimistic-LIVE overlay at kickoff.
+  // Any match the API already reports as live/ht/ft is passed through untouched.
+  const matches = computed<Match[]>(() => {
+    const nowMs = tick.value
+    return rawMatches.value.map((m) => applyOptimisticLive(m, nowMs))
   })
 
   const matchesByDay = computed(() => {
@@ -414,6 +499,9 @@ export function useScores() {
   // The server cache (30 s TTL) means ESPN is only hit at most once per 30 s
   // regardless of how many clients are polling.
   //
+  // Also polls every 10 s when any match kickoff is within 3 minutes, so the
+  // status flips to LIVE exactly at kickoff rather than up to 60 s late.
+  //
   // The watcher and timer are module-level singletons — only set up once even
   // though multiple components call useScores().
   const hasLiveMatches = computed(() =>
@@ -422,17 +510,75 @@ export function useScores() {
     )
   )
 
+  /** Returns true if any scheduled match kicks off within the next 3 minutes.
+   *  NOTE: This is intentionally NOT a computed — it must be called with the
+   *  current Date.now() each time, since computed values only re-run when
+   *  reactive dependencies change (not when wall-clock time advances). */
+  function checkImminentKickoff(): boolean {
+    const nowMs = Date.now()
+    return rawMatches.value.some((m) => {
+      if (m.status.code !== 'ns') return false
+      const kickoff = new Date(m.date).getTime()
+      const diff = kickoff - nowMs
+      return diff >= 0 && diff <= KICKOFF_LEAD_MS
+    })
+  }
+
+  /** True if any API-scheduled match is within the optimistic-live window:
+   *  i.e. kicking off in the next minute, OR already started but still inside
+   *  the grace window (where we're showing it as optimistically LIVE).
+   *  Drives whether the 1-Hz tick needs to run. */
+  function needsOptimisticTick(): boolean {
+    const nowMs = Date.now()
+    return rawMatches.value.some((m) => {
+      if (m.status.code !== 'ns') return false
+      const kickoff = new Date(m.date).getTime()
+      if (Number.isNaN(kickoff)) return false
+      const diff = nowMs - kickoff
+      // From 60 s before kickoff through the end of the grace window
+      return diff >= -60_000 && diff <= OPTIMISTIC_GRACE_MS
+    })
+  }
+
+  /** Start the 1-Hz tick (drives optimistic-live recompute) if not already running. */
+  function startOptimisticTick() {
+    if (optimisticTickTimer) return
+    // Update immediately so the optimistic state appears without a 1s delay.
+    tick.value = Date.now()
+    optimisticTickTimer = setInterval(() => {
+      tick.value = Date.now()
+      // Self-stop once we're no longer in any optimistic window (and nothing
+      // is genuinely live — the live poller keeps data fresh in that case).
+      if (!needsOptimisticTick()) {
+        stopOptimisticTick()
+      }
+    }, 1_000)
+  }
+
+  function stopOptimisticTick() {
+    if (optimisticTickTimer) {
+      clearInterval(optimisticTickTimer)
+      optimisticTickTimer = null
+    }
+  }
+
   // Only set up timers/watchers on the client — SSR has no setInterval and
   // module-level variables persist across requests on the server, so counting
   // SSR instances would permanently block the client-side singleton guard.
   if (import.meta.client) {
     scoresInstanceCount++
     if (scoresInstanceCount === 1) {
+      // Kick the tick once on mount in case we load mid-window.
+      if (needsOptimisticTick()) startOptimisticTick()
+
       // First client instance: set up the singleton watcher
       scoresWatcherStop = watch(
         hasLiveMatches,
         (live, wasLive) => {
           if (live) {
+            // Live match running — stop fine-grained kickoff poller (live poller takes over)
+            // but keep the kickoff check timer running so back-to-back games are covered
+            stopKickoffPolling()
             if (!scoresLiveTimer) {
               scoresLiveTimer = setInterval(() => {
                 if (hasLiveMatches.value) {
@@ -455,6 +601,37 @@ export function useScores() {
         },
         { immediate: true }
       )
+
+      // Kickoff-imminent check: runs every 30 s to detect when a kickoff is
+      // approaching. Uses real Date.now() each tick — not a reactive computed —
+      // so it correctly detects the window even without a data change.
+      scoresKickoffCheckTimer = setInterval(() => {
+        // Spin up the 1-Hz optimistic tick as soon as we enter the window
+        // (≈60 s before kickoff through the grace period). It self-stops.
+        if (needsOptimisticTick()) startOptimisticTick()
+
+        if (hasLiveMatches.value) {
+          // Live poller already running — no need for kickoff poller
+          stopKickoffPolling()
+          return
+        }
+        if (checkImminentKickoff()) {
+          // Kickoff within 3 min: start fine-grained polling if not already running
+          if (!scoresKickoffTimer) {
+            // Refresh immediately so we don't wait a full interval
+            refresh()
+            scoresKickoffTimer = setInterval(() => {
+              if (hasLiveMatches.value || !checkImminentKickoff()) {
+                stopKickoffPolling()
+              } else {
+                refresh()
+              }
+            }, KICKOFF_POLL_INTERVAL_MS)
+          }
+        } else {
+          stopKickoffPolling()
+        }
+      }, KICKOFF_CHECK_INTERVAL_MS)
     }
 
     onUnmounted(() => {
@@ -462,6 +639,9 @@ export function useScores() {
       if (scoresInstanceCount === 0) {
         // Last client instance unmounted — tear down everything
         stopScoresPolling()
+        stopKickoffPolling()
+        stopKickoffCheckTimer()
+        stopOptimisticTick()
         scoresWatcherStop?.()
         scoresWatcherStop = null
       }

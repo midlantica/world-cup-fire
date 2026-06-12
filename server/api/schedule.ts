@@ -17,11 +17,13 @@ const MOCK_NOW_ISO = ''
 
 const CACHE_TTL_LIVE_MS = 30_000 // 30 s during live matches
 const CACHE_TTL_IDLE_MS = 60_000 // 60 s otherwise (was 5 min — kept short so FT scores appear promptly)
+const CACHE_TTL_KICKOFF_MS = 15_000 // 15 s when a kickoff is imminent (within 3 min)
 
 interface CacheEntry {
   data: unknown[]
   fetchedAt: number
   hasLive: boolean
+  hasImminent: boolean
 }
 
 const cache = new Map<string, CacheEntry>()
@@ -128,7 +130,11 @@ export default defineEventHandler(async (event) => {
   const now = Date.now()
   const cached = cache.get(cacheKey)
   if (cached) {
-    const ttl = cached.hasLive ? CACHE_TTL_LIVE_MS : CACHE_TTL_IDLE_MS
+    const ttl = cached.hasLive
+      ? CACHE_TTL_LIVE_MS
+      : cached.hasImminent
+        ? CACHE_TTL_KICKOFF_MS
+        : CACHE_TTL_IDLE_MS
     if (now - cached.fetchedAt < ttl) return cached.data
   }
 
@@ -152,6 +158,18 @@ export default defineEventHandler(async (event) => {
     )
   })
 
-  cache.set(cacheKey, { data: events, fetchedAt: now, hasLive })
+  // Imminent: any scheduled match kicking off within the next 3 minutes
+  const IMMINENT_WINDOW_MS = 3 * 60_000
+  const hasImminent = events.some((e: unknown) => {
+    const ev = e as Record<string, unknown>
+    const status = ev.status as Record<string, unknown> | undefined
+    const type = status?.type as Record<string, unknown> | undefined
+    if (type?.state !== 'pre') return false
+    const kickoff = new Date(ev.date as string).getTime()
+    const diff = kickoff - now
+    return diff >= 0 && diff <= IMMINENT_WINDOW_MS
+  })
+
+  cache.set(cacheKey, { data: events, fetchedAt: now, hasLive, hasImminent })
   return events
 })
