@@ -754,7 +754,7 @@
        surface the game detail on top; below CountryDetail (9100) so
        drilling into a team from here still layers correctly. */
     z-index: 9075;
-    background: oklab(0% 0 0 / 0.82);
+    background: hsl(0deg 0% 0% / 60%);
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -789,10 +789,10 @@
     flex-direction: column;
     overflow: hidden;
     border-radius: 0.75rem;
-    background: oklch(14% 0.008 260);
+    background: #07090c;
     border: 1px solid oklab(100% 0 0 / 0.08);
     border-bottom: 3px solid oklab(100% 0 0 / 0.1);
-    box-shadow: 0 8px 32px oklab(0% 0 0 / 1);
+    box-shadow: 0px 0px 20px -7px hsl(0deg 0% 0% / 85%);
   }
 
   @media (min-width: 640px) {

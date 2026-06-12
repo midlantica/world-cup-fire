@@ -593,7 +593,7 @@
     position: fixed;
     inset: 0;
     z-index: 9050;
-    background: oklab(0% 0 0 / 0.82);
+    background: hsl(0deg 0% 0% / 80%);
     display: flex;
     align-items: flex-start;
     justify-content: center;
