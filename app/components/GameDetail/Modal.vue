@@ -64,6 +64,23 @@
     }
   )
 
+  // Close the armed picker when the user taps anywhere outside the teams row.
+  // Without this, tapping off without selecting W or D leaves the picker open.
+  const teamsRowEl = ref<HTMLElement | null>(null)
+
+  function onModalDocumentClick(e: MouseEvent) {
+    if (armedSide.value === null) return
+    if (teamsRowEl.value && teamsRowEl.value.contains(e.target as Node)) return
+    armedSide.value = null
+  }
+
+  onMounted(() =>
+    document.addEventListener('click', onModalDocumentClick, true)
+  )
+  onUnmounted(() =>
+    document.removeEventListener('click', onModalDocumentClick, true)
+  )
+
   function onWtlPick(choice: 'win' | 'tie' | 'lose') {
     if (selectedMatch.value && matchPickable.value)
       pickWtl(selectedMatch.value, choice)
@@ -465,7 +482,7 @@
               </button>
 
               <!-- Teams row: [pick] Name Flag | vs/score | Flag Name [pick] -->
-              <div class="gd-header__teams-row">
+              <div ref="teamsRowEl" class="gd-header__teams-row">
                 <!-- Home side -->
                 <div
                   class="gd-header__side gd-header__side--home"

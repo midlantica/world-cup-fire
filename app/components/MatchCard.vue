@@ -50,6 +50,22 @@
    */
   const armedRow = ref(null as 'home' | 'away' | null)
 
+  // Close the armed picker when the user clicks anywhere outside this card.
+  // Without this, tapping off without selecting W or D leaves the picker open
+  // showing both buttons — which users mistake for having made a pick.
+  const cardEl = ref<HTMLElement | null>(null)
+
+  function onDocumentClick(e: MouseEvent) {
+    if (armedRow.value === null) return
+    if (cardEl.value && cardEl.value.contains(e.target as Node)) return
+    armedRow.value = null
+  }
+
+  onMounted(() => document.addEventListener('click', onDocumentClick, true))
+  onUnmounted(() =>
+    document.removeEventListener('click', onDocumentClick, true)
+  )
+
   const homeRevealed = computed(
     () => pickable.value && armedRow.value === 'home'
   )
@@ -177,6 +193,7 @@
 
 <template>
   <article
+    ref="cardEl"
     class="match-card"
     :class="[
       `q-${qClass}`,
