@@ -429,7 +429,7 @@
   /* L2 buttons: clearly smaller + lighter than L1 */
   .app-header__stage-btn {
     flex: 1;
-    padding: 0.6rem 0.75rem 0.25rem;
+    padding: 0.65rem 0.75rem 0.25rem;
     border-radius: 0;
     cursor: pointer;
     font-family: 'Anybody', sans-serif;
@@ -646,7 +646,7 @@
     /* Mobile L2: scale down from desktop 1rem */
     .app-header__stage-btn {
       font-size: 0.85rem;
-      padding: 0.5rem 0.5rem 0.3rem;
+      padding: 0.65rem 0.5rem 0.3rem;
       letter-spacing: 0.08rem;
     }
 
