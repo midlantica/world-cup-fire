@@ -169,6 +169,35 @@
     )
   }
 
+  // ── Score derived from keyEvents ──────────────────────────────────────────
+  // The score in selectedMatch comes from /api/schedule (polls every 10 s).
+  // The goal icons come from detail.keyEvents via /api/match-detail (also polls
+  // every 10 s, but independently). These two sources can be out of sync for up
+  // to ~30 s, causing the mismatch: a ⚽ icon appears but the score hasn't
+  // updated yet (or vice versa).
+  //
+  // Fix: when detail data is available and the match is not yet finished,
+  // count goals directly from keyEvents so the score and icons always agree.
+  // For finished matches we trust the authoritative score from selectedMatch.
+  const derivedHomeScore = computed<string | null>(() => {
+    const m = selectedMatch.value
+    if (!m || m.status.code === 'ns') return m?.homeScore ?? null
+    // If we have key-event data, count goals from it so score + icons are in sync
+    if (detail.value && keyEvents.value.length > 0) {
+      return String(sideGoals(m.home).length)
+    }
+    return m.homeScore
+  })
+
+  const derivedAwayScore = computed<string | null>(() => {
+    const m = selectedMatch.value
+    if (!m || m.status.code === 'ns') return m?.awayScore ?? null
+    if (detail.value && keyEvents.value.length > 0) {
+      return String(sideGoals(m.away).length)
+    }
+    return m.awayScore
+  })
+
   /** Cards (yellow + red) for one side */
   function sideCards(teamName: string | undefined) {
     if (!teamName) return []
@@ -476,9 +505,7 @@
                 <!-- Centre: vs or score -->
                 <div class="gd-header__centre">
                   <template v-if="selectedMatch.status.code !== 'ns'">
-                    <span class="gd-header__score">{{
-                      selectedMatch.homeScore
-                    }}</span>
+                    <span class="gd-header__score">{{ derivedHomeScore }}</span>
                     <span
                       class="gd-header__status"
                       :class="{
@@ -495,9 +522,7 @@
                             : (selectedMatch.status.clock ?? 'LIVE')
                       }}
                     </span>
-                    <span class="gd-header__score">{{
-                      selectedMatch.awayScore
-                    }}</span>
+                    <span class="gd-header__score">{{ derivedAwayScore }}</span>
                   </template>
                   <template v-else>
                     <span class="gd-header__vs">vs</span>
