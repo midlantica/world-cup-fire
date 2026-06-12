@@ -429,7 +429,7 @@
   /* L2 buttons: clearly smaller + lighter than L1 */
   .app-header__stage-btn {
     flex: 1;
-    padding: 0.4rem 0.75rem 0.25rem;
+    padding: 0.6rem 0.75rem 0.25rem;
     border-radius: 0;
     cursor: pointer;
     font-family: 'Anybody', sans-serif;
