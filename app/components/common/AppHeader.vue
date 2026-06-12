@@ -625,7 +625,7 @@
     /* Mobile L1: slightly smaller, no radius (full-bleed) */
     .app-header__nav-link {
       flex: 1;
-      padding: 0.55rem 0.25rem;
+      padding: 0.75rem 0.25rem;
       font-size: 0.9rem;
       border-radius: 0;
       border: none;
@@ -701,7 +701,7 @@
   @media (max-width: 360px) {
     .app-header__nav-link {
       font-size: 0.78rem;
-      padding: 0.45rem 0.15rem;
+      padding: 0.75rem 0.15rem;
       letter-spacing: 0.04em;
     }
   }
