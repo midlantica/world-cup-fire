@@ -424,6 +424,39 @@ let scoresWatcherStop: (() => void) | null = null
 // Only count client-side instances — SSR has no timers/watchers to manage.
 let scoresInstanceCount = 0
 
+// ── Live score overrides ───────────────────────────────────────────────────
+// When the GameDetail modal polls /api/match-detail and derives a fresher
+// score from keyEvents, it writes here so the wall cards stay in sync without
+// waiting for the next /api/schedule poll cycle.
+// Key: match id  Value: { homeScore, awayScore, status }
+interface ScoreOverride {
+  homeScore: string | null
+  awayScore: string | null
+  status: MatchStatus
+}
+const liveScoreOverrides = ref<Map<string, ScoreOverride>>(new Map())
+
+/** Push a fresher score/status from an external poller (e.g. match-detail)
+ *  into the shared scores state so all wall cards update immediately. */
+export function pushLiveScoreOverride(
+  matchId: string,
+  override: ScoreOverride
+) {
+  // Replace the whole map so Vue's reactivity detects the change
+  const next = new Map(liveScoreOverrides.value)
+  next.set(matchId, override)
+  liveScoreOverrides.value = next
+}
+
+/** Clear the override for a match (e.g. when the modal closes or the
+ *  schedule poll catches up and is now at least as fresh). */
+export function clearLiveScoreOverride(matchId: string) {
+  if (!liveScoreOverrides.value.has(matchId)) return
+  const next = new Map(liveScoreOverrides.value)
+  next.delete(matchId)
+  liveScoreOverrides.value = next
+}
+
 function stopScoresPolling() {
   if (scoresLiveTimer) {
     clearInterval(scoresLiveTimer)
@@ -476,11 +509,27 @@ export function useScores() {
   // SSR: seed from nowDate() and never tick (no timers on the server).
   const tick = useState<number>('scores-tick', () => nowDate().getTime())
 
-  // Public matches list = raw API data + optimistic-LIVE overlay at kickoff.
+  // Public matches list = raw API data + optimistic-LIVE overlay at kickoff
+  // + any fresher score/status pushed in by the match-detail poller.
   // Any match the API already reports as live/ht/ft is passed through untouched.
   const matches = computed<Match[]>(() => {
     const nowMs = tick.value
-    return rawMatches.value.map((m) => applyOptimisticLive(m, nowMs))
+    const overrides = liveScoreOverrides.value
+    return rawMatches.value.map((m) => {
+      const base = applyOptimisticLive(m, nowMs)
+      const ov = overrides.get(base.id)
+      if (!ov) return base
+      // Only apply the override when it's at least as "advanced" as the API:
+      // live/ht override beats ns; ft override always wins.
+      // Never downgrade a known ft back to live.
+      if (base.status.code === 'ft') return base
+      return {
+        ...base,
+        homeScore: ov.homeScore,
+        awayScore: ov.awayScore,
+        status: ov.status,
+      }
+    })
   })
 
   const matchesByDay = computed(() => {

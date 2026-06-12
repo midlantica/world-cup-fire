@@ -3,7 +3,11 @@
   import { useCountryDetail } from '../../composables/useCountryDetail'
   import { useModalNav } from '../../composables/useModalNav'
   import { usePicks } from '../../composables/usePicks'
-  import { useScores } from '../../composables/useScores'
+  import {
+    useScores,
+    pushLiveScoreOverride,
+    clearLiveScoreOverride,
+  } from '../../composables/useScores'
   import { TEAM_BY_NAME } from '~/constants/worldcup'
 
   const { selectedMatch, modalOpen, closeMatch, detail, pending } =
@@ -213,6 +217,36 @@
       return String(sideGoals(m.away).length)
     }
     return m.awayScore
+  })
+
+  // ── Push derived scores back to the shared wall-card state ────────────────
+  // derivedHomeScore / derivedAwayScore are computed from keyEvents (fresher
+  // than the /api/schedule poll). Whenever they change while the modal is open
+  // and the match is live/HT, push the override so wall cards stay in sync.
+  // Clear the override when the modal closes or the match ends.
+  watchEffect(() => {
+    const m = selectedMatch.value
+    if (!m || !modalOpen.value) return
+    if (m.status.code === 'ns' || m.status.code === 'ft') {
+      clearLiveScoreOverride(m.id)
+      return
+    }
+    const hs = derivedHomeScore.value
+    const as_ = derivedAwayScore.value
+    // Only push when we have key-event-derived scores (not just the raw API score)
+    if (hs === null || as_ === null) return
+    pushLiveScoreOverride(m.id, {
+      homeScore: hs,
+      awayScore: as_,
+      status: m.status,
+    })
+  })
+
+  // Clear override when modal closes
+  watch(modalOpen, (open) => {
+    if (!open && selectedMatch.value) {
+      clearLiveScoreOverride(selectedMatch.value.id)
+    }
   })
 
   /** Cards (yellow + red) for one side */
