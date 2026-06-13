@@ -316,6 +316,37 @@
     return playerLabel(extractName(ev.text))
   }
 
+  // A single scorer's consolidated line: one label + all their goal clocks.
+  interface GoalGroup {
+    label: string
+    clocks: string[]
+    own: boolean
+  }
+
+  /** Group a side's goals by scorer so a player who scores more than once is
+   *  listed once with their goal times in order (e.g. "Balogun 31', 45'+5'").
+   *  Own goals are NOT merged with each other (each "OG" stays distinct). */
+  function groupedSideGoals(teamName: string | undefined): GoalGroup[] {
+    const groups: GoalGroup[] = []
+    // Key by scorer label so repeat scorers collapse. Own goals get a unique
+    // key per occurrence so multiple OGs remain separate entries.
+    const indexByKey = new Map<string, number>()
+    let ogCounter = 0
+    for (const ev of sideGoals(teamName)) {
+      const own = isOwnGoal(ev)
+      const label = goalScorerLabel(ev)
+      const key = own ? `__og__${ogCounter++}` : label
+      const existing = indexByKey.get(key)
+      if (existing !== undefined) {
+        groups[existing]!.clocks.push(ev.clock)
+      } else {
+        indexByKey.set(key, groups.length)
+        groups.push({ label, clocks: [ev.clock], own })
+      }
+    }
+    return groups
+  }
+
   // ── Score derived from keyEvents ──────────────────────────────────────────
   // The score in selectedMatch comes from /api/schedule (polls every 10 s).
   // The goal icons come from detail.keyEvents via /api/match-detail (also polls
@@ -383,6 +414,50 @@
         e.team === teamName &&
         (e.type === 'Yellow Card' || e.type === 'Red Card')
     )
+  }
+
+  // A single player's consolidated card line: which icon to show + all the
+  // minutes it happened at.
+  interface CardGroup {
+    label: string
+    kind: 'yellow' | 'red' | 'second-yellow'
+    clocks: string[]
+  }
+
+  /** True when a Red Card event is actually a second-booking dismissal (two
+   *  yellows) rather than a straight red — ESPN notes this in the event text. */
+  function isSecondBookingRed(ev: KeyEvent): boolean {
+    if (ev.type !== 'Red Card') return false
+    return ev.text
+      ? /second yellow|second booking|two yellow/i.test(ev.text)
+      : false
+  }
+
+  /** Group a side's cards by player so a player booked twice (two yellows →
+   *  sent off) shows ONE combined icon with both minutes (e.g. "Alonso 28',
+   *  67'"). A lone yellow stays yellow; a lone straight red stays red. */
+  function groupedSideCards(teamName: string | undefined): CardGroup[] {
+    const groups: CardGroup[] = []
+    const indexByLabel = new Map<string, number>()
+    for (const ev of sideCards(teamName)) {
+      const label = cardLabel(ev)
+      const existing = label ? indexByLabel.get(label) : undefined
+      if (existing !== undefined) {
+        // Second card for this player → second-booking dismissal.
+        groups[existing]!.kind = 'second-yellow'
+        groups[existing]!.clocks.push(ev.clock)
+        continue
+      }
+      const kind: CardGroup['kind'] =
+        ev.type === 'Yellow Card'
+          ? 'yellow'
+          : isSecondBookingRed(ev)
+            ? 'second-yellow'
+            : 'red'
+      if (label) indexByLabel.set(label, groups.length)
+      groups.push({ label, kind, clocks: [ev.clock] })
+    }
+    return groups
   }
 
   // ── Venue popup ───────────────────────────────────────────────────────────
@@ -752,36 +827,36 @@
                     sideGoals(selectedMatch?.away).length > 0
                   "
                 >
-                  <!-- Home goals: name clock | icon (icon on inside/right) -->
+                  <!-- Home goals: name clock(s) | icon (icon on inside/right) -->
                   <div
                     class="gd-header__events-side gd-header__events-side--home"
                   >
                     <span
-                      v-for="(ev, i) in sideGoals(selectedMatch?.home)"
+                      v-for="(g, i) in groupedSideGoals(selectedMatch?.home)"
                       :key="'hg' + i"
                       class="gd-event"
                     >
-                      <span class="gd-event__name">{{
-                        goalScorerLabel(ev)
+                      <span class="gd-event__name">{{ g.label }}</span>
+                      <span class="gd-event__clock">{{
+                        g.clocks.join(', ')
                       }}</span>
-                      <span class="gd-event__clock">{{ ev.clock }}</span>
                       <span class="gd-event__icon">⚽</span>
                     </span>
                   </div>
-                  <!-- Away goals: icon · clock · name -->
+                  <!-- Away goals: icon · clock(s) · name -->
                   <div
                     class="gd-header__events-side gd-header__events-side--away"
                   >
                     <span
-                      v-for="(ev, i) in sideGoals(selectedMatch?.away)"
+                      v-for="(g, i) in groupedSideGoals(selectedMatch?.away)"
                       :key="'ag' + i"
                       class="gd-event"
                     >
                       <span class="gd-event__icon">⚽</span>
-                      <span class="gd-event__clock">{{ ev.clock }}</span>
-                      <span class="gd-event__name">{{
-                        goalScorerLabel(ev)
+                      <span class="gd-event__clock">{{
+                        g.clocks.join(', ')
                       }}</span>
+                      <span class="gd-event__name">{{ g.label }}</span>
                     </span>
                   </div>
                 </template>
@@ -794,36 +869,40 @@
                     sideCards(selectedMatch?.away).length > 0
                   "
                 >
-                  <!-- Home cards: name clock | icon (icon on inside/right) -->
+                  <!-- Home cards: name clock(s) | icon (icon on inside/right) -->
                   <div
                     class="gd-header__events-side gd-header__events-side--home"
                   >
                     <span
-                      v-for="(ev, i) in sideCards(selectedMatch?.home)"
+                      v-for="(c, i) in groupedSideCards(selectedMatch?.home)"
                       :key="'hc' + i"
                       class="gd-event"
                     >
-                      <span class="gd-event__name">{{ cardLabel(ev) }}</span>
-                      <span class="gd-event__clock">{{ ev.clock }}</span>
-                      <span class="gd-event__icon">{{
-                        ev.type === 'Yellow Card' ? '🟨' : '🟥'
+                      <span class="gd-event__name">{{ c.label }}</span>
+                      <span class="gd-event__clock">{{
+                        c.clocks.join(', ')
                       }}</span>
+                      <span class="gd-event__icon"
+                        ><GameDetailCardIcon :kind="c.kind"
+                      /></span>
                     </span>
                   </div>
-                  <!-- Away cards: icon · clock · name -->
+                  <!-- Away cards: icon · clock(s) · name -->
                   <div
                     class="gd-header__events-side gd-header__events-side--away"
                   >
                     <span
-                      v-for="(ev, i) in sideCards(selectedMatch?.away)"
+                      v-for="(c, i) in groupedSideCards(selectedMatch?.away)"
                       :key="'ac' + i"
                       class="gd-event"
                     >
-                      <span class="gd-event__icon">{{
-                        ev.type === 'Yellow Card' ? '🟨' : '🟥'
+                      <span class="gd-event__icon"
+                        ><GameDetailCardIcon :kind="c.kind"
+                      /></span>
+                      <span class="gd-event__clock">{{
+                        c.clocks.join(', ')
                       }}</span>
-                      <span class="gd-event__clock">{{ ev.clock }}</span>
-                      <span class="gd-event__name">{{ cardLabel(ev) }}</span>
+                      <span class="gd-event__name">{{ c.label }}</span>
                     </span>
                   </div>
                 </template>
@@ -1394,7 +1473,7 @@
   .gd-event {
     display: flex;
     align-items: baseline;
-    gap: 0.25rem;
+    gap: 0.3rem;
     font-size: 0.75rem;
     line-height: 1.2;
     color: oklab(100% 0 0 / 0.85);

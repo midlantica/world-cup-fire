@@ -528,6 +528,15 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
         text: 'Nicolás Otamendi (Argentina) is shown the yellow card for a foul on Endrick.',
         type: { text: 'Yellow Card' },
       },
+      // Second yellow → sent off: Rodrigo De Paul already booked 44'. This
+      // second card collapses with his 44' yellow into ONE combined
+      // "two yellows → red" card icon in the events row — useful for CSS checks.
+      {
+        clock: { displayValue: "74'" },
+        team: { displayName: 'Argentina' },
+        text: 'Rodrigo De Paul (Argentina) is shown the second yellow card and is sent off for a late tackle on Vinicius Jr.',
+        type: { text: 'Red Card' },
+      },
       {
         clock: { displayValue: "76'" },
         team: { displayName: 'Argentina' },
@@ -1322,11 +1331,20 @@ export const MOCK_DETAILS: Record<string, Record<string, unknown>> = {
         type: { text: 'Yellow Card' },
       },
       {
+        clock: { displayValue: "73'" },
+        team: { displayName: 'South Korea' },
+        text: 'Hwang In-beom (South Korea) is shown the second yellow card and is sent off for a late tackle.',
+        type: { text: 'Red Card' },
+      },
+      {
         clock: { displayValue: "78'" },
         team: { displayName: 'Mexico' },
         text: 'Goal! Mexico 2, South Korea 1. Edson Álvarez (Mexico) fires home from the edge of the box.',
         type: { text: 'Goal' },
       },
+      // NOTE: Hwang In-beom above receives a yellow (38') then a second-yellow
+      // red (73') — the events row groups these into ONE combined card icon to
+      // demo the "two yellows → sent off" state.
       {
         clock: { displayValue: "85'" },
         team: { displayName: 'South Korea' },
