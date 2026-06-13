@@ -232,13 +232,14 @@
     return parts[0]!.charAt(0).toUpperCase()
   }
 
-  // Set of surnames that are shared by 2+ distinct goal scorers in THIS match —
-  // those need an initial prefix to disambiguate (e.g. "F. Smith" vs "J. Smith").
-  const ambiguousSurnames = computed<Set<string>>(() => {
+  // Map of surname → set of distinct full names sharing that surname across ALL
+  // displayed events in THIS match (goals AND cards). When 2+ distinct people
+  // share a surname we prefix an initial to disambiguate (e.g. "F. Smith" vs
+  // "J. Smith"). We compute this over every named event so a goal scorer and a
+  // card recipient with the same surname also get disambiguated.
+  const surnameFullNames = computed<Map<string, Set<string>>>(() => {
     const bySurname = new Map<string, Set<string>>()
     for (const ev of keyEvents.value) {
-      if (!(ev.type.includes('Goal') || ev.type === 'Penalty - Scored'))
-        continue
       if (isOwnGoal(ev)) continue
       const name = extractName(ev.text)
       if (!name) continue
@@ -247,26 +248,72 @@
       if (!bySurname.has(s)) bySurname.set(s, new Set())
       bySurname.get(s)!.add(name)
     }
+    return bySurname
+  })
+
+  /** Surnames shared by 2+ distinct people in this match (need an initial). */
+  const ambiguousSurnames = computed<Set<string>>(() => {
     const ambiguous = new Set<string>()
-    for (const [surname, fullNames] of bySurname) {
+    for (const [surname, fullNames] of surnameFullNames.value) {
       if (fullNames.size > 1) ambiguous.add(surname)
     }
     return ambiguous
   })
 
-  /** Display label for a goal scorer: "OG" for own goals, otherwise the
-   *  surname, prefixed with a first initial only when another scorer in this
-   *  match shares the same surname. */
-  function goalScorerLabel(ev: KeyEvent): string {
-    if (isOwnGoal(ev)) return 'OG'
-    const full = extractName(ev.text)
+  /** Display label for any named event (goal scorer / card recipient):
+   *  the surname, prefixed with as many leading initials as needed to
+   *  disambiguate when others in this match share the same surname. */
+  function playerLabel(full: string): string {
     if (!full) return ''
     const surname = surnameOf(full)
-    if (ambiguousSurnames.value.has(surname.toLowerCase())) {
-      const initial = firstInitialOf(full)
-      return initial ? `${initial}. ${surname}` : surname
+    if (!ambiguousSurnames.value.has(surname.toLowerCase())) return surname
+
+    // Disambiguation needed — find the other full names sharing this surname.
+    const peers = surnameFullNames.value.get(surname.toLowerCase())
+    const parts = full.trim().split(/\s+/).filter(Boolean)
+    // Given-name tokens are everything before the (last) surname token.
+    const given = parts.slice(0, -1)
+    if (given.length === 0) return surname
+
+    // Grow the initial prefix one token at a time until this person's prefix is
+    // unique among peers (handles "Juan Cáceres" vs "Julio Cáceres" → "Ju." vs
+    // "Jl."? no — we add whole-initial tokens, e.g. "J. Cáceres" then add a 2nd
+    // given-name initial if still ambiguous).
+    const peerList = peers ? [...peers] : [full]
+    for (let n = 1; n <= given.length; n++) {
+      const prefix = given
+        .slice(0, n)
+        .map((g) => g.charAt(0).toUpperCase())
+        .join('. ')
+      const myLabel = `${prefix}. ${surname}`
+      const clashes = peerList.filter((peer) => {
+        if (peer === full) return false
+        const pParts = peer.trim().split(/\s+/).filter(Boolean)
+        const pGiven = pParts.slice(0, -1)
+        if (pGiven.length < n) return false
+        const pPrefix = pGiven
+          .slice(0, n)
+          .map((g) => g.charAt(0).toUpperCase())
+          .join('. ')
+        return `${pPrefix}. ${surname}` === myLabel
+      })
+      if (clashes.length === 0) return myLabel
     }
-    return surname
+    // Fallback: full given names + surname (shouldn't normally be reached).
+    const initial = firstInitialOf(full)
+    return initial ? `${initial}. ${surname}` : surname
+  }
+
+  /** Display label for a goal scorer: "OG" for own goals, otherwise the
+   *  disambiguated surname label. */
+  function goalScorerLabel(ev: KeyEvent): string {
+    if (isOwnGoal(ev)) return 'OG'
+    return playerLabel(extractName(ev.text))
+  }
+
+  /** Display label for a card recipient: disambiguated surname label. */
+  function cardLabel(ev: KeyEvent): string {
+    return playerLabel(extractName(ev.text))
   }
 
   // ── Score derived from keyEvents ──────────────────────────────────────────
@@ -756,9 +803,7 @@
                       :key="'hc' + i"
                       class="gd-event"
                     >
-                      <span class="gd-event__name">{{
-                        extractName(ev.text)
-                      }}</span>
+                      <span class="gd-event__name">{{ cardLabel(ev) }}</span>
                       <span class="gd-event__clock">{{ ev.clock }}</span>
                       <span class="gd-event__icon">{{
                         ev.type === 'Yellow Card' ? '🟨' : '🟥'
@@ -778,9 +823,7 @@
                         ev.type === 'Yellow Card' ? '🟨' : '🟥'
                       }}</span>
                       <span class="gd-event__clock">{{ ev.clock }}</span>
-                      <span class="gd-event__name">{{
-                        extractName(ev.text)
-                      }}</span>
+                      <span class="gd-event__name">{{ cardLabel(ev) }}</span>
                     </span>
                   </div>
                 </template>
