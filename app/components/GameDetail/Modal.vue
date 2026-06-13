@@ -119,13 +119,12 @@
     armedSide.value = null
   }
 
-  function goToCountry(name: string, side: 'home' | 'away') {
-    // On a pickable match the first tap arms that side's picker (so touch users
-    // can pick); a second tap drills into the country.
-    if (matchPickable.value && armedSide.value !== side) {
-      armedSide.value = side
-      return
-    }
+  function goToCountry(name: string, _side: 'home' | 'away') {
+    // The country name always drills straight into the country modal on the
+    // first click. The W|D picker is armed/revealed independently via the
+    // PicksWtlToggle control itself (and via hover on desktop), so the name
+    // button no longer needs a first "arming" tap — that previously caused the
+    // first click to be swallowed and required a second click to navigate.
     // Push current match onto history before navigating away
     if (selectedMatch.value) {
       pushHistory({ type: 'match', match: selectedMatch.value })
