@@ -21,8 +21,24 @@
   watch(matches, (updatedMatches) => {
     if (!selectedMatch.value || !modalOpen.value) return
     const updated = updatedMatches.find((m) => m.id === selectedMatch.value!.id)
-    if (updated) selectedMatch.value = updated
+    if (!updated) return
+    // Only reassign when something we care about actually changed. The matches
+    // computed rebuilds a fresh array (and fresh objects) on every recompute,
+    // so a blind reassignment here would loop forever with the score-sync
+    // watchEffect below (it pushes an override → recompute → this watch fires
+    // → reassign → push again …). Comparing values first lets the cycle settle.
+    const cur = selectedMatch.value
+    if (
+      cur.homeScore === updated.homeScore &&
+      cur.awayScore === updated.awayScore &&
+      cur.status.code === updated.status.code &&
+      cur.status.clock === updated.status.clock
+    ) {
+      return
+    }
+    selectedMatch.value = updated
   })
+
   const { openCountry } = useCountryDetail()
   const { pushHistory, popHistory, clearHistory, canGoBack } = useModalNav()
 
@@ -188,6 +204,65 @@
         e.team === teamName &&
         (e.type.includes('Goal') || e.type === 'Penalty - Scored')
     )
+  }
+
+  /** True if a key event is an own goal (type "Own Goal", or text mentions it). */
+  function isOwnGoal(ev: KeyEvent): boolean {
+    if (/own goal/i.test(ev.type)) return true
+    return ev.text ? /own goal/i.test(ev.text) : false
+  }
+
+  /** Surname of a full name ("Folarin Balogun" → "Balogun").
+   *  Handles compound surnames loosely by taking the last whitespace token,
+   *  which is the common, space-efficient case for the header chips. */
+  function surnameOf(full: string): string {
+    const parts = full.trim().split(/\s+/).filter(Boolean)
+    if (parts.length === 0) return ''
+    return parts[parts.length - 1]!
+  }
+
+  /** First initial of a full name ("Folarin Balogun" → "F"). */
+  function firstInitialOf(full: string): string {
+    const parts = full.trim().split(/\s+/).filter(Boolean)
+    if (parts.length < 2) return ''
+    return parts[0]!.charAt(0).toUpperCase()
+  }
+
+  // Set of surnames that are shared by 2+ distinct goal scorers in THIS match —
+  // those need an initial prefix to disambiguate (e.g. "F. Smith" vs "J. Smith").
+  const ambiguousSurnames = computed<Set<string>>(() => {
+    const bySurname = new Map<string, Set<string>>()
+    for (const ev of keyEvents.value) {
+      if (!(ev.type.includes('Goal') || ev.type === 'Penalty - Scored'))
+        continue
+      if (isOwnGoal(ev)) continue
+      const name = extractName(ev.text)
+      if (!name) continue
+      const s = surnameOf(name).toLowerCase()
+      if (!s) continue
+      if (!bySurname.has(s)) bySurname.set(s, new Set())
+      bySurname.get(s)!.add(name)
+    }
+    const ambiguous = new Set<string>()
+    for (const [surname, fullNames] of bySurname) {
+      if (fullNames.size > 1) ambiguous.add(surname)
+    }
+    return ambiguous
+  })
+
+  /** Display label for a goal scorer: "OG" for own goals, otherwise the
+   *  surname, prefixed with a first initial only when another scorer in this
+   *  match shares the same surname. */
+  function goalScorerLabel(ev: KeyEvent): string {
+    if (isOwnGoal(ev)) return 'OG'
+    const full = extractName(ev.text)
+    if (!full) return ''
+    const surname = surnameOf(full)
+    if (ambiguousSurnames.value.has(surname.toLowerCase())) {
+      const initial = firstInitialOf(full)
+      return initial ? `${initial}. ${surname}` : surname
+    }
+    return surname
   }
 
   // ── Score derived from keyEvents ──────────────────────────────────────────
@@ -636,7 +711,7 @@
                       class="gd-event"
                     >
                       <span class="gd-event__name">{{
-                        extractName(ev.text)
+                        goalScorerLabel(ev)
                       }}</span>
                       <span class="gd-event__clock">{{ ev.clock }}</span>
                       <span class="gd-event__icon">⚽</span>
@@ -654,13 +729,14 @@
                       <span class="gd-event__icon">⚽</span>
                       <span class="gd-event__clock">{{ ev.clock }}</span>
                       <span class="gd-event__name">{{
-                        extractName(ev.text)
+                        goalScorerLabel(ev)
                       }}</span>
                     </span>
                   </div>
                 </template>
 
                 <!-- Cards row (only if either side has cards) -->
+
                 <template
                   v-if="
                     sideCards(selectedMatch?.home).length > 0 ||

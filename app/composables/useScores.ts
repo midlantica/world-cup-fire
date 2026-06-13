@@ -437,11 +437,29 @@ interface ScoreOverride {
 const liveScoreOverrides = ref<Map<string, ScoreOverride>>(new Map())
 
 /** Push a fresher score/status from an external poller (e.g. match-detail)
- *  into the shared scores state so all wall cards update immediately. */
+ *  into the shared scores state so all wall cards update immediately.
+ *
+ *  IMPORTANT: this is idempotent. If the incoming override is value-equal to
+ *  the one already stored, we do nothing. Replacing the Map unconditionally
+ *  would recompute `matches`, which re-fires the modal's `watch(matches)` →
+ *  reassigns `selectedMatch` → re-runs the push watcher → replaces the Map
+ *  again … an infinite reactive loop that froze/crashed the browser the moment
+ *  a live score arrived. The equality guard lets the cycle settle. */
 export function pushLiveScoreOverride(
   matchId: string,
   override: ScoreOverride
 ) {
+  const existing = liveScoreOverrides.value.get(matchId)
+  if (
+    existing &&
+    existing.homeScore === override.homeScore &&
+    existing.awayScore === override.awayScore &&
+    existing.status.code === override.status.code &&
+    existing.status.clock === override.status.clock
+  ) {
+    // No change — bail out so we don't trigger a needless reactive recompute.
+    return
+  }
   // Replace the whole map so Vue's reactivity detects the change
   const next = new Map(liveScoreOverrides.value)
   next.set(matchId, override)

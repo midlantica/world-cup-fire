@@ -116,13 +116,19 @@
       <!-- Column headers: team name + flag -->
       <div class="stats-head">
         <div class="stats-th stats-th--home">
-          <span class="stats-th__name">{{ match.home }}</span>
+          <span class="stats-th__name">
+            <span class="stats-th__name-full">{{ match.home }}</span>
+            <span class="stats-th__name-abbrev">{{ match.homeAbbrev }}</span>
+          </span>
           <CountryFlag :iso2="match.homeIso2" :size="22" />
         </div>
         <div class="stats-th-center" />
         <div class="stats-th stats-th--away">
           <CountryFlag :iso2="match.awayIso2" :size="22" />
-          <span class="stats-th__name">{{ match.away }}</span>
+          <span class="stats-th__name">
+            <span class="stats-th__name-full">{{ match.away }}</span>
+            <span class="stats-th__name-abbrev">{{ match.awayAbbrev }}</span>
+          </span>
         </div>
       </div>
 
@@ -194,11 +200,15 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 400;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.85);
+    /* Allow the name to shrink so the flag stays pinned beside the centre
+       column on BOTH sides (mirror-symmetric) rather than getting pushed out
+       by a long name. */
+    min-width: 0;
   }
 
   .stats-th--home {
@@ -213,13 +223,30 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
   }
 
+  /* By default show the full name, hide the abbreviation. */
+  .stats-th__name-abbrev {
+    display: none;
+  }
+
   .stats-th-center {
     /* empty centre column spacer */
+  }
+
+  /* Narrow phones (≤425px): swap full country names for 3-letter abbreviations
+     so both sides stay compact and mirror-symmetric around the centre. */
+  @media (max-width: 425px) {
+    .stats-th__name-full {
+      display: none;
+    }
+    .stats-th__name-abbrev {
+      display: inline;
+    }
   }
 
   /* ── Group heading ─────────────────────────────────────────────────────────── */
@@ -282,8 +309,9 @@
   }
 
   .stats-label {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 100;
+
     color: oklab(100% 0 0 / 0.9);
     letter-spacing: 0.1em;
     text-transform: uppercase;
