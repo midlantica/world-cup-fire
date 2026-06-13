@@ -7,6 +7,7 @@ import type { Match } from './useScores'
 export type ModalEntry =
   | { type: 'match'; match: Match }
   | { type: 'country'; name: string }
+  | { type: 'group'; letter: string }
 
 export function useModalNav() {
   // Stack of previously-open modals (most recent last)

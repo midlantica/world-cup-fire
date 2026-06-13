@@ -36,7 +36,12 @@
   function goToGroup() {
     const g = countryData.value?.group
     if (!g) return
+    // Record the current country so the group modal can navigate back to it.
+    if (selectedCountry.value) {
+      pushHistory({ type: 'country', name: selectedCountry.value })
+    }
     closeCountry({ silent: true })
+
     // If we're already on a /group/ route, avoid router.push (which would
     // remount the page and blank the screen). Instead open silently and sync
     // the URL with replaceState — same technique used by switchGroup().
@@ -60,6 +65,23 @@
     closeCountry({ silent: true })
     if (prev.type === 'match') {
       openMatch(prev.match)
+    } else if (prev.type === 'country') {
+      openCountry(prev.name)
+    } else if (prev.type === 'group') {
+      // Reopen the previous group. If we're on a /group/ route, swap silently
+      // and sync the URL so the page doesn't remount and blank out.
+      if (route.path.startsWith('/group/')) {
+        openGroupSilent(prev.letter)
+        if (import.meta.client) {
+          window.history.replaceState(
+            window.history.state,
+            '',
+            `/group/${prev.letter.toLowerCase()}`
+          )
+        }
+      } else {
+        openGroup(prev.letter)
+      }
     }
   }
 

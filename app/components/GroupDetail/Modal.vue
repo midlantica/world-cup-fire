@@ -18,6 +18,18 @@
   const { groupByLetter, groups } = useStandings()
   const { openMatch } = useMatchDetail()
   const { openCountry } = useCountryDetail()
+  const { pushHistory } = useModalNav()
+
+  /** Drill into a team's country modal from the group standings table.
+   *  Records the current group on the shared history stack first so the
+   *  country modal's Back button returns here (and the reverse-navigation
+   *  chain stays consistent for Match → Team → Group → Team flows). */
+  function drillToCountry(teamName: string) {
+    if (selectedGroupLetter.value) {
+      pushHistory({ type: 'group', letter: selectedGroupLetter.value })
+    }
+    openCountry(teamName)
+  }
 
   // Live-polled matches from useScores (covers the current week tab).
   // We use this to overlay real-time status/scores onto the schedule data.
@@ -520,7 +532,7 @@
                             <CountryFlag :iso2="entry.iso2" :size="24" />
                             <button
                               class="grd-team-name grd-team-name--btn"
-                              @click="openCountry(entry.teamName)"
+                              @click="drillToCountry(entry.teamName)"
                             >
                               <span class="team-name-full">{{
                                 entry.teamName

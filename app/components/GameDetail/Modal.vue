@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { useMatchDetail } from '../../composables/useMatchDetail'
   import { useCountryDetail } from '../../composables/useCountryDetail'
+  import { useGroupDetail } from '../../composables/useGroupDetail'
   import { useModalNav } from '../../composables/useModalNav'
   import { usePicks } from '../../composables/usePicks'
   import {
@@ -133,12 +134,16 @@
     openCountry(name)
   }
 
+  const { openGroup } = useGroupDetail()
+
   function goBack() {
     const prev = popHistory()
     if (!prev) return
     closeMatch()
     if (prev.type === 'country') {
       openCountry(prev.name)
+    } else if (prev.type === 'group') {
+      openGroup(prev.letter)
     }
     // match → match back not needed currently
   }

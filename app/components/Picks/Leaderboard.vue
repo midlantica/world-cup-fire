@@ -45,11 +45,11 @@
     <div class="leaderboard__cols">
       <span class="leaderboard__col leaderboard__col--rank">#</span>
       <span class="leaderboard__col leaderboard__col--name">Player</span>
-      <span class="leaderboard__col leaderboard__col--num" title="Correct picks"
-        >✓</span
-      >
       <span class="leaderboard__col leaderboard__col--num" title="Picks made"
         >Picks</span
+      >
+      <span class="leaderboard__col leaderboard__col--num" title="Correct picks"
+        >✓</span
       >
       <span class="leaderboard__col leaderboard__col--num" title="Accuracy %"
         >%</span
@@ -89,8 +89,8 @@
           </button>
         </span>
 
-        <span class="leaderboard__score">{{ row.score }}</span>
         <span class="leaderboard__num">{{ row.picksMade }}</span>
+        <span class="leaderboard__score">{{ row.score }}</span>
         <span class="leaderboard__num leaderboard__acc">{{
           row.decided > 0 ? Math.round(row.accuracy * 100) + '%' : '—'
         }}</span>
