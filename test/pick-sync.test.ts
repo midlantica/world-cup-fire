@@ -11,15 +11,15 @@ const kickoffs = new Map([
   ['new-started', NOW],
 ])
 
-test('never drops existing picks when a full sync omits them', () => {
-  // An empty/partial incoming map must never delete a member's stored picks —
-  // started OR future. Omission is treated as "no change", not "clear", so a
-  // slow or partial sync can never lose honestly-made selections.
+test('never drops existing picks when isFullReplacement is false (default)', () => {
+  // Without the full-replacement flag, omission is treated as "no change" —
+  // a slow or partial sync can never lose honestly-made selections.
   const result = mergePicksForSync(
     { finished: 'home', upcoming: 'away' },
     {},
     kickoffs,
     NOW
+    // isFullReplacement defaults to false
   )
 
   assert.deepEqual(result, { finished: 'home', upcoming: 'away' })
@@ -81,4 +81,50 @@ test('retains existing picks and persists first-time unknown/started picks', () 
     unknown: 'home',
     'new-started': 'away',
   })
+})
+
+// ── isFullReplacement = true (client sends complete picks snapshot) ──────────
+
+test('full replacement: removes a future pick absent from incoming (clear)', () => {
+  // The user cleared their pick for `upcoming`. The client sends a full snapshot
+  // without it. The server should remove it.
+  const result = mergePicksForSync(
+    { upcoming: 'home', finished: 'away' },
+    { finished: 'away' }, // `upcoming` intentionally absent
+    kickoffs,
+    NOW,
+    true // isFullReplacement
+  )
+
+  // `upcoming` (future) is removed; `finished` (started) is kept
+  assert.deepEqual(result, { finished: 'away' })
+})
+
+test('full replacement: retains started picks even when absent from incoming', () => {
+  // Started picks are locked — they cannot be cleared even in full-replacement mode.
+  const result = mergePicksForSync(
+    { finished: 'home', upcoming: 'away' },
+    {}, // both absent from incoming
+    kickoffs,
+    NOW,
+    true // isFullReplacement
+  )
+
+  // `finished` (started) is kept; `upcoming` (future) is removed
+  assert.deepEqual(result, { finished: 'home' })
+})
+
+test('full replacement: retains unknown-kickoff picks when absent from incoming', () => {
+  // Unknown-kickoff picks are treated like started picks — kept to avoid
+  // irreversible data loss when the schedule doesn't have the match.
+  const result = mergePicksForSync(
+    { mystery: 'draw', upcoming: 'home' },
+    {}, // both absent
+    kickoffs,
+    NOW,
+    true // isFullReplacement
+  )
+
+  // `mystery` (unknown kickoff) is kept; `upcoming` (future) is removed
+  assert.deepEqual(result, { mystery: 'draw' })
 })

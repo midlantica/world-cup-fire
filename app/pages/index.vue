@@ -65,7 +65,6 @@
         <CountdownBanner v-if="!wcStarted" />
         <!-- Post-WC start: dark "48 nations · Join a Pool" banner only -->
         <TournamentBanner v-else />
-        <PicksDeadlineBanner />
         <ScoresSection />
       </main>
     </div>
@@ -85,7 +84,8 @@
   .home-page__inner {
     @apply mx-auto max-w-7xl px-3;
     padding-top: 0;
-    padding-bottom: 1rem;
+    /* Extra bottom padding so the sticky picks banner doesn't obscure the last match cards */
+    padding-bottom: 6rem;
   }
 
   .home-page__main {

@@ -107,7 +107,10 @@ export default defineEventHandler(async (event) => {
         member.picks ?? {},
         validatedIncoming,
         kickoffByMatchId!,
-        Date.now()
+        Date.now(),
+        // Full replacement: the client sent its complete picks snapshot, so
+        // future picks absent from the incoming map should be removed (clears).
+        picksProvided
       )
     }
 

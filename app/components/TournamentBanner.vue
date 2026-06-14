@@ -2,9 +2,17 @@
   // Shows AFTER the tournament starts (Jun 11 19:00 UTC) — replaces the
   // countdown banner with a persistent explainer + Pools CTA.
   // Uses mock time so it responds correctly in dev/admin testing.
+  //
+  // Smart visibility:
+  //   • "Join a Pool" button hidden once the user is already in a pool.
+  //   • After 3+ visits the full banner collapses to a slim fire/dice hint.
+  //   • Visit count is tracked in localStorage (wc-visit-count-v1).
   import { nowDate } from '../composables/useMockTime'
+  import { usePools } from '../composables/usePools'
 
   const TOURNAMENT_START = new Date('2026-06-11T19:00:00Z')
+  const VISIT_KEY = 'wc-visit-count-v1'
+  const SLIM_THRESHOLD = 3
 
   // Reactive: re-evaluate every second so it flips at the right moment in dev.
   const started = ref(nowDate() >= TOURNAMENT_START)
@@ -27,11 +35,55 @@
   onUnmounted(() => {
     if (timer) clearInterval(timer)
   })
+
+  // ── Visit counter ──────────────────────────────────────────────────────────
+  // Read the CURRENT count synchronously so the correct variant renders on the
+  // first paint — avoids the full→slim flash that happens when onMounted fires
+  // after hydration. We increment (and persist) in onMounted as before.
+  function readVisitCount(): number {
+    if (!import.meta.client) return 0
+    try {
+      const stored = parseInt(localStorage.getItem(VISIT_KEY) ?? '0', 10)
+      return isNaN(stored) ? 0 : stored
+    } catch {
+      return 0
+    }
+  }
+
+  // Initialise with the stored value (not yet incremented) so isSlim is
+  // correct before the first render tick.
+  const visitCount = ref(readVisitCount())
+
+  onMounted(() => {
+    if (!import.meta.client) return
+    try {
+      const next = visitCount.value + 1
+      localStorage.setItem(VISIT_KEY, String(next))
+      visitCount.value = next
+    } catch {
+      visitCount.value = Math.max(visitCount.value, 1)
+    }
+  })
+
+  // Show slim variant after SLIM_THRESHOLD visits
+  const isSlim = computed(() => visitCount.value >= SLIM_THRESHOLD)
+
+  // ── Pool membership ────────────────────────────────────────────────────────
+  const { hasAnyCreds } = usePools()
 </script>
 
 <template>
   <div class="tb-wrap">
-    <div class="tb-banner">
+    <!-- Slim variant: shown after 3+ visits -->
+    <div v-if="isSlim" class="tb-banner tb-banner--slim">
+      <p class="tb-slim-copy">
+        Check out the 🔥 fire &amp; 🎲 wild card games — curated picks for the
+        best matches of the tournament.
+      </p>
+    </div>
+
+    <!-- Full variant: shown on first 1–2 visits -->
+    <div v-else class="tb-banner">
       <div class="tb-inner">
         <!-- Left group: FIFA logo + explainer copy together -->
         <div class="tb-content-group">
@@ -53,8 +105,8 @@
           </div>
         </div>
 
-        <!-- Right: CTA -->
-        <div class="tb-cta-col">
+        <!-- Right: CTA — hidden once the user is already in a pool -->
+        <div v-if="!hasAnyCreds" class="tb-cta-col">
           <NuxtLink to="/pools" class="tb-cta-btn"> Join a Pool → </NuxtLink>
         </div>
       </div>
@@ -81,6 +133,27 @@
     border: 1px solid rgb(255 255 255 / 0.1);
     overflow: hidden;
   }
+
+  /* ── Slim variant ────────────────────────────────────────────────────────── */
+  .tb-banner--slim {
+    padding: 0.55rem 1.1rem;
+  }
+
+  .tb-slim-copy {
+    margin: 0;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 350;
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: 0.06rem;
+    color: rgb(255 255 255);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* ── Full variant ────────────────────────────────────────────────────────── */
 
   /* Outer row: [logo+copy group] [cta] */
   .tb-inner {

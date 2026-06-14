@@ -76,17 +76,15 @@
           >
             {{ row.name }}
           </button>
-          <span v-else class="leaderboard__name-text">{{ row.name }}</span>
-          <span v-if="row.isSelf" class="leaderboard__you">you</span>
-          <!-- Delete button: inline after name, shown for all non-self rows -->
           <button
-            v-if="!row.isSelf"
-            class="leaderboard__del-btn"
+            v-else
+            class="leaderboard__del-link"
             title="Remove player"
             @click="askDelete(row.memberId, row.name)"
           >
-            <IconsClose />
+            {{ row.name }}
           </button>
+          <span v-if="row.isSelf" class="leaderboard__you">you</span>
         </span>
 
         <span class="leaderboard__num">{{ row.picksMade }}</span>
@@ -334,33 +332,29 @@
     font-size: 0.85rem;
   }
 
-  /* ── Delete button (inline after name) ── */
-  .leaderboard__del-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.1rem;
-    height: 1.1rem;
-    border-radius: 50%;
-    background: #7f1d1d;
-    color: #ffffff;
-    cursor: pointer;
+  /* ── Delete link — the name itself is the clickable underlined trigger ── */
+  .leaderboard__del-link {
+    @apply truncate;
+    min-width: 0;
+    flex-shrink: 1;
+    background: none;
+    border: none;
     padding: 0;
-    flex-shrink: 0;
-    transition: background 0.12s;
-    line-height: 0;
-    position: relative;
-    top: -2px;
+    margin: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-variation-settings: inherit;
+    font-size: inherit;
+    color: inherit;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgb(255 255 255 / 0.35);
+    transition: text-decoration-color 0.12s ease;
   }
 
-  .leaderboard__del-btn :deep(svg) {
-    width: 7px;
-    height: 7px;
-    stroke-width: 2;
-  }
-
-  .leaderboard__del-btn:hover {
-    background: #991b1b;
+  .leaderboard__del-link:hover {
+    text-decoration-color: rgb(255 255 255 / 0.85);
   }
 
   /* ── Confirm modal ── */
@@ -373,6 +367,13 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
+    padding-bottom: calc(1rem + 4rem); /* shift box up ~2rem from true center */
+  }
+
+  @media (min-width: 640px) {
+    .lb-confirm-backdrop {
+      padding-bottom: calc(1rem + 4rem);
+    }
   }
 
   .lb-confirm-box {
@@ -380,7 +381,7 @@
     border: 1px solid #3c3834;
     border-radius: 0.5rem;
     padding: 1.5rem 1.75rem;
-    max-width: 22rem;
+    max-width: 33rem;
     width: 100%;
     box-shadow: 0 8px 32px rgb(0 0 0 / 0.5);
   }
@@ -390,9 +391,9 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 300;
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: rgb(255 255 255 / 0.85);
-    line-height: 1.5;
+    line-height: 1.6;
     margin-bottom: 1.25rem;
   }
 
@@ -405,7 +406,7 @@
 
   .lb-confirm-btns {
     display: flex;
-    gap: 0.65rem;
+    gap: 1rem;
     justify-content: flex-end;
   }
 

@@ -76,3 +76,31 @@ test('applies server additions and outcome changes', () => {
   assert.equal(result.added?.outcome, 'draw')
   assert.equal(result.added?.match.id, 'added')
 })
+
+test('does not re-add a pick the user recently cleared (grace window)', () => {
+  // Server still has the pick; user cleared it 5 seconds ago.
+  const recentlyCleared = { 'match-1': NOW - 5_000 }
+
+  const result = reconcileServerPicks(
+    { 'match-1': 'home' },
+    {},
+    NOW,
+    recentlyCleared
+  )
+
+  assert.equal(result['match-1'], undefined)
+})
+
+test('re-adds a server pick once the cleared-pick grace window has expired', () => {
+  // Server still has the pick; user cleared it 31 seconds ago (past the 30s window).
+  const recentlyCleared = { 'match-1': NOW - 31_000 }
+
+  const result = reconcileServerPicks(
+    { 'match-1': 'home' },
+    {},
+    NOW,
+    recentlyCleared
+  )
+
+  assert.equal(result['match-1']?.outcome, 'home')
+})

@@ -47,13 +47,20 @@
 
   // ── Scroll to today's day section after matches load ─────────────────────
   // Computes today's date key (YYYY-MM-DD) in the user's timezone, then
-  // scrolls the matching day section into view once the DOM is ready.
-  // Falls back to the top of the page (Week 1) if today has no matches
-  // (e.g. before the tournament starts).
+  // scrolls to the first live or upcoming match card within that day.
+  // Falls back to the day header, then to the top of the page.
   const scrolledToToday = ref(false)
 
   // Tournament start date (first match day)
   const WC_START_KEY = '2026-06-11'
+
+  // Match card refs keyed by match id — set by MatchCard via data-match-id
+  const matchCardRefs = ref<Map<string, HTMLElement>>(new Map())
+
+  function setMatchCardRef(matchId: string, el: HTMLElement | null) {
+    if (el) matchCardRefs.value.set(matchId, el)
+    else matchCardRefs.value.delete(matchId)
+  }
 
   async function scrollToToday() {
     if (scrolledToToday.value) return
@@ -83,11 +90,8 @@
 
     if (!targetDay) return
 
-    // Wait a tick for Vue to render the day refs
+    // Wait a tick for Vue to render the match card refs
     await nextTick()
-
-    const el = dayRefs.value.get(targetDay)
-    if (!el) return
 
     const headerH =
       parseInt(
@@ -96,6 +100,27 @@
         )
       ) || 80
 
+    // Try to find the first live or upcoming match card in the target day
+    const dayMatches = matchesByDay.value.get(targetDay) ?? []
+    const targetMatch =
+      dayMatches.find(
+        (m) => m.status.code === 'live' || m.status.code === 'ht'
+      ) ?? dayMatches.find((m) => m.status.code === 'ns')
+
+    if (targetMatch) {
+      const cardEl = matchCardRefs.value.get(targetMatch.id)
+      if (cardEl) {
+        const top =
+          cardEl.getBoundingClientRect().top + window.scrollY - headerH - 12
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+        scrolledToToday.value = true
+        return
+      }
+    }
+
+    // Fallback: scroll to the day header
+    const el = dayRefs.value.get(targetDay)
+    if (!el) return
     const top = el.getBoundingClientRect().top + window.scrollY - headerH - 12
     window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
     scrolledToToday.value = true
@@ -223,6 +248,11 @@
             <MatchCard
               v-for="match in dayMatches"
               :key="match.id"
+              :ref="
+                (el: Element | ComponentPublicInstance | null) =>
+                  setMatchCardRef(match.id, el as HTMLElement | null)
+              "
+              :data-match-id="match.id"
               :match="match"
               @click="openMatch(match)"
               @click-country="openCountry"

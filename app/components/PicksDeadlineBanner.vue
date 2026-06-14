@@ -57,21 +57,56 @@
     activeTab.value = tomorrowWeekTab.value
 
     if (route.path === '/') {
-      // Already on home — just scroll to tomorrow's day section
-      scrollToDay()
+      // Already on home — the tab may have just changed, triggering a new
+      // data fetch. Wait for the target day element to appear in the DOM
+      // before scrolling (poll up to ~2s, then give up).
+      waitForDayAndScroll()
     } else {
-      // Navigate home, then scroll after the page settles
+      // Navigate home, then scroll after the page settles.
+      // Reset scroll to top first (instant) so getBoundingClientRect()
+      // returns correct offsets before we smooth-scroll to the target.
       router.push('/').then(() => {
-        nextTick(() => setTimeout(scrollToDay, 300))
+        nextTick(() => {
+          window.scrollTo({ top: 0, behavior: 'instant' })
+          waitForDayAndScroll()
+        })
       })
     }
   }
 
-  function scrollToDay() {
+  /**
+   * Poll the DOM until [data-day="<tomorrowDate>"] exists, then scroll to it.
+   * Gives up after ~2 seconds to avoid infinite loops.
+   */
+  function waitForDayAndScroll(attempts = 0) {
     const el = document.querySelector(`[data-day="${tomorrowDate.value}"]`)
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      scrollToDay()
+      return
     }
+    if (attempts >= 20) return // ~2s at 100ms intervals
+    setTimeout(() => waitForDayAndScroll(attempts + 1), 100)
+  }
+
+  function scrollToDay() {
+    // Scroll to the day header for tomorrow so the user sees the full day
+    // context with all unpicked games visible below it.
+    const target = document.querySelector(`[data-day="${tomorrowDate.value}"]`)
+    if (!target) return
+
+    const headerH =
+      parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--app-header-h'
+        )
+      ) || 80
+
+    const top =
+      (target as HTMLElement).getBoundingClientRect().top +
+      window.scrollY -
+      headerH -
+      12
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
   }
 </script>
 
@@ -79,26 +114,29 @@
   <Transition name="banner">
     <div v-if="show" class="deadline-banner" role="alert">
       <div class="deadline-banner__inner">
-        <div class="deadline-banner__content">
-          <span class="deadline-banner__icon">⚠️</span>
+        <div class="deadline-banner__body">
           <div class="deadline-banner__text">
             <strong class="deadline-banner__headline">
-              Get your picks in before tomorrow's games!
+              <span class="deadline-banner__alarm">🚨</span>
+              {{ unpickedCount === 1 ? "Don't miss it!" : "Don't miss out!" }}
+              {{ unpickedCount }}
+              {{ unpickedCount === 1 ? 'game' : 'games' }} tomorrow without a
+              pick
             </strong>
             <span class="deadline-banner__sub">
-              {{ unpickedCount }}
-              {{ unpickedCount === 1 ? 'game' : 'games' }} unpicked
               <template v-if="hoursUntilFirst !== null">
-                , first game in {{ hoursUntilFirst }}
-                {{ hoursUntilFirst === 1 ? 'hour' : 'hours' }}
+                First kick-off in {{ hoursUntilFirst }}
+                {{ hoursUntilFirst === 1 ? 'hour' : 'hours' }} — lock in your
+                picks now
               </template>
+              <template v-else> Lock in your picks before kick-off </template>
             </span>
           </div>
-        </div>
-        <div class="deadline-banner__actions">
-          <button class="deadline-banner__cta" @click="goToPicks">
-            Make Picks
-          </button>
+          <div class="deadline-banner__actions">
+            <button class="deadline-banner__cta" @click="goToPicks">
+              Make Picks
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -109,45 +147,77 @@
   @reference "~/assets/css/main.css";
 
   .deadline-banner {
-    @apply mx-auto mb-4 max-w-7xl;
+    @apply mx-auto max-w-7xl;
   }
 
   .deadline-banner__inner {
-    @apply flex items-center justify-between gap-3 rounded-xl px-4 py-3;
+    @apply flex flex-col gap-3 rounded-xl px-5 py-4;
     background: linear-gradient(135deg, #f97316 0%, hwb(25deg 0% 33.91%) 100%);
     box-shadow:
-      0 2px 10px rgba(249, 115, 22, 0.45),
-      0 1px 4px rgba(0, 0, 0, 0.3);
+      0 4px 16px rgba(249, 115, 22, 0.5),
+      0 2px 6px rgba(0, 0, 0, 0.35);
   }
 
-  .deadline-banner__content {
-    @apply flex items-center gap-3;
+  @media (min-width: 640px) {
+    .deadline-banner__inner {
+      @apply flex-row items-center justify-between gap-4;
+    }
   }
 
-  .deadline-banner__icon {
-    @apply text-2xl leading-none;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  /* Body: text + button stacked on mobile, side-by-side on sm+ */
+  .deadline-banner__body {
+    @apply flex w-full flex-col gap-3;
+  }
+
+  @media (min-width: 640px) {
+    .deadline-banner__body {
+      @apply flex-row items-center justify-between gap-4;
+    }
   }
 
   .deadline-banner__text {
-    @apply flex flex-col gap-0.5;
+    @apply flex flex-col gap-1;
+  }
+
+  .deadline-banner__alarm {
+    display: inline;
+    margin-right: 0.2em;
+    font-style: normal;
   }
 
   .deadline-banner__headline {
-    @apply text-sm font-bold text-white sm:text-base;
+    @apply font-bold text-white;
+    font-size: 1rem;
+    line-height: 1.3;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    letter-spacing: 0.07rem;
+  }
+
+  @media (min-width: 640px) {
+    .deadline-banner__headline {
+      font-size: 1.125rem;
+    }
   }
 
   .deadline-banner__sub {
-    @apply text-xs font-medium text-orange-100;
+    @apply font-medium text-orange-100;
+    font-size: 0.9rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 400;
+    letter-spacing: 0.05rem;
   }
 
   .deadline-banner__actions {
-    @apply flex shrink-0 items-center gap-2;
+    @apply flex shrink-0 items-center;
   }
 
   .deadline-banner__cta {
-    @apply px-4 py-1.5 text-sm transition-all;
+    @apply w-full px-5 py-2 transition-all;
+    font-size: 0.9375rem;
     border-radius: 0;
     font-weight: 800;
     color: #ffffff;
@@ -157,6 +227,13 @@
       'wght' 700;
     letter-spacing: 0.07rem;
     text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 20%);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 640px) {
+    .deadline-banner__cta {
+      @apply w-auto;
+    }
   }
 
   .deadline-banner__cta:hover {

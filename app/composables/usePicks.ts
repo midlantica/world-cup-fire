@@ -12,6 +12,7 @@
 import type { Match } from './useScores'
 import { useTimezone } from './useTimezone'
 import { now as mockNow } from './useMockTime'
+import { recordClearedPick } from '../utils/pool-pick-sync'
 
 const STORAGE_KEY = 'wc-picks-v1'
 
@@ -238,6 +239,9 @@ export function usePicks() {
   /** Remove the pick for a match entirely. */
   function clearPick(matchId: string) {
     if (!(matchId in picks.value)) return
+    // Record the intentional clear so reconcileServerPicks won't re-add it
+    // from the server before the deletion has propagated (grace window: 30s).
+    recordClearedPick(matchId)
     const next = { ...picks.value }
     delete next[matchId]
     picks.value = next
@@ -246,6 +250,10 @@ export function usePicks() {
 
   /** Remove every pick. */
   function clearAll() {
+    // Record every cleared pick so the server sync can't immediately restore them.
+    for (const matchId of Object.keys(picks.value)) {
+      recordClearedPick(matchId)
+    }
     picks.value = {}
     persist()
   }

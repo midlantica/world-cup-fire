@@ -67,6 +67,8 @@
 
         // Step 2: push the now-merged local picks back to the server.
         // Re-read from localStorage so we get the post-merge state.
+        // Always push (even an empty map) so a "clear all" on this device
+        // propagates to the server rather than being silently skipped.
         const currentPicks = (() => {
           try {
             const raw = localStorage.getItem('wc-picks-v1')
@@ -75,17 +77,19 @@
             return {}
           }
         })()
-        if (Object.keys(currentPicks).length > 0) {
-          syncOwnerPicks(currentPicks)
-        }
+        syncOwnerPicks(currentPicks)
       }, 300)
     })
 
     watch(
       picks,
       (val) => {
+        // Snapshot the picks at the time the watch fires so the debounced
+        // sync sends the correct value even if picks.value is mutated again
+        // (e.g. by reconcileServerPicks) before the 400ms timer fires.
+        const snapshot = { ...val }
         if (debounceTimer) clearTimeout(debounceTimer)
-        debounceTimer = setTimeout(() => syncOwnerPicks(val), 400)
+        debounceTimer = setTimeout(() => syncOwnerPicks(snapshot), 400)
       },
       { deep: true }
     )
@@ -285,11 +289,31 @@
     <AppFooter />
     <FlagModal />
     <GameDetailModal />
+    <!-- Sticky picks reminder — only visible on the Matches page (/) -->
+    <Teleport to="body">
+      <PicksDeadlineBanner v-if="route.path === '/'" class="picks-sticky" />
+    </Teleport>
   </div>
 </template>
 
 <style>
   @reference "~/assets/css/main.css";
+
+  /* Sticky picks deadline banner — fixed to the bottom of the viewport */
+  .picks-sticky {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    padding: 0 0.75rem 0.75rem;
+    pointer-events: none;
+  }
+
+  .picks-sticky > * {
+    pointer-events: auto;
+  }
+
   .app-root {
     @apply min-h-screen text-white;
     position: relative;

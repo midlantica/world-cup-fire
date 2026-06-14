@@ -216,7 +216,7 @@
 
   .pool-modal {
     position: relative;
-    margin-top: 4rem;
+    margin-top: 2rem;
     width: 100%;
     max-width: 34rem;
     border-radius: 0;
