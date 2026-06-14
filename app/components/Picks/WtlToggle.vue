@@ -169,6 +169,9 @@
          picker pops toward; in the modal header it's on the opposite side, so
          `caretDir` is decoupled from `popoutDir`. -->
     <span v-if="open" class="wtl__picker">
+      <span v-if="caretDir === 'left'" class="wtl__pick-one" aria-hidden="true"
+        >PICK ONE</span
+      >
       <span v-if="caretDir === 'left'" class="wtl__caret" aria-hidden="true" />
 
       <span class="wtl__btns">
@@ -294,8 +297,8 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 2px 3px;
-    border-radius: 0;
+    padding: 2px 2px;
+    border-radius: 0.2rem;
     background: #424242;
     box-shadow: none;
   }
@@ -408,5 +411,25 @@
      "click here". The row's :hover bubbles down to this child. */
   .wtl:hover .wtl__placeholder {
     opacity: 1;
+  }
+
+  /* ── "PICK ONE" label — appears to the left of the picker when open ─────────
+     Sits inside the picker flex row, before the caret, with a gap separating
+     it from the toggle. */
+  .wtl__pick-one {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 75,
+      'wght' 300;
+    font-size: 1rem;
+    line-height: 1;
+    letter-spacing: 0.13em;
+    color: hsl(0deg 0% 74.63%);
+    text-align: right;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 0.15rem;
+    pointer-events: none;
+    padding-top: 0.17rem;
   }
 </style>
