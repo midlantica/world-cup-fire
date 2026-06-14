@@ -11,7 +11,10 @@ const kickoffs = new Map([
   ['new-started', NOW],
 ])
 
-test('preserves a started pick when a full sync omits it', () => {
+test('never drops existing picks when a full sync omits them', () => {
+  // An empty/partial incoming map must never delete a member's stored picks —
+  // started OR future. Omission is treated as "no change", not "clear", so a
+  // slow or partial sync can never lose honestly-made selections.
   const result = mergePicksForSync(
     { finished: 'home', upcoming: 'away' },
     {},
@@ -19,10 +22,10 @@ test('preserves a started pick when a full sync omits it', () => {
     NOW
   )
 
-  assert.deepEqual(result, { finished: 'home' })
+  assert.deepEqual(result, { finished: 'home', upcoming: 'away' })
 })
 
-test('rejects changes to a started pick', () => {
+test('rejects changes to an existing started pick', () => {
   const result = mergePicksForSync(
     { finished: 'home' },
     { finished: 'away' },
@@ -31,6 +34,25 @@ test('rejects changes to a started pick', () => {
   )
 
   assert.deepEqual(result, { finished: 'home' })
+})
+
+test('accepts a first-time pick for a started match (recovery of an unsynced pick)', () => {
+  // No existing pick for `new-started` — a pick made before kickoff that never
+  // reached the server should still be persisted, not silently dropped.
+  const result = mergePicksForSync(
+    { upcoming: 'home' },
+    { 'new-started': 'away' },
+    kickoffs,
+    NOW
+  )
+
+  assert.deepEqual(result, { upcoming: 'home', 'new-started': 'away' })
+})
+
+test('accepts a first-time pick for an unknown-kickoff match', () => {
+  const result = mergePicksForSync({}, { mystery: 'draw' }, kickoffs, NOW)
+
+  assert.deepEqual(result, { mystery: 'draw' })
 })
 
 test('replaces upcoming picks and accepts new future picks', () => {
@@ -44,7 +66,9 @@ test('replaces upcoming picks and accepts new future picks', () => {
   assert.deepEqual(result, { upcoming: 'draw', 'new-upcoming': 'away' })
 })
 
-test('retains unknown existing picks but rejects unknown or started new picks', () => {
+test('retains existing picks and persists first-time unknown/started picks', () => {
+  // `legacy` (existing) is kept; `unknown` and `new-started` are first-time
+  // saves with no existing value, so they are persisted (recovery), not dropped.
   const result = mergePicksForSync(
     { legacy: 'draw' },
     { unknown: 'home', 'new-started': 'away' },
@@ -52,5 +76,9 @@ test('retains unknown existing picks but rejects unknown or started new picks', 
     NOW
   )
 
-  assert.deepEqual(result, { legacy: 'draw' })
+  assert.deepEqual(result, {
+    legacy: 'draw',
+    unknown: 'home',
+    'new-started': 'away',
+  })
 })
