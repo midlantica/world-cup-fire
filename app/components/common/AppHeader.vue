@@ -16,6 +16,10 @@
 
   const showTabs = computed(() => route.path === '/')
 
+  // On the Analytics dashboard we hide the primary nav + utility controls and
+  // show a bare logo (no link) beside an "Analytics" title instead.
+  const isAnalytics = computed(() => route.path === '/analytics')
+
   const activeStage = computed<Stage>(() => {
     const tab = WC_TABS.find((t) => t.key === activeTab.value)
     return tab?.stage ?? 'group'
@@ -153,7 +157,23 @@
 
 <template>
   <header ref="headerEl" class="app-header">
-    <div class="app-header__inner">
+    <!-- ── Analytics: bare logo (no link) + "Analytics" title ── -->
+    <div
+      v-if="isAnalytics"
+      class="app-header__inner app-header__inner--analytics"
+    >
+      <div class="app-header__brand app-header__brand--static">
+        <img
+          src="/world-cup-fire-logo.svg"
+          alt="World Cup Fire"
+          class="app-header__logo"
+        />
+      </div>
+      <span class="app-header__analytics-title">Analytics</span>
+    </div>
+
+    <!-- ── Default masthead ── -->
+    <div v-else class="app-header__inner">
       <!-- Logo / Brand -->
       <NuxtLink to="/" class="app-header__brand">
         <img
@@ -301,6 +321,25 @@
   .app-header__brand {
     @apply flex shrink-0 items-center no-underline;
     margin-right: 0.25rem;
+  }
+
+  /* Static brand (Analytics): logo with no link */
+  .app-header__brand--static {
+    cursor: default;
+  }
+
+  /* Analytics page title beside the logo */
+  .app-header__analytics-title {
+    font-family: 'Anybody', sans-serif;
+    font-size: 1.8rem;
+    line-height: 1;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
+    margin-left: 0.5rem;
   }
 
   .app-header__logo {
