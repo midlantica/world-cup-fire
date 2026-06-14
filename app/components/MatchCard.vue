@@ -661,10 +661,22 @@
     font-size: 1rem;
     color: color-mix(in oklab, #fff 80%, transparent);
     @apply font-anybody-medium;
+    /* Align times of different digit-counts (e.g. "3:00" vs "11:00"):
+       digits are right-aligned in a fixed-width cell so the colon always
+       sits at the same horizontal position; AM/PM hangs to the right. */
+    display: flex;
+    align-items: baseline;
+  }
+
+  .match-card__kickoff :deep(.time-digits) {
+    display: inline-block;
+    min-width: 3em;
+    text-align: right;
   }
 
   .match-card__kickoff :deep(.ampm) {
     font-size: 85%;
+    margin-left: 0.2em;
   }
 
   .match-card__date-label {
