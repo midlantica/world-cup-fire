@@ -14,10 +14,10 @@
         <h2 class="knockout-page__heading">Coming Soon</h2>
         <p class="knockout-page__text">
           The knockout bracket will be available after the group stage concludes
-          on <strong>July 2, 2026</strong>.
+          on <strong>June 27, 2026</strong>.
         </p>
         <p class="knockout-page__text">
-          The Round of 32 begins <strong>July 4, 2026</strong>, with the Final
+          The Round of 32 begins <strong>June 28, 2026</strong>, with the Final
           on <strong>July 19, 2026</strong>.
         </p>
         <NuxtLink to="/" class="knockout-page__cta">
@@ -25,8 +25,6 @@
         </NuxtLink>
       </div>
     </div>
-
-    <FlagModal />
   </div>
 </template>
 

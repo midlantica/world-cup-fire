@@ -451,11 +451,35 @@ export const MOCK_EVENTS = [
     id: '760428',
     date: '2026-06-15T16:00:00Z',
     name: 'Cape Verde at Spain',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Mercedes-Benz Stadium' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Spain', abbreviation: 'ESP' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Cape Verde', abbreviation: 'CPV' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Mercedes-Benz Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Spain', abbreviation: 'ESP' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Cape Verde', abbreviation: 'CPV' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760426 — Belgium vs Egypt  (FT 2-1)
@@ -463,11 +487,35 @@ export const MOCK_EVENTS = [
     id: '760426',
     date: '2026-06-15T19:00:00Z',
     name: 'Egypt at Belgium',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lumen Field' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Belgium', abbreviation: 'BEL' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Egypt', abbreviation: 'EGY' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lumen Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Belgium', abbreviation: 'BEL' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Egypt', abbreviation: 'EGY' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760429 — Saudi Arabia vs Uruguay  (FT 0-2)
@@ -475,11 +523,35 @@ export const MOCK_EVENTS = [
     id: '760429',
     date: '2026-06-15T22:00:00Z',
     name: 'Uruguay at Saudi Arabia',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Hard Rock Stadium' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Saudi Arabia', abbreviation: 'KSA' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'Uruguay', abbreviation: 'URU' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Hard Rock Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Saudi Arabia', abbreviation: 'KSA' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'Uruguay', abbreviation: 'URU' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760427 — Iran vs New Zealand  (FT 1-0)
@@ -487,11 +559,35 @@ export const MOCK_EVENTS = [
     id: '760427',
     date: '2026-06-16T01:00:00Z',
     name: 'New Zealand at Iran',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'SoFi Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Iran', abbreviation: 'IRN' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'New Zealand', abbreviation: 'NZL' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'SoFi Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Iran', abbreviation: 'IRN' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'New Zealand', abbreviation: 'NZL' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 2: Tuesday Jun 16 ────────────────────────────────────────────────
@@ -501,11 +597,35 @@ export const MOCK_EVENTS = [
     id: '760432',
     date: '2026-06-16T19:00:00Z',
     name: 'Senegal at France',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'MetLife Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'France', abbreviation: 'FRA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Senegal', abbreviation: 'SEN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'MetLife Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'France', abbreviation: 'FRA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Senegal', abbreviation: 'SEN' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760430 — Norway vs Iraq  (FT 4-0)
@@ -513,11 +633,35 @@ export const MOCK_EVENTS = [
     id: '760430',
     date: '2026-06-16T22:00:00Z',
     name: 'Iraq at Norway',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Gillette Stadium' }, competitors: [
-      { homeAway: 'home', score: '4', team: { displayName: 'Norway', abbreviation: 'NOR' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Iraq', abbreviation: 'IRQ' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Gillette Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '4',
+            team: { displayName: 'Norway', abbreviation: 'NOR' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Iraq', abbreviation: 'IRQ' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 2: Wednesday Jun 17 ──────────────────────────────────────────────
@@ -527,11 +671,35 @@ export const MOCK_EVENTS = [
     id: '760433',
     date: '2026-06-17T19:00:00Z',
     name: 'Algeria at Argentina',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'AT&T Stadium' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Argentina', abbreviation: 'ARG' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Algeria', abbreviation: 'ALG' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'AT&T Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Argentina', abbreviation: 'ARG' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Algeria', abbreviation: 'ALG' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760431 — Austria vs Jordan  (FT 2-0)
@@ -539,11 +707,35 @@ export const MOCK_EVENTS = [
     id: '760431',
     date: '2026-06-17T19:00:00Z',
     name: 'Jordan at Austria',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Levi\'s Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Austria', abbreviation: 'AUT' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Jordan', abbreviation: 'JOR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: "Levi's Stadium" },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Austria', abbreviation: 'AUT' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Jordan', abbreviation: 'JOR' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760435 — Portugal vs Congo DR  (FT 4-0)
@@ -551,11 +743,35 @@ export const MOCK_EVENTS = [
     id: '760435',
     date: '2026-06-17T22:00:00Z',
     name: 'Congo DR at Portugal',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lincoln Financial Field' }, competitors: [
-      { homeAway: 'home', score: '4', team: { displayName: 'Portugal', abbreviation: 'POR' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Congo DR', abbreviation: 'COD' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lincoln Financial Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '4',
+            team: { displayName: 'Portugal', abbreviation: 'POR' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Congo DR', abbreviation: 'COD' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760437 — England vs Croatia  (FT 2-0)
@@ -563,11 +779,35 @@ export const MOCK_EVENTS = [
     id: '760437',
     date: '2026-06-17T22:00:00Z',
     name: 'Croatia at England',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'SoFi Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'England', abbreviation: 'ENG' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Croatia', abbreviation: 'CRO' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'SoFi Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'England', abbreviation: 'ENG' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Croatia', abbreviation: 'CRO' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760434 — Ghana vs Panama  (FT 1-1)
@@ -575,11 +815,35 @@ export const MOCK_EVENTS = [
     id: '760434',
     date: '2026-06-17T22:00:00Z',
     name: 'Panama at Ghana',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'NRG Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Ghana', abbreviation: 'GHA' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Panama', abbreviation: 'PAN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'NRG Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Ghana', abbreviation: 'GHA' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Panama', abbreviation: 'PAN' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 2: Thursday Jun 18 ───────────────────────────────────────────────
@@ -589,11 +853,35 @@ export const MOCK_EVENTS = [
     id: '760436',
     date: '2026-06-18T19:00:00Z',
     name: 'Uzbekistan at Colombia',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'BC Place' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Colombia', abbreviation: 'COL' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Uzbekistan', abbreviation: 'UZB' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'BC Place' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Colombia', abbreviation: 'COL' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Uzbekistan', abbreviation: 'UZB' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760438 — Czechia vs South Africa  (FT 2-1)
@@ -601,11 +889,35 @@ export const MOCK_EVENTS = [
     id: '760438',
     date: '2026-06-18T19:00:00Z',
     name: 'South Africa at Czechia',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Estadio Azteca' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Czechia', abbreviation: 'CZE' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'South Africa', abbreviation: 'RSA' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Estadio Azteca' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Czechia', abbreviation: 'CZE' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'South Africa', abbreviation: 'RSA' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760439 — Switzerland vs Bosnia-Herzegovina  (FT 2-0)
@@ -613,11 +925,35 @@ export const MOCK_EVENTS = [
     id: '760439',
     date: '2026-06-18T22:00:00Z',
     name: 'Bosnia-Herzegovina at Switzerland',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Allegiant Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Switzerland', abbreviation: 'SUI' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Bosnia-Herzegovina', abbreviation: 'BIH' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Allegiant Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Switzerland', abbreviation: 'SUI' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Bosnia-Herzegovina', abbreviation: 'BIH' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760440 — Canada vs Qatar  (FT 3-0)
@@ -625,11 +961,35 @@ export const MOCK_EVENTS = [
     id: '760440',
     date: '2026-06-18T22:00:00Z',
     name: 'Qatar at Canada',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'BMO Field' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Canada', abbreviation: 'CAN' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Qatar', abbreviation: 'QAT' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'BMO Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Canada', abbreviation: 'CAN' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Qatar', abbreviation: 'QAT' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 2: Friday Jun 19 ─────────────────────────────────────────────────
@@ -639,11 +999,35 @@ export const MOCK_EVENTS = [
     id: '760441',
     date: '2026-06-19T19:00:00Z',
     name: 'South Korea at Mexico',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'AT&T Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Mexico', abbreviation: 'MEX' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'South Korea', abbreviation: 'KOR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'AT&T Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Mexico', abbreviation: 'MEX' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'South Korea', abbreviation: 'KOR' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760442 — United States vs Australia  (FT 2-0)
@@ -651,11 +1035,35 @@ export const MOCK_EVENTS = [
     id: '760442',
     date: '2026-06-19T22:00:00Z',
     name: 'Australia at United States',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'MetLife Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'United States', abbreviation: 'USA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Australia', abbreviation: 'AUS' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'MetLife Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'United States', abbreviation: 'USA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Australia', abbreviation: 'AUS' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760445 — Scotland vs Morocco  (FT 0-2)
@@ -663,11 +1071,35 @@ export const MOCK_EVENTS = [
     id: '760445',
     date: '2026-06-19T22:00:00Z',
     name: 'Morocco at Scotland',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lumen Field' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Scotland', abbreviation: 'SCO' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'Morocco', abbreviation: 'MAR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lumen Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Scotland', abbreviation: 'SCO' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'Morocco', abbreviation: 'MAR' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 2: Saturday Jun 20 ───────────────────────────────────────────────
@@ -677,11 +1109,35 @@ export const MOCK_EVENTS = [
     id: '760444',
     date: '2026-06-20T19:00:00Z',
     name: 'Haiti at Brazil',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'SoFi Stadium' }, competitors: [
-      { homeAway: 'home', score: '4', team: { displayName: 'Brazil', abbreviation: 'BRA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Haiti', abbreviation: 'HAI' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'SoFi Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '4',
+            team: { displayName: 'Brazil', abbreviation: 'BRA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Haiti', abbreviation: 'HAI' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760443 — Türkiye vs Paraguay  (FT 2-1)
@@ -689,11 +1145,35 @@ export const MOCK_EVENTS = [
     id: '760443',
     date: '2026-06-20T19:00:00Z',
     name: 'Paraguay at Türkiye',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Estadio Akron' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Türkiye', abbreviation: 'TUR' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Paraguay', abbreviation: 'PAR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Estadio Akron' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Türkiye', abbreviation: 'TUR' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Paraguay', abbreviation: 'PAR' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760446 — Germany vs Curaçao  (FT 5-0) — mock ID based on ESPN pattern
@@ -701,11 +1181,35 @@ export const MOCK_EVENTS = [
     id: '760446',
     date: '2026-06-20T22:00:00Z',
     name: 'Curaçao at Germany',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Gillette Stadium' }, competitors: [
-      { homeAway: 'home', score: '5', team: { displayName: 'Germany', abbreviation: 'GER' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Curaçao', abbreviation: 'CUW' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Gillette Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '5',
+            team: { displayName: 'Germany', abbreviation: 'GER' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Curaçao', abbreviation: 'CUW' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760447 — Netherlands vs Japan  (FT 2-1) — mock ID
@@ -713,11 +1217,35 @@ export const MOCK_EVENTS = [
     id: '760447',
     date: '2026-06-20T22:00:00Z',
     name: 'Japan at Netherlands',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Hard Rock Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Netherlands', abbreviation: 'NED' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Japan', abbreviation: 'JPN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Hard Rock Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Netherlands', abbreviation: 'NED' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Japan', abbreviation: 'JPN' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 2: Sunday Jun 21 — SCHEDULED (not yet played) ───────────────────
@@ -728,11 +1256,35 @@ export const MOCK_EVENTS = [
     id: '760448',
     date: '2026-06-21T16:00:00Z',
     name: 'Ecuador at Ivory Coast',
-    status: { type: { id: '1', name: 'STATUS_SCHEDULED', state: 'pre', completed: false, description: 'Scheduled', detail: 'Sun, Jun 21', shortDetail: '6/21' }, displayClock: '0:00' },
-    competitions: [{ venue: { fullName: 'BC Place' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Ivory Coast', abbreviation: 'CIV' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Ecuador', abbreviation: 'ECU' } },
-    ]}],
+    status: {
+      type: {
+        id: '1',
+        name: 'STATUS_SCHEDULED',
+        state: 'pre',
+        completed: false,
+        description: 'Scheduled',
+        detail: 'Sun, Jun 21',
+        shortDetail: '6/21',
+      },
+      displayClock: '0:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'BC Place' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Ivory Coast', abbreviation: 'CIV' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Ecuador', abbreviation: 'ECU' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760449 — Saudi Arabia vs Spain  (scheduled)
@@ -740,11 +1292,35 @@ export const MOCK_EVENTS = [
     id: '760449',
     date: '2026-06-21T19:00:00Z',
     name: 'Spain at Saudi Arabia',
-    status: { type: { id: '1', name: 'STATUS_SCHEDULED', state: 'pre', completed: false, description: 'Scheduled', detail: 'Sun, Jun 21', shortDetail: '6/21' }, displayClock: '0:00' },
-    competitions: [{ venue: { fullName: 'Levi\'s Stadium' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Saudi Arabia', abbreviation: 'KSA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Spain', abbreviation: 'ESP' } },
-    ]}],
+    status: {
+      type: {
+        id: '1',
+        name: 'STATUS_SCHEDULED',
+        state: 'pre',
+        completed: false,
+        description: 'Scheduled',
+        detail: 'Sun, Jun 21',
+        shortDetail: '6/21',
+      },
+      displayClock: '0:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: "Levi's Stadium" },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Saudi Arabia', abbreviation: 'KSA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Spain', abbreviation: 'ESP' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760450 — Uruguay vs Belgium  (scheduled)
@@ -752,11 +1328,35 @@ export const MOCK_EVENTS = [
     id: '760450',
     date: '2026-06-21T19:00:00Z',
     name: 'Belgium at Uruguay',
-    status: { type: { id: '1', name: 'STATUS_SCHEDULED', state: 'pre', completed: false, description: 'Scheduled', detail: 'Sun, Jun 21', shortDetail: '6/21' }, displayClock: '0:00' },
-    competitions: [{ venue: { fullName: 'Allegiant Stadium' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Uruguay', abbreviation: 'URU' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Belgium', abbreviation: 'BEL' } },
-    ]}],
+    status: {
+      type: {
+        id: '1',
+        name: 'STATUS_SCHEDULED',
+        state: 'pre',
+        completed: false,
+        description: 'Scheduled',
+        detail: 'Sun, Jun 21',
+        shortDetail: '6/21',
+      },
+      displayClock: '0:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Allegiant Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Uruguay', abbreviation: 'URU' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Belgium', abbreviation: 'BEL' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760451 — New Zealand vs France  (scheduled)
@@ -764,11 +1364,35 @@ export const MOCK_EVENTS = [
     id: '760451',
     date: '2026-06-21T22:00:00Z',
     name: 'France at New Zealand',
-    status: { type: { id: '1', name: 'STATUS_SCHEDULED', state: 'pre', completed: false, description: 'Scheduled', detail: 'Sun, Jun 21', shortDetail: '6/21' }, displayClock: '0:00' },
-    competitions: [{ venue: { fullName: 'BMO Field' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'New Zealand', abbreviation: 'NZL' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'France', abbreviation: 'FRA' } },
-    ]}],
+    status: {
+      type: {
+        id: '1',
+        name: 'STATUS_SCHEDULED',
+        state: 'pre',
+        completed: false,
+        description: 'Scheduled',
+        detail: 'Sun, Jun 21',
+        shortDetail: '6/21',
+      },
+      displayClock: '0:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'BMO Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'New Zealand', abbreviation: 'NZL' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'France', abbreviation: 'FRA' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Week 3: Jun 22–28 (remaining group stage games) ──────────────────────
@@ -780,11 +1404,35 @@ export const MOCK_EVENTS = [
     id: '760452',
     date: '2026-06-22T19:00:00Z',
     name: 'Canada at Mexico',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Estadio Azteca' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Mexico', abbreviation: 'MEX' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'Canada', abbreviation: 'CAN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Estadio Azteca' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Mexico', abbreviation: 'MEX' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'Canada', abbreviation: 'CAN' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760453 — United States vs Germany  (FT 1-1)
@@ -792,11 +1440,35 @@ export const MOCK_EVENTS = [
     id: '760453',
     date: '2026-06-22T22:00:00Z',
     name: 'Germany at United States',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'MetLife Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'United States', abbreviation: 'USA' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Germany', abbreviation: 'GER' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'MetLife Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'United States', abbreviation: 'USA' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Germany', abbreviation: 'GER' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760454 — Argentina vs England  (FT 2-1)
@@ -804,11 +1476,35 @@ export const MOCK_EVENTS = [
     id: '760454',
     date: '2026-06-23T19:00:00Z',
     name: 'England at Argentina',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'AT&T Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Argentina', abbreviation: 'ARG' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'England', abbreviation: 'ENG' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'AT&T Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Argentina', abbreviation: 'ARG' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'England', abbreviation: 'ENG' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760455 — Brazil vs Portugal  (FT 2-0)
@@ -816,11 +1512,35 @@ export const MOCK_EVENTS = [
     id: '760455',
     date: '2026-06-23T22:00:00Z',
     name: 'Portugal at Brazil',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Hard Rock Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Brazil', abbreviation: 'BRA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Portugal', abbreviation: 'POR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Hard Rock Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Brazil', abbreviation: 'BRA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Portugal', abbreviation: 'POR' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760456 — Spain vs Netherlands  (FT 3-1)
@@ -828,11 +1548,35 @@ export const MOCK_EVENTS = [
     id: '760456',
     date: '2026-06-24T19:00:00Z',
     name: 'Netherlands at Spain',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'SoFi Stadium' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Spain', abbreviation: 'ESP' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Netherlands', abbreviation: 'NED' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'SoFi Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Spain', abbreviation: 'ESP' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Netherlands', abbreviation: 'NED' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760457 — France vs Norway  (FT 2-0)
@@ -840,11 +1584,35 @@ export const MOCK_EVENTS = [
     id: '760457',
     date: '2026-06-24T22:00:00Z',
     name: 'Norway at France',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lumen Field' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'France', abbreviation: 'FRA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Norway', abbreviation: 'NOR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lumen Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'France', abbreviation: 'FRA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Norway', abbreviation: 'NOR' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760458 — Colombia vs Austria  (FT 1-0)
@@ -852,11 +1620,35 @@ export const MOCK_EVENTS = [
     id: '760458',
     date: '2026-06-25T19:00:00Z',
     name: 'Austria at Colombia',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'BC Place' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Colombia', abbreviation: 'COL' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Austria', abbreviation: 'AUT' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'BC Place' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Colombia', abbreviation: 'COL' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Austria', abbreviation: 'AUT' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760459 — Morocco vs Switzerland  (FT 1-1)
@@ -864,11 +1656,35 @@ export const MOCK_EVENTS = [
     id: '760459',
     date: '2026-06-25T22:00:00Z',
     name: 'Switzerland at Morocco',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Allegiant Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Morocco', abbreviation: 'MAR' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Switzerland', abbreviation: 'SUI' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Allegiant Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Morocco', abbreviation: 'MAR' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Switzerland', abbreviation: 'SUI' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760460 — Uruguay vs Türkiye  (FT 2-1)
@@ -876,11 +1692,35 @@ export const MOCK_EVENTS = [
     id: '760460',
     date: '2026-06-26T19:00:00Z',
     name: 'Türkiye at Uruguay',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Gillette Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Uruguay', abbreviation: 'URU' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Türkiye', abbreviation: 'TUR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Gillette Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Uruguay', abbreviation: 'URU' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Türkiye', abbreviation: 'TUR' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760461 — South Korea vs Japan  (FT 1-2)
@@ -888,11 +1728,35 @@ export const MOCK_EVENTS = [
     id: '760461',
     date: '2026-06-26T22:00:00Z',
     name: 'Japan at South Korea',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lincoln Financial Field' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'South Korea', abbreviation: 'KOR' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'Japan', abbreviation: 'JPN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lincoln Financial Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'South Korea', abbreviation: 'KOR' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'Japan', abbreviation: 'JPN' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760462 — Scotland vs Sweden  (FT 0-2)
@@ -900,11 +1764,35 @@ export const MOCK_EVENTS = [
     id: '760462',
     date: '2026-06-27T19:00:00Z',
     name: 'Sweden at Scotland',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'NRG Stadium' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Scotland', abbreviation: 'SCO' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'Sweden', abbreviation: 'SWE' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'NRG Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Scotland', abbreviation: 'SCO' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'Sweden', abbreviation: 'SWE' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760463 — Portugal vs England  (FT 1-1)
@@ -912,11 +1800,35 @@ export const MOCK_EVENTS = [
     id: '760463',
     date: '2026-06-27T22:00:00Z',
     name: 'England at Portugal',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Levi\'s Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Portugal', abbreviation: 'POR' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'England', abbreviation: 'ENG' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: "Levi's Stadium" },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Portugal', abbreviation: 'POR' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'England', abbreviation: 'ENG' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760464 — Netherlands vs Germany  (FT 1-2)
@@ -924,11 +1836,35 @@ export const MOCK_EVENTS = [
     id: '760464',
     date: '2026-06-28T19:00:00Z',
     name: 'Germany at Netherlands',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Mercedes-Benz Stadium' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'Netherlands', abbreviation: 'NED' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'Germany', abbreviation: 'GER' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Mercedes-Benz Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'Netherlands', abbreviation: 'NED' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'Germany', abbreviation: 'GER' },
+          },
+        ],
+      },
+    ],
   },
 
   // 760465 — Belgium vs Colombia  (FT 0-1)
@@ -936,11 +1872,35 @@ export const MOCK_EVENTS = [
     id: '760465',
     date: '2026-06-28T22:00:00Z',
     name: 'Colombia at Belgium',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'BMO Field' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Belgium', abbreviation: 'BEL' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Colombia', abbreviation: 'COL' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'BMO Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Belgium', abbreviation: 'BEL' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Colombia', abbreviation: 'COL' },
+          },
+        ],
+      },
+    ],
   },
 
   // ── Round of 32: Jun 29 – Jul 2 ──────────────────────────────────────────
@@ -952,11 +1912,35 @@ export const MOCK_EVENTS = [
     id: '760500',
     date: '2026-06-29T19:00:00Z',
     name: 'Japan at United States',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'MetLife Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'United States', abbreviation: 'USA' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Japan', abbreviation: 'JPN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'MetLife Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'United States', abbreviation: 'USA' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Japan', abbreviation: 'JPN' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 2 — Brazil vs Morocco  (FT 3-0)
@@ -964,11 +1948,35 @@ export const MOCK_EVENTS = [
     id: '760501',
     date: '2026-06-29T22:00:00Z',
     name: 'Morocco at Brazil',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Hard Rock Stadium' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Brazil', abbreviation: 'BRA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Morocco', abbreviation: 'MAR' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Hard Rock Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Brazil', abbreviation: 'BRA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Morocco', abbreviation: 'MAR' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 3 — Argentina vs Sweden  (FT 2-0)
@@ -976,11 +1984,35 @@ export const MOCK_EVENTS = [
     id: '760502',
     date: '2026-06-30T19:00:00Z',
     name: 'Sweden at Argentina',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'AT&T Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Argentina', abbreviation: 'ARG' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Sweden', abbreviation: 'SWE' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'AT&T Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Argentina', abbreviation: 'ARG' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Sweden', abbreviation: 'SWE' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 4 — Spain vs Uruguay  (FT 2-1)
@@ -988,11 +2020,35 @@ export const MOCK_EVENTS = [
     id: '760503',
     date: '2026-06-30T22:00:00Z',
     name: 'Uruguay at Spain',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'SoFi Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Spain', abbreviation: 'ESP' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Uruguay', abbreviation: 'URU' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'SoFi Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Spain', abbreviation: 'ESP' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Uruguay', abbreviation: 'URU' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 5 — France vs Colombia  (FT 1-0)
@@ -1000,11 +2056,35 @@ export const MOCK_EVENTS = [
     id: '760504',
     date: '2026-07-01T19:00:00Z',
     name: 'Colombia at France',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lumen Field' }, competitors: [
-      { homeAway: 'home', score: '1', team: { displayName: 'France', abbreviation: 'FRA' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Colombia', abbreviation: 'COL' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lumen Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '1',
+            team: { displayName: 'France', abbreviation: 'FRA' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Colombia', abbreviation: 'COL' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 6 — Germany vs Canada  (FT 2-0)
@@ -1012,11 +2092,35 @@ export const MOCK_EVENTS = [
     id: '760505',
     date: '2026-07-01T22:00:00Z',
     name: 'Canada at Germany',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Allegiant Stadium' }, competitors: [
-      { homeAway: 'home', score: '2', team: { displayName: 'Germany', abbreviation: 'GER' } },
-      { homeAway: 'away', score: '0', team: { displayName: 'Canada', abbreviation: 'CAN' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Allegiant Stadium' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '2',
+            team: { displayName: 'Germany', abbreviation: 'GER' },
+          },
+          {
+            homeAway: 'away',
+            score: '0',
+            team: { displayName: 'Canada', abbreviation: 'CAN' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 7 — Portugal vs Switzerland  (FT 3-1)
@@ -1024,11 +2128,35 @@ export const MOCK_EVENTS = [
     id: '760506',
     date: '2026-07-02T19:00:00Z',
     name: 'Switzerland at Portugal',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Lincoln Financial Field' }, competitors: [
-      { homeAway: 'home', score: '3', team: { displayName: 'Portugal', abbreviation: 'POR' } },
-      { homeAway: 'away', score: '1', team: { displayName: 'Switzerland', abbreviation: 'SUI' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Lincoln Financial Field' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '3',
+            team: { displayName: 'Portugal', abbreviation: 'POR' },
+          },
+          {
+            homeAway: 'away',
+            score: '1',
+            team: { displayName: 'Switzerland', abbreviation: 'SUI' },
+          },
+        ],
+      },
+    ],
   },
 
   // R32 Match 8 — Mexico vs England  (FT 0-2)
@@ -1036,10 +2164,34 @@ export const MOCK_EVENTS = [
     id: '760507',
     date: '2026-07-02T22:00:00Z',
     name: 'England at Mexico',
-    status: { type: { id: '3', name: 'STATUS_FINAL', state: 'post', completed: true, description: 'Final', detail: 'FT', shortDetail: 'FT' }, displayClock: '90:00' },
-    competitions: [{ venue: { fullName: 'Estadio Azteca' }, competitors: [
-      { homeAway: 'home', score: '0', team: { displayName: 'Mexico', abbreviation: 'MEX' } },
-      { homeAway: 'away', score: '2', team: { displayName: 'England', abbreviation: 'ENG' } },
-    ]}],
+    status: {
+      type: {
+        id: '3',
+        name: 'STATUS_FINAL',
+        state: 'post',
+        completed: true,
+        description: 'Final',
+        detail: 'FT',
+        shortDetail: 'FT',
+      },
+      displayClock: '90:00',
+    },
+    competitions: [
+      {
+        venue: { fullName: 'Estadio Azteca' },
+        competitors: [
+          {
+            homeAway: 'home',
+            score: '0',
+            team: { displayName: 'Mexico', abbreviation: 'MEX' },
+          },
+          {
+            homeAway: 'away',
+            score: '2',
+            team: { displayName: 'England', abbreviation: 'ENG' },
+          },
+        ],
+      },
+    ],
   },
 ]

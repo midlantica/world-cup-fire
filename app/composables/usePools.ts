@@ -20,60 +20,11 @@
 
 import type { Pick as UserPick, PickOutcome } from './usePicks'
 import { usePicks } from './usePicks'
-
-/**
- * Merge a map of server-side pick outcomes into the local picks store.
- * For picks already in local storage the outcome is updated (in case it
- * changed on another device). For picks not yet in local storage a minimal
- * stub is written so the Matches page can display the outcome immediately;
- * the full match snapshot is filled in the next time the schedule loads.
- *
- * Returns the merged picks map (does NOT write to localStorage or reactive
- * state — the caller decides how to persist).
- */
-export function mergeServerPicks(
-  serverPicks: Record<string, PickOutcome>,
-  localPicks: Record<string, UserPick>
-): Record<string, UserPick> {
-  const merged: Record<string, UserPick> = { ...localPicks }
-  for (const [matchId, outcome] of Object.entries(serverPicks)) {
-    if (merged[matchId]) {
-      // Update outcome in case it changed on the other device.
-      merged[matchId] = { ...merged[matchId], outcome }
-    } else {
-      // No local snapshot — write a stub. The match snapshot will be
-      // filled in the next time the schedule loads and the user makes or
-      // views a pick. For now the outcome is preserved.
-      merged[matchId] = {
-        matchId,
-        team:
-          outcome === 'home'
-            ? '__home__'
-            : outcome === 'away'
-              ? '__away__'
-              : '',
-        outcome,
-        pickedAt: new Date().toISOString(),
-        // Minimal match stub — enough for the picks store to hold it.
-        // Cast to satisfy the Match type; real snapshot fills in later.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        match: {
-          id: matchId,
-          home: '',
-          away: '',
-          date: '',
-          status: { code: 'ns' as const },
-          group: null,
-          homeScore: null,
-          awayScore: null,
-          venue: '',
-          round: '',
-        } as any,
-      }
-    }
-  }
-  return merged
-}
+import { reconcileServerPicks } from '../utils/pool-pick-sync'
+import {
+  rankPoolMembers,
+  type RankedLeaderRow,
+} from '../utils/pool-leaderboard'
 
 /** Local registry of the pools this device belongs to + its credentials. */
 const TOKENS_KEY = 'wc-pool-tokens-v1'
@@ -93,6 +44,8 @@ export interface PoolMember {
   /** True for the member that represents the LOCAL user on this device. */
   isSelf?: boolean
   picks: Record<string, PickOutcome>
+  /** Total picks made, including outcomes hidden until kickoff. */
+  picksMade: number
 }
 
 export interface Pool {
@@ -106,17 +59,7 @@ export interface Pool {
 }
 
 /** A single leaderboard row (computed). */
-export interface LeaderRow {
-  memberId: string
-  name: string
-  isOwner: boolean
-  isSelf: boolean
-  score: number
-  decided: number
-  picksMade: number
-  accuracy: number
-  rank: number
-}
+export type LeaderRow = RankedLeaderRow
 
 /** Per-pool credentials this device holds. */
 interface PoolCreds {
@@ -131,6 +74,7 @@ interface ApiMember {
   name: string
   isOwner: boolean
   picks: Record<string, PickOutcome>
+  picksMade: number
 }
 interface ApiPool {
   id: string
@@ -158,7 +102,22 @@ function loadCache(): Pool[] {
     const raw = localStorage.getItem(CACHE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as Pool[]
-    return Array.isArray(parsed) ? parsed : []
+    if (!Array.isArray(parsed)) return []
+
+    // Older caches may contain opponents' unstarted outcomes from before the
+    // server hid them. Scrub non-self maps immediately; the first refresh
+    // restores visible started picks and authoritative total counts.
+    return parsed.map((pool) => ({
+      ...pool,
+      members: pool.members.map((member) => {
+        const picks = member.picks ?? {}
+        return {
+          ...member,
+          picks: member.isSelf ? picks : {},
+          picksMade: member.picksMade ?? Object.keys(picks).length,
+        }
+      }),
+    }))
   } catch {
     return []
   }
@@ -205,52 +164,49 @@ export function usePools() {
         isOwner: m.isOwner,
         isSelf: m.id === selfId,
         picks: m.picks ?? {},
+        picksMade: m.picksMade ?? Object.keys(m.picks ?? {}).length,
       })),
     }
   }
 
   /** Fetch a single pool from the server and merge it into the cache. */
-  async function fetchPool(id: string): Promise<Pool | null> {
+  async function fetchPool(
+    id: string,
+    reconcileLocalPicks = true
+  ): Promise<Pool | null> {
     try {
-      const res = await $fetch<{ pool: ApiPool }>(`/api/pools/${id}`)
+      const c = creds.value[id]
+      const res = await $fetch<{ pool: ApiPool }>(`/api/pools/${id}`, {
+        headers: c ? { 'x-pool-token': c.token } : undefined,
+      })
       const ui = toUiPool(res.pool)
       mergePool(ui)
 
       // ── Bidirectional reverse-sync ────────────────────────────────────────
-      // If the server's self-member has picks that aren't in local picks
-      // (e.g. picks made on another device), merge them into local picks so
-      // the W/D chips show on this device and the next syncOwnerPicks push
-      // sends the full set back to the server.
-      if (import.meta.client) {
+      // Reconcile the server's complete self-member map into local picks so
+      // additions, changes, and clears made on another device all propagate.
+      if (import.meta.client && reconcileLocalPicks) {
         const c = creds.value[id]
         if (c) {
           const selfMember = ui.members.find((m) => m.isSelf)
-          if (selfMember && Object.keys(selfMember.picks).length > 0) {
+          if (selfMember) {
             const { picks: localPicks } = usePicks()
             const currentPicks = localPicks.value
-            const serverPickIds = Object.keys(selfMember.picks)
-            // Merge if the server has picks this device doesn't know about, OR
-            // if any outcome differs (pick changed on another device).
-            const needsSync = serverPickIds.some(
-              (mid) =>
-                !currentPicks[mid] ||
-                currentPicks[mid]!.outcome !== selfMember.picks[mid]
+            const reconciled = reconcileServerPicks(
+              selfMember.picks,
+              currentPicks
             )
-            if (needsSync) {
-              // Merge server picks into local picks using the shared helper.
-              // For picks not in local storage a stub is written; hydrateStub()
-              // fills in the match snapshot when the MatchCard renders.
-              const merged = mergeServerPicks(selfMember.picks, currentPicks)
+            if (reconciled !== currentPicks) {
               // Write merged picks to localStorage AND update reactive state.
               // Updating picks.value triggers the watch(picks) in app.vue which
               // will push the full merged set back to the server — completing
               // the bidirectional sync loop.
               try {
-                localStorage.setItem('wc-picks-v1', JSON.stringify(merged))
+                localStorage.setItem('wc-picks-v1', JSON.stringify(reconciled))
               } catch {
                 // ignore storage errors
               }
-              localPicks.value = merged
+              localPicks.value = reconciled
             }
           }
         }
@@ -298,7 +254,9 @@ export function usePools() {
   /** Re-fetch every pool we hold creds for (live leaderboards). */
   async function refreshPools() {
     const ids = Object.keys(creds.value)
-    await Promise.all(ids.map((id) => fetchPool(id)))
+    const pickAuthorityId =
+      ids.find((id) => creds.value[id]?.isOwner) ?? ids[0] ?? null
+    await Promise.all(ids.map((id) => fetchPool(id, id === pickAuthorityId)))
   }
 
   // Hydrate from localStorage on mount.
@@ -374,23 +332,66 @@ export function usePools() {
 
   /**
    * Generate a private "sync to another device" URL for the pool owner.
-   * The URL embeds the owner's secret token so the receiving device can
-   * re-attach to the owner member slot and pull all picks from the server.
-   *
-   * IMPORTANT: this link is private — it should only be sent to the owner's
-   * own devices, never shared publicly. The token grants owner-level write
-   * access to the pool.
+   * The URL contains a short-lived, one-use code in its fragment. Fragments
+   * are not sent in HTTP requests or referrer headers, and the permanent owner
+   * token never appears in the link.
    *
    * Returns null if the caller doesn't hold owner creds for this pool.
    */
-  function ownerSyncLink(id: string): string | null {
+  async function ownerSyncLink(id: string): Promise<string | null> {
     const c = creds.value[id]
     if (!c?.isOwner) return null
-    const origin = import.meta.client
-      ? window.location.origin
-      : 'https://worldcupfire.netlify.app'
-    const params = new URLSearchParams({ p: id, sync: c.token })
-    return `${origin}/pools?${params.toString()}`
+    try {
+      const res = await $fetch<{ code: string; expiresAt: string }>(
+        `/api/pools/${id}/sync-code`,
+        {
+          method: 'POST',
+          headers: { 'x-pool-token': c.token },
+        }
+      )
+      const origin = import.meta.client
+        ? window.location.origin
+        : 'https://worldcupfire.netlify.app'
+      const query = new URLSearchParams({ p: id })
+      const fragment = new URLSearchParams({ sync: res.code })
+      return `${origin}/pools?${query.toString()}#${fragment.toString()}`
+    } catch {
+      return null
+    }
+  }
+
+  /** Exchange a short-lived owner sync code for this device's credentials. */
+  async function exchangeOwnerSync(
+    id: string,
+    code: string
+  ): Promise<Pool | null> {
+    try {
+      const res = await $fetch<{
+        pool: ApiPool
+        memberId: string
+        token: string
+        isOwner: true
+      }>(`/api/pools/${id}/sync`, {
+        method: 'POST',
+        body: { code },
+      })
+
+      creds.value = {
+        ...creds.value,
+        [id]: {
+          memberId: res.memberId,
+          token: res.token,
+          isOwner: true,
+        },
+      }
+      persistCreds()
+
+      const ui = toUiPool(res.pool)
+      mergePool(ui)
+      return ui
+    } catch {
+      return null
+    }
   }
 
   /** Create a pool owned by the local user. Returns it, or null on failure/cap. */
@@ -585,14 +586,13 @@ export function usePools() {
 
   /**
    * Sync the LOCAL user's picks into every pool they belong to. Sends each pool
-   * the picks for the device's own member, with each pick's kickoff time so the
-   * server can reject late edits. Called whenever personal picks change.
+   * the picks for the device's own member. The server obtains authoritative
+   * kickoff times itself and rejects late edits. Called whenever picks change.
    */
   async function syncOwnerPicks(personalPicks: Record<string, UserPick>) {
-    const payload: Record<string, { outcome: PickOutcome; kickoff: string }> =
-      {}
+    const payload: Record<string, { outcome: PickOutcome }> = {}
     for (const [matchId, pick] of Object.entries(personalPicks)) {
-      payload[matchId] = { outcome: pick.outcome, kickoff: pick.match.date }
+      payload[matchId] = { outcome: pick.outcome }
     }
 
     const ids = Object.keys(creds.value)
@@ -646,68 +646,14 @@ export function usePools() {
    * Compute a ranked leaderboard for a pool. A member scores a point for each
    * FINISHED match where their backed OUTCOME matches the actual result.
    * `resolveResult` maps a matchId → the finished outcome (or null).
-   *
-   * `selfPicks` — when provided, the self member's picks are taken from this
-   * local map instead of the server pool data. This prevents the leaderboard
-   * from flashing 0 picks for the local user when the server hasn't been
-   * synced yet (e.g. immediately after page load before syncOwnerPicks runs).
    */
   function leaderboard(
     id: string,
-    resolveResult: (matchId: string) => PickOutcome | null,
-    selfPicks?: Record<string, UserPick>
+    resolveResult: (matchId: string) => PickOutcome | null
   ): LeaderRow[] {
     const pool = getPool(id)
     if (!pool) return []
-    const rows: LeaderRow[] = pool.members.map((m) => {
-      // For the self member, prefer local picks over server picks so the
-      // leaderboard always reflects the user's actual selections even before
-      // the server sync has completed.
-      const effectivePicks: Record<string, PickOutcome> =
-        m.isSelf && selfPicks
-          ? Object.fromEntries(
-              Object.entries(selfPicks).map(([mid, p]) => [mid, p.outcome])
-            )
-          : m.picks
-      let score = 0
-      let decided = 0
-      const picksMade = Object.keys(effectivePicks).length
-      for (const [matchId, outcome] of Object.entries(effectivePicks)) {
-        const result = resolveResult(matchId)
-        if (result === null) continue
-        decided++
-        if (result === outcome) score++
-      }
-      const accuracy = decided > 0 ? score / decided : 0
-      return {
-        memberId: m.id,
-        name: m.name,
-        isOwner: !!m.isOwner,
-        isSelf: !!m.isSelf,
-        score,
-        decided,
-        picksMade,
-        accuracy,
-        rank: 0,
-      }
-    })
-    rows.sort(
-      (a, b) =>
-        b.score - a.score ||
-        b.accuracy - a.accuracy ||
-        b.picksMade - a.picksMade ||
-        a.name.localeCompare(b.name)
-    )
-    let lastScore = -1
-    let lastRank = 0
-    rows.forEach((r, i) => {
-      if (r.score !== lastScore) {
-        lastRank = i + 1
-        lastScore = r.score
-      }
-      r.rank = lastRank
-    })
-    return rows
+    return rankPoolMembers(pool.members, resolveResult)
   }
 
   /** True if this device holds credentials for at least one pool. */
@@ -729,6 +675,7 @@ export function usePools() {
     leavePool,
     poolLink,
     ownerSyncLink,
+    exchangeOwnerSync,
     createPool,
     updatePool,
     deletePool,

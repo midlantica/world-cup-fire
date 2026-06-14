@@ -1,7 +1,7 @@
 // DELETE /api/pools/:id — delete a pool entirely (OWNER ONLY).
 //
-// Auth via the owner token, passed as the `x-pool-token` header (DELETE has no
-// body in some clients) or a `?token=` query param. Returns { ok: true }.
+// Auth via the owner token, passed as the `x-pool-token` header.
+// Returns { ok: true }.
 
 import { readPool, deletePoolBlob } from '../../utils/pools'
 
@@ -11,9 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
   }
 
-  const headerToken = getHeader(event, 'x-pool-token')
-  const queryToken = getQuery(event).token as string | undefined
-  const token = headerToken || queryToken
+  const token = getHeader(event, 'x-pool-token')
   if (!token) {
     throw createError({ statusCode: 400, statusMessage: 'Missing token' })
   }

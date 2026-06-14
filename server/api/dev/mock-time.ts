@@ -32,7 +32,10 @@ function patchFile(filePath: string, pattern: RegExp, replacement: string) {
 
 export default defineEventHandler(async (event) => {
   if (!import.meta.dev) {
-    throw createError({ statusCode: 403, message: 'Not available in production' })
+    throw createError({
+      statusCode: 403,
+      message: 'Not available in production',
+    })
   }
 
   if (event.method === 'GET') {

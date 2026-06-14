@@ -57,7 +57,8 @@
           </p>
 
           <p class="sync-modal__warning">
-            ⚠️ Keep this link private — it gives full owner access to your pool.
+            ⚠️ Keep this link private. It works once and expires after 10
+            minutes.
           </p>
 
           <div class="sync-modal__url-row">
@@ -73,8 +74,8 @@
           </button>
 
           <p class="sync-modal__note">
-            Open this link on any device to sync your picks. You can reuse it
-            any time — your picks stay in sync automatically through your pool.
+            Open this link on the other device now. Generate a new link whenever
+            you need to connect another browser.
           </p>
         </div>
       </div>

@@ -7,5 +7,9 @@ import { requirePool, toPublicPool } from '../../utils/pools'
 
 export default defineEventHandler(async (event) => {
   const { pool } = await requirePool(event)
-  return { pool: toPublicPool(pool) }
+  const token = getHeader(event, 'x-pool-token')
+  const selfMemberId = token
+    ? pool.members.find((member) => member.token === token)?.id
+    : undefined
+  return { pool: await toPublicPool(pool, selfMemberId) }
 })

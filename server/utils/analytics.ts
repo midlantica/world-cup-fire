@@ -16,6 +16,10 @@
 import { getStore } from '@netlify/blobs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
+import {
+  updateWithOptimisticRetry,
+  type VersionedValue,
+} from './optimistic-update'
 
 // ── Data shapes ───────────────────────────────────────────────────────────────
 
@@ -26,13 +30,16 @@ export interface DayRecord {
   sessions: string[] // session ids
   pages: Record<string, number> // path → count
   hourly: Record<string, number> // "YYYY-MM-DDTHH" → count
+  /** Local fallback revision; production concurrency uses the blob ETag. */
+  version?: number
 }
 
 // ── Store abstraction ─────────────────────────────────────────────────────────
 
 interface AnalyticsStore {
   read(date: string): Promise<DayRecord | null>
-  write(record: DayRecord): Promise<void>
+  readVersioned(date: string): Promise<VersionedValue<DayRecord, string | null>>
+  writeVersioned(record: DayRecord, revision: string | null): Promise<boolean>
   list(days: number): Promise<DayRecord[]>
 }
 
@@ -55,8 +62,25 @@ function makeBlobStore(): AnalyticsStore {
       const raw = await store.get(date, { type: 'json' })
       return (raw as DayRecord | null) ?? null
     },
-    async write(record) {
-      await store.setJSON(record.date, record)
+    async readVersioned(date) {
+      const entry = await store.getWithMetadata(date, { type: 'json' })
+      if (entry && !entry.etag) {
+        throw new Error(`Analytics day ${date} was read without an ETag`)
+      }
+      return entry
+        ? {
+            value: normalizeDay(entry.data as Partial<DayRecord>, date),
+            revision: entry.etag!,
+          }
+        : { value: emptyDay(date), revision: null }
+    },
+    async writeVersioned(record, revision) {
+      const result = await store.set(
+        record.date,
+        JSON.stringify(record),
+        revision === null ? { onlyIfNew: true } : { onlyIfMatch: revision }
+      )
+      return result.modified
     },
     async list(days) {
       const results: DayRecord[] = []
@@ -87,6 +111,7 @@ function makeBlobStore(): AnalyticsStore {
 
 function makeFileStore(): AnalyticsStore {
   const dir = resolve(process.cwd(), '.data', 'analytics')
+  const writeTails = new Map<string, Promise<void>>()
 
   async function ensureDir() {
     await mkdir(dir, { recursive: true })
@@ -97,19 +122,53 @@ function makeFileStore(): AnalyticsStore {
     return join(dir, `${safe}.json`)
   }
 
+  async function readFileDay(date: string): Promise<DayRecord | null> {
+    await ensureDir()
+    try {
+      const raw = await readFile(filePath(date), 'utf8')
+      return normalizeDay(JSON.parse(raw) as Partial<DayRecord>, date)
+    } catch {
+      return null
+    }
+  }
+
+  async function withWriteLock<T>(key: string, work: () => Promise<T>) {
+    const previous = writeTails.get(key) ?? Promise.resolve()
+    let release!: () => void
+    const current = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    writeTails.set(key, current)
+    await previous
+    try {
+      return await work()
+    } finally {
+      release()
+      if (writeTails.get(key) === current) writeTails.delete(key)
+    }
+  }
+
   return {
-    async read(date) {
-      await ensureDir()
-      try {
-        const raw = await readFile(filePath(date), 'utf8')
-        return JSON.parse(raw) as DayRecord
-      } catch {
-        return null
-      }
+    read(date) {
+      return readFileDay(date)
     },
-    async write(record) {
-      await ensureDir()
-      await writeFile(filePath(record.date), JSON.stringify(record), 'utf8')
+    async readVersioned(date) {
+      const record = await readFileDay(date)
+      return record
+        ? { value: record, revision: String(record.version ?? 0) }
+        : { value: emptyDay(date), revision: null }
+    },
+    writeVersioned(record, revision) {
+      return withWriteLock(record.date, async () => {
+        const current = await readFileDay(record.date)
+        if (revision === null) {
+          if (current) return false
+        } else if (!current || revision !== String(current.version ?? 0)) {
+          return false
+        }
+        await writeFile(filePath(record.date), JSON.stringify(record), 'utf8')
+        return true
+      })
     },
     async list(days) {
       await ensureDir()
@@ -192,6 +251,7 @@ export function normalizeDay(rec: Partial<DayRecord>, date: string): DayRecord {
       rec.hourly && typeof rec.hourly === 'object' && !Array.isArray(rec.hourly)
         ? rec.hourly
         : {},
+    version: typeof rec.version === 'number' ? rec.version : undefined,
   }
 }
 
@@ -218,53 +278,38 @@ export async function recordPageview(
   const date = utcDateStr(now)
   const hour = utcHourStr(now)
 
-  const MAX_RETRIES = 3
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const rec = (await store.read(date)) ?? emptyDay(date)
-    const versionBefore = (rec as DayRecord & { version?: number }).version ?? 0
+  await updateWithOptimisticRetry<DayRecord, string | null>({
+    read: () => store.readVersioned(date),
+    write: (record, revision) => store.writeVersioned(record, revision),
+    mutate: (rec) => {
+      rec.version = (rec.version ?? 0) + 1
+      rec.pageViews++
 
-    rec.pageViews++
+      if (
+        !rec.visitors.includes(visitorHash) &&
+        rec.visitors.length < VISITOR_CAP
+      ) {
+        rec.visitors.push(visitorHash)
+      }
 
-    // Visitors (unique per day)
-    if (
-      !rec.visitors.includes(visitorHash) &&
-      rec.visitors.length < VISITOR_CAP
-    ) {
-      rec.visitors.push(visitorHash)
-    }
+      if (
+        !rec.sessions.includes(sessionId) &&
+        rec.sessions.length < VISITOR_CAP
+      ) {
+        rec.sessions.push(sessionId)
+      }
 
-    // Sessions (unique per day)
-    if (
-      !rec.sessions.includes(sessionId) &&
-      rec.sessions.length < VISITOR_CAP
-    ) {
-      rec.sessions.push(sessionId)
-    }
-
-    // Per-page counts
-    rec.pages[path] = (rec.pages[path] ?? 0) + 1
-
-    // Hourly counts
-    rec.hourly[hour] = (rec.hourly[hour] ?? 0) + 1
-
-    // Stamp a version so we can detect concurrent writes.
-    ;(rec as DayRecord & { version?: number }).version = versionBefore + 1
-
-    await store.write(rec)
-
-    // Verify our write won the race.
-    const verify = await store.read(date)
-    const verifyVersion = (verify as (DayRecord & { version?: number }) | null)
-      ?.version
-    if (verifyVersion === versionBefore + 1) return
-
-    // Another writer beat us — retry from a fresh read.
-    if (attempt < MAX_RETRIES) {
-      await new Promise((r) => setTimeout(r, 10 + Math.random() * 40))
-    }
-    // On the last attempt we accept the write as-is (a single dropped count
-    // is an acceptable trade-off vs. blocking the response indefinitely).
-  }
+      rec.pages[path] = (rec.pages[path] ?? 0) + 1
+      rec.hourly[hour] = (rec.hourly[hour] ?? 0) + 1
+      return rec
+    },
+    onMissing: () => {
+      throw new Error('Analytics store did not return an empty day')
+    },
+    onConflict: () => {
+      throw new Error('Analytics day changed too many times')
+    },
+  })
 }
 
 // ── Pools-created counter ─────────────────────────────────────────────────────
@@ -277,11 +322,14 @@ export interface PoolsCounter {
   total: number
   /** date → pools created that day */
   daily: Record<string, number>
+  /** Local fallback revision; production concurrency uses the blob ETag. */
+  version?: number
 }
 
 interface CounterStore {
   read(): Promise<PoolsCounter>
-  write(c: PoolsCounter): Promise<void>
+  readVersioned(): Promise<VersionedValue<PoolsCounter, string | null>>
+  writeVersioned(c: PoolsCounter, revision: string | null): Promise<boolean>
 }
 
 const COUNTER_KEY = 'pools-counter'
@@ -293,8 +341,25 @@ function makeCounterBlobStore(): CounterStore {
       const raw = await store.get(COUNTER_KEY, { type: 'json' })
       return (raw as PoolsCounter | null) ?? { total: 0, daily: {} }
     },
-    async write(c) {
-      await store.setJSON(COUNTER_KEY, c)
+    async readVersioned() {
+      const entry = await store.getWithMetadata(COUNTER_KEY, { type: 'json' })
+      if (entry && !entry.etag) {
+        throw new Error('Pools counter was read without an ETag')
+      }
+      return entry
+        ? {
+            value: entry.data as PoolsCounter,
+            revision: entry.etag!,
+          }
+        : { value: { total: 0, daily: {} }, revision: null }
+    },
+    async writeVersioned(c, revision) {
+      const result = await store.set(
+        COUNTER_KEY,
+        JSON.stringify(c),
+        revision === null ? { onlyIfNew: true } : { onlyIfMatch: revision }
+      )
+      return result.modified
     },
   }
 }
@@ -302,24 +367,57 @@ function makeCounterBlobStore(): CounterStore {
 function makeCounterFileStore(): CounterStore {
   const dir = resolve(process.cwd(), '.data', 'analytics')
   const file = join(dir, `${COUNTER_KEY}.json`)
+  let writeTail = Promise.resolve()
 
   async function ensureDir() {
     await mkdir(dir, { recursive: true })
   }
 
+  async function readFileCounter(): Promise<PoolsCounter | null> {
+    await ensureDir()
+    try {
+      const raw = await readFile(file, 'utf8')
+      return JSON.parse(raw) as PoolsCounter
+    } catch {
+      return null
+    }
+  }
+
+  async function withWriteLock<T>(work: () => Promise<T>) {
+    const previous = writeTail
+    let release!: () => void
+    writeTail = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await previous
+    try {
+      return await work()
+    } finally {
+      release()
+    }
+  }
+
   return {
     async read() {
-      await ensureDir()
-      try {
-        const raw = await readFile(file, 'utf8')
-        return JSON.parse(raw) as PoolsCounter
-      } catch {
-        return { total: 0, daily: {} }
-      }
+      return (await readFileCounter()) ?? { total: 0, daily: {} }
     },
-    async write(c) {
-      await ensureDir()
-      await writeFile(file, JSON.stringify(c), 'utf8')
+    async readVersioned() {
+      const counter = await readFileCounter()
+      return counter
+        ? { value: counter, revision: String(counter.version ?? 0) }
+        : { value: { total: 0, daily: {} }, revision: null }
+    },
+    writeVersioned(c, revision) {
+      return withWriteLock(async () => {
+        const current = await readFileCounter()
+        if (revision === null) {
+          if (current) return false
+        } else if (!current || revision !== String(current.version ?? 0)) {
+          return false
+        }
+        await writeFile(file, JSON.stringify(c), 'utf8')
+        return true
+      })
     },
   }
 }
@@ -345,10 +443,22 @@ export async function incrementPoolsCreated(): Promise<void> {
   const store = counterStore()
   const today = utcDateStr(new Date())
   try {
-    const c = await store.read()
-    c.total += 1
-    c.daily[today] = (c.daily[today] ?? 0) + 1
-    await store.write(c)
+    await updateWithOptimisticRetry<PoolsCounter, string | null>({
+      read: () => store.readVersioned(),
+      write: (counter, revision) => store.writeVersioned(counter, revision),
+      mutate: (counter) => {
+        counter.version = (counter.version ?? 0) + 1
+        counter.total += 1
+        counter.daily[today] = (counter.daily[today] ?? 0) + 1
+        return counter
+      },
+      onMissing: () => {
+        throw new Error('Counter store did not return an empty counter')
+      },
+      onConflict: () => {
+        throw new Error('Pools counter changed too many times')
+      },
+    })
   } catch (e) {
     console.error('[analytics] incrementPoolsCreated error:', e)
   }

@@ -1,5 +1,10 @@
 import tailwindcss from '@tailwindcss/vite'
 
+const ignoredBrokenSourceMapPlugins = new Set([
+  '@tailwindcss/vite:generate:build',
+  'nuxt:module-preload-polyfill',
+])
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
@@ -7,8 +12,41 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
+  // No error-tracking service uploads source maps, so do not generate them.
+  sourcemap: false,
+
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (
+            warning.code === 'SOURCEMAP_BROKEN' &&
+            warning.plugin &&
+            ignoredBrokenSourceMapPlugins.has(warning.plugin)
+          ) {
+            return
+          }
+          warn(warning)
+        },
+      },
+    },
+    $server: {
+      build: {
+        rollupOptions: {
+          onwarn(warning, warn) {
+            if (
+              warning.code === 'SOURCEMAP_BROKEN' &&
+              warning.plugin &&
+              ignoredBrokenSourceMapPlugins.has(warning.plugin)
+            ) {
+              return
+            }
+            warn(warning)
+          },
+        },
+      },
+    },
     server: {
       // Auto-open the browser when the dev server starts
       open: true,
@@ -16,11 +54,6 @@ export default defineNuxtConfig({
         // Disable the intrusive full-screen error overlay; check the console instead
         overlay: false,
       },
-    },
-    build: {
-      // Generate source maps without linking them in the browser —
-      // safe for production and compatible with error-tracking tools like Sentry
-      sourcemap: 'hidden',
     },
   },
 

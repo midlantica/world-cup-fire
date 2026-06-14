@@ -17,8 +17,6 @@
     </div>
 
     <GroupDetailModal />
-    <GameDetailModal />
-    <FlagModal />
     <CountryDetailModal />
   </div>
 </template>

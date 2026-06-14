@@ -118,14 +118,6 @@ Open [http://localhost:3000](http://localhost:3000).
 pnpm build
 ```
 
-### Preview production build
-
-```bash
-pnpm preview
-```
-
----
-
 ## Deployment
 
 The app is configured for **Netlify** via the Nitro `netlify` preset. All `server/api/` routes are automatically deployed as Netlify Functions.
@@ -135,6 +127,9 @@ The app is configured for **Netlify** via the Nitro `netlify` preset. All `serve
 ```
 
 Push to your connected Netlify repo and it deploys automatically.
+
+Because this project targets the Netlify Nitro preset, `nuxt preview` is not
+supported. Use `netlify dev` when local Netlify Functions emulation is needed.
 
 ---
 

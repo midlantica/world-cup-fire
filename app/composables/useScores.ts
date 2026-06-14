@@ -280,10 +280,16 @@ function applyOptimisticLive(m: Match, nowMs: number): Match {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normaliseEvent(ev: any): Match {
   const comp = ev.competitions?.[0] ?? {}
-  const competitors: unknown[] = comp.competitors ?? []
+  const competitors = (comp.competitors ?? []) as Array<Record<string, unknown>>
 
-  const homeComp = (competitors[0] ?? {}) as Record<string, unknown>
-  const awayComp = (competitors[1] ?? {}) as Record<string, unknown>
+  const homeComp =
+    competitors.find((competitor) => competitor.homeAway === 'home') ??
+    competitors[0] ??
+    {}
+  const awayComp =
+    competitors.find((competitor) => competitor.homeAway === 'away') ??
+    competitors[1] ??
+    {}
 
   const homeTeam = (homeComp.team as Record<string, unknown>) ?? {}
   const awayTeam = (awayComp.team as Record<string, unknown>) ?? {}

@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
     const existing = pool.members.find((m) => m.token === callerToken)
     if (existing) {
       return {
-        pool: toPublicPool(pool, existing.id),
+        pool: await toPublicPool(pool, existing.id),
         memberId: existing.id,
         token: existing.token,
         isOwner: existing.isOwner,
@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    pool: toPublicPool(updated, (newMember as StoredMember).id),
+    pool: await toPublicPool(updated, (newMember as StoredMember).id),
     memberId: (newMember as StoredMember).id,
     token: (newMember as StoredMember).token,
   }

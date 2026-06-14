@@ -23,8 +23,18 @@
     return events.slice(0, 10).map((ev) => {
       const comp = ev.competitions?.[0] ?? {}
       const competitors = comp.competitors ?? []
-      const home = competitors[0] ?? {}
-      const away = competitors[1] ?? {}
+      const home =
+        competitors.find(
+          (competitor: { homeAway?: string }) => competitor.homeAway === 'home'
+        ) ??
+        competitors[0] ??
+        {}
+      const away =
+        competitors.find(
+          (competitor: { homeAway?: string }) => competitor.homeAway === 'away'
+        ) ??
+        competitors[1] ??
+        {}
       return {
         date: ev.date ?? '',
         homeTeam: home.team?.displayName ?? '',

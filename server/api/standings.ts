@@ -93,13 +93,15 @@ function computeStandings(events: any[]): unknown[] {
 
     if (!isFinished) continue
 
-    const competitors: unknown[] = comp.competitors ?? []
+    const competitors: any[] = comp.competitors ?? []
     if (competitors.length < 2) continue
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const c0 = competitors[0] as any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const c1 = competitors[1] as any
+    const c0 =
+      competitors.find((competitor) => competitor.homeAway === 'home') ??
+      competitors[0]
+    const c1 =
+      competitors.find((competitor) => competitor.homeAway === 'away') ??
+      competitors[1]
 
     const name0: string = c0.team?.displayName ?? ''
     const name1: string = c1.team?.displayName ?? ''

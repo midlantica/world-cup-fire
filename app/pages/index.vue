@@ -71,8 +71,6 @@
     </div>
 
     <!-- Modals -->
-    <GameDetailModal />
-    <FlagModal />
     <CountryDetailModal />
     <GroupDetailModal />
   </div>

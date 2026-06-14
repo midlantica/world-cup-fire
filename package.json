@@ -1,12 +1,13 @@
 {
   "name": "world-cup-fire",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@11.5.1",
   "scripts": {
     "build": "nuxt build",
     "dev": "TMPDIR=/tmp nuxt dev",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "deploy": "netlify deploy --build --prod"

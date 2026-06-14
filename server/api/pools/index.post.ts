@@ -36,11 +36,15 @@ export default defineEventHandler(async (event) => {
   }
 
   await writePool(pool)
-  // Fire-and-forget — a counter failure must never block pool creation.
-  incrementPoolsCreated().catch(() => {})
+  const [publicPool] = await Promise.all([
+    toPublicPool(pool, owner.id),
+    // The helper catches analytics failures, but awaiting it keeps serverless
+    // runtimes alive long enough for successful increments to be persisted.
+    incrementPoolsCreated(),
+  ])
 
   return {
-    pool: toPublicPool(pool, owner.id),
+    pool: publicPool,
     poolId: pool.id,
     memberId: owner.id,
     token: owner.token,

@@ -47,5 +47,5 @@ export default defineEventHandler(async (event) => {
     return pool
   })
 
-  return { pool: toPublicPool(updated, ownerId) }
+  return { pool: await toPublicPool(updated, ownerId) }
 })

@@ -88,8 +88,6 @@
   <div class="group-route">
     <!-- GroupDetailModal opens automatically via useGroupDetail route watcher -->
     <GroupDetailModal />
-    <GameDetailModal />
-    <FlagModal />
     <CountryDetailModal />
   </div>
 </template>

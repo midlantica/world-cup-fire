@@ -90,7 +90,7 @@ FIFA info, encoded once as a constant. Also the 3rd-place wildcard seeding map.
 
 #### `/knockout` page (the real bracket viewer)
 
-- Once the group stage is actually over (July 2), show the **real bracket**
+- Once the group stage is actually over (June 27), show the **real bracket**
   populated with actual results from the ESPN API
 - Before that (or alongside), show YOUR predicted bracket from the predictor
 

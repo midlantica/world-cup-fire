@@ -4,10 +4,10 @@
 export const WC_START = new Date('2026-06-11')
 
 /** Group stage ends */
-const WC_GROUP_END = new Date('2026-07-02')
+const WC_GROUP_END = new Date('2026-06-27')
 
 /** Knockout stage starts */
-const WC_KNOCKOUT_START = new Date('2026-07-04')
+const WC_KNOCKOUT_START = new Date('2026-06-28')
 
 /** Final */
 export const WC_FINAL = new Date('2026-07-19')
