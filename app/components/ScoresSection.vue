@@ -57,8 +57,19 @@
   // Match card refs keyed by match id — set by MatchCard via data-match-id
   const matchCardRefs = ref<Map<string, HTMLElement>>(new Map())
 
-  function setMatchCardRef(matchId: string, el: HTMLElement | null) {
-    if (el) matchCardRefs.value.set(matchId, el)
+  function setMatchCardRef(
+    matchId: string,
+    el: Element | ComponentPublicInstance | null
+  ) {
+    // MatchCard is a Vue component — el is the component instance, not a DOM node.
+    // Extract the root DOM element via $el.
+    const domEl =
+      el == null
+        ? null
+        : '$el' in (el as ComponentPublicInstance)
+          ? ((el as ComponentPublicInstance).$el as HTMLElement)
+          : (el as HTMLElement)
+    if (domEl) matchCardRefs.value.set(matchId, domEl)
     else matchCardRefs.value.delete(matchId)
   }
 
@@ -90,7 +101,8 @@
 
     if (!targetDay) return
 
-    // Wait a tick for Vue to render the match card refs
+    // Wait two ticks: one for Vue to render the DOM, one for refs to populate
+    await nextTick()
     await nextTick()
 
     const headerH =
@@ -250,7 +262,7 @@
               :key="match.id"
               :ref="
                 (el: Element | ComponentPublicInstance | null) =>
-                  setMatchCardRef(match.id, el as HTMLElement | null)
+                  setMatchCardRef(match.id, el)
               "
               :data-match-id="match.id"
               :match="match"

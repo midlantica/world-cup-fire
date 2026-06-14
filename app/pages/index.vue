@@ -84,8 +84,7 @@
   .home-page__inner {
     @apply mx-auto max-w-7xl px-3;
     padding-top: 0;
-    /* Extra bottom padding so the sticky picks banner doesn't obscure the last match cards */
-    padding-bottom: 6rem;
+    padding-bottom: 1rem;
   }
 
   .home-page__main {

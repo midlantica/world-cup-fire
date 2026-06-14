@@ -398,6 +398,20 @@
     border: 1px solid rgb(255 255 255 / 0.08);
   }
 
+  @keyframes halo-pulse {
+    0%,
+    100% {
+      box-shadow: 0px 0px 2px 0px #f97316;
+    }
+    50% {
+      box-shadow: 0px 0px 5px 0px #f97316;
+    }
+  }
+
+  .match-card.live {
+    animation: halo-pulse 1.85s ease-in-out infinite;
+  }
+
   .match-card:hover {
     background-color: var(--nation-card-hover, #252525);
   }

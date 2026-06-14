@@ -233,10 +233,37 @@ function statusCode(
 }
 
 function normaliseClock(
-  espnStatus: Record<string, unknown>
+  espnStatus: Record<string, unknown>,
+  kickoffDate?: string
 ): string | undefined {
   const detail = espnStatus?.displayClock as string | undefined
-  return detail && detail !== '0:00' && detail !== "0'" ? detail : undefined
+
+  if (!detail) return undefined
+
+  // ESPN returns clock in "MM:SS" format (e.g. "27:00", "45:00", "0:00").
+  // Convert to "MM'" format (e.g. "27'", "45'").
+  // Also handle the already-converted "MM'" format just in case.
+  const mmssMatch = detail.match(/^(\d+):(\d+)$/)
+  if (mmssMatch) {
+    const minutes = parseInt(mmssMatch[1]!, 10)
+    // "0:00" means the clock hasn't ticked yet — fall back to elapsed time
+    // computed from kickoff so we show e.g. "1'" instead of nothing.
+    if (minutes === 0) {
+      if (kickoffDate) {
+        const kickoff = new Date(kickoffDate).getTime()
+        if (!Number.isNaN(kickoff)) {
+          const elapsed = Math.floor((Date.now() - kickoff) / 60_000)
+          if (elapsed >= 0) return `${Math.max(1, elapsed)}'`
+        }
+      }
+      return undefined
+    }
+    return `${minutes}'`
+  }
+
+  // Already in "MM'" format or some other string — pass through if non-zero
+  if (detail === "0'") return undefined
+  return detail
 }
 
 /**
@@ -308,7 +335,10 @@ export function normaliseEvent(ev: any): Match {
   const espnCompleted = espnStatusType?.completed as boolean | undefined
 
   const code = statusCode(espnStatusName, espnState, espnCompleted)
-  const clock = normaliseClock(ev.status as Record<string, unknown>)
+  const clock = normaliseClock(
+    ev.status as Record<string, unknown>,
+    code === 'live' || code === 'ht' ? String(ev.date ?? '') : undefined
+  )
 
   const homeScore = code !== 'ns' ? ((homeComp.score as string) ?? '0') : null
   const awayScore = code !== 'ns' ? ((awayComp.score as string) ?? '0') : null
@@ -551,7 +581,14 @@ export function useScores() {
         ...base,
         homeScore: ov.homeScore,
         awayScore: ov.awayScore,
-        status: ov.status,
+        // Preserve the base match's clock if the override doesn't have one.
+        // The override only carries score data; the clock comes from normaliseClock
+        // (via the /api/schedule poll). Without this guard, an override with
+        // clock: undefined would clobber a correctly-parsed "27'" clock value.
+        status: {
+          code: ov.status.code,
+          clock: ov.status.clock ?? base.status.clock,
+        },
       }
     })
   })

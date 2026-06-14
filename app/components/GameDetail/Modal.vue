@@ -395,7 +395,9 @@
     pushLiveScoreOverride(m.id, {
       homeScore: hs,
       awayScore: as_,
-      status: m.status,
+      // Preserve the clock from the base match — don't let the override clobber
+      // a correctly-parsed clock value with an undefined one from selectedMatch.
+      status: { code: m.status.code, clock: m.status.clock },
     })
   })
 
