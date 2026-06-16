@@ -457,6 +457,7 @@ let scoresLiveTimer: ReturnType<typeof setInterval> | null = null
 let scoresKickoffTimer: ReturnType<typeof setInterval> | null = null
 let scoresKickoffCheckTimer: ReturnType<typeof setInterval> | null = null
 let scoresWatcherStop: (() => void) | null = null
+let scoresVisibilityCleanup: (() => void) | null = null
 // Only count client-side instances — SSR has no timers/watchers to manage.
 let scoresInstanceCount = 0
 
@@ -681,6 +682,21 @@ export function useScores() {
       // Kick the tick once on mount in case we load mid-window.
       if (needsOptimisticTick()) startOptimisticTick()
 
+      // ── Page Visibility refresh ──────────────────────────────────────────
+      // When the user returns to the tab (or re-opens the browser to this
+      // page), fire an immediate refresh so live scores and match statuses
+      // are up-to-date without waiting for the next poll cycle.
+      function onVisibilityChange() {
+        if (document.visibilityState === 'visible') {
+          refresh()
+          // Also nudge the optimistic tick in case we're near a kickoff.
+          if (needsOptimisticTick()) startOptimisticTick()
+        }
+      }
+      document.addEventListener('visibilitychange', onVisibilityChange)
+      scoresVisibilityCleanup = () =>
+        document.removeEventListener('visibilitychange', onVisibilityChange)
+
       // First client instance: set up the singleton watcher
       scoresWatcherStop = watch(
         hasLiveMatches,
@@ -754,6 +770,8 @@ export function useScores() {
         stopOptimisticTick()
         scoresWatcherStop?.()
         scoresWatcherStop = null
+        scoresVisibilityCleanup?.()
+        scoresVisibilityCleanup = null
       }
     })
   }
