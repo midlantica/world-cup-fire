@@ -124,6 +124,7 @@
   }
 
   .tb-banner {
+    padding: 0.4rem 0 0.25rem;
     border-radius: 10px;
     background: linear-gradient(
       135deg,

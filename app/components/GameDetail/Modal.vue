@@ -85,17 +85,24 @@
     onUnmounted(() => mobileQuery?.removeEventListener('change', handler))
   })
 
-  // Desktop home: pop LEFT, caret RIGHT → [PICK ONE][D][W][→caret] sprouting leftward.
-  // Desktop away: pop RIGHT, caret LEFT → [←caret][W][D][PICK ONE] sprouting rightward.
-  // Mobile: both sides use pop LEFT, caret RIGHT (same as match cards) — no PICK ONE label.
+  // Desktop home: wtl-wrap is on the FAR LEFT of the home column (first in DOM,
+  //   justify-content: flex-end). Picker pops LEFT into empty space.
+  //   caret RIGHT → points back at team name (which is to the right of the wtl-wrap).
+  //   PICK ONE outside on LEFT → [PICK ONE][D][W][→caret] TeamName Flag
+  // Desktop away: wtl-wrap is on the FAR RIGHT of the away column (last in DOM,
+  //   justify-content: flex-start). Picker pops RIGHT into empty space.
+  //   caret LEFT → points back at team name (which is to the left of the wtl-wrap).
+  //   PICK ONE outside on RIGHT → Flag TeamName [←caret][W][D] [PICK ONE]
+  // Mobile: both sides pop LEFT, caret LEFT → [PICK ONE inside][←caret][D][W]
+  //   PICK ONE is inside the grey bar, to the left of the caret+buttons.
   const homePopout = computed<'left' | 'right'>(() => 'left')
-  const homeCaret = computed<'left' | 'right'>(() => 'right')
+  const homeCaret = computed<'left' | 'right'>(() =>
+    isMobile.value ? 'left' : 'right'
+  )
   const awayPopout = computed<'left' | 'right'>(() =>
     isMobile.value ? 'left' : 'right'
   )
-  const awayCaret = computed<'left' | 'right'>(() =>
-    isMobile.value ? 'right' : 'left'
-  )
+  const awayCaret = computed<'left' | 'right'>(() => 'left')
   const showPickOneOutside = computed(() => !isMobile.value)
 
   // Ghost-click guard: after arming the picker via a tap, the browser fires a
@@ -1316,7 +1323,10 @@
     text-align: left;
   }
 
-  /* Away side: flag+name flowing left from centre, toggle on far right */
+  /* Away side: flag+name flowing left from centre, toggle on far right.
+     The wtl-wrap is last in DOM so it sits on the far right of the away column.
+     On desktop the picker pops RIGHT (into empty space toward the panel edge)
+     with PICK ONE appearing outside to the right of the buttons. */
   .gd-header__side--away {
     justify-content: flex-start;
   }
