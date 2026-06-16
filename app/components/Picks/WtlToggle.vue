@@ -54,6 +54,13 @@
      * the team name is on so the caret points back at it.
      */
     caret?: 'left' | 'right'
+    /**
+     * Render the "PICK ONE" label outside the grey picker bar, as a sibling
+     * element. When true the label floats to the outer side of the toggle
+     * (left for pop-left, right for pop-right). Use this in the modal header
+     * where the label should sit outside the toggle, not inside the grey bar.
+     */
+    pickOneOutside?: boolean
   }>()
 
   const emit = defineEmits<{
@@ -83,13 +90,12 @@
   // Show the full picker when revealed and interactive.
   const open = computed(() => !props.readonly && !!props.revealed)
 
-  // Show the semi-transparent placeholder when this is an interactive,
-  // not-yet-picked control that isn't currently revealed. It sits in the EXACT
-  // spot the real picked icon (check / tie chip) will occupy, hinting to the
-  // user where to click — and is swapped out for the real icon once a pick is
-  // made (or the live picker when the row is revealed).
+  // Show the semi-transparent placeholder when:
+  //   1. No pick yet (not-yet-picked control, not revealed), OR
+  //   2. A win is picked but this is the loser row — show the grey placeholder
+  //      as a "change pick" tap target instead of a dimmed chip.
   const showPlaceholder = computed(
-    () => !props.readonly && !hasPick.value && !open.value
+    () => !props.readonly && !open.value && (!hasPick.value || isLoserRow.value)
   )
 
   // ── Slot ⇄ home-anchored outcome mapping (per row perspective) ────────────
@@ -103,13 +109,22 @@
   }
 
   // The leftover icon (slot) to show for this row given the home-anchored pick.
-  // Only the WINNER (✓) or a TIE (T) is ever shown — the losing row shows null.
+  // Winner row → ✓ (check). Draw → T (tie) on BOTH rows.
+  // Loser row → null (no chip); the placeholder is shown instead via showPlaceholder.
   const leftoverSlot = computed<Slot | null>(() => {
     const o = props.outcome
     if (o === null) return null
     if (o === 'tie') return 'tie'
     const thisRowWon = side.value === 'home' ? o === 'win' : o === 'lose'
     return thisRowWon ? 'check' : null
+  })
+
+  // True when this row is the loser (other team won) — show the grey placeholder
+  // as a "change pick" tap target instead of a dimmed chip.
+  const isLoserRow = computed(() => {
+    const o = props.outcome
+    if (o === null || o === 'tie') return false
+    return side.value === 'home' ? o !== 'win' : o !== 'lose'
   })
 
   // Transient "just tapped" key — bumps to retrigger the pop animation on the
@@ -161,6 +176,7 @@
       'wtl--pop-right': popoutDir === 'right',
       'wtl--caret-left': caretDir === 'left',
       'wtl--caret-right': caretDir === 'right',
+      'wtl--pick-one-outside': pickOneOutside,
     }"
   >
     <!-- OPEN: the exact grey picker bar with integrated caret + coloured slots.
@@ -169,7 +185,26 @@
          picker pops toward; in the modal header it's on the opposite side, so
          `caretDir` is decoupled from `popoutDir`. -->
     <span v-if="open" class="wtl__picker">
-      <span v-if="caretDir === 'left'" class="wtl__pick-one" aria-hidden="true"
+      <!-- Outside label: always on the side AWAY from the team name (opposite caretDir).
+           caretDir points toward the team name, so outside = the other side.
+           caretDir=left (team on left) → outside label goes on the RIGHT (after btns).
+           caretDir=right (team on right) → outside label goes on the LEFT (before caret+btns). -->
+
+      <!-- Outside label on the LEFT side (caretDir=right → team is on right → outside is left) -->
+      <span
+        v-if="pickOneOutside && caretDir === 'right'"
+        class="wtl__pick-one-outside"
+        aria-hidden="true"
+      >
+        <span class="wtl__pick-one-text--full">PICK ONE</span>
+        <span class="wtl__pick-one-text--short">PICK 1</span>
+      </span>
+
+      <!-- Inside label: only when NOT using outside mode AND caret is left -->
+      <span
+        v-if="!pickOneOutside && caretDir === 'left'"
+        class="wtl__pick-one"
+        aria-hidden="true"
         >PICK ONE</span
       >
       <span v-if="caretDir === 'left'" class="wtl__caret" aria-hidden="true" />
@@ -185,6 +220,7 @@
             { 'wtl__btn--pop': poppedSlot === slot },
           ]"
           :title="titleFor[slot]"
+          @touchend.prevent.stop="onSlot(slot)"
           @click.stop="onSlot(slot)"
         >
           <IconsPickWin v-if="slot === 'check'" />
@@ -192,17 +228,45 @@
         </button>
       </span>
       <span v-if="caretDir === 'right'" class="wtl__caret" aria-hidden="true" />
+
+      <!-- Inside label: only when NOT using outside mode AND caret is right -->
+      <span
+        v-if="!pickOneOutside && caretDir === 'right'"
+        class="wtl__pick-one wtl__pick-one--right"
+        aria-hidden="true"
+        >PICK ONE</span
+      >
+
+      <!-- Outside label on the RIGHT side (caretDir=left → team is on left → outside is right) -->
+      <span
+        v-if="pickOneOutside && caretDir === 'left'"
+        class="wtl__pick-one-outside"
+        aria-hidden="true"
+      >
+        <span class="wtl__pick-one-text--full">PICK ONE</span>
+        <span class="wtl__pick-one-text--short">PICK 1</span>
+      </span>
     </span>
 
     <!-- CLOSED + a pick exists: the single dark-marked leftover icon for this row -->
 
     <button
-      v-else-if="hasPick && leftoverSlot"
+      v-if="!open && hasPick && leftoverSlot"
       type="button"
       class="wtl__chip"
-      :class="`wtl__chip--${leftoverSlot}`"
+      :class="[
+        `wtl__chip--${leftoverSlot}`,
+        {
+          'wtl__chip--loser':
+            leftoverSlot === 'check' &&
+            outcome !== null &&
+            outcome !== 'tie' &&
+            (side === 'home' ? outcome !== 'win' : outcome !== 'lose'),
+        },
+      ]"
       :title="readonly ? 'Your pick' : 'Change pick'"
       :disabled="readonly"
+      @touchend.prevent.stop="readonly ? undefined : onSlot(leftoverSlot)"
       @click.stop="readonly ? null : onSlot(leftoverSlot)"
     >
       <IconsPickWin v-if="leftoverSlot === 'check'" />
@@ -210,11 +274,19 @@
       <IconsPickDraw v-else />
     </button>
 
-    <!-- PLACEHOLDER: no pick yet + picker not revealed. A semi-transparent
-         checkmark occupying the EXACT spot the real picked icon will land,
-         hinting where to click. Hovering the row (desktop) / tapping it
-         (mobile) reveals the live picker, which replaces this; making a pick
-         replaces it with the real chip. -->
+    <!-- PLACEHOLDER: shown when (a) no pick yet, or (b) a win is picked but
+         this is the loser row — acts as a "change pick" tap target.
+         When it's the loser row, render as a button so it's tappable. -->
+    <button
+      v-else-if="showPlaceholder && isLoserRow"
+      type="button"
+      class="wtl__placeholder wtl__placeholder--btn"
+      title="Change pick"
+      @touchend.prevent.stop="emit('cancel')"
+      @click.stop="emit('cancel')"
+    >
+      <IconsPickPlaceholder />
+    </button>
     <span
       v-else-if="showPlaceholder"
       class="wtl__placeholder"
@@ -384,6 +456,17 @@
     cursor: default;
   }
 
+  /* Loser row's "change pick" chip — same checkmark but dimmed so it reads as
+     "tap to change" rather than "this is your pick". The winner row's chip
+     stays at full opacity as the confirmed selection. */
+  .wtl__chip--loser {
+    opacity: 0.35;
+  }
+
+  .wtl__chip--loser:hover {
+    opacity: 0.65;
+  }
+
   /* ── PLACEHOLDER: semi-transparent checkmark hinting where to pick ─────────
      Fills the same 1.3rem footprint as the real chip so it lands in the EXACT
      spot the picked icon will occupy. Pointer events pass through to the team
@@ -405,6 +488,14 @@
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  /* Loser-row placeholder is a button — reset button chrome and enable pointer events. */
+  .wtl__placeholder--btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
   }
 
   /* Brighten slightly when the user hovers the row so the affordance reads as
@@ -431,5 +522,99 @@
     margin-right: 0.15rem;
     pointer-events: none;
     padding-top: 0.17rem;
+  }
+
+  /* Right-side inside label (caret-right variant) */
+  .wtl__pick-one--right {
+    text-align: left;
+    margin-right: 0;
+    margin-left: 0.15rem;
+  }
+
+  /* ── Outside "PICK ONE" label ────────────────────────────────────────────────
+     Sits as a flex sibling inside wtl__picker, outside the grey wtl__btns bar.
+     For pop-left it appears before the caret+btns (leftmost in the row);
+     for pop-right it appears after the caret+btns (rightmost in the row).
+     A gap separates it from the grey bar. */
+  .wtl__pick-one-outside {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 75,
+      'wght' 300;
+    font-size: 1rem;
+    line-height: 1;
+    letter-spacing: 0.13em;
+    color: hsl(0deg 0% 74.63%);
+    white-space: nowrap;
+    flex-shrink: 0;
+    pointer-events: none;
+    padding-top: 0.17rem;
+  }
+
+  /* Pop-left: label is the first child, add gap on its right */
+  .wtl--caret-right .wtl__pick-one-outside {
+    margin-right: 0.4rem;
+  }
+
+  /* Pop-right: label is the last child, add gap on its left */
+  .wtl--caret-left .wtl__pick-one-outside {
+    margin-left: 0.4rem;
+  }
+
+  /* Mobile/short text toggle */
+  .wtl__pick-one-text--full {
+    display: inline;
+  }
+
+  .wtl__pick-one-text--short {
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    .wtl__pick-one-text--full {
+      display: none;
+    }
+
+    .wtl__pick-one-text--short {
+      display: inline;
+    }
+  }
+
+  /* ── Pulsing background on Win/Draw buttons when picker first opens ──────────
+     A subtle glow-pulse on the button background draws the eye to the
+     interactive slots the moment the picker appears. Fades out after ~2s so
+     it doesn't become annoying on repeated opens. */
+  @keyframes wtl-btn-pulse {
+    0% {
+      background-color: transparent;
+    }
+    25% {
+      background-color: rgb(255 255 255 / 0.12);
+    }
+    55% {
+      background-color: transparent;
+    }
+    75% {
+      background-color: rgb(255 255 255 / 0.08);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+
+  .wtl--open .wtl__btn {
+    animation: wtl-btn-pulse 1.6s ease-out forwards;
+    border-radius: 0.15rem;
+  }
+
+  /* Stagger the away/second button slightly so they don't pulse in lockstep */
+  .wtl--open .wtl__btn:nth-child(2) {
+    animation-delay: 0.12s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wtl--open .wtl__btn {
+      animation: none;
+    }
   }
 </style>

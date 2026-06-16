@@ -68,6 +68,43 @@
   const armedSide = ref<'home' | 'away' | null>(null)
   const hoveredSide = ref<'home' | 'away' | null>(null)
 
+  // Desktop home: wtl-wrap is on the FAR LEFT of the home column, so the picker
+  // must pop RIGHT (toward the team name) to stay within the panel.
+  // Mobile home: wtl-wrap is between the name and score (order:2), so the picker
+  // pops LEFT (over the name area) — same direction as the away side.
+  // Track the mobile breakpoint reactively so the prop updates on resize.
+  const isMobile = ref(false)
+  let mobileQuery: MediaQueryList | null = null
+  onMounted(() => {
+    mobileQuery = window.matchMedia('(max-width: 639px)')
+    isMobile.value = mobileQuery.matches
+    const handler = (e: MediaQueryListEvent) => {
+      isMobile.value = e.matches
+    }
+    mobileQuery.addEventListener('change', handler)
+    onUnmounted(() => mobileQuery?.removeEventListener('change', handler))
+  })
+
+  // Desktop home: pop LEFT, caret RIGHT → [PICK ONE][D][W][→caret] sprouting leftward.
+  // Desktop away: pop RIGHT, caret LEFT → [←caret][W][D][PICK ONE] sprouting rightward.
+  // Mobile: both sides use pop LEFT, caret RIGHT (same as match cards) — no PICK ONE label.
+  const homePopout = computed<'left' | 'right'>(() => 'left')
+  const homeCaret = computed<'left' | 'right'>(() => 'right')
+  const awayPopout = computed<'left' | 'right'>(() =>
+    isMobile.value ? 'left' : 'right'
+  )
+  const awayCaret = computed<'left' | 'right'>(() =>
+    isMobile.value ? 'right' : 'left'
+  )
+  const showPickOneOutside = computed(() => !isMobile.value)
+
+  // Ghost-click guard: after arming the picker via a tap, the browser fires a
+  // synthetic click ~300ms later that can land on the W button (which just
+  // appeared under the finger). We record the arm timestamp and ignore any
+  // pick that arrives within 400ms of arming.
+  const armedAt = ref<number>(0)
+  const GHOST_CLICK_GUARD_MS = 400
+
   /** Picker is revealed for a side (hover desktop / armed mobile). */
   function rowRevealed(side: 'home' | 'away'): boolean {
     return (
@@ -102,9 +139,52 @@
     document.removeEventListener('click', onModalDocumentClick, true)
   )
 
+  // Whether the WTL picker buttons are in the ghost-click guard window.
+  // When true, the buttons render with pointer-events: none so no click
+  // (real or synthetic) can reach them.
+  const wtlGuarded = ref(false)
+  let wtlGuardTimer: ReturnType<typeof setTimeout> | null = null
+
+  function armSide(side: 'home' | 'away', fromClick = false) {
+    // If this call comes from the @click handler (not @touchend), ignore it
+    // during the ghost-click guard window. The browser fires a synthetic click
+    // ~300ms after touchend; if that click lands on the wrap it would call
+    // armSide() again and toggle the picker closed (or re-open the other side).
+    if (fromClick && wtlGuarded.value) return
+
+    armedSide.value = armedSide.value === side ? null : side
+    armedAt.value = Date.now()
+    // Engage CSS pointer-events guard for the ghost-click window.
+    // This is belt-and-suspenders with the timestamp check: even if the
+    // synthetic click fires before onWtlPick runs, the buttons are
+    // pointer-events: none so the click can't reach them at all.
+    wtlGuarded.value = true
+    if (wtlGuardTimer) clearTimeout(wtlGuardTimer)
+    wtlGuardTimer = setTimeout(() => {
+      wtlGuarded.value = false
+    }, GHOST_CLICK_GUARD_MS)
+  }
+
+  onUnmounted(() => {
+    if (wtlGuardTimer) clearTimeout(wtlGuardTimer)
+  })
+
   function onWtlPick(choice: 'win' | 'tie' | 'lose') {
+    // Timestamp guard (belt): ignore picks within GHOST_CLICK_GUARD_MS of arming.
+    if (Date.now() - armedAt.value < GHOST_CLICK_GUARD_MS) return
+
     if (selectedMatch.value && matchPickable.value)
       pickWtl(selectedMatch.value, choice)
+
+    // Re-engage the ghost-click guard after a pick so the synthetic click that
+    // fires ~300ms after the touchend on the W/D button can't re-trigger a pick
+    // on the chip that now appears in the same spot.
+    wtlGuarded.value = true
+    if (wtlGuardTimer) clearTimeout(wtlGuardTimer)
+    wtlGuardTimer = setTimeout(() => {
+      wtlGuarded.value = false
+    }, GHOST_CLICK_GUARD_MS)
+
     // Dismiss the picker after the tap. Clear BOTH armed (touch) and hovered
     // (sticky on touch where mouseleave never fires) so the popper reliably
     // closes on mobile. A short delay lets the slot's pop animation finish.
@@ -720,24 +800,35 @@
 
               <!-- Teams row: [pick] Name Flag | vs/score | Flag Name [pick] -->
               <div ref="teamsRowEl" class="gd-header__teams-row">
-                <!-- Home side -->
+                <!-- Home side: wtl-wrap first in DOM so it renders on the left
+                     (justify-content: flex-end pushes the group rightward, and
+                     the first child = wtl-wrap ends up on the far left of the group) -->
                 <div
                   class="gd-header__side gd-header__side--home"
                   @mouseenter="hoveredSide = 'home'"
                   @mouseleave="hoveredSide = null"
                 >
                   <!-- Unified Win·Tie·Lose pick control — anchored to home -->
-                  <PicksWtlToggle
+                  <span
                     v-if="showWtl"
-                    :outcome="matchWtl"
-                    :perspective="'home'"
-                    :caret="'right'"
-                    :allow-tie="matchAllowTie"
-                    :revealed="rowRevealed('home')"
-                    :readonly="!matchPickable"
-                    @pick="onWtlPick"
-                    @cancel="cancelPick"
-                  />
+                    class="gd-header__wtl-wrap"
+                    :class="{ 'gd-header__wtl-wrap--guarded': wtlGuarded }"
+                    @touchend.prevent="armSide('home')"
+                    @click.stop="armSide('home', true)"
+                  >
+                    <PicksWtlToggle
+                      :outcome="matchWtl"
+                      :perspective="'home'"
+                      :popout="homePopout"
+                      :caret="homeCaret"
+                      :allow-tie="matchAllowTie"
+                      :revealed="rowRevealed('home')"
+                      :readonly="!matchPickable"
+                      :pick-one-outside="showPickOneOutside"
+                      @pick="onWtlPick"
+                      @cancel="cancelPick"
+                    />
+                  </span>
 
                   <button
                     class="gd-header__team-btn"
@@ -754,9 +845,16 @@
                     </span>
                     <CountryFlag :iso2="selectedMatch.homeIso2" :size="32" />
                   </button>
+
+                  <!-- Mobile-only inline score for home team -->
+                  <span
+                    v-if="selectedMatch.status.code !== 'ns'"
+                    class="gd-header__score gd-header__score--mobile"
+                    >{{ derivedHomeScore }}</span
+                  >
                 </div>
 
-                <!-- Centre: vs or score -->
+                <!-- Centre: vs or score (desktop only; hidden on mobile) -->
                 <div class="gd-header__centre">
                   <template v-if="selectedMatch.status.code !== 'ns'">
                     <span class="gd-header__score">{{ derivedHomeScore }}</span>
@@ -806,17 +904,64 @@
                   </button>
 
                   <!-- Unified Win·Tie·Lose pick control — anchored to away -->
-                  <PicksWtlToggle
+                  <span
                     v-if="showWtl"
-                    :outcome="matchWtl"
-                    :perspective="'away'"
-                    :caret="'left'"
-                    :allow-tie="matchAllowTie"
-                    :revealed="rowRevealed('away')"
-                    :readonly="!matchPickable"
-                    @pick="onWtlPick"
-                    @cancel="cancelPick"
-                  />
+                    class="gd-header__wtl-wrap"
+                    :class="{ 'gd-header__wtl-wrap--guarded': wtlGuarded }"
+                    @touchend.prevent="armSide('away')"
+                    @click.stop="armSide('away', true)"
+                  >
+                    <PicksWtlToggle
+                      :outcome="matchWtl"
+                      :perspective="'away'"
+                      :popout="awayPopout"
+                      :caret="awayCaret"
+                      :allow-tie="matchAllowTie"
+                      :revealed="rowRevealed('away')"
+                      :readonly="!matchPickable"
+                      :pick-one-outside="showPickOneOutside"
+                      @pick="onWtlPick"
+                      @cancel="cancelPick"
+                    />
+                  </span>
+
+                  <!-- Mobile-only inline score for away team -->
+                  <span
+                    v-if="selectedMatch.status.code !== 'ns'"
+                    class="gd-header__score gd-header__score--mobile"
+                    >{{ derivedAwayScore }}</span
+                  >
+                </div>
+
+                <!-- Mobile-only status column (FT/HT/clock) — right side, spans both rows -->
+                <div
+                  v-if="selectedMatch.status.code !== 'ns'"
+                  class="gd-header__mobile-status"
+                >
+                  <span
+                    v-if="
+                      selectedMatch.status.code === 'live' &&
+                      selectedMatch.status.clock
+                    "
+                    class="gd-header__mobile-clock"
+                    >{{ selectedMatch.status.clock }}</span
+                  >
+                  <span
+                    class="gd-header__status"
+                    :class="{
+                      'gd-header__status--live':
+                        selectedMatch.status.code === 'live' ||
+                        selectedMatch.status.code === 'ht',
+                    }"
+                  >
+                    {{
+                      selectedMatch.status.code === 'ht'
+                        ? 'HT'
+                        : selectedMatch.status.code === 'ft'
+                          ? 'FT'
+                          : 'LIVE'
+                    }}
+                  </span>
                 </div>
               </div>
 
@@ -1160,14 +1305,18 @@
     text-decoration-color: oklab(100% 0 0 / 0.5);
   }
 
+  /* Home side: toggle on far left, then name+flag flowing right toward centre.
+     justify-content: flex-end pushes the group to the right (toward centre).
+     The wtl-wrap is first in DOM order so it appears on the left of the name+flag. */
   .gd-header__side--home {
     justify-content: flex-end;
   }
 
   .gd-header__side--home .gd-header__team-name {
-    text-align: right;
+    text-align: left;
   }
 
+  /* Away side: flag+name flowing left from centre, toggle on far right */
   .gd-header__side--away {
     justify-content: flex-start;
   }
@@ -1215,32 +1364,218 @@
     display: none;
   }
 
-  /* Narrow: tighten gaps/padding so wrapping names don't waste space */
-  @media (max-width: 480px) {
+  /* Mobile-only score and status elements — hidden on desktop */
+  .gd-header__score--mobile {
+    display: none;
+  }
+
+  .gd-header__mobile-status {
+    display: none;
+  }
+
+  /* ── WTL wrap — tap target for arming the picker on mobile ─────────────────
+     Wraps the WtlToggle so a tap anywhere on the toggle area (including the
+     absolute-positioned picker overlay) arms the side. flex-shrink: 0 keeps
+     it from collapsing; display: flex so it hugs the inner wtl span. */
+  .gd-header__wtl-wrap {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  /* Ghost-click guard: while wtlGuarded is true, pointer events on ALL
+     interactive wtl elements are disabled so no synthetic click can
+     auto-select or auto-cancel. Covers the picker buttons (.wtl__btn),
+     the leftover chip (.wtl__chip), and the loser-row placeholder button
+     (.wtl__placeholder--btn) so no ghost click can land on any of them. */
+  .gd-header__wtl-wrap--guarded :deep(.wtl__btn),
+  .gd-header__wtl-wrap--guarded :deep(.wtl__chip),
+  .gd-header__wtl-wrap--guarded :deep(.wtl__placeholder--btn) {
+    pointer-events: none;
+  }
+
+  /* Vertical centering fix: the .wtl root is only 1.3rem tall by default,
+     so its absolute-positioned picker centers on that tiny box rather than
+     the full team row. Stretching it to fill the row height makes top: 50%
+     resolve to the true row midpoint, keeping the picker visually centered
+     on the flag + team name. */
+  .gd-header__wtl-wrap :deep(.wtl) {
+    align-self: stretch;
+    height: auto;
+  }
+
+  /* ── Mobile (≤639px): match-card style layout ──────────────────────────────
+     Mirrors the Wall MatchCard exactly:
+       Left col: two stacked team rows, each [flag name wtl ... score]
+       Right col: FT/HT/LIVE status badge, separated by a vertical border
+     CSS grid: col 1 = teams (1fr), col 2 = status (auto), rows 1+2 = home/away */
+  @media (max-width: 639px) {
     .gd-header {
-      padding: 0.85rem 2rem 0.3rem;
+      padding: 0.75rem 1rem 0.3rem;
     }
+
+    /* 2-col grid: teams on left, status on right spanning both rows */
+    .gd-header__teams-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      align-items: stretch;
+      gap: 0;
+      width: 100%;
+    }
+
+    /* The desktop centre column (score/status) is hidden on mobile */
+    .gd-header__centre {
+      display: none;
+    }
+
+    /* Each team row: flex row — [flag][name][wtl][score] left-to-right,
+       matching the wall MatchCard team row layout exactly */
+    .gd-header__side {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem 0.35rem 0;
+      min-width: 0;
+      justify-content: flex-start;
+    }
+
+    /* Home side: grid row 1, col 1 */
+    .gd-header__side--home {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    /* Away side: grid row 2, col 1 */
+    .gd-header__side--away {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    /* Status column: grid col 2, spans both rows — matches wall card time-block */
+    .gd-header__mobile-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      grid-column: 2;
+      grid-row: 1 / 3;
+      padding: 0.35rem 0 0.35rem 0.65rem;
+      border-left: 1px solid #393939;
+    }
+
+    /* On mobile, home team-btn shows [flag][name] left-to-right.
+       The DOM order is [name][flag] for desktop (reversed layout), so we
+       use row-reverse to flip it back to flag-first on mobile. */
+    .gd-header__side--home .gd-header__team-btn {
+      flex-direction: row-reverse;
+    }
+
+    /* team-btn takes all available space so score is pushed to the right.
+       overflow: hidden + truncation prevents long names from breaking layout. */
+    .gd-header__side .gd-header__team-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+
+    /* Shrink flag to match wall card (22px) on mobile.
+       CountryFlag renders a <span> with inline width/height styles — override them. */
+    .gd-header__side .gd-header__team-btn :deep(span) {
+      width: 22px !important;
+      height: 15px !important;
+      flex-shrink: 0;
+    }
+
+    /* Team name: truncate on mobile, no wrapping — matches wall card */
     .gd-header__team-name {
-      font-size: 1.1rem;
-      letter-spacing: 0.03rem;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1 1 0;
+    }
+
+    /* wtl-wrap on home side: keep it after the team-btn on mobile
+       (it's before in DOM for desktop, so use order to push it right) */
+    .gd-header__side--home .gd-header__wtl-wrap {
+      order: 2;
+      flex-shrink: 0;
+    }
+
+    /* score--mobile always last in the row */
+    .gd-header__side--home .gd-header__score--mobile {
+      order: 3;
+    }
+
+    /* Show mobile-only inline scores — matches wall card .match-card__score */
+    .gd-header__score--mobile {
+      display: block;
+      font-size: 1.5rem;
+      font-variation-settings:
+        'wdth' 100,
+        'wght' 700;
+      flex-shrink: 0;
+      color: oklab(100% 0 0 / 0.8);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    /* Fix row height stability: the .wtl stretch trick (used on desktop to
+       center the picker on the full row height) must not apply on mobile —
+       it causes the row to grow when the picker opens because the PICK ONE
+       text inside the picker bar is taller than the resting row. On mobile
+       the rows have a fixed min-height so the picker always centers correctly
+       without needing the stretch. */
+    .gd-header__wtl-wrap :deep(.wtl) {
+      align-self: auto;
+      height: 1.3rem;
+    }
+
+    /* Give each team row a stable height so opening the picker never shifts
+       the layout. The picker is position:absolute so it doesn't affect flow. */
+    .gd-header__side {
+      min-height: 2.2rem;
+    }
+
+    /* Live clock minute above the status badge */
+    .gd-header__mobile-clock {
+      font-size: 1rem;
+      font-variation-settings:
+        'wdth' 100,
+        'wght' 700;
+      color: oklab(100% 0 0);
+      line-height: 1.1;
+      margin-bottom: 0.15rem;
+      font-variant-numeric: tabular-nums;
     }
   }
 
-  /* Narrow phones (≤425px): switch to 3-letter abbreviations */
-  @media (max-width: 425px) {
-    .gd-header {
-      padding: 0.85rem 1.5rem 0.3rem;
+  /* ── Mobile 375px+: larger text and flags ──────────────────────────────────── */
+  @media (min-width: 375px) and (max-width: 639px) {
+    .gd-header__team-name {
+      font-size: 1.2rem;
     }
-    /* Swap to 3-letter abbreviation */
-    .gd-header__team-name-full {
-      display: none;
+
+    .gd-header__score--mobile {
+      font-size: 1.3rem;
     }
-    .gd-header__team-name-abbrev {
-      display: inline;
+
+    /* Larger flags at 375px+ */
+    .gd-header__side .gd-header__team-btn :deep(span) {
+      width: 32px !important;
+      height: 21px !important;
     }
-    .gd-header__vs {
-      font-size: 0.95rem;
-      padding: 0 0.15rem;
+  }
+
+  /* ── Mobile 470px+: wider teams row ───────────────────────────────────────── */
+  @media (min-width: 470px) and (max-width: 639px) {
+    .gd-header__teams-row {
+      width: 80%;
     }
   }
 
