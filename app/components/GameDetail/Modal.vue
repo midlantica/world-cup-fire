@@ -974,6 +974,18 @@
 
               <!-- Key events: goals row + cards row, each spanning both sides -->
               <div v-if="keyEvents.length > 0" class="gd-header__events">
+                <!-- Team name headers — mobile only, no flags -->
+                <div
+                  class="gd-header__events-team gd-header__events-team--home"
+                >
+                  <span>{{ homeDisplay }}</span>
+                </div>
+                <div
+                  class="gd-header__events-team gd-header__events-team--away"
+                >
+                  <span>{{ awayDisplay }}</span>
+                </div>
+
                 <!-- Goals row (only if either side has goals) -->
                 <template
                   v-if="
@@ -1522,10 +1534,12 @@
       order: 3;
     }
 
-    /* Show mobile-only inline scores — matches wall card .match-card__score */
-    .gd-header__score--mobile {
+    /* Show mobile-only inline scores — matches wall card .match-card__score.
+       Override the base .gd-header__score rule (1.75rem) so the score matches
+       the team name font-size exactly. */
+    .gd-header__score.gd-header__score--mobile {
       display: block;
-      font-size: 1.5rem;
+      font-size: 1rem;
       font-variation-settings:
         'wdth' 100,
         'wght' 700;
@@ -1533,6 +1547,7 @@
       color: oklab(100% 0 0 / 0.8);
       font-variant-numeric: tabular-nums;
       line-height: 1;
+      padding: 0;
     }
 
     /* Fix row height stability: the .wtl stretch trick (used on desktop to
@@ -1571,8 +1586,8 @@
       font-size: 1.2rem;
     }
 
-    .gd-header__score--mobile {
-      font-size: 1.3rem;
+    .gd-header__score.gd-header__score--mobile {
+      font-size: 1.2rem;
     }
 
     /* Larger flags at 375px+ */
@@ -1797,8 +1812,52 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
-    gap: 0.25rem 1.25rem;
+    /* Row gap between goal/card rows; column gap = center spine between teams */
+    gap: 0.25rem 1.5rem;
     padding: 0.3rem 0 0;
+  }
+
+  /* Team name header row — hidden on desktop (teams already shown above),
+     shown on mobile only (text only, no flags). */
+  .gd-header__events-team {
+    display: none;
+  }
+
+  .gd-header__events-team--home {
+    justify-content: flex-end;
+  }
+
+  .gd-header__events-team--away {
+    justify-content: flex-start;
+  }
+
+  /* Mobile: events section gets padding + divider borders */
+  @media (max-width: 639px) {
+    .gd-header__events {
+      padding: 0.5rem 0;
+      border-top: 1px solid hsl(0deg 0% 100% / 10%);
+      border-bottom: 1px solid hsl(0deg 0% 100% / 10%);
+    }
+
+    .gd-header__meta {
+      margin-top: 0;
+    }
+  }
+
+  /* Mobile: show team name headers */
+  @media (max-width: 639px) {
+    .gd-header__events-team {
+      display: flex;
+      align-items: center;
+      font-size: 0.75rem;
+      font-variation-settings:
+        'wdth' 100,
+        'wght' 600;
+      letter-spacing: 0.06em;
+      color: oklab(100% 0 0 / 0.55);
+      text-transform: uppercase;
+      margin-bottom: 0.1rem;
+    }
   }
 
   .gd-header__events-side {
@@ -1829,6 +1888,7 @@
   .gd-event__icon {
     font-size: 0.7rem;
     flex-shrink: 0;
+    margin-right: 0.2rem;
   }
 
   .gd-event__name {
