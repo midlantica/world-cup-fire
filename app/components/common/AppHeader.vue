@@ -214,6 +214,13 @@
           Pools
           <!-- pick-badge intentionally hidden — pickCount kept for future urgency nudge -->
         </NuxtLink>
+        <NuxtLink
+          to="/predictor"
+          class="app-header__nav-link"
+          active-class="app-header__nav-link--active"
+        >
+          Predictor
+        </NuxtLink>
       </nav>
 
       <!-- Right controls: utility buttons (TZ + My Flag, combined in TzPicker) -->

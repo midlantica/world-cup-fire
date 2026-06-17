@@ -1085,3 +1085,246 @@ export function matchVenueOverride(
   if (!eventId) return null
   return MATCH_VENUE[eventId] ?? null
 }
+
+// ---------------------------------------------------------------------------
+// WC 2026 Bracket Seeding — the fixed FIFA knockout bracket map
+//
+// Encodes which group slot feeds which R32 fixture, and how winners cascade
+// through R16 → QF → SF → Final. This is a constant — it never changes.
+//
+// Slot descriptors:
+//   '1A'        = Winner of Group A
+//   '2B'        = Runner-up of Group B
+//   '3rd-ABCDF' = Best 3rd-place team from groups A/B/C/D/F
+//   'W-R32-1'   = Winner of R32 match 1 (i.e. Match 73)
+//   'L-SF-1'    = Loser of SF match 1 (for 3rd place playoff)
+//
+// Match numbers follow FIFA's official numbering (73–104).
+// ---------------------------------------------------------------------------
+
+export interface BracketSlot {
+  /** Unique slot id used as the prediction key */
+  slotId: string
+  /** Round this match belongs to */
+  round: 'R32' | 'R16' | 'QF' | 'SF' | '3rd' | 'F'
+  /** Home slot descriptor */
+  home: string
+  /** Away slot descriptor */
+  away: string
+  /** FIFA official match number */
+  matchNumber: number
+}
+
+export const WC_2026_BRACKET_SEEDING: BracketSlot[] = [
+  // ── Round of 32 (Matches 73–88) ──────────────────────────────────────────
+  // Match 73: 2A vs 2B
+  { slotId: 'R32-1', round: 'R32', home: '2A', away: '2B', matchNumber: 73 },
+  // Match 74: 1E vs 3rd-ABCDF
+  {
+    slotId: 'R32-2',
+    round: 'R32',
+    home: '1E',
+    away: '3rd-ABCDF',
+    matchNumber: 74,
+  },
+  // Match 75: 1F vs 2C
+  { slotId: 'R32-3', round: 'R32', home: '1F', away: '2C', matchNumber: 75 },
+  // Match 76: 1C vs 2F
+  { slotId: 'R32-4', round: 'R32', home: '1C', away: '2F', matchNumber: 76 },
+  // Match 77: 1I vs 3rd-CDFGH
+  {
+    slotId: 'R32-5',
+    round: 'R32',
+    home: '1I',
+    away: '3rd-CDFGH',
+    matchNumber: 77,
+  },
+  // Match 78: 2E vs 2I
+  { slotId: 'R32-6', round: 'R32', home: '2E', away: '2I', matchNumber: 78 },
+  // Match 79: 1A vs 3rd-CEFHI
+  {
+    slotId: 'R32-7',
+    round: 'R32',
+    home: '1A',
+    away: '3rd-CEFHI',
+    matchNumber: 79,
+  },
+  // Match 80: 1L vs 3rd-EHIJK
+  {
+    slotId: 'R32-8',
+    round: 'R32',
+    home: '1L',
+    away: '3rd-EHIJK',
+    matchNumber: 80,
+  },
+  // Match 81: 1D vs 3rd-BEFIJ
+  {
+    slotId: 'R32-9',
+    round: 'R32',
+    home: '1D',
+    away: '3rd-BEFIJ',
+    matchNumber: 81,
+  },
+  // Match 82: 1G vs 3rd-AEHIJ
+  {
+    slotId: 'R32-10',
+    round: 'R32',
+    home: '1G',
+    away: '3rd-AEHIJ',
+    matchNumber: 82,
+  },
+  // Match 83: 2K vs 2L
+  { slotId: 'R32-11', round: 'R32', home: '2K', away: '2L', matchNumber: 83 },
+  // Match 84: 1H vs 2J
+  { slotId: 'R32-12', round: 'R32', home: '1H', away: '2J', matchNumber: 84 },
+  // Match 85: 1B vs 3rd-EFGIJ
+  {
+    slotId: 'R32-13',
+    round: 'R32',
+    home: '1B',
+    away: '3rd-EFGIJ',
+    matchNumber: 85,
+  },
+  // Match 86: 1J vs 2H
+  { slotId: 'R32-14', round: 'R32', home: '1J', away: '2H', matchNumber: 86 },
+  // Match 87: 1K vs 3rd-DEIJL
+  {
+    slotId: 'R32-15',
+    round: 'R32',
+    home: '1K',
+    away: '3rd-DEIJL',
+    matchNumber: 87,
+  },
+  // Match 88: 2D vs 2G
+  { slotId: 'R32-16', round: 'R32', home: '2D', away: '2G', matchNumber: 88 },
+
+  // ── Round of 16 (Matches 89–96) ──────────────────────────────────────────
+  // Match 89: W74 vs W77
+  {
+    slotId: 'R16-1',
+    round: 'R16',
+    home: 'W-R32-2',
+    away: 'W-R32-5',
+    matchNumber: 89,
+  },
+  // Match 90: W73 vs W75
+  {
+    slotId: 'R16-2',
+    round: 'R16',
+    home: 'W-R32-1',
+    away: 'W-R32-3',
+    matchNumber: 90,
+  },
+  // Match 91: W76 vs W78
+  {
+    slotId: 'R16-3',
+    round: 'R16',
+    home: 'W-R32-4',
+    away: 'W-R32-6',
+    matchNumber: 91,
+  },
+  // Match 92: W79 vs W80
+  {
+    slotId: 'R16-4',
+    round: 'R16',
+    home: 'W-R32-7',
+    away: 'W-R32-8',
+    matchNumber: 92,
+  },
+  // Match 93: W83 vs W84
+  {
+    slotId: 'R16-5',
+    round: 'R16',
+    home: 'W-R32-11',
+    away: 'W-R32-12',
+    matchNumber: 93,
+  },
+  // Match 94: W81 vs W82
+  {
+    slotId: 'R16-6',
+    round: 'R16',
+    home: 'W-R32-9',
+    away: 'W-R32-10',
+    matchNumber: 94,
+  },
+  // Match 95: W86 vs W88
+  {
+    slotId: 'R16-7',
+    round: 'R16',
+    home: 'W-R32-14',
+    away: 'W-R32-16',
+    matchNumber: 95,
+  },
+  // Match 96: W85 vs W87
+  {
+    slotId: 'R16-8',
+    round: 'R16',
+    home: 'W-R32-13',
+    away: 'W-R32-15',
+    matchNumber: 96,
+  },
+
+  // ── Quarterfinals (Matches 97–100) ───────────────────────────────────────
+  // Match 97: W89 vs W90
+  {
+    slotId: 'QF-1',
+    round: 'QF',
+    home: 'W-R16-1',
+    away: 'W-R16-2',
+    matchNumber: 97,
+  },
+  // Match 98: W93 vs W94
+  {
+    slotId: 'QF-2',
+    round: 'QF',
+    home: 'W-R16-5',
+    away: 'W-R16-6',
+    matchNumber: 98,
+  },
+  // Match 99: W91 vs W92
+  {
+    slotId: 'QF-3',
+    round: 'QF',
+    home: 'W-R16-3',
+    away: 'W-R16-4',
+    matchNumber: 99,
+  },
+  // Match 100: W95 vs W96
+  {
+    slotId: 'QF-4',
+    round: 'QF',
+    home: 'W-R16-7',
+    away: 'W-R16-8',
+    matchNumber: 100,
+  },
+
+  // ── Semifinals (Matches 101–102) ─────────────────────────────────────────
+  // Match 101: W97 vs W98
+  {
+    slotId: 'SF-1',
+    round: 'SF',
+    home: 'W-QF-1',
+    away: 'W-QF-2',
+    matchNumber: 101,
+  },
+  // Match 102: W99 vs W100
+  {
+    slotId: 'SF-2',
+    round: 'SF',
+    home: 'W-QF-3',
+    away: 'W-QF-4',
+    matchNumber: 102,
+  },
+
+  // ── Third Place Playoff (Match 103) ──────────────────────────────────────
+  {
+    slotId: '3rd',
+    round: '3rd',
+    home: 'L-SF-1',
+    away: 'L-SF-2',
+    matchNumber: 103,
+  },
+
+  // ── Final (Match 104) ────────────────────────────────────────────────────
+  { slotId: 'F', round: 'F', home: 'W-SF-1', away: 'W-SF-2', matchNumber: 104 },
+]
