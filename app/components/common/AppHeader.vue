@@ -378,8 +378,8 @@
     line-height: 1;
     text-transform: uppercase;
     font-variation-settings:
-      'wdth' 100,
-      'wght' 700;
+      'wdth' 80,
+      'wght' 600;
     letter-spacing: 0.07em;
 
     /* Inactive: warm white on the orange bg, no bg fill */
