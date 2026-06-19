@@ -240,6 +240,7 @@
     team: string | null
     text: string | null
     type: string
+    participantName: string | null
   }
 
   const keyEvents = computed<KeyEvent[]>(() => {
@@ -267,6 +268,10 @@
           team: (e?.team?.displayName as string) ?? null,
           text: (e?.text as string) ?? null,
           type: (e?.type?.text as string) ?? '',
+          // ESPN own goal events carry the scorer in participants[0].athlete.displayName
+          // rather than in the text field (which uses "Own Goal by Name, Team." format).
+          participantName:
+            (e?.participants?.[0]?.athlete?.displayName as string) ?? null,
         }))
     )
   })
@@ -396,10 +401,16 @@
     return initial ? `${initial}. ${surname}` : surname
   }
 
-  /** Display label for a goal scorer: "OG" for own goals, otherwise the
-   *  disambiguated surname label. */
+  /** Display label for a goal scorer: "Name (OG)" for own goals, otherwise the
+   *  disambiguated surname label.
+   *  Own goals: ESPN puts the scorer in participants[0].athlete.displayName
+   *  (the text field uses "Own Goal by Name, Team." which extractName can't parse). */
   function goalScorerLabel(ev: KeyEvent): string {
-    if (isOwnGoal(ev)) return 'OG'
+    if (isOwnGoal(ev)) {
+      const full = ev.participantName ?? extractName(ev.text)
+      const surname = full ? surnameOf(full) : ''
+      return surname ? `${surname} (OG)` : 'OG'
+    }
     return playerLabel(extractName(ev.text))
   }
 
@@ -491,9 +502,11 @@
     pushLiveScoreOverride(m.id, {
       homeScore: hs,
       awayScore: as_,
-      // Preserve the clock from the base match — don't let the override clobber
-      // a correctly-parsed clock value with an undefined one from selectedMatch.
-      status: { code: m.status.code, clock: m.status.clock },
+      // Do NOT include the clock in the override — the clock must always flow
+      // from the base match (schedule poll) so it keeps updating. Passing
+      // clock: undefined here lets useScores fall back to base.status.clock,
+      // which is the fresh value from the latest /api/schedule response.
+      status: { code: m.status.code, clock: undefined },
     })
   })
 
