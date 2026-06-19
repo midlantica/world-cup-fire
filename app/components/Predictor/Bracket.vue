@@ -266,9 +266,15 @@
                 :class="{
                   'bracket-match--ready': match.ready,
                   'bracket-match--picked': match.pick !== null,
+                  'bracket-match--locked': match.locked,
                 }"
               >
-                <div class="bracket-match__num">M{{ match.matchNumber }}</div>
+                <div class="bracket-match__num">
+                  M{{ match.matchNumber
+                  }}<span v-if="match.locked" class="bracket-match__ft-badge"
+                    >FT</span
+                  >
+                </div>
                 <button
                   class="bracket-match__team bracket-match__team--home"
                   :class="{
@@ -280,7 +286,7 @@
                   :style="
                     match.home ? { '--team-color': '#' + match.homeColor } : {}
                   "
-                  :disabled="!match.ready"
+                  :disabled="!match.ready || match.locked"
                   @click="onPick(match.slotId, 'home')"
                 >
                   <template v-if="match.home">
@@ -305,7 +311,7 @@
                   :style="
                     match.away ? { '--team-color': '#' + match.awayColor } : {}
                   "
-                  :disabled="!match.ready"
+                  :disabled="!match.ready || match.locked"
                   @click="onPick(match.slotId, 'away')"
                 >
                   <template v-if="match.away">
@@ -666,6 +672,25 @@
     padding: 0.05rem 0;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+  }
+
+  /* ── Locked match (real FT result) ──────────────────────────────────────── */
+  .bracket-match--locked {
+    border-color: rgb(34 197 94 / 0.3);
+  }
+
+  .bracket-match__ft-badge {
+    display: inline-block;
+    margin-left: 0.35rem;
+    font-size: 0.6rem;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 700;
+    letter-spacing: 0.1em;
+    color: #22c55e;
+    vertical-align: middle;
+    line-height: 1;
   }
 
   /* ── 3rd Place inline label ──────────────────────────────────────────────── */

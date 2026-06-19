@@ -287,6 +287,11 @@
     return ''
   }
 
+  /** True if a key event is a penalty goal (not a shootout penalty). */
+  function isPenaltyGoal(ev: KeyEvent): boolean {
+    return ev.type === 'Penalty - Scored'
+  }
+
   /** Goals and penalties for one side, sorted by clock */
   function sideGoals(teamName: string | undefined) {
     if (!teamName) return []
@@ -408,11 +413,13 @@
     label: string
     clocks: string[]
     own: boolean
+    penalty: boolean
   }
 
   /** Group a side's goals by scorer so a player who scores more than once is
    *  listed once with their goal times in order (e.g. "Balogun 31', 45'+5'").
-   *  Own goals are NOT merged with each other (each "OG" stays distinct). */
+   *  Own goals are NOT merged with each other (each "OG" stays distinct).
+   *  Penalty goals are tracked so the template can show "(P)". */
   function groupedSideGoals(teamName: string | undefined): GoalGroup[] {
     const groups: GoalGroup[] = []
     // Key by scorer label so repeat scorers collapse. Own goals get a unique
@@ -421,14 +428,16 @@
     let ogCounter = 0
     for (const ev of sideGoals(teamName)) {
       const own = isOwnGoal(ev)
+      const penalty = isPenaltyGoal(ev)
       const label = goalScorerLabel(ev)
       const key = own ? `__og__${ogCounter++}` : label
       const existing = indexByKey.get(key)
       if (existing !== undefined) {
         groups[existing]!.clocks.push(ev.clock)
+        if (penalty) groups[existing]!.penalty = true
       } else {
         indexByKey.set(key, groups.length)
-        groups.push({ label, clocks: [ev.clock], own })
+        groups.push({ label, clocks: [ev.clock], own, penalty })
       }
     }
     return groups
@@ -1003,6 +1012,9 @@
                       class="gd-event"
                     >
                       <span class="gd-event__name">{{ g.label }}</span>
+                      <span v-if="g.penalty" class="gd-event__penalty"
+                        >(P)</span
+                      >
                       <span class="gd-event__clock">{{
                         g.clocks.join(', ')
                       }}</span>
@@ -1022,6 +1034,9 @@
                       <span class="gd-event__clock">{{
                         g.clocks.join(', ')
                       }}</span>
+                      <span v-if="g.penalty" class="gd-event__penalty"
+                        >(P)</span
+                      >
                       <span class="gd-event__name">{{ g.label }}</span>
                     </span>
                   </div>
@@ -1907,6 +1922,13 @@
     color: oklab(100% 0 0 / 0.65);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
+  }
+
+  .gd-event__penalty {
+    font-size: 0.7rem;
+    color: oklab(100% 0 0 / 0.5);
+    flex-shrink: 0;
+    letter-spacing: 0;
   }
 
   /* ── Transition ────────────────────────────────────────────────────────────── */

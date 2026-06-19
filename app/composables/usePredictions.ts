@@ -65,6 +65,8 @@ export interface BracketMatch {
   winner: string
   /** Whether both teams are known (can be picked) */
   ready: boolean
+  /** Whether this match has a real FT result that overrides the user's pick */
+  locked: boolean
   /** FIFA official match number */
   matchNumber: number
 }
@@ -292,12 +294,16 @@ export function usePredictions() {
    * Resolve a team name from a bracket slot descriptor.
    * Handles: '1A', '2B', '3rd-ABCDF', 'W-R32-1', 'W-R16-2', 'W-QF-1',
    *          'W-SF-1', 'L-SF-1' (for 3rd place playoff)
+   *
+   * assignedThirdPlace tracks which 3rd-place teams have already been
+   * assigned to a slot so the same team is never placed in two matches.
    */
   function resolveSlot(
     slot: string,
     advancers: Map<string, { first: string; second: string; third: string }>,
     bracketWinners: Map<string, string>,
-    bracketLosers: Map<string, string>
+    bracketLosers: Map<string, string>,
+    assignedThirdPlace: Set<string>
   ): string {
     // Winner/runner-up from group: '1A', '2B', etc.
     const groupMatch = slot.match(/^([12])([A-L])$/)
@@ -310,15 +316,17 @@ export function usePredictions() {
     }
 
     // 3rd place wildcard: '3rd-ABCDF' etc.
-    // We just return the first available 3rd-place team from the listed groups.
-    // (A full implementation would rank all 12 3rd-place teams by points, but
-    // for prediction purposes this gives a reasonable placeholder.)
+    // Return the first available 3rd-place team from the listed groups that
+    // hasn't already been assigned to another slot.
     const thirdMatch = slot.match(/^3rd-([A-L]+)$/)
     if (thirdMatch) {
       const groups = thirdMatch[1]!.split('')
       for (const g of groups) {
         const adv = advancers.get(g)
-        if (adv?.third) return adv.third
+        if (adv?.third && !assignedThirdPlace.has(adv.third)) {
+          assignedThirdPlace.add(adv.third)
+          return adv.third
+        }
       }
       return ''
     }
@@ -340,12 +348,37 @@ export function usePredictions() {
 
   /**
    * Build the full predicted bracket from group predictions + bracket picks.
+   * If knockoutMatches is provided, any completed (FT) knockout match result
+   * takes precedence over the user's stored pick for that slot.
    * Returns an array of BracketMatch objects for all rounds.
    */
-  function predictedBracket(allGroupMatches: GroupMatch[]): BracketMatch[] {
+  function predictedBracket(
+    allGroupMatches: GroupMatch[],
+    knockoutMatches: GroupMatch[] = []
+  ): BracketMatch[] {
     const advancers = predictedAdvancers(allGroupMatches)
     const bracketWinners = new Map<string, string>()
     const bracketLosers = new Map<string, string>()
+    const assignedThirdPlace = new Set<string>()
+
+    // Build a lookup: "HomeTeam|AwayTeam" → { winner, loser } for FT knockout matches
+    const ftResults = new Map<string, { winner: string; loser: string }>()
+    for (const m of knockoutMatches) {
+      if (
+        m.statusCode === 'ft' &&
+        m.homeScore !== null &&
+        m.awayScore !== null
+      ) {
+        const hs = parseInt(m.homeScore, 10)
+        const as_ = parseInt(m.awayScore, 10)
+        if (!Number.isNaN(hs) && !Number.isNaN(as_) && hs !== as_) {
+          const winner = hs > as_ ? m.home : m.away
+          const loser = hs > as_ ? m.away : m.home
+          ftResults.set(`${m.home}|${m.away}`, { winner, loser })
+          ftResults.set(`${m.away}|${m.home}`, { winner, loser })
+        }
+      }
+    }
 
     function teamData(name: string) {
       const t = WC_TEAMS.find((t) => t.name === name)
@@ -364,24 +397,42 @@ export function usePredictions() {
         slot.home,
         advancers,
         bracketWinners,
-        bracketLosers
+        bracketLosers,
+        assignedThirdPlace
       )
       const awayTeam = resolveSlot(
         slot.away,
         advancers,
         bracketWinners,
-        bracketLosers
+        bracketLosers,
+        assignedThirdPlace
       )
 
       const homeData = teamData(homeTeam)
       const awayData = teamData(awayTeam)
 
-      const pick =
+      // Check if there's a real FT result for this matchup
+      const ftResult =
+        homeTeam && awayTeam
+          ? (ftResults.get(`${homeTeam}|${awayTeam}`) ?? null)
+          : null
+
+      let pick =
         (predictions.value[slot.slotId] as 'home' | 'away' | undefined) ?? null
       const ready = homeTeam !== '' && awayTeam !== ''
-      const winner =
-        pick === 'home' ? homeTeam : pick === 'away' ? awayTeam : ''
-      const loser = pick === 'home' ? awayTeam : pick === 'away' ? homeTeam : ''
+
+      let winner: string
+      let loser: string
+
+      if (ftResult) {
+        // Real result overrides user pick
+        winner = ftResult.winner
+        loser = ftResult.loser
+        pick = winner === homeTeam ? 'home' : 'away'
+      } else {
+        winner = pick === 'home' ? homeTeam : pick === 'away' ? awayTeam : ''
+        loser = pick === 'home' ? awayTeam : pick === 'away' ? homeTeam : ''
+      }
 
       // Record winner/loser for downstream slots
       if (winner) bracketWinners.set(slot.slotId, winner)
@@ -403,6 +454,7 @@ export function usePredictions() {
         pick,
         winner,
         ready,
+        locked: ftResult !== null,
         matchNumber: slot.matchNumber,
       })
     }

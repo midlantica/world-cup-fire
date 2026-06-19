@@ -29,37 +29,50 @@
     })
   })
 
-  // ── Fetch all group-stage matches ──────────────────────────────────────────
-  // Fetch all 48 group-stage matches (Jun 11–27) to compute predicted standings.
+  // ── Fetch all tournament matches ───────────────────────────────────────────
+  // Fetch all matches (Jun 11 – Jul 19) to compute predicted standings and
+  // to use real FT knockout results to override user bracket picks.
   const { data: rawEvents, pending } = useFetch<unknown[]>('/api/schedule', {
-    query: { dates: '20260611-20260627' },
+    query: { dates: '20260611-20260719' },
   })
 
   // normaliseEvent is a plain exported function — import it statically
   const { normaliseEvent } = await import('~/composables/useScores')
+
+  function toGroupMatch(m: ReturnType<typeof normaliseEvent>): GroupMatch {
+    return {
+      id: m.id,
+      home: m.home,
+      away: m.away,
+      group: m.group,
+      homeIso2: m.homeIso2,
+      awayIso2: m.awayIso2,
+      homeColor: m.homeColor,
+      awayColor: m.awayColor,
+      homeAbbrev: m.homeAbbrev,
+      awayAbbrev: m.awayAbbrev,
+      homeShort: m.homeShort,
+      awayShort: m.awayShort,
+      statusCode: m.status.code,
+      homeScore: m.homeScore,
+      awayScore: m.awayScore,
+    }
+  }
 
   const allGroupMatches = computed<GroupMatch[]>(() => {
     if (!rawEvents.value) return []
     return rawEvents.value
       .map((ev) => normaliseEvent(ev))
       .filter((m) => m.group !== null)
-      .map((m) => ({
-        id: m.id,
-        home: m.home,
-        away: m.away,
-        group: m.group,
-        homeIso2: m.homeIso2,
-        awayIso2: m.awayIso2,
-        homeColor: m.homeColor,
-        awayColor: m.awayColor,
-        homeAbbrev: m.homeAbbrev,
-        awayAbbrev: m.awayAbbrev,
-        homeShort: m.homeShort,
-        awayShort: m.awayShort,
-        statusCode: m.status.code,
-        homeScore: m.homeScore,
-        awayScore: m.awayScore,
-      }))
+      .map(toGroupMatch)
+  })
+
+  const allKnockoutMatches = computed<GroupMatch[]>(() => {
+    if (!rawEvents.value) return []
+    return rawEvents.value
+      .map((ev) => normaliseEvent(ev))
+      .filter((m) => m.group === null)
+      .map(toGroupMatch)
   })
 
   // ── Predictions ────────────────────────────────────────────────────────────
@@ -110,8 +123,10 @@
     return map
   })
 
-  // Bracket (reactive)
-  const bracket = computed(() => predictedBracket(allGroupMatches.value))
+  // Bracket (reactive) — knockout FT results override user picks automatically
+  const bracket = computed(() =>
+    predictedBracket(allGroupMatches.value, allKnockoutMatches.value)
+  )
 
   // Progress
   const totalBracketMatches = 31 // 16 + 8 + 4 + 2 + 1 (3rd place)
