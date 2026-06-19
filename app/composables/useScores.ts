@@ -353,7 +353,10 @@ export function normaliseEvent(ev: any): Match {
           : null
       : null
 
-  const group = homeData?.group ?? awayData?.group ?? null
+  const group =
+    homeData?.group && awayData?.group && homeData.group === awayData.group
+      ? homeData.group
+      : null
 
   return {
     id: String(ev.id ?? ''),
