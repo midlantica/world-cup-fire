@@ -426,6 +426,44 @@
     onDelete(editingPool.value)
   }
 
+  // ── Directions collapsible (mobile only) ─────────────────────────────────
+  // Default visibility rules:
+  //   - Pools visit count < 3  → show open (user is still learning)
+  //   - Pools visit count ≥ 3  → hide (they've figured it out)
+  // User's explicit toggle always overrides the default and is persisted:
+  //   - null (no choice yet) → use visit-count rule
+  //   - '1' (explicitly opened) → always open
+  //   - '0' (explicitly closed) → always closed
+  const DIRECTIONS_KEY = 'wc-directions-open'
+  const POOLS_VISIT_KEY = 'wc-pools-visits-v1'
+  const directionsOpen = ref(false)
+
+  onMounted(() => {
+    if (import.meta.client) {
+      // Increment the Pools-page visit counter on each mount
+      const prevCount = Number(localStorage.getItem(POOLS_VISIT_KEY) ?? 0)
+      const newCount = prevCount + 1
+      localStorage.setItem(POOLS_VISIT_KEY, String(newCount))
+
+      const explicit = localStorage.getItem(DIRECTIONS_KEY)
+      if (explicit === '1') {
+        directionsOpen.value = true
+      } else if (explicit === '0') {
+        directionsOpen.value = false
+      } else {
+        // No explicit choice — hide after 3+ visits to the Pools page
+        directionsOpen.value = newCount < 3
+      }
+    }
+  })
+
+  function toggleDirections() {
+    directionsOpen.value = !directionsOpen.value
+    if (import.meta.client) {
+      localStorage.setItem(DIRECTIONS_KEY, directionsOpen.value ? '1' : '0')
+    }
+  }
+
   // ── Delete member (owner only) ─────────────────────────────────────────────
   async function onDeleteMember(pool: Pool, memberId: string) {
     await deleteMember(pool.id, memberId)
@@ -473,48 +511,72 @@
                 New Pool
               </button>
             </div>
-            <p class="pools-sidebar__lead">
-              This is your Pool — compete with friends &amp; family all
-              tournament long and see who really knows their football. Here's
-              how it works:
-            </p>
+            <!-- ── Mobile: collapsible directions ──────────────────────── -->
+            <button
+              type="button"
+              class="pools-sidebar__directions-toggle"
+              :aria-expanded="directionsOpen"
+              @click="toggleDirections"
+            >
+              <IconsChevron
+                class="pools-sidebar__directions-caret"
+                :class="{
+                  'pools-sidebar__directions-caret--collapsed': !directionsOpen,
+                }"
+              />
+              <span class="pools-sidebar__directions-label">How to Play</span>
+            </button>
 
-            <ul class="pools-sidebar__steps">
-              <li>
-                <span class="pools-sidebar__step-num">1</span>
-                <span>
-                  Make your picks on the
-                  <NuxtLink to="/" class="pools-sidebar__link"
-                    >Matches</NuxtLink
-                  >
-                  page — win, lose, or draw for each game.
-                </span>
-              </li>
-              <li>
-                <span class="pools-sidebar__step-num">2</span>
-                <span>
-                  Click <strong>Copy Invite Link</strong> on your pool.
-                </span>
-              </li>
-              <li>
-                <span class="pools-sidebar__step-num">3</span>
-                <span>
-                  Send the link to your crew — when they join, their name shows
-                  up in your pool.
-                </span>
-              </li>
-              <li>
-                <span class="pools-sidebar__step-num">4</span>
-                <span>They make their own picks for every match.</span>
-              </li>
-              <li>
-                <span class="pools-sidebar__step-num">5</span>
-                <span>
-                  Watch the leaderboard update in real time — let's see who
-                  picks best! ⚽️
-                </span>
-              </li>
-            </ul>
+            <!-- Directions body: always visible on desktop, collapsible on mobile -->
+            <div
+              class="pools-sidebar__directions-body"
+              :class="{
+                'pools-sidebar__directions-body--open': directionsOpen,
+              }"
+            >
+              <p class="pools-sidebar__lead">
+                This is your Pool — compete with friends &amp; family all
+                tournament long and see who really knows their football. Here's
+                how it works:
+              </p>
+
+              <ul class="pools-sidebar__steps">
+                <li>
+                  <span class="pools-sidebar__step-num">1</span>
+                  <span>
+                    Make your picks on the
+                    <NuxtLink to="/" class="pools-sidebar__link"
+                      >Matches</NuxtLink
+                    >
+                    page — win, lose, or draw for each game.
+                  </span>
+                </li>
+                <li>
+                  <span class="pools-sidebar__step-num">2</span>
+                  <span>
+                    Click <strong>Copy Invite Link</strong> on your pool.
+                  </span>
+                </li>
+                <li>
+                  <span class="pools-sidebar__step-num">3</span>
+                  <span>
+                    Send the link to your crew — when they join, their name
+                    shows up in your pool.
+                  </span>
+                </li>
+                <li>
+                  <span class="pools-sidebar__step-num">4</span>
+                  <span>They make their own picks for every match.</span>
+                </li>
+                <li>
+                  <span class="pools-sidebar__step-num">5</span>
+                  <span>
+                    Watch the leaderboard update in real time — let's see who
+                    picks best! ⚽️
+                  </span>
+                </li>
+              </ul>
+            </div>
 
             <p v-if="!canCreate" class="pools-sidebar__cap-note">
               You've reached the {{ MAX_POOLS }}-pool limit.
@@ -863,6 +925,67 @@
       'wght' 400;
     font-size: 0.8rem;
     color: rgb(251 146 60 / 0.85);
+  }
+
+  /* ── Directions toggle + collapsible body (mobile only) ─────────────────── */
+  /* Toggle button: hidden on desktop, shown on mobile */
+  .pools-sidebar__directions-toggle {
+    display: none;
+  }
+
+  /* Directions body: always visible on desktop */
+  .pools-sidebar__directions-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    /* Show the toggle button on mobile */
+    .pools-sidebar__directions-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: rgb(255 255 255 / 0.7);
+    }
+
+    .pools-sidebar__directions-toggle:hover {
+      color: #ffffff;
+    }
+
+    .pools-sidebar__directions-label {
+      font-family: 'Anybody', sans-serif;
+      font-variation-settings:
+        'wdth' 100,
+        'wght' 600;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+    }
+
+    .pools-sidebar__directions-caret {
+      width: 1rem;
+      display: inline-block;
+      transform: rotate(0deg);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .pools-sidebar__directions-caret--collapsed {
+      transform: rotate(-90deg);
+    }
+
+    /* Body: hidden by default on mobile, shown when --open */
+    .pools-sidebar__directions-body {
+      display: none;
+    }
+
+    .pools-sidebar__directions-body--open {
+      display: flex;
+    }
   }
 
   /* ── RIGHT: main pool list ───────────────────────────────────────────────── */
