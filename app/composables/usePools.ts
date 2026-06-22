@@ -537,7 +537,27 @@ export function usePools() {
     memberId: string
   ): Promise<Pool | null> {
     const c = creds.value[poolId]
-    if (!c) return null
+    console.log(
+      '[deleteMember] creds for pool',
+      poolId,
+      ':',
+      c
+        ? {
+            memberId: c.memberId,
+            isOwner: c.isOwner,
+            tokenPrefix: c.token.slice(0, 8),
+          }
+        : 'MISSING'
+    )
+    if (!c) {
+      console.warn(
+        '[deleteMember] no creds for pool',
+        poolId,
+        '— known pools:',
+        Object.keys(creds.value)
+      )
+      return null
+    }
     try {
       const res = await $fetch<{ pool: ApiPool }>(
         `/api/pools/${poolId}/members/${memberId}`,
@@ -550,7 +570,7 @@ export function usePools() {
       mergePool(ui)
       return ui
     } catch (err) {
-      console.error('[deleteMember] failed', { poolId, memberId, err })
+      console.error('[deleteMember] API call failed', { poolId, memberId, err })
       return null
     }
   }
