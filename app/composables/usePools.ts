@@ -549,7 +549,8 @@ export function usePools() {
       const ui = toUiPool(res.pool)
       mergePool(ui)
       return ui
-    } catch {
+    } catch (err) {
+      console.error('[deleteMember] failed', { poolId, memberId, err })
       return null
     }
   }
