@@ -37,6 +37,9 @@ export interface PredictedStandingEntry {
   wins: number
   draws: number
   losses: number
+  goalsFor: number
+  goalsAgainst: number
+  goalDiff: number
   points: number
   rank: number
 }
@@ -186,6 +189,9 @@ export function usePredictions() {
         wins: number
         draws: number
         losses: number
+        goalsFor: number
+        goalsAgainst: number
+        goalDiff: number
         points: number
       }
     >()
@@ -203,11 +209,14 @@ export function usePredictions() {
         wins: 0,
         draws: 0,
         losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDiff: 0,
         points: 0,
       })
     }
 
-    // Apply results: use actual score for finished matches, prediction otherwise
+    // Apply results: use actual score for finished/live matches, prediction otherwise
     for (const match of groupMatches) {
       const home = stats.get(match.home)
       const away = stats.get(match.away)
@@ -215,20 +224,26 @@ export function usePredictions() {
 
       // Determine the effective outcome
       let outcome: PredictOutcome | null = null
+      let hs: number | null = null
+      let as_: number | null = null
 
       if (
-        match.statusCode === 'ft' &&
+        (match.statusCode === 'ft' ||
+          match.statusCode === 'live' ||
+          match.statusCode === 'ht') &&
         match.homeScore !== null &&
         match.awayScore !== null
       ) {
-        // Use the real result
-        const hs = parseInt(match.homeScore, 10)
-        const as_ = parseInt(match.awayScore, 10)
-        if (!Number.isNaN(hs) && !Number.isNaN(as_)) {
+        // Use the real result (including live/in-progress scores)
+        const parsedHs = parseInt(match.homeScore, 10)
+        const parsedAs = parseInt(match.awayScore, 10)
+        if (!Number.isNaN(parsedHs) && !Number.isNaN(parsedAs)) {
+          hs = parsedHs
+          as_ = parsedAs
           outcome = hs > as_ ? 'home' : as_ > hs ? 'away' : 'draw'
         }
       } else {
-        // Use the user's prediction
+        // Use the user's prediction (no goal data available)
         outcome = predictions.value[match.id] ?? null
       }
 
@@ -236,6 +251,16 @@ export function usePredictions() {
 
       home.played++
       away.played++
+
+      // Accumulate goals when we have real scores
+      if (hs !== null && as_ !== null) {
+        home.goalsFor += hs
+        home.goalsAgainst += as_
+        home.goalDiff += hs - as_
+        away.goalsFor += as_
+        away.goalsAgainst += hs
+        away.goalDiff += as_ - hs
+      }
 
       if (outcome === 'draw') {
         home.draws++
@@ -253,9 +278,13 @@ export function usePredictions() {
       }
     }
 
-    // Sort by FIFA tiebreakers (points → wins → alphabetical as stable fallback)
+    // Sort by FIFA tiebreakers — same order as useStandings.ts fifaSort
     const sorted = [...stats.values()].sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points
+      if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff
+      if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor
+      if (a.goalsAgainst !== b.goalsAgainst)
+        return a.goalsAgainst - b.goalsAgainst
       if (b.wins !== a.wins) return b.wins - a.wins
       return a.teamName.localeCompare(b.teamName)
     })

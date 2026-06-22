@@ -60,6 +60,23 @@
     { lazy: true }
   )
 
+  const lastRefreshed = ref<Date | null>(null)
+
+  watch(
+    () => data.value,
+    (v) => {
+      if (v) lastRefreshed.value = new Date()
+    }
+  )
+
+  function fmtLastRefreshed(d: Date) {
+    return d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+  }
+
   const selectedDay = ref<DaySummary | null>(null)
 
   function fmtDate(iso: string) {
@@ -171,9 +188,14 @@
   <div v-else class="analytics-wrap">
     <div class="page-header">
       <h1 class="page-title">Analytics</h1>
-      <button class="refresh-btn" :disabled="pending" @click="refresh()">
-        ↻ Refresh
-      </button>
+      <div class="header-right">
+        <span v-if="lastRefreshed" class="last-refreshed">
+          updated {{ fmtLastRefreshed(lastRefreshed) }}
+        </span>
+        <button class="refresh-btn" :disabled="pending" @click="refresh()">
+          ↻ Refresh
+        </button>
+      </div>
     </div>
 
     <div v-if="error" class="state-box state-box--error">
@@ -576,6 +598,17 @@
       'wght' 700;
     color: #fff;
     letter-spacing: 0.04em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .last-refreshed {
+    font-size: 0.85rem;
+    color: #64748b;
   }
 
   .refresh-btn {
