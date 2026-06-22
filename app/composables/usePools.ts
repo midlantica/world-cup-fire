@@ -152,20 +152,32 @@ export function usePools() {
   function toUiPool(api: ApiPool): Pool {
     const c = creds.value[api.id]
     const selfId = c?.memberId
+    const members = api.members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      isOwner: m.isOwner,
+      isSelf: m.id === selfId,
+      picks: m.picks ?? {},
+      picksMade: m.picksMade ?? Object.keys(m.picks ?? {}).length,
+    }))
+    // Derive ownership from the server response (the member flagged isOwner whose
+    // id matches our stored memberId) rather than the cached isOwner flag, which
+    // can be stale (e.g. after a sync-to-device or a fresh join on a new browser).
+    const selfMember = members.find((m) => m.isSelf)
+    const isOwner = selfMember?.isOwner ?? !!c?.isOwner
+    // If the server confirms we are the owner but our cached creds say otherwise,
+    // update the cache so future operations (updatePool, deletePool, etc.) work.
+    if (isOwner && c && !c.isOwner) {
+      creds.value = { ...creds.value, [api.id]: { ...c, isOwner: true } }
+      persistCreds()
+    }
     return {
       id: api.id,
       name: api.name,
       ownerName: api.ownerName,
       createdAt: api.createdAt,
-      owned: !!c?.isOwner,
-      members: api.members.map((m) => ({
-        id: m.id,
-        name: m.name,
-        isOwner: m.isOwner,
-        isSelf: m.id === selfId,
-        picks: m.picks ?? {},
-        picksMade: m.picksMade ?? Object.keys(m.picks ?? {}).length,
-      })),
+      owned: isOwner,
+      members,
     }
   }
 
@@ -525,7 +537,7 @@ export function usePools() {
     memberId: string
   ): Promise<Pool | null> {
     const c = creds.value[poolId]
-    if (!c?.isOwner) return null
+    if (!c) return null
     try {
       const res = await $fetch<{ pool: ApiPool }>(
         `/api/pools/${poolId}/members/${memberId}`,
