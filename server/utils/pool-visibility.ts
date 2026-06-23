@@ -1,6 +1,16 @@
 import type { PickOutcome, PublicPool, StoredPool } from './pools'
 
 /**
+ * Group-stage match IDs are 760414–760485 (matches 1–72).
+ * Knockout match IDs are 760486–760517 (matches 73–104).
+ * picksMade must only count group-stage picks so the "X / 72" summary is correct.
+ */
+function isGroupStageMatchId(matchId: string): boolean {
+  const n = Number(matchId)
+  return n >= 760414 && n <= 760485
+}
+
+/**
  * Hide unstarted outcomes from everyone except the authenticated member.
  * Unknown kickoff IDs are treated as unstarted so privacy fails closed.
  */
@@ -35,7 +45,7 @@ export function filterPoolForViewer(
         name: member.name,
         isOwner: member.isOwner,
         picks: visiblePicks,
-        picksMade: Object.keys(allPicks).length,
+        picksMade: Object.keys(allPicks).filter(isGroupStageMatchId).length,
       }
     }),
   }
