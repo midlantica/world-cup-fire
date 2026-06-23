@@ -326,8 +326,9 @@
     for (const [matchId, pick] of Object.entries(picks.value)) {
       // Only count group-stage picks (match.group !== null).
       // Knockout picks are excluded from the "X of 72 Group matches" summary.
+      // Skip if the match isn't found in the schedule OR if it's a knockout.
       const match = allMatches.value.find((x) => x.id === matchId)
-      if (match && match.group === null) continue
+      if (!match || match.group === null) continue
       made++
       const result = resolveResult(matchId)
       if (result !== null && result === pick.outcome) correct++
