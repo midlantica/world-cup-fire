@@ -827,6 +827,14 @@
                 Group {{ selectedMatch.group }}
               </button>
 
+              <!-- Knockout stage roundal — non-interactive, transparent bg, border = text color -->
+              <span
+                v-else
+                class="gd-header__knockout-roundal"
+                aria-label="Knockout Stage"
+                >Knockout Stage</span
+              >
+
               <!-- Teams row: [pick] Name Flag | vs/score | Flag Name [pick] -->
               <div ref="teamsRowEl" class="gd-header__teams-row">
                 <!-- Home side: wtl-wrap first in DOM so it renders on the left
@@ -1316,6 +1324,24 @@
     text-decoration: none;
   }
 
+  /* Knockout stage roundal — non-interactive pill, transparent bg, no border */
+  .gd-header__knockout-roundal {
+    font-size: 0.85rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: oklab(1 0 0 / 0.5);
+    background: transparent;
+    border-radius: 9999px;
+    padding: 0.2rem 0.75rem 0.1rem;
+    margin-top: 0.25em;
+    margin-bottom: 0.4rem;
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* Teams row — 3-column grid so centre is always truly centred */
   .gd-header__teams-row {
     display: grid;
@@ -1391,22 +1417,26 @@
       'wght' 500;
     letter-spacing: 0.06rem;
     color: oklab(100% 0 0);
-    /* Allow wrapping — long names flow to a second line */
-    white-space: normal;
-    overflow-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     min-width: 0;
-    /* Ensure the text span aligns to center with the flag */
-    display: flex;
-    align-items: center;
+    display: block;
   }
 
-  /* Child spans must explicitly override the global span { wdth 87.5, wght 300 } rule */
+  /* Child spans must explicitly override the global span { wdth 87.5, wght 300 } rule.
+     Use wdth 80 (condensed) so long placeholder names like "3rd Pl. Grp A/B/C/D/F"
+     fit before falling back to ellipsis truncation. */
   .gd-header__team-name-full,
   .gd-header__team-name-abbrev {
     font-variation-settings:
-      'wdth' 100,
+      'wdth' 80,
       'wght' 500;
     letter-spacing: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   /* By default show full name, hide abbrev */
@@ -1432,6 +1462,8 @@
     align-items: center;
     flex-shrink: 0;
     cursor: pointer;
+    position: relative;
+    top: -2px;
   }
 
   /* Ghost-click guard: while wtlGuarded is true, pointer events on ALL

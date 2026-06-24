@@ -243,7 +243,12 @@
         awayAltColor: awayData?.altColor ?? 'ffffff',
         awayIso2: awayData?.iso2 ?? '',
         awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
-        group: homeData?.group ?? awayData?.group ?? null,
+        group:
+          homeData?.group &&
+          awayData?.group &&
+          homeData.group === awayData.group
+            ? homeData.group
+            : null,
         venue,
         venueLocation: lookupVenueLocation(venue),
         status: { code, clock: clock !== '0:00' ? clock : undefined },

@@ -441,7 +441,7 @@
     align-items: center;
     justify-content: center;
     width: 1.5rem;
-    height: 1.975rem;
+    height: 2.7rem;
     background: rgb(17 17 17 / 0.85);
     border: none;
     color: #ffffff;
@@ -524,7 +524,7 @@
     justify-content: center;
     gap: 0.35rem;
     text-align: center;
-    padding: 0.6rem 0;
+    padding: 1rem 0;
     white-space: nowrap;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
@@ -580,7 +580,6 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 0.5rem;
-    padding-bottom: 0.4rem;
   }
 
   .bracket-match__num {
@@ -672,6 +671,8 @@
     padding: 0.05rem 0;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    border-top: 1px solid hsl(0deg 0% 100% / 5%);
+    border-bottom: 1px solid hsl(0deg 0% 100% / 5%);
   }
 
   /* ── Locked match (real FT result) ──────────────────────────────────────── */

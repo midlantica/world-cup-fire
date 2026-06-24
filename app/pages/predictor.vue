@@ -618,7 +618,8 @@
   /* ── Tab bar ─────────────────────────────────────────────────────────────── */
   .predictor-page__tabs {
     @apply mx-auto flex max-w-5xl;
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid hsl(0deg 0% 100% / 10%);
   }
 
   .predictor-page__tab {

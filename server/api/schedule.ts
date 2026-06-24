@@ -13,7 +13,7 @@ const USE_MOCK = false
 // Games whose kickoff is AFTER this time are served as STATUS_SCHEDULED (0-0)
 // so picks remain open. Games before this time are served as STATUS_FINAL.
 // Set to '' to use real current time as the cutoff (future games stay scheduled).
-const MOCK_NOW_ISO = ''
+const MOCK_NOW_ISO = '2026-07-02T23:59:00Z'
 
 const CACHE_TTL_LIVE_MS = 30_000 // 30 s during live matches
 const CACHE_TTL_IDLE_MS = 60_000 // 60 s otherwise (was 5 min — kept short so FT scores appear promptly)

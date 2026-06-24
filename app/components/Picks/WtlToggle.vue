@@ -196,17 +196,25 @@
         class="wtl__pick-one-outside"
         aria-hidden="true"
       >
-        <span class="wtl__pick-one-text--full">PICK ONE</span>
-        <span class="wtl__pick-one-text--short">PICK 1</span>
+        <template v-if="allowTie">
+          <span class="wtl__pick-one-text--full">PICK ONE</span>
+          <span class="wtl__pick-one-text--short">PICK 1</span>
+        </template>
+        <template v-else>PICK</template>
       </span>
 
       <!-- Inside label: only when NOT using outside mode AND caret is left -->
       <span
         v-if="!pickOneOutside && caretDir === 'left'"
         class="wtl__pick-one"
+        :class="{ 'wtl__pick-one--knockout': !allowTie }"
         aria-hidden="true"
-        >PICK ONE</span
       >
+        <template v-if="allowTie">PICK ONE</template>
+        <template v-else
+          >PICK<span class="wtl__pick-tri" aria-hidden="true"
+        /></template>
+      </span>
       <span v-if="caretDir === 'left'" class="wtl__caret" aria-hidden="true" />
 
       <span class="wtl__btns">
@@ -234,8 +242,15 @@
         v-if="!pickOneOutside && caretDir === 'right'"
         class="wtl__pick-one wtl__pick-one--right"
         aria-hidden="true"
-        >PICK ONE</span
       >
+        <template v-if="allowTie">PICK ONE</template>
+        <template v-else
+          ><span
+            class="wtl__pick-tri wtl__pick-tri--left"
+            aria-hidden="true"
+          />PICK</template
+        >
+      </span>
 
       <!-- Outside label on the RIGHT side (caretDir=left → team is on left → outside is right) -->
       <span
@@ -243,8 +258,11 @@
         class="wtl__pick-one-outside"
         aria-hidden="true"
       >
-        <span class="wtl__pick-one-text--full">PICK ONE</span>
-        <span class="wtl__pick-one-text--short">PICK 1</span>
+        <template v-if="allowTie">
+          <span class="wtl__pick-one-text--full">PICK ONE</span>
+          <span class="wtl__pick-one-text--short">PICK 1</span>
+        </template>
+        <template v-else>PICK</template>
       </span>
     </span>
 
@@ -529,6 +547,28 @@
     text-align: left;
     margin-right: 0;
     margin-left: 0.15rem;
+  }
+
+  /* ── Knockout "PICK ▶" triangle — tiny right-pointing arrow after "PICK" ───
+     Matches the label text color. Sits inline, vertically centered. */
+  .wtl__pick-tri {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid hsl(0deg 0% 74.63%);
+    vertical-align: middle;
+    margin-left: 0.2em;
+    flex-shrink: 0;
+  }
+
+  /* Left-pointing variant (for caret-right / right-side label: "◀ PICK") */
+  .wtl__pick-tri--left {
+    border-left: none;
+    border-right: 5px solid hsl(0deg 0% 74.63%);
+    margin-left: 0;
+    margin-right: 0.2em;
   }
 
   /* ── Outside "PICK ONE" label ────────────────────────────────────────────────
