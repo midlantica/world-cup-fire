@@ -5,7 +5,7 @@
 // Example: '2026-06-20T23:30:00Z'  →  pretend it's June 20, 11:30 PM UTC
 //          ''                       →  use real Date.now() (default / "Use Real Time")
 
-export const MOCK_NOW_ISO = '2026-07-02T23:59:00Z'
+export const MOCK_NOW_ISO = ''
 
 /** Returns the current timestamp (ms). Uses MOCK_NOW_ISO when set. */
 export function now(): number {
