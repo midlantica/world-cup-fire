@@ -954,14 +954,18 @@
                                   ? 'FT(P)'
                                   : selectedMatch.status.isOT
                                     ? 'AET'
-
+                                    : 'FT'
+                                : (selectedMatch.status.clock ?? 'LIVE')
+                          }}
+                        </span>
+                        <span
+                          v-if="
                             selectedMatch.status.isPen &&
                             selectedMatch.status.penScore
                           "
                           class="gd-header__pen-score"
                           >({{
                             selectedMatch.status.penScore.split('-')[1]
-
                           }})</span
                         >
                         <span class="gd-header__score">{{
