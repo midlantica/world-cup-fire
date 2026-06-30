@@ -4,11 +4,8 @@
   import { usePicks } from '~/composables/usePicks'
   import { usePools } from '~/composables/usePools'
   import { useAnalytics } from '~/composables/useAnalytics'
-  import {
-    TEAM_BY_NAME,
-    venueLocation as lookupVenueLocation,
-  } from '~/constants/worldcup'
-  import type { Match } from '~/composables/useScores'
+  import { TEAM_BY_NAME } from '~/constants/worldcup'
+  import { normaliseEvent, type Match } from '~/composables/useScores'
 
   const { modalOpen, openMatch } = useMatchDetail()
   const route = useRoute()
@@ -195,13 +192,13 @@
       const awayScore =
         code !== 'ns' ? ((awayComp.score as string) ?? '0') : null
 
-      // ── Step 2: get venue from the scoreboard API — it always has it ────────
-      // The summary API returns null for comp.venue on pre-match events.
-      // The scoreboard (schedule) API always has the venue.
+      // ── Step 2: fetch the scoreboard event — it has venue, notes, and full
+      // status (including STATUS_FINAL_PEN / penalty scores). We use
+      // normaliseEvent() on it so isPen/penScore/isOT are correctly populated.
       // comp.date is UTC, so the event may be in the previous calendar day's
       // bucket — query a 2-day window to guarantee we find it.
-      let venue: string | null = null
       const compDate = comp.date as string | undefined
+      let match: Match | null = null
       if (compDate) {
         try {
           const utcDate = new Date(compDate)
@@ -218,49 +215,54 @@
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (e: any) => String(e.id) === String(matchId)
           )
-          venue =
-            (scheduleEvent?.competitions?.[0]?.venue?.fullName as string) ??
-            null
+          if (scheduleEvent) {
+            match = normaliseEvent(scheduleEvent)
+          }
         } catch {
-          // Ignore — venue will be null
+          // Ignore — fall through to hand-rolled fallback below
         }
       }
 
-      const match: Match = {
-        id: matchId,
-        date: compDate ?? (header?.date as string) ?? '',
-        home: homeName,
-        homeShort: homeData?.shortName ?? homeData?.name ?? homeName,
-        homeScore,
-        homeColor: homeData?.color ?? '888888',
-        homeAltColor: homeData?.altColor ?? 'ffffff',
-        homeIso2: homeData?.iso2 ?? '',
-        homeAbbrev: homeData?.abbrev ?? homeName.slice(0, 3).toUpperCase(),
-        away: awayName,
-        awayShort: awayData?.shortName ?? awayData?.name ?? awayName,
-        awayScore,
-        awayColor: awayData?.color ?? '888888',
-        awayAltColor: awayData?.altColor ?? 'ffffff',
-        awayIso2: awayData?.iso2 ?? '',
-        awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
-        group:
-          homeData?.group &&
-          awayData?.group &&
-          homeData.group === awayData.group
-            ? homeData.group
-            : null,
-        venue,
-        venueLocation: lookupVenueLocation(venue),
-        status: { code, clock: clock !== '0:00' ? clock : undefined },
-        qualityScore: 0,
-        badge: null,
-        kickoffSlot: (() => {
-          const ms = new Date(
-            compDate ?? (header?.date as string) ?? ''
-          ).getTime()
-          const SLOT_MS = 30 * 60_000
-          return Math.floor(ms / SLOT_MS) * SLOT_MS
-        })(),
+      // Fallback: hand-roll a Match from the summary header if the schedule
+      // fetch failed or didn't find the event. This won't have isPen/penScore
+      // but is better than nothing.
+      if (!match) {
+        match = {
+          id: matchId,
+          date: compDate ?? (header?.date as string) ?? '',
+          home: homeName,
+          homeShort: homeData?.shortName ?? homeData?.name ?? homeName,
+          homeScore,
+          homeColor: homeData?.color ?? '888888',
+          homeAltColor: homeData?.altColor ?? 'ffffff',
+          homeIso2: homeData?.iso2 ?? '',
+          homeAbbrev: homeData?.abbrev ?? homeName.slice(0, 3).toUpperCase(),
+          away: awayName,
+          awayShort: awayData?.shortName ?? awayData?.name ?? awayName,
+          awayScore,
+          awayColor: awayData?.color ?? '888888',
+          awayAltColor: awayData?.altColor ?? 'ffffff',
+          awayIso2: awayData?.iso2 ?? '',
+          awayAbbrev: awayData?.abbrev ?? awayName.slice(0, 3).toUpperCase(),
+          group:
+            homeData?.group &&
+            awayData?.group &&
+            homeData.group === awayData.group
+              ? homeData.group
+              : null,
+          venue: null,
+          venueLocation: null,
+          status: { code, clock: clock !== '0:00' ? clock : undefined },
+          qualityScore: 0,
+          badge: null,
+          kickoffSlot: (() => {
+            const ms = new Date(
+              compDate ?? (header?.date as string) ?? ''
+            ).getTime()
+            const SLOT_MS = 30 * 60_000
+            return Math.floor(ms / SLOT_MS) * SLOT_MS
+          })(),
+        }
       }
 
       openMatch(match)

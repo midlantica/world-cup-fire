@@ -12,6 +12,12 @@ import { nowDate } from './useMockTime'
 export interface MatchStatus {
   code: 'ns' | 'live' | 'ht' | 'ft'
   clock?: string
+  /** True when the match went to extra time (120 min) */
+  isOT?: boolean
+  /** True when the match was decided by a penalty shootout */
+  isPen?: boolean
+  /** Penalty score string, e.g. "4-3" (home-away) */
+  penScore?: string
 }
 
 export type MatchBadge = 'fire' | 'wild' | null
@@ -212,7 +218,8 @@ function statusCode(
   if (
     espnStatusName === 'STATUS_FINAL' ||
     espnStatusName === 'STATUS_FULL_TIME' ||
-    espnStatusName === 'STATUS_FULL_PEN'
+    espnStatusName === 'STATUS_FULL_PEN' ||
+    espnStatusName === 'STATUS_FINAL_PEN'
   )
     return 'ft'
   if (espnStatusName === 'STATUS_HALFTIME') return 'ht'
@@ -230,6 +237,41 @@ function statusCode(
   if (espnState === 'in') return 'live'
 
   return 'ns'
+}
+
+/**
+ * Parse penalty scores from ESPN competition notes.
+ * Notes look like: "Paraguay advance 4-3 on penalties"
+ * Returns { homePen, awayPen } where homePen/awayPen are the penalty scores
+ * for the home/away team respectively, or null if not found.
+ */
+function parsePenaltyScores(
+  notes: Array<Record<string, unknown>>,
+  homeName: string,
+  awayName: string
+): { homePen: number; awayPen: number } | null {
+  for (const note of notes) {
+    const text = (note.text as string) ?? ''
+    // Match "TeamName advance X-Y on penalties"
+    const m = text.match(/^(.+?)\s+advance\s+(\d+)-(\d+)\s+on\s+penalties/i)
+    if (!m) continue
+    const advancingTeam = m[1]!.trim()
+    const scoreA = parseInt(m[2]!, 10)
+    const scoreB = parseInt(m[3]!, 10)
+    // Determine which score belongs to home vs away
+    // The advancing team's score is the higher one (they won the shootout)
+    const homeWon =
+      homeName.toLowerCase().includes(advancingTeam.toLowerCase()) ||
+      advancingTeam
+        .toLowerCase()
+        .includes(homeName.toLowerCase().split(' ').pop() ?? '')
+    if (homeWon) {
+      return { homePen: scoreA, awayPen: scoreB }
+    } else {
+      return { homePen: scoreB, awayPen: scoreA }
+    }
+  }
+  return null
 }
 
 function normaliseClock(
@@ -358,6 +400,34 @@ export function normaliseEvent(ev: any): Match {
       ? homeData.group
       : null
 
+  // ── OT / Penalty detection ────────────────────────────────────────────────
+  const notes = (comp.notes ?? []) as Array<Record<string, unknown>>
+
+  // Detect penalties from status name OR from competition notes (ESPN sometimes
+  // reverts to STATUS_FINAL on subsequent polls even for pen shootout results).
+  const isPenByStatus =
+    espnStatusName === 'STATUS_FINAL_PEN' ||
+    espnStatusName === 'STATUS_FULL_PEN'
+  const isPenByNotes =
+    code === 'ft' &&
+    notes.some((n) =>
+      /advance\s+\d+-\d+\s+on\s+penalties/i.test((n.text as string) ?? '')
+    )
+  const isPen = isPenByStatus || isPenByNotes
+
+  // OT = game went to extra time (120 min clock) — covers both OT-only and OT+pens
+  const rawClock = (ev.status as Record<string, unknown>)?.displayClock as
+    | string
+    | undefined
+  const isOT =
+    isPen || (code === 'ft' && rawClock != null && rawClock.startsWith('120'))
+
+  // Parse penalty scores from competition notes
+  const penScores = isPen ? parsePenaltyScores(notes, homeName, awayName) : null
+  const penScore = penScores
+    ? `${penScores.homePen}-${penScores.awayPen}`
+    : undefined
+
   return {
     id: String(ev.id ?? ''),
     date: String(ev.date ?? ''),
@@ -395,7 +465,13 @@ export function normaliseEvent(ev: any): Match {
         null
       return venueLocation(name)
     })(),
-    status: { code, clock },
+    status: {
+      code,
+      clock,
+      isOT: isOT || undefined,
+      isPen: isPen || undefined,
+      penScore,
+    },
     qualityScore: quality,
     badge,
     kickoffSlot: (() => {

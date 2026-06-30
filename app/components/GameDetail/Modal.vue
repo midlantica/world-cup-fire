@@ -33,7 +33,9 @@
       cur.homeScore === updated.homeScore &&
       cur.awayScore === updated.awayScore &&
       cur.status.code === updated.status.code &&
-      cur.status.clock === updated.status.clock
+      cur.status.clock === updated.status.clock &&
+      cur.status.isPen === updated.status.isPen &&
+      cur.status.penScore === updated.status.penScore
     ) {
       return
     }
@@ -686,6 +688,28 @@
     return team?.shortName ?? abbrevTeamName(name)
   })
 
+  /** Which side won a finished match: 'home' | 'away' | null (draw/not done). */
+  const winner = computed<'home' | 'away' | null>(() => {
+    const m = selectedMatch.value
+    if (!m || m.status.code !== 'ft') return null
+    if (m.status.isPen && m.status.penScore) {
+      const [hp, ap] = m.status.penScore.split('-').map(Number)
+      if (
+        hp != null &&
+        ap != null &&
+        !Number.isNaN(hp) &&
+        !Number.isNaN(ap) &&
+        hp !== ap
+      ) {
+        return hp > ap ? 'home' : 'away'
+      }
+    }
+    const h = Number(m.homeScore)
+    const a = Number(m.awayScore)
+    if (Number.isNaN(h) || Number.isNaN(a) || h === a) return null
+    return h > a ? 'home' : 'away'
+  })
+
   const hasLineupData = computed(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rosters = (detail.value?.rosters as any[]) ?? []
@@ -894,24 +918,57 @@
                 <!-- Centre: vs or score (desktop only; hidden on mobile) -->
                 <div class="gd-header__centre">
                   <template v-if="selectedMatch.status.code !== 'ns'">
-                    <span class="gd-header__score">{{ derivedHomeScore }}</span>
-                    <span
-                      class="gd-header__status"
-                      :class="{
-                        'gd-header__status--live':
-                          selectedMatch.status.code === 'live' ||
-                          selectedMatch.status.code === 'ht',
-                      }"
-                    >
-                      {{
-                        selectedMatch.status.code === 'ht'
-                          ? 'HT'
-                          : selectedMatch.status.code === 'ft'
-                            ? 'FT'
-                            : (selectedMatch.status.clock ?? 'LIVE')
-                      }}
-                    </span>
-                    <span class="gd-header__score">{{ derivedAwayScore }}</span>
+                    <div class="gd-header__score-block">
+                      <div class="gd-header__score-row">
+                        <span class="gd-header__score">{{
+                          derivedHomeScore
+                        }}</span>
+                        <span
+                          v-if="
+                            selectedMatch.status.isPen &&
+                            selectedMatch.status.penScore
+                          "
+                          class="gd-header__pen-score"
+                          >({{
+                            selectedMatch.status.penScore.split('-')[0]
+                          }})</span
+                        >
+                        <span
+                          v-if="winner === 'home'"
+                          class="gd-header__winner-badge gd-header__winner-badge--left"
+                          aria-label="Winner"
+                        />
+                        <span
+                          class="gd-header__status"
+                          :class="{
+                            'gd-header__status--live':
+                              selectedMatch.status.code === 'live' ||
+                              selectedMatch.status.code === 'ht',
+                          }"
+                        >
+                          {{
+                            selectedMatch.status.code === 'ht'
+                              ? 'HT'
+                              : selectedMatch.status.code === 'ft'
+                                ? selectedMatch.status.isPen
+                                  ? 'FT(P)'
+                                  : selectedMatch.status.isOT
+                                    ? 'AET'
+
+                            selectedMatch.status.isPen &&
+                            selectedMatch.status.penScore
+                          "
+                          class="gd-header__pen-score"
+                          >({{
+                            selectedMatch.status.penScore.split('-')[1]
+
+                          }})</span
+                        >
+                        <span class="gd-header__score">{{
+                          derivedAwayScore
+                        }}</span>
+                      </div>
+                    </div>
                   </template>
                   <template v-else>
                     <span class="gd-header__vs">vs</span>
@@ -938,6 +995,11 @@
                         awayAbbrev
                       }}</span>
                     </span>
+                    <span
+                      v-if="winner === 'away'"
+                      class="gd-header__winner-badge"
+                      aria-label="Winner"
+                    />
                   </button>
 
                   <!-- Unified Win·Tie·Lose pick control — anchored to away -->
@@ -995,7 +1057,11 @@
                       selectedMatch.status.code === 'ht'
                         ? 'HT'
                         : selectedMatch.status.code === 'ft'
-                          ? 'FT'
+                          ? selectedMatch.status.isPen
+                            ? 'FT(P)'
+                            : selectedMatch.status.isOT
+                              ? 'AET'
+                              : 'FT'
                           : 'LIVE'
                     }}
                   </span>
@@ -1664,6 +1730,35 @@
     }
   }
 
+  /* Score block: wraps the score row + optional pen line, centred in the header */
+  .gd-header__score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .gd-header__score-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  /* Penalty shootout score — "(3)" shown inline next to the regular score.
+     The pen score is smaller (1.1rem vs 1.75rem score), so with align-items:center
+     its box midpoint aligns with the score midpoint — which is correct. The
+     status badge has position:relative top:-1px so it sits slightly above center;
+     the pen score needs no offset since its box center matches the score center. */
+  .gd-header__pen-score {
+    font-size: 1.1rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    color: oklab(100% 0 0 / 0.5);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
   .gd-header__vs {
     font-size: 1.15rem;
     font-variation-settings:
@@ -1681,8 +1776,22 @@
       'wght' 700;
     color: oklab(100% 0 0);
     font-variant-numeric: tabular-nums;
-    line-height: 1;
+    line-height: 0.75;
     padding: 0 0.1rem;
+  }
+
+  /* Winner indicator — green triangle next to the winning team name.
+     Inside the team button, pointing inward toward the score.
+     Home: triangle is leftmost in the button, points RIGHT (►) toward the name.
+     Away: triangle is rightmost in the button, points LEFT (◄) toward the name. */
+  .gd-header__winner-badge {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 7px solid #006f0d;
   }
 
   .gd-header__status {
@@ -1696,8 +1805,6 @@
     border-radius: 2px;
     background: hsl(0deg 0% 73.03%);
     padding: 2px 4px 1px 6px;
-    position: relative;
-    top: -1px;
   }
 
   .gd-header__status--live {

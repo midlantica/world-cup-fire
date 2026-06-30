@@ -175,7 +175,11 @@
 
   const statusLabel = computed(() => {
     if (isHT.value) return 'HT'
-    if (isFT.value) return 'FT'
+    if (isFT.value) {
+      if (props.match.status.isPen) return 'FT(P)'
+      if (props.match.status.isOT) return 'AET'
+      return 'FT'
+    }
     if (isLive.value) return 'LIVE'
     return null
   })
@@ -184,10 +188,32 @@
   /** Which side won a finished match: 'home' | 'away' | null (draw/not done). */
   const winner = computed<'home' | 'away' | null>(() => {
     if (props.match.status.code !== 'ft') return null
+    // For penalty shootouts, determine winner from penalty scores
+    if (props.match.status.isPen && props.match.status.penScore) {
+      const [hp, ap] = props.match.status.penScore.split('-').map(Number)
+      if (
+        hp != null &&
+        ap != null &&
+        !Number.isNaN(hp) &&
+        !Number.isNaN(ap) &&
+        hp !== ap
+      ) {
+        return hp > ap ? 'home' : 'away'
+      }
+    }
     const h = Number(props.match.homeScore)
     const a = Number(props.match.awayScore)
     if (Number.isNaN(h) || Number.isNaN(a) || h === a) return null
     return h > a ? 'home' : 'away'
+  })
+
+  /** Penalty score parts split for home/away display */
+  const penParts = computed(() => {
+    if (!props.match.status.isPen || !props.match.status.penScore) return null
+    const [hp, ap] = props.match.status.penScore.split('-').map(Number)
+    if (hp == null || ap == null || Number.isNaN(hp) || Number.isNaN(ap))
+      return null
+    return { home: hp, away: ap }
   })
 </script>
 
@@ -288,9 +314,12 @@
             />
           </span>
 
-          <!-- Score (live/FT) + winner triangle (caret) to the right of score -->
+          <!-- Score (live/FT) + penalty score + winner triangle -->
           <span v-if="!isNS" class="match-card__result">
             <span class="match-card__score">{{ match.homeScore }}</span>
+            <span v-if="penParts" class="match-card__pen-score"
+              >({{ penParts.home }})</span
+            >
             <span
               v-if="winner === 'home'"
               class="match-card__tri"
@@ -343,9 +372,12 @@
             />
           </span>
 
-          <!-- Score (live/FT) + winner triangle (caret) to the right of score -->
+          <!-- Score (live/FT) + penalty score + winner triangle -->
           <span v-if="!isNS" class="match-card__result">
             <span class="match-card__score">{{ match.awayScore }}</span>
+            <span v-if="penParts" class="match-card__pen-score"
+              >({{ penParts.away }})</span
+            >
             <span
               v-if="winner === 'away'"
               class="match-card__tri"
@@ -608,6 +640,16 @@
     @apply shrink-0 text-sm font-bold text-white/80 tabular-nums;
     @apply font-anybody-bold;
     text-align: right;
+  }
+
+  /* Penalty score in parentheses — shown next to the regular score */
+  .match-card__pen-score {
+    @apply font-anybody-bold tabular-nums;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: color-mix(in oklab, #fff 45%, transparent);
+    margin-left: 2px;
+    flex-shrink: 0;
   }
 
   /* Triangle sits to the RIGHT of the score, pointing LEFT (◄),
