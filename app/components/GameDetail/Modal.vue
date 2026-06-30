@@ -959,6 +959,11 @@
                           }}
                         </span>
                         <span
+                          v-if="winner === 'away'"
+                          class="gd-header__winner-badge gd-header__winner-badge--right"
+                          aria-label="Winner"
+                        />
+                        <span
                           v-if="
                             selectedMatch.status.isPen &&
                             selectedMatch.status.penScore
@@ -999,11 +1004,6 @@
                         awayAbbrev
                       }}</span>
                     </span>
-                    <span
-                      v-if="winner === 'away'"
-                      class="gd-header__winner-badge"
-                      aria-label="Winner"
-                    />
                   </button>
 
                   <!-- Unified Win·Tie·Lose pick control — anchored to away -->
@@ -1784,10 +1784,9 @@
     padding: 0 0.1rem;
   }
 
-  /* Winner indicator — green triangle next to the winning team name.
-     Inside the team button, pointing inward toward the score.
-     Home: triangle is leftmost in the button, points RIGHT (►) toward the name.
-     Away: triangle is rightmost in the button, points LEFT (◄) toward the name. */
+  /* Winner indicator — green triangle flanking the status badge.
+     Home (--left): points RIGHT (►) toward the status badge.
+     Away (--right): points LEFT (◄) toward the status badge. */
   .gd-header__winner-badge {
     display: inline-block;
     flex-shrink: 0;
@@ -1795,7 +1794,14 @@
     height: 0;
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
+  }
+
+  .gd-header__winner-badge--left {
     border-right: 7px solid #006f0d;
+  }
+
+  .gd-header__winner-badge--right {
+    border-left: 7px solid #006f0d;
   }
 
   .gd-header__status {
