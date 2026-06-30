@@ -908,11 +908,25 @@
                   </button>
 
                   <!-- Mobile-only inline score for home team -->
-                  <span
-                    v-if="selectedMatch.status.code !== 'ns'"
-                    class="gd-header__score gd-header__score--mobile"
-                    >{{ derivedHomeScore }}</span
-                  >
+                  <template v-if="selectedMatch.status.code !== 'ns'">
+                    <span class="gd-header__score gd-header__score--mobile">{{
+                      derivedHomeScore
+                    }}</span>
+                    <span
+                      v-if="
+                        selectedMatch.status.isPen &&
+                        selectedMatch.status.penScore
+                      "
+                      class="gd-header__pen-score gd-header__pen-score--mobile"
+                      >({{ selectedMatch.status.penScore.split('-')[0] }})</span
+                    >
+                    <span
+                      v-if="selectedMatch.status.isPen"
+                      class="gd-header__winner-badge gd-header__winner-badge--left gd-header__winner-badge--mobile"
+                      :style="winner !== 'home' ? 'visibility: hidden' : ''"
+                      aria-label="Winner"
+                    />
+                  </template>
                 </div>
 
                 <!-- Centre: vs or score (desktop only; hidden on mobile) -->
@@ -1029,11 +1043,25 @@
                   </span>
 
                   <!-- Mobile-only inline score for away team -->
-                  <span
-                    v-if="selectedMatch.status.code !== 'ns'"
-                    class="gd-header__score gd-header__score--mobile"
-                    >{{ derivedAwayScore }}</span
-                  >
+                  <template v-if="selectedMatch.status.code !== 'ns'">
+                    <span class="gd-header__score gd-header__score--mobile">{{
+                      derivedAwayScore
+                    }}</span>
+                    <span
+                      v-if="
+                        selectedMatch.status.isPen &&
+                        selectedMatch.status.penScore
+                      "
+                      class="gd-header__pen-score gd-header__pen-score--mobile"
+                      >({{ selectedMatch.status.penScore.split('-')[1] }})</span
+                    >
+                    <span
+                      v-if="selectedMatch.status.isPen"
+                      class="gd-header__winner-badge gd-header__winner-badge--left gd-header__winner-badge--mobile"
+                      :style="winner !== 'away' ? 'visibility: hidden' : ''"
+                      aria-label="Winner"
+                    />
+                  </template>
                 </div>
 
                 <!-- Mobile-only status column (FT/HT/clock) — right side, spans both rows -->
@@ -1523,6 +1551,13 @@
     display: none;
   }
 
+  /* Mobile winner badge — hidden on desktop (shown only at ≤639px).
+     !important ensures the inline-block from the base .gd-header__winner-badge
+     rule cannot bleed through at desktop widths. */
+  .gd-header__winner-badge--mobile {
+    display: none !important;
+  }
+
   /* ── WTL wrap — tap target for arming the picker on mobile ─────────────────
      Wraps the WtlToggle so a tap anywhere on the toggle area (including the
      absolute-positioned picker overlay) arms the side. flex-shrink: 0 keeps
@@ -1659,9 +1694,51 @@
       flex-shrink: 0;
     }
 
-    /* score--mobile always last in the row */
+    /* score--mobile, pen-score--mobile, winner-badge--mobile: push to right
+       of each team row via order, so they stack in fixed columns */
     .gd-header__side--home .gd-header__score--mobile {
       order: 3;
+    }
+    .gd-header__side--home .gd-header__pen-score--mobile {
+      order: 4;
+    }
+    .gd-header__side--home .gd-header__winner-badge--mobile {
+      order: 5;
+    }
+
+    /* Away side: same order so score/pen/badge sit at the right end of the row */
+    .gd-header__side--away .gd-header__score--mobile {
+      order: 3;
+    }
+    .gd-header__side--away .gd-header__pen-score--mobile {
+      order: 4;
+    }
+    .gd-header__side--away .gd-header__winner-badge--mobile {
+      order: 5;
+    }
+
+    /* Push the score block to the right edge of each team row so both rows
+       align. The team-btn has flex:1 so it fills available space; the score
+       elements sit flush right. */
+    .gd-header__side--away .gd-header__score--mobile {
+      margin-left: auto;
+    }
+
+    /* Score column alignment: fixed widths so home and away columns line up */
+    .gd-header__score--mobile {
+      width: 1.4rem;
+      text-align: right;
+    }
+
+    .gd-header__pen-score--mobile {
+      width: 1.5rem;
+      text-align: left;
+    }
+
+    .gd-header__winner-badge--mobile {
+      display: inline-block !important;
+      width: 0.75rem;
+      flex-shrink: 0;
     }
 
     /* Show mobile-only inline scores — matches wall card .match-card__score.
@@ -1802,6 +1879,45 @@
 
   .gd-header__winner-badge--right {
     border-left: 7px solid #006f0d;
+  }
+
+  /* Mobile winner badges — sit above/below the status badge in the status column.
+     Home winner: top of column → triangle points DOWN (▼) toward the home score row.
+     Away winner: bottom of column → triangle points UP (▲) toward the away score row.
+     Override all four border sides from the base class to form vertical triangles. */
+  .gd-header__winner-badge--mobile-home {
+    border-top: none;
+    border-bottom: 7px solid #006f0d;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    margin-bottom: 0.25rem;
+  }
+
+  .gd-header__winner-badge--mobile-away {
+    border-bottom: none;
+    border-top: 7px solid #006f0d;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    margin-top: 0.25rem;
+  }
+
+  /* Mobile pen score — shown inline after the score in each team row */
+  .gd-header__pen-score--mobile {
+    display: none;
+    font-size: 0.85rem;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    color: oklab(100% 0 0 / 0.5);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 639px) {
+    .gd-header__pen-score--mobile {
+      display: block;
+    }
   }
 
   .gd-header__status {
