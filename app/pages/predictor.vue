@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { usePredictions } from '~/composables/usePredictions'
   import type { GroupMatch } from '~/composables/usePredictions'
-  import { WC_GROUPS } from '~/constants/worldcup'
+  import { WC_GROUPS, matchNumberByEventId } from '~/constants/worldcup'
 
   useHead({ title: 'Predictor — World Cup Fire 🔥' })
 
@@ -78,6 +78,7 @@
       homeScore: m.homeScore,
       awayScore: m.awayScore,
       penWinner,
+      matchNumber: matchNumberByEventId(m.id),
     }
   }
 

@@ -1087,6 +1087,62 @@ export function matchVenueOverride(
 }
 
 // ---------------------------------------------------------------------------
+// ESPN event ID → FIFA official match number (knockout rounds only, 73–104)
+//
+// Used by the Predictor to key ftResults by match number rather than team
+// names, making the lookup immune to ESPN display-name mismatches and
+// unresolved bracket slot descriptors.
+// ---------------------------------------------------------------------------
+const MATCH_NUMBER_BY_EVENT_ID: Record<string, number> = {
+  // ── Round of 32 (Jun 28 – Jul 4) ─────────────────────────────────────────
+  '760486': 73, // South Africa vs Canada
+  '760489': 74, // Germany vs Paraguay
+  '760488': 75, // Netherlands vs Morocco
+  '760487': 76, // Brazil vs Japan
+  '760490': 77, // Ivory Coast vs Norway
+  '760492': 78, // France vs Sweden
+  '760491': 79, // Mexico vs Ecuador
+  '760495': 80, // England vs Congo DR
+  '760493': 81, // Belgium vs Senegal
+  '760494': 82, // United States vs Bosnia-Herzegovina
+  '760497': 83, // Spain vs Austria
+  '760496': 84, // Portugal vs Croatia
+  '760498': 85, // Switzerland vs Algeria
+  '760499': 86, // Australia vs Egypt
+  '760500': 87, // Argentina vs Cape Verde
+  '760501': 88, // Colombia vs Ghana
+  // ── Round of 16 (Jul 4 – Jul 8) ──────────────────────────────────────────
+  '760502': 89, // W74 vs W77
+  '760503': 90, // W73 vs W75
+  '760504': 91, // W76 vs W78
+  '760505': 92, // W79 vs W80
+  '760506': 93, // W83 vs W84
+  '760507': 94, // W81 vs W82
+  '760508': 95, // W86 vs W88
+  '760509': 96, // W85 vs W87
+  // ── Quarterfinals (Jul 9 – Jul 11) ───────────────────────────────────────
+  '760510': 97, // W89 vs W90
+  '760511': 98, // W93 vs W94
+  '760512': 99, // W91 vs W92
+  '760513': 100, // W95 vs W96
+  // ── Semifinals (Jul 14 – Jul 15) ─────────────────────────────────────────
+  '760514': 101, // W97 vs W98
+  '760515': 102, // W99 vs W100
+  // ── Third Place Playoff (Jul 18) ─────────────────────────────────────────
+  '760516': 103,
+  // ── Final (Jul 19) ───────────────────────────────────────────────────────
+  '760517': 104,
+}
+
+/** Look up the FIFA official match number for a knockout match by ESPN event ID. */
+export function matchNumberByEventId(
+  eventId: string | null | undefined
+): number | null {
+  if (!eventId) return null
+  return MATCH_NUMBER_BY_EVENT_ID[eventId] ?? null
+}
+
+// ---------------------------------------------------------------------------
 // WC 2026 Bracket Seeding — the fixed FIFA knockout bracket map
 //
 // Encodes which group slot feeds which R32 fixture, and how winners cascade

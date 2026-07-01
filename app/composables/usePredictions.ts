@@ -98,6 +98,12 @@ export interface GroupMatch {
    * when homeScore === awayScore.
    */
   penWinner?: string | null
+  /**
+   * FIFA official match number (73–104 for knockout matches).
+   * Used to key ftResults so the lookup is robust against ESPN display-name
+   * mismatches (e.g. "Korea Republic" vs "South Korea").
+   */
+  matchNumber?: number | null
 }
 
 function loadPredictions(): PredictionsMap {
@@ -396,21 +402,31 @@ export function usePredictions() {
     const bracketLosers = new Map<string, string>()
     const assignedThirdPlace = new Set<string>()
 
-    // Build a lookup of FT knockout results keyed by each team name.
-    // This lets us find the result even when the opponent slot hasn't been
-    // resolved yet (e.g. a 3rd-place wildcard with no group picks made).
+    // Build a lookup of FT knockout results.
+    //
+    // Primary key: matchNumber (from WC_2026_BRACKET_SEEDING) — this is the
+    // most reliable key because it's immune to ESPN display-name mismatches
+    // (e.g. "Korea Republic" vs "South Korea") and unresolved slot names.
+    //
+    // Also stores the actual home/away team names from the real match so the
+    // bracket card can display the correct teams even when the predicted slot
+    // hasn't resolved (e.g. a 3rd-place wildcard with no group picks made).
     //
     // Handles three cases:
     //   1. Normal win in 90 min: homeScore !== awayScore → higher score wins
     //   2. Draw after 90 min decided by ET/penalties: penWinner carries the
     //      advancing team name (populated from ESPN's competitor.winner flag)
     //   3. Fallback: if scores are equal and no penWinner, skip (result unknown)
-    const ftResults = new Map<string, { winner: string; loser: string }>()
+    const ftResults = new Map<
+      number,
+      { winner: string; loser: string; actualHome: string; actualAway: string }
+    >()
     for (const m of knockoutMatches) {
       if (
         m.statusCode === 'ft' &&
         m.homeScore !== null &&
-        m.awayScore !== null
+        m.awayScore !== null &&
+        m.matchNumber != null
       ) {
         const hs = parseInt(m.homeScore, 10)
         const as_ = parseInt(m.awayScore, 10)
@@ -432,12 +448,12 @@ export function usePredictions() {
           continue
         }
 
-        // Key by both team names individually AND as a pair, so we can find
-        // the result even when only one team in the slot is resolved.
-        ftResults.set(`${m.home}|${m.away}`, { winner, loser })
-        ftResults.set(`${m.away}|${m.home}`, { winner, loser })
-        ftResults.set(m.home, { winner, loser })
-        ftResults.set(m.away, { winner, loser })
+        ftResults.set(m.matchNumber, {
+          winner,
+          loser,
+          actualHome: m.home,
+          actualAway: m.away,
+        })
       }
     }
 
@@ -469,36 +485,36 @@ export function usePredictions() {
         assignedThirdPlace
       )
 
-      const homeData = teamData(homeTeam)
-      const awayData = teamData(awayTeam)
+      // Look up the real FT result by match number — immune to name mismatches.
+      const ftResult = ftResults.get(slot.matchNumber) ?? null
 
-      // Check if there's a real FT result for this matchup.
-      // Try the full pair first; fall back to individual team lookup so we
-      // can lock a slot even when the opponent hasn't been resolved yet
-      // (e.g. a 3rd-place wildcard slot with no group picks made).
-      const ftResult =
-        (homeTeam && awayTeam
-          ? ftResults.get(`${homeTeam}|${awayTeam}`)
-          : undefined) ??
-        (homeTeam ? ftResults.get(homeTeam) : undefined) ??
-        (awayTeam ? ftResults.get(awayTeam) : undefined) ??
-        null
+      // When a real result exists, use the actual teams from the real match.
+      // This handles cases where the predicted slot team (e.g. from a 3rd-place
+      // wildcard) doesn't match the ESPN display name, or the slot is unresolved.
+      const displayHome = ftResult?.actualHome ?? homeTeam
+      const displayAway = ftResult?.actualAway ?? awayTeam
+
+      const homeData = teamData(displayHome)
+      const awayData = teamData(displayAway)
 
       let pick =
         (predictions.value[slot.slotId] as 'home' | 'away' | undefined) ?? null
-      const ready = homeTeam !== '' && awayTeam !== ''
+      // A slot is "ready" if both teams are known (either from real result or predictions)
+      const ready = displayHome !== '' && displayAway !== ''
 
       let winner: string
       let loser: string
 
       if (ftResult) {
-        // Real result overrides user pick
+        // Real result overrides user pick; set pick to reflect the real winner
         winner = ftResult.winner
         loser = ftResult.loser
-        pick = winner === homeTeam ? 'home' : 'away'
+        pick = winner === displayHome ? 'home' : 'away'
       } else {
-        winner = pick === 'home' ? homeTeam : pick === 'away' ? awayTeam : ''
-        loser = pick === 'home' ? awayTeam : pick === 'away' ? homeTeam : ''
+        winner =
+          pick === 'home' ? displayHome : pick === 'away' ? displayAway : ''
+        loser =
+          pick === 'home' ? displayAway : pick === 'away' ? displayHome : ''
       }
 
       // Record winner/loser for downstream slots
@@ -508,12 +524,12 @@ export function usePredictions() {
       result.push({
         slotId: slot.slotId,
         round: slot.round,
-        home: homeTeam,
+        home: displayHome,
         homeIso2: homeData.iso2,
         homeColor: homeData.color,
         homeAbbrev: homeData.abbrev,
         homeShort: homeData.shortName,
-        away: awayTeam,
+        away: displayAway,
         awayIso2: awayData.iso2,
         awayColor: awayData.color,
         awayAbbrev: awayData.abbrev,
