@@ -396,7 +396,10 @@ export function usePredictions() {
     const bracketLosers = new Map<string, string>()
     const assignedThirdPlace = new Set<string>()
 
-    // Build a lookup: "HomeTeam|AwayTeam" → { winner, loser } for FT knockout matches.
+    // Build a lookup of FT knockout results keyed by each team name.
+    // This lets us find the result even when the opponent slot hasn't been
+    // resolved yet (e.g. a 3rd-place wildcard with no group picks made).
+    //
     // Handles three cases:
     //   1. Normal win in 90 min: homeScore !== awayScore → higher score wins
     //   2. Draw after 90 min decided by ET/penalties: penWinner carries the
@@ -429,8 +432,12 @@ export function usePredictions() {
           continue
         }
 
+        // Key by both team names individually AND as a pair, so we can find
+        // the result even when only one team in the slot is resolved.
         ftResults.set(`${m.home}|${m.away}`, { winner, loser })
         ftResults.set(`${m.away}|${m.home}`, { winner, loser })
+        ftResults.set(m.home, { winner, loser })
+        ftResults.set(m.away, { winner, loser })
       }
     }
 
@@ -465,11 +472,17 @@ export function usePredictions() {
       const homeData = teamData(homeTeam)
       const awayData = teamData(awayTeam)
 
-      // Check if there's a real FT result for this matchup
+      // Check if there's a real FT result for this matchup.
+      // Try the full pair first; fall back to individual team lookup so we
+      // can lock a slot even when the opponent hasn't been resolved yet
+      // (e.g. a 3rd-place wildcard slot with no group picks made).
       const ftResult =
-        homeTeam && awayTeam
-          ? (ftResults.get(`${homeTeam}|${awayTeam}`) ?? null)
-          : null
+        (homeTeam && awayTeam
+          ? ftResults.get(`${homeTeam}|${awayTeam}`)
+          : undefined) ??
+        (homeTeam ? ftResults.get(homeTeam) : undefined) ??
+        (awayTeam ? ftResults.get(awayTeam) : undefined) ??
+        null
 
       let pick =
         (predictions.value[slot.slotId] as 'home' | 'away' | undefined) ?? null
