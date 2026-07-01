@@ -92,6 +92,12 @@ export interface GroupMatch {
   statusCode: 'ns' | 'live' | 'ht' | 'ft'
   homeScore: string | null
   awayScore: string | null
+  /**
+   * For knockout matches decided by penalties (90-min score is a draw),
+   * the name of the team that advanced. Used to determine the bracket winner
+   * when homeScore === awayScore.
+   */
+  penWinner?: string | null
 }
 
 function loadPredictions(): PredictionsMap {
@@ -390,7 +396,12 @@ export function usePredictions() {
     const bracketLosers = new Map<string, string>()
     const assignedThirdPlace = new Set<string>()
 
-    // Build a lookup: "HomeTeam|AwayTeam" → { winner, loser } for FT knockout matches
+    // Build a lookup: "HomeTeam|AwayTeam" → { winner, loser } for FT knockout matches.
+    // Handles three cases:
+    //   1. Normal win in 90 min: homeScore !== awayScore → higher score wins
+    //   2. Draw after 90 min decided by ET/penalties: penWinner carries the
+    //      advancing team name (populated from ESPN's competitor.winner flag)
+    //   3. Fallback: if scores are equal and no penWinner, skip (result unknown)
     const ftResults = new Map<string, { winner: string; loser: string }>()
     for (const m of knockoutMatches) {
       if (
@@ -400,12 +411,26 @@ export function usePredictions() {
       ) {
         const hs = parseInt(m.homeScore, 10)
         const as_ = parseInt(m.awayScore, 10)
-        if (!Number.isNaN(hs) && !Number.isNaN(as_) && hs !== as_) {
-          const winner = hs > as_ ? m.home : m.away
-          const loser = hs > as_ ? m.away : m.home
-          ftResults.set(`${m.home}|${m.away}`, { winner, loser })
-          ftResults.set(`${m.away}|${m.home}`, { winner, loser })
+        if (Number.isNaN(hs) || Number.isNaN(as_)) continue
+
+        let winner: string
+        let loser: string
+
+        if (hs !== as_) {
+          // Normal win in 90 min
+          winner = hs > as_ ? m.home : m.away
+          loser = hs > as_ ? m.away : m.home
+        } else if (m.penWinner) {
+          // Draw after 90 min — use the penalty/ET winner
+          winner = m.penWinner
+          loser = m.penWinner === m.home ? m.away : m.home
+        } else {
+          // Scores equal, no penalty winner known yet — skip
+          continue
         }
+
+        ftResults.set(`${m.home}|${m.away}`, { winner, loser })
+        ftResults.set(`${m.away}|${m.home}`, { winner, loser })
       }
     }
 

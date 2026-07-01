@@ -39,7 +39,28 @@
   // normaliseEvent is a plain exported function — import it statically
   const { normaliseEvent } = await import('~/composables/useScores')
 
-  function toGroupMatch(m: ReturnType<typeof normaliseEvent>): GroupMatch {
+  function toGroupMatch(
+    m: ReturnType<typeof normaliseEvent>,
+    rawEv?: unknown
+  ): GroupMatch {
+    // For knockout matches decided by penalties, derive the advancing team from
+    // the raw ESPN event's competitor.winner flag. The scoreboard API returns
+    // the 90-min score (which is a draw) but sets winner=true on the team that
+    // advanced through the shootout.
+    let penWinner: string | null = null
+    if (m.status.isPen && rawEv) {
+      const ev = rawEv as Record<string, unknown>
+      const comp = (ev.competitions as Record<string, unknown>[])?.[0] ?? {}
+      const competitors = (comp.competitors as Record<string, unknown>[]) ?? []
+      for (const c of competitors) {
+        if (c.winner === true) {
+          const team = c.team as Record<string, unknown> | undefined
+          penWinner = (team?.displayName as string) ?? null
+          break
+        }
+      }
+    }
+
     return {
       id: m.id,
       home: m.home,
@@ -56,23 +77,24 @@
       statusCode: m.status.code,
       homeScore: m.homeScore,
       awayScore: m.awayScore,
+      penWinner,
     }
   }
 
   const allGroupMatches = computed<GroupMatch[]>(() => {
     if (!rawEvents.value) return []
     return rawEvents.value
-      .map((ev) => normaliseEvent(ev))
-      .filter((m) => m.group !== null)
-      .map(toGroupMatch)
+      .map((ev) => ({ m: normaliseEvent(ev), ev }))
+      .filter(({ m }) => m.group !== null)
+      .map(({ m, ev }) => toGroupMatch(m, ev))
   })
 
   const allKnockoutMatches = computed<GroupMatch[]>(() => {
     if (!rawEvents.value) return []
     return rawEvents.value
-      .map((ev) => normaliseEvent(ev))
-      .filter((m) => m.group === null)
-      .map(toGroupMatch)
+      .map((ev) => ({ m: normaliseEvent(ev), ev }))
+      .filter(({ m }) => m.group === null)
+      .map(({ m, ev }) => toGroupMatch(m, ev))
   })
 
   // ── Predictions ────────────────────────────────────────────────────────────
