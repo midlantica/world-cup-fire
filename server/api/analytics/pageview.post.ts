@@ -6,23 +6,27 @@
 // comma-separated list of IPs to ignore (e.g. your home/office IP).
 
 import { recordPageview, hashFingerprint } from '../../utils/analytics'
-
-// IPs that should never be counted. Seeded with the owner's IP; extend via
-// the ANALYTICS_EXCLUDE_IPS environment variable (comma-separated).
-const OWNER_IPS = ['136.58.31.46']
+import { isRateLimited } from '../../utils/rate-limit'
 
 function getExcludedIps(): Set<string> {
   const env =
     (globalThis as { process?: { env?: Record<string, string | undefined> } })
       .process?.env ?? {}
-  const extra = (env.ANALYTICS_EXCLUDE_IPS ?? '')
+  const ips = (env.ANALYTICS_EXCLUDE_IPS ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean)
-  return new Set([...OWNER_IPS, ...extra])
+  return new Set(ips)
 }
 
 export default defineEventHandler(async (event) => {
+  // Fire-and-forget endpoint: drop over-limit hits silently (still 204)
+  // rather than surfacing a 429 to the client.
+  if (isRateLimited(event, 'pageview', 60)) {
+    setResponseStatus(event, 204)
+    return null
+  }
+
   try {
     const body = await readBody<{ path?: string; sessionId?: string }>(event)
     const path = (body?.path ?? '/').slice(0, 200)

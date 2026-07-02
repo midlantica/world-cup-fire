@@ -42,6 +42,11 @@
     (e: 'delete'): void
   }>()
 
+  useModalKeyboard(
+    () => props.open,
+    () => emit('close')
+  )
+
   const yourName = ref('')
   const poolName = ref('')
 

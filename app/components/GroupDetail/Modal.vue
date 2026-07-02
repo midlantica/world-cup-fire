@@ -431,10 +431,14 @@
     }
   }
 
-  // Keyboard navigation
+  useModalKeyboard(
+    () => groupModalOpen.value,
+    () => closeGroup()
+  )
+
+  // Keyboard navigation (Escape handled by useModalKeyboard, stack-aware)
   function onKeydown(e: KeyboardEvent) {
     if (!groupModalOpen.value) return
-    if (e.key === 'Escape') closeGroup()
     if (e.key === 'ArrowLeft') goToPrev()
     if (e.key === 'ArrowRight') goToNext()
   }

@@ -14,6 +14,11 @@
   const { selectedMatch, modalOpen, closeMatch, detail, pending } =
     useMatchDetail()
 
+  useModalKeyboard(
+    () => modalOpen.value,
+    () => closeMatch()
+  )
+
   // ── Keep selectedMatch in sync with live score updates ────────────────────
   // selectedMatch is set once at openMatch() time. When the scores list polls
   // and gets updated status/score, we sync it here so the modal header, pick

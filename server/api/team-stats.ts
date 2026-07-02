@@ -1,56 +1,4 @@
-const abbrevToIso2: Record<string, string> = {
-  ALG: 'DZ',
-  ARG: 'AR',
-  AUS: 'AU',
-  AUT: 'AT',
-  BEL: 'BE',
-  BIH: 'BA',
-  BRA: 'BR',
-  CAN: 'CA',
-  CPV: 'CV',
-  COD: 'CD',
-  COL: 'CO',
-  CRC: 'CR',
-  CRO: 'HR',
-  CZE: 'CZ',
-  CUW: 'CW',
-  ECU: 'EC',
-  EGY: 'EG',
-  ENG: 'GB-ENG',
-  ESP: 'ES',
-  FRA: 'FR',
-  GER: 'DE',
-  GHA: 'GH',
-  HTI: 'HT',
-  IRN: 'IR',
-  IRQ: 'IQ',
-  ITA: 'IT',
-  CIV: 'CI',
-  JAP: 'JP',
-  JPN: 'JP',
-  JOR: 'JO',
-  KOR: 'KR',
-  MAR: 'MA',
-  MEX: 'MX',
-  NED: 'NL',
-  NOR: 'NO',
-  NZL: 'NZ',
-  PAN: 'PA',
-  PAR: 'PY',
-  POR: 'PT',
-  QAT: 'QA',
-  RSA: 'ZA',
-  SAU: 'SA',
-  SCO: 'GB-SCT',
-  SEN: 'SN',
-  SUI: 'CH',
-  SWE: 'SE',
-  TUN: 'TN',
-  TUR: 'TR',
-  URU: 'UY',
-  USA: 'US',
-  UZB: 'UZ',
-}
+import { ABBREV_TO_ISO2 } from '../utils/iso2'
 
 type TeamStats = {
   teamName: string
@@ -139,7 +87,7 @@ export default defineCachedEventHandler(
       for (const t of teams) {
         const abbrev = (t.team?.abbreviation ?? '').toUpperCase()
         const teamName = t.team?.displayName ?? abbrev
-        const iso2 = abbrevToIso2[abbrev] ?? ''
+        const iso2 = ABBREV_TO_ISO2[abbrev] ?? ''
 
         if (!teamMap.has(abbrev)) {
           teamMap.set(abbrev, {

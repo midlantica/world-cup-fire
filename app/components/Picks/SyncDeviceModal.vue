@@ -13,6 +13,11 @@
     (e: 'close'): void
   }>()
 
+  useModalKeyboard(
+    () => props.open,
+    () => emit('close')
+  )
+
   const copied = ref(false)
 
   async function copy() {

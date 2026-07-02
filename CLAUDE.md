@@ -4,20 +4,21 @@ This file documents conventions and context for AI-assisted development on this 
 
 ## Project Overview
 
-MLS Live Scores — a Nuxt 4 (Vue 3) app showing real-time MLS scores, standings, stats, and match details. Deployed on Netlify. Data sourced from ESPN's unofficial public API via Nuxt server routes.
+World Cup Fire (worldcupfire.com) — a Nuxt 4 (Vue 3) app for the FIFA World Cup 2026: live scores, group standings, tournament stats, an interactive knockout predictor, and server-synced pick-em pools. Deployed on Netlify. Match data sourced from ESPN's unofficial public API (`soccer/fifa.world`) via Nuxt server routes; pools/analytics persisted in Netlify Blobs (local `.data/` in dev).
 
 ## Tech Stack
 
-- **Framework**: Nuxt 4.4.6, Vue 3, `<script setup lang="ts">`
+- **Framework**: Nuxt 4, Vue 3, `<script setup lang="ts">`, SSR
 - **Styling**: Tailwind CSS v4 + scoped component CSS. `oklab()` / `oklch()` color functions used throughout.
 - **Package manager**: pnpm
-- **Deployment**: Netlify (Nitro preset)
+- **Deployment**: Netlify (Nitro preset), Node 22
+- **Tests**: Node's native test runner over `test/*.test.ts` (pools/analytics backend logic)
 
 ## Key Conventions
 
 ### Colors
 
-All colors use `oklab()` or `oklch()` — do not introduce `rgb()`, `hsl()`, or hex colors.
+All colors use `oklab()` or `oklch()` — do not introduce `rgb()`, `hsl()`, or hex colors. Nation accent theming is driven by `--nation-*` CSS custom properties, set pre-paint by an inline head script in `nuxt.config.ts` (reads `wc-my-nation-accent` from localStorage — anti-FOUC).
 
 ### Component structure
 
@@ -30,48 +31,50 @@ All colors use `oklab()` or `oklch()` — do not introduce `rgb()`, `hsl()`, or 
 - All component styles are scoped (`<style scoped>`).
 - Responsive breakpoints use `max-width` media queries, consistent thresholds: `425px`, `599px`, `768px`.
 - `--modal-copy-size` CSS variable controls font size inside modals.
+- Minimum readable text size is `0.85rem` (chart tick labels may go to `0.75rem`).
 
 ### Constants
 
-- Shared config (dates, flags) lives in `app/constants/mls.ts`, not hardcoded in components.
+- Shared tournament config (teams, groups, dates, venues, match numbers) lives in `app/constants/worldcup.ts` and `app/constants/venues.ts`, not hardcoded in components.
 
 ### API / data
 
-- All ESPN API calls go through `server/api/` routes — never fetch ESPN directly from the client.
-- Composables in `app/composables/` handle data fetching and expose typed reactive state.
+- All ESPN API calls go through `server/api/` routes — never fetch ESPN directly from the client. Server routes use in-memory TTL caches with adaptive TTLs (shorter when matches are live/imminent) and stale-on-error fallback; preserve this pattern.
+- Composables in `app/composables/` handle data fetching and expose typed reactive state. `useScores.ts` owns event normalization (`normaliseEvent`) and disciplined polling (instance-counted, pauses on `visibilitychange`, torn down on last unmount).
+- Pools/picks are the write path: composables → `server/api/pools/*` → Netlify Blobs, with concurrency-safe updates in `server/utils/` (covered by the test suite).
 
 ## Structure Notes
 
+### Pages (`app/pages/`)
+
+- `index.vue` — live matches by tournament week
+- `groups.vue` + `group/[id].vue` — group standings
+- `stats.vue` — WC history/records + live tournament stats
+- `predictor.vue` — group predictions + knockout bracket (`Predictor/Bracket.vue`); real FT results lock bracket slots, keyed by FIFA match number
+- `pools.vue` — pick-em pools, leaderboards, cross-device sync
+- `analytics.vue` — internal analytics dashboard (passphrase-gated, not a security boundary)
+- `admin.vue` — dev-only mock-time controls (guarded by `app/middleware/dev-only.ts`)
+
 ### Component folders
 
-Modal components live in subfolders; Nuxt auto-imports by path (e.g. `GameDetail/StatsTab.vue` → `GameDetailStatsTab`).
+Modal components live in subfolders; Nuxt auto-imports by path (e.g. `GameDetail/StatsTab.vue` → `GameDetailStatsTab`). `common/` is registered with `pathPrefix: false` (bare names like `AppHeader`).
 
-### GameDetail/ folder (`app/components/GameDetail/`)
+- `GameDetail/` — match detail modal; `Modal.vue` orchestrates, tabs: Stats / Leaders / Lineups / H2h / Info
+- `CountryDetail/`, `GroupDetail/`, `VenueDetail/` — drill-down modals
+- `Predictor/Bracket.vue` — knockout bracket UI
+- `Picks/` — pools UI (PoolModal, Leaderboard, WtlToggle, sync modals)
+- `icons/` — single-purpose SVG components
 
-- `Modal.vue` — orchestrator; computes `homeLeaders`, `awayLeaders`, `homeRoster`, `awayRoster`, `homeLogo`, `awayLogo` and passes as props
-- `StatsTab.vue` — match stats
-- `LeadersTab.vue` — player leaders
-- `LineupsTab.vue` — lineups/rosters
-- `H2hTab.vue` — head-to-head history
+### Mock time
 
-### MyTeam/ folder (`app/components/MyTeam/`)
-
-- `Modal.vue` — orchestrator; all data fetching/composables live here; passes typed props to tabs
-- `ScheduleTab.vue` — recent results + next game; owns its own GameBlock grid/deep styles
-- `LeadersTab.vue` — season stat leaders
-- `LineupsTab.vue` — current roster / fallback last-lineup
-- `FixturesTab.vue` — full 2026 season fixtures by month
-
-### Team metadata
-
-- `TEAM_LOGO` — team logo URLs (in `useMyTeam.ts`)
-- `TEAM_SHORT_NAME` — 3–4 char abbreviations used inside modals (in `GameDetail/Modal.vue`)
-- `useMyTeam.ts` has its own `TEAM_SHORT_NAME` for the My Team modal — intentionally separate (different display lengths).
+`useMockTime.ts` and `server/api/dev/mock-time.ts` let dev simulate tournament progression. `MOCK_NOW_ISO` in `server/api/schedule.ts` must stay in sync with `useMockTime.ts` (hand-maintained invariant). Inert in production.
 
 ## Commands
 
 ```bash
 pnpm dev        # dev server at localhost:3000
 pnpm build      # production build
-pnpm preview    # preview production build
+pnpm test       # node native test runner (test/*.test.ts)
+pnpm format     # prettier
+pnpm deploy     # netlify deploy --build --prod
 ```

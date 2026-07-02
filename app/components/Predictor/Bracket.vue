@@ -176,6 +176,8 @@
     return formatTime(date)
   }
 
+  let onBracketScroll: (() => void) | null = null
+
   onMounted(() => {
     const scroll = scrollEl.value
     const labelScroll = labelScrollEl.value
@@ -186,15 +188,22 @@
     }
 
     // Sync label scroll with card scroll on manual drag
-    scroll.addEventListener('scroll', () => {
+    onBracketScroll = () => {
       updateFocusedFromScroll()
       updateScrollEnd(scroll)
       if (labelScroll) {
         labelScroll.scrollLeft = scroll.scrollLeft
       }
-    })
+    }
+    scroll.addEventListener('scroll', onBracketScroll)
 
     updateScrollEnd(scroll)
+  })
+
+  onUnmounted(() => {
+    if (onBracketScroll && scrollEl.value) {
+      scrollEl.value.removeEventListener('scroll', onBracketScroll)
+    }
   })
 </script>
 

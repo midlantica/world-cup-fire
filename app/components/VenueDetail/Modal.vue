@@ -18,16 +18,10 @@
     }
   }
 
-  function onKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') emit('close')
-  }
-
-  onMounted(() => {
-    if (import.meta.client) window.addEventListener('keydown', onKeydown)
-  })
-  onUnmounted(() => {
-    if (import.meta.client) window.removeEventListener('keydown', onKeydown)
-  })
+  useModalKeyboard(
+    () => props.open,
+    () => emit('close')
+  )
 </script>
 
 <template>

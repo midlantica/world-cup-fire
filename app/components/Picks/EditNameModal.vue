@@ -12,6 +12,11 @@
     (e: 'submit', name: string): void
   }>()
 
+  useModalKeyboard(
+    () => props.open,
+    () => emit('close')
+  )
+
   const name = ref('')
 
   watch(

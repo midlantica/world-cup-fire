@@ -5,6 +5,11 @@
   const { myNation, myTeamData, setNation, modalOpen, closeModal, allTeams } =
     useMyNation()
 
+  useModalKeyboard(
+    () => modalOpen.value,
+    () => closeModal()
+  )
+
   // Group teams by group letter for display
   const teamsByGroup = computed(() => {
     const map = new Map<string, typeof allTeams>()

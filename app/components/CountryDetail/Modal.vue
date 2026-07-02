@@ -16,6 +16,11 @@
 
   const { selectedCountry, countryData, modalOpen, closeCountry, openCountry } =
     useCountryDetail()
+
+  useModalKeyboard(
+    () => modalOpen.value,
+    () => closeCountry()
+  )
   const { myNation } = useMyNation()
   const { openMatch } = useMatchDetail()
 

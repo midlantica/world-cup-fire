@@ -26,8 +26,9 @@ When making function calls using tools that accept array or object parameters en
 - Monospace/code snippets: minimum **0.8rem**
 
 ### Color contrast on dark backgrounds
+- All colors must use `oklab()`/`oklch()` per CLAUDE.md — never hex, `rgb()`, or `hsl()`
 - Never use grey text on dark grey backgrounds — always ensure sufficient contrast
-- Secondary/muted text on dark surfaces (`#1e293b` etc.): use **`#94a3b8`** (slate-400) as the darkest acceptable value
-- Prefer **`#cbd5e1`** (slate-300) or **`#e2e8f0`** (slate-200) for secondary text
-- Zero/empty state values may use `#64748b` (slate-500) since they are intentionally de-emphasized, but should still be legible
-- Never use `#64748b` or darker for regular readable text on dark card surfaces
+- Secondary/muted text on dark surfaces (slate-800-tier, e.g. `oklch(0.28 0.037 260)`): use slate-400-tier `oklch(0.71 0.035 257)` as the darkest acceptable value
+- Prefer slate-300-tier `oklch(0.81 0.027 257)` or slate-200-tier `oklch(0.88 0.019 258)` for secondary text
+- Zero/empty state values may use slate-500-tier `oklch(0.55 0.041 257)` since they are intentionally de-emphasized, but should still be legible
+- Never use slate-500-tier or darker for regular readable text on dark card surfaces

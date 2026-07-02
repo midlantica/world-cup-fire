@@ -27,8 +27,11 @@ import {
   type StoredMember,
   type StoredPool,
 } from '../../../utils/pools'
+import { assertRateLimit } from '../../../utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
+  assertRateLimit(event, 'pool-join', 15)
+
   const id = getRouterParam(event, 'id')
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })

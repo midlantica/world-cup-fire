@@ -73,6 +73,11 @@ export default defineNuxtConfig({
     preset: 'netlify',
   },
 
+  routeRules: {
+    // The old "Coming Soon" knockout page — the real bracket lives in Predictor
+    '/knockout': { redirect: '/predictor' },
+  },
+
   // SSR enabled for Netlify Functions; hydration mismatches suppressed via client-only wrappers
   ssr: true,
 

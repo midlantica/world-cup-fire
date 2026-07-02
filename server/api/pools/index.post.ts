@@ -13,8 +13,11 @@ import {
   type StoredMember,
 } from '../../utils/pools'
 import { incrementPoolsCreated } from '../../utils/analytics'
+import { assertRateLimit } from '../../utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
+  assertRateLimit(event, 'pool-create', 5)
+
   const body = await readBody<{ yourName?: string; poolName?: string }>(event)
   const yourName = (body?.yourName ?? '').trim().slice(0, 40) || 'You'
   const poolName = (body?.poolName ?? '').trim().slice(0, 50) || 'My Pool'

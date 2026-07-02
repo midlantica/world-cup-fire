@@ -31,6 +31,7 @@ import {
 } from '../../../utils/pools'
 import { mergePicksForSync } from '../../../utils/pick-sync'
 import { getWorldCupKickoffs } from '../../../utils/world-cup-schedule'
+import { assertRateLimit } from '../../../utils/rate-limit'
 
 interface IncomingPick {
   outcome: PickOutcome
@@ -39,6 +40,8 @@ interface IncomingPick {
 const VALID_OUTCOMES: PickOutcome[] = ['home', 'away', 'draw']
 
 export default defineEventHandler(async (event) => {
+  assertRateLimit(event, 'picks-put', 30)
+
   const id = getRouterParam(event, 'id')
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })

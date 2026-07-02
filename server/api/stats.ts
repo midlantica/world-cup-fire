@@ -1,62 +1,10 @@
+import { ABBREV_TO_ISO2 } from '../utils/iso2'
+
 export default defineEventHandler(async () => {
   const url =
     'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/statistics'
 
   const data = await $fetch<any>(url)
-
-  const abbrevToIso2: Record<string, string> = {
-    ALG: 'DZ',
-    ARG: 'AR',
-    AUS: 'AU',
-    AUT: 'AT',
-    BEL: 'BE',
-    BIH: 'BA',
-    BRA: 'BR',
-    CAN: 'CA',
-    CPV: 'CV',
-    COD: 'CD',
-    COL: 'CO',
-    CRC: 'CR',
-    CRO: 'HR',
-    CZE: 'CZ',
-    CUW: 'CW',
-    ECU: 'EC',
-    EGY: 'EG',
-    ENG: 'GB-ENG',
-    ESP: 'ES',
-    FRA: 'FR',
-    GER: 'DE',
-    GHA: 'GH',
-    HTI: 'HT',
-    IRN: 'IR',
-    IRQ: 'IQ',
-    ITA: 'IT',
-    CIV: 'CI',
-    JAP: 'JP',
-    JPN: 'JP',
-    JOR: 'JO',
-    KOR: 'KR',
-    MAR: 'MA',
-    MEX: 'MX',
-    NED: 'NL',
-    NOR: 'NO',
-    NZL: 'NZ',
-    PAN: 'PA',
-    PAR: 'PY',
-    POR: 'PT',
-    QAT: 'QA',
-    RSA: 'ZA',
-    SAU: 'SA',
-    SCO: 'GB-SCT',
-    SEN: 'SN',
-    SUI: 'CH',
-    SWE: 'SE',
-    TUN: 'TN',
-    TUR: 'TR',
-    URU: 'UY',
-    USA: 'US',
-    UZB: 'UZ',
-  }
 
   type Leader = {
     name: string
@@ -80,7 +28,7 @@ export default defineEventHandler(async () => {
       seen.add(a.id)
 
       const abbrev = (a.team?.abbreviation ?? '').toUpperCase()
-      const iso2 = abbrevToIso2[abbrev] ?? ''
+      const iso2 = ABBREV_TO_ISO2[abbrev] ?? ''
 
       const stats = a.statistics ?? []
       const get = (name: string) =>

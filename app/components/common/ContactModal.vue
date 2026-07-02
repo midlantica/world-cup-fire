@@ -1,6 +1,11 @@
 <script setup lang="ts">
-  defineProps<{ open: boolean }>()
+  const props = defineProps<{ open: boolean }>()
   const emit = defineEmits<{ (e: 'close'): void }>()
+
+  useModalKeyboard(
+    () => props.open,
+    () => handleClose()
+  )
 
   type FormState = 'idle' | 'submitting' | 'success' | 'error'
 

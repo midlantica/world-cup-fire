@@ -8,8 +8,11 @@ import {
   hashSyncCode,
   SYNC_CODE_TTL_MS,
 } from '../../../utils/pool-sync'
+import { assertRateLimit } from '../../../utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
+  assertRateLimit(event, 'sync-code', 10)
+
   const id = getRouterParam(event, 'id')
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Missing pool id' })
