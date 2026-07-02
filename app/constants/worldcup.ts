@@ -1,16 +1,15 @@
 // World Cup 2026 constants — all 48 teams, groups, FIFA rankings, rivalry pairs
 
+// Local-midnight construction (year, monthIndex, day) — NOT ISO strings.
+// new Date('2026-07-19') parses as UTC midnight, which formats as the
+// previous day in western timezones and caused an SSR hydration mismatch
+// (server on UTC rendered "Jul 19", US clients rendered "Jul 18").
+
 /** Tournament start date */
-export const WC_START = new Date('2026-06-11')
-
-/** Group stage ends */
-const WC_GROUP_END = new Date('2026-06-27')
-
-/** Knockout stage starts */
-const WC_KNOCKOUT_START = new Date('2026-06-28')
+export const WC_START = new Date(2026, 5, 11)
 
 /** Final */
-export const WC_FINAL = new Date('2026-07-19')
+export const WC_FINAL = new Date(2026, 6, 19)
 
 // ---------------------------------------------------------------------------
 // Teams — ESPN team ID, display name, ISO 3166-1 alpha-2 code, FIFA ranking
