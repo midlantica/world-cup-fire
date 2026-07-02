@@ -62,7 +62,7 @@
     :style="{
       width: `${size}px`,
       height: `${Math.round(size * 0.667)}px`,
-      border: '1px solid #ffffff2b',
+      border: '1px solid oklab(1 0 0 / 0.169)',
       position: 'relative',
       top: '-1px',
     }"

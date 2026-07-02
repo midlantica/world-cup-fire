@@ -45,7 +45,11 @@
   /* ── Theme accent — overridden by My Nation flag color ────────────────── */
   /* Default: neutral white. Components should use var(--color-accent) for
      any colored highlights so the flag theme can swap them all at once.   */
-  --color-accent: rgb(255 255 255 / 0.7);
-  --color-accent-subtle: rgb(255 255 255 / 0.08);
-  --color-accent-border: rgb(255 255 255 / 0.12);
+  --color-accent: oklab(100% 0 0 / 0.7);
+  --color-accent-subtle: oklab(100% 0 0 / 0.08);
+  --color-accent-border: oklab(100% 0 0 / 0.12);
+
+  /* ── Scrollbar thumb fallbacks — shared by scrollbar.css (webkit + Firefox) ─ */
+  --scrollbar-thumb-default: oklch(37.2% 0.044 257.9);
+  --scrollbar-thumb-hover: oklch(44.6% 0.043 257.1);
 }

@@ -146,7 +146,7 @@
     const a = clean(alt)
     if (hexLuminance(p) > 30) return `#${p}`
     if (hexLuminance(a) > 30) return `#${a}`
-    return '#ffffff'
+    return 'oklab(1 0 0)'
   }
 
   const headerStyle = computed(() => {
@@ -169,7 +169,8 @@
     // strength black/white so the change still reads clearly.
     const restText =
       bgLum > 150 ? 'oklab(0% 0 0 / 0.78)' : 'oklab(100% 0 0 / 0.9)'
-    const hoverText = bgLum > 150 ? '#000000' : '#ffffff'
+    const hoverText = bgLum > 150 ? 'oklab(0 0 0)' : 'oklab(1 0 0)'
+
     return {
       '--cd-primary': primary,
       '--cd-alt': alt,
@@ -610,10 +611,10 @@
     <Transition name="cd-modal">
       <div
         v-if="modalOpen && countryData"
-        class="cd-backdrop"
+        class="cd-backdrop modal-backdrop-base"
         @click="onBackdrop"
       >
-        <div class="cd-card">
+        <div class="cd-card modal-panel-base">
           <!-- ── Header ──────────────────────────────────────────────────── -->
           <div class="cd-header" :style="headerStyle">
             <div class="cd-header__inner">
@@ -660,7 +661,11 @@
             </div>
 
             <!-- Close -->
-            <button class="cd-close" aria-label="Close" @click="closeCountry">
+            <button
+              class="cd-close modal-close-base"
+              aria-label="Close"
+              @click="closeCountry"
+            >
               <IconsClose />
             </button>
           </div>
@@ -1253,20 +1258,20 @@
 </template>
 
 <style scoped>
-  /* ── Backdrop ──────────────────────────────────────────────────────────── */
+  /* ── Backdrop ─────────────────────────────────────────────────────────────
+     position/inset/display/justify-content/padding come from the shared
+     .modal-backdrop-base utility (base.css). z-index/background/align-items/
+     overflow-y stay here — they're specific to this modal. */
   .cd-backdrop {
-    position: fixed;
-    inset: 0;
     z-index: 9100;
     background: oklab(0% 0 0 / 0.82);
-    display: flex;
     align-items: flex-start;
-    justify-content: center;
-    padding: 1rem;
     overflow-y: auto;
   }
 
   /* ── Card ──────────────────────────────────────────────────────────────── */
+  /* border/border-bottom come from the shared .modal-panel-base utility
+     (base.css). Layout, radius, background and shadow stay here. */
   .cd-card {
     margin-top: 1rem;
     width: 100%;
@@ -1276,8 +1281,6 @@
     border-radius: 0.875rem;
     overflow: hidden;
     background: oklch(14% 0.008 260);
-    border: 1px solid oklab(100% 0 0 / 0.08);
-    border-bottom: 3px solid oklab(100% 0 0 / 0.1);
     box-shadow: 0 12px 48px oklab(0% 0 0 / 1);
   }
 
@@ -1401,23 +1404,17 @@
     box-shadow: 0 1px 0 var(--cd-group-hover-text, oklab(0% 0 0));
   }
 
-  /* Close button */
-
+  /* Close button — position/background/border/padding/layout come from the
+     shared .modal-close-base utility (base.css). This close button uses
+     color: inherit + opacity (not a fixed color) since the header text color
+     is dynamic per-nation, so the transition property is overridden to
+     opacity instead of color. */
   .cd-close {
-    position: absolute;
     top: 0.4rem;
     right: 0.4rem;
-    background: none;
-    border: none;
     color: inherit;
     opacity: 0.6;
-    line-height: 1;
-    padding: 0.35rem;
     border-radius: 0.35rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: opacity 0.15s;
   }
 
@@ -1751,7 +1748,7 @@
   .cd-match__status--live {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     background: oklab(50% -0.1 0.1 / 0.2);
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   @keyframes pulse {
@@ -2013,11 +2010,11 @@
   }
 
   .cd-squad__event--out {
-    color: #f87171;
+    color: oklab(0.7106 0.1538 0.0628);
   }
 
   .cd-squad__event--in {
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   /* ── Results section ───────────────────────────────────────────────────── */
@@ -2072,7 +2069,7 @@
 
   .cd-result__badge--w {
     background: oklch(35% 0.1 160 / 0.5);
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   .cd-result__badge--d {
@@ -2082,7 +2079,7 @@
 
   .cd-result__badge--l {
     background: oklch(30% 0.1 20 / 0.5);
-    color: #f87171;
+    color: oklab(0.7106 0.1538 0.0628);
   }
 
   /* ── Tab slide transitions ─────────────────────────────────────────────── */

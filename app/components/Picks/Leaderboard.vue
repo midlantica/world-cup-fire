@@ -104,7 +104,7 @@
       <Transition name="lb-modal">
         <div
           v-if="confirmOpen"
-          class="lb-confirm-backdrop"
+          class="lb-confirm-backdrop modal-backdrop-base"
           @click.self="onCancel"
         >
           <div class="lb-confirm-box" role="dialog" aria-modal="true">
@@ -140,12 +140,12 @@
   .leaderboard {
     border-radius: 0;
     overflow: hidden;
-    border: 1px solid #3c3834;
+    border: 1px solid oklab(0.3434 0.0034 0.0082);
   }
 
   .leaderboard__head {
-    background: #1a1817;
-    color: #d1cdcb;
+    background: oklab(0.2109 0.0025 0.0028);
+    color: oklab(0.8509 0.0035 0.0039);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -154,7 +154,7 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 0.55rem 0.85rem;
-    border-bottom: 1px solid #3c3834;
+    border-bottom: 1px solid oklab(0.3434 0.0034 0.0082);
   }
 
   /* Shared row grid: rank | name | ✓ | picks | acc */
@@ -168,8 +168,8 @@
   }
 
   .leaderboard__cols {
-    background: rgb(0 0 0 / 0.2);
-    border-bottom: 1px solid #3c3834;
+    background: oklab(0 0 0 / 0.2);
+    border-bottom: 1px solid oklab(0.3434 0.0034 0.0082);
   }
 
   .leaderboard__col {
@@ -180,7 +180,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.75);
+    color: oklab(1 0 0 / 0.75);
   }
 
   .leaderboard__col--rank {
@@ -196,11 +196,11 @@
   }
 
   .leaderboard__body {
-    background: #252120;
+    background: oklab(0.2518 0.0053 0.0036);
   }
 
   .leaderboard__row {
-    border-bottom: 1px solid rgb(255 255 255 / 0.04);
+    border-bottom: 1px solid oklab(1 0 0 / 0.04);
   }
 
   .leaderboard__row:last-child {
@@ -215,7 +215,7 @@
       'wdth' 100,
       'wght' 500;
     font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.4);
+    color: oklab(1 0 0 / 0.4);
     text-align: center;
   }
 
@@ -230,7 +230,7 @@
       'wdth' 100,
       'wght' 300;
     font-size: 1rem;
-    color: rgb(255 255 255 / 0.85);
+    color: oklab(1 0 0 / 0.85);
   }
 
   /* The plain text name (non-self) sits in a span so it can truncate */
@@ -257,19 +257,19 @@
     text-align: left;
     text-decoration: underline;
     text-underline-offset: 3px;
-    text-decoration-color: rgb(255 255 255 / 0.35);
+    text-decoration-color: oklab(1 0 0 / 0.35);
     transition: text-decoration-color 0.12s ease;
   }
 
   .leaderboard__name-btn:hover {
-    text-decoration-color: rgb(255 255 255 / 0.85);
+    text-decoration-color: oklab(1 0 0 / 0.85);
   }
 
   .leaderboard__you {
     @apply ml-1 px-1 align-middle text-xs;
     border-radius: 0;
-    background: rgb(255 255 255 / 0.1);
-    color: rgb(255 255 255 / 0.55);
+    background: oklab(1 0 0 / 0.1);
+    color: oklab(1 0 0 / 0.55);
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
@@ -282,7 +282,7 @@
       'wdth' 100,
       'wght' 600;
     font-size: 1rem;
-    color: rgb(255 255 255 / 0.9);
+    color: oklab(1 0 0 / 0.9);
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
@@ -293,42 +293,42 @@
       'wdth' 100,
       'wght' 400;
     font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.55);
+    color: oklab(1 0 0 / 0.55);
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
 
   .leaderboard__acc {
-    color: rgb(255 255 255 / 0.7);
+    color: oklab(1 0 0 / 0.7);
   }
 
   /* Leader row highlight */
   .leaderboard__row--leader {
-    background: rgb(0 111 13 / 0.14);
+    background: oklab(0.4699 -0.1246 0.0924 / 0.14);
   }
 
   .leaderboard__row--leader .leaderboard__name {
-    color: #fff7f7;
+    color: oklab(0.9823 0.0082 0.0026);
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
   }
 
   .leaderboard__row--leader .leaderboard__score {
-    color: #fff7f7;
+    color: oklab(0.9823 0.0082 0.0026);
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
   }
 
   .leaderboard__row--leader .leaderboard__rank {
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   .leaderboard__empty {
     padding: 0.85rem;
     text-align: center;
-    color: rgb(255 255 255 / 0.4);
+    color: oklab(1 0 0 / 0.4);
     font-size: 0.85rem;
   }
 
@@ -349,24 +349,20 @@
     text-align: left;
     text-decoration: underline;
     text-underline-offset: 3px;
-    text-decoration-color: rgb(255 255 255 / 0.35);
+    text-decoration-color: oklab(1 0 0 / 0.35);
     transition: text-decoration-color 0.12s ease;
   }
 
   .leaderboard__del-link:hover {
-    text-decoration-color: rgb(255 255 255 / 0.85);
+    text-decoration-color: oklab(1 0 0 / 0.85);
   }
 
   /* ── Confirm modal ── */
   .lb-confirm-backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 9999;
-    background: rgb(0 0 0 / 0.65);
-    display: flex;
+    background: oklab(0 0 0 / 0.65);
     align-items: center;
-    justify-content: center;
-    padding: 1rem;
     padding-bottom: calc(1rem + 4rem); /* shift box up ~2rem from true center */
   }
 
@@ -377,13 +373,13 @@
   }
 
   .lb-confirm-box {
-    background: #1e1a18;
-    border: 1px solid #3c3834;
+    background: oklab(0.2217 0.0049 0.0055);
+    border: 1px solid oklab(0.3434 0.0034 0.0082);
     border-radius: 0.5rem;
     padding: 1.5rem 1.75rem;
     max-width: 33rem;
     width: 100%;
-    box-shadow: 0 8px 32px rgb(0 0 0 / 0.5);
+    box-shadow: 0 8px 32px oklab(0 0 0 / 0.5);
   }
 
   .lb-confirm-msg {
@@ -392,7 +388,7 @@
       'wdth' 100,
       'wght' 300;
     font-size: 1.2rem;
-    color: rgb(255 255 255 / 0.85);
+    color: oklab(1 0 0 / 0.85);
     line-height: 1.6;
     margin-bottom: 1.25rem;
   }
@@ -401,7 +397,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    color: #ffffff;
+    color: oklab(1 0 0);
   }
 
   .lb-confirm-btns {
@@ -424,23 +420,23 @@
   }
 
   .lb-confirm-btn--cancel {
-    background: rgb(255 255 255 / 0.07);
-    border-color: rgb(255 255 255 / 0.15);
-    color: rgb(255 255 255 / 0.7);
+    background: oklab(1 0 0 / 0.07);
+    border-color: oklab(1 0 0 / 0.15);
+    color: oklab(1 0 0 / 0.7);
   }
 
   .lb-confirm-btn--cancel:hover {
-    background: rgb(255 255 255 / 0.12);
+    background: oklab(1 0 0 / 0.12);
   }
 
   .lb-confirm-btn--yes {
-    background: #7f1d1d;
-    border-color: #991b1b;
-    color: #fca5a5;
+    background: oklab(0.3958 0.1199 0.0578);
+    border-color: oklab(0.4437 0.1439 0.073);
+    color: oklab(0.8077 0.0975 0.0347);
   }
 
   .lb-confirm-btn--yes:hover {
-    background: #991b1b;
+    background: oklab(0.4437 0.1439 0.073);
   }
 
   /* ── Modal transition ── */

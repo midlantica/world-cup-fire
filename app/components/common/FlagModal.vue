@@ -148,7 +148,7 @@
       'wdth' 90,
       'wght' 400;
     letter-spacing: 0.08em;
-    color: color-mix(in srgb, #fff 60%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 60%, transparent);
     text-transform: uppercase;
   }
 
@@ -159,12 +159,16 @@
 
   .modal-team-btn--selected {
     background: color-mix(
-      in srgb,
-      var(--nation-accent, #f97316) 20%,
+      in oklab,
+      var(--nation-accent, oklab(0.7049 0.1259 0.1379)) 20%,
       transparent
     );
     box-shadow: 0 0 0 1px
-      color-mix(in srgb, var(--nation-accent, #fb923c) 55%, transparent);
+      color-mix(
+        in oklab,
+        var(--nation-accent, oklab(0.7576 0.0891 0.1317)) 55%,
+        transparent
+      );
   }
 
   .modal-team-btn__name {

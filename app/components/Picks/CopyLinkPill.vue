@@ -64,7 +64,7 @@
     background: none;
     border: none;
     padding: 0.1rem 0;
-    color: rgb(255 255 255 / 0.7);
+    color: oklab(1 0 0 / 0.7);
     cursor: pointer;
     transition: color 0.12s ease;
     /* gap between icon and label */
@@ -73,15 +73,15 @@
 
   .copy-btn:hover {
     background: none;
-    color: #ffffff;
+    color: oklab(1 0 0);
   }
 
   .copy-btn--copied {
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   .copy-btn--copied:hover {
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   .copy-btn__icon {

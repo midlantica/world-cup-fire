@@ -86,7 +86,11 @@
     <!-- TZ Modal — teleported to body -->
     <Teleport to="body">
       <Transition name="tz-modal">
-        <div v-if="tzModalOpen" class="tz-modal-backdrop" @click="onBackdrop">
+        <div
+          v-if="tzModalOpen"
+          class="tz-modal-backdrop modal-backdrop-base"
+          @click="onBackdrop"
+        >
           <div class="tz-modal-panel">
             <div class="tz-modal-header">
               <h2 class="tz-modal-title">🕐 Select Time Zone</h2>
@@ -177,19 +181,19 @@
     padding: 12px 15px 9px 15px;
     border-radius: 0;
     border: none;
-    background: rgb(255 255 255 / 0.1);
+    background: oklab(1 0 0 / 0.1);
     cursor: pointer;
     transition:
       background 0.15s,
       color 0.15s;
     white-space: nowrap;
-    color: rgb(255 255 255 / 0.85);
+    color: oklab(1 0 0 / 0.85);
     font-family: 'Anybody', sans-serif;
   }
 
   .utility-btn:hover {
-    background: rgb(255 255 255 / 0.14);
-    color: #ffffff;
+    background: oklab(1 0 0 / 0.14);
+    color: oklab(1 0 0);
   }
 
   .utility-btn__label {
@@ -238,15 +242,11 @@
 
   /* Backdrop: mobile = centered, tablet = center-top, desktop = near top */
   .tz-modal-backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 50;
-    background: rgb(0 0 0 / 0.7);
+    background: oklab(0 0 0 / 0.7);
     backdrop-filter: blur(4px);
-    display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 1rem;
   }
 
   .tz-modal-panel {
@@ -255,7 +255,7 @@
     width: 100%;
     max-width: 44rem;
     border-radius: 1rem;
-    background: #18181b;
+    background: oklab(0.2103 0.0016 -0.0056);
     max-height: min(92vh, 92dvh);
   }
 
@@ -284,7 +284,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    border-bottom: 1px solid oklab(1 0 0 / 0.1);
     padding: 0.6rem 0.6rem 0.3rem 1.3rem;
     flex-shrink: 0;
   }
@@ -292,13 +292,13 @@
   .tz-modal-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
+    color: oklab(1 0 0);
   }
 
   .tz-modal-close {
     border-radius: 0.5rem;
     padding: 0.375rem;
-    color: rgb(255 255 255 / 0.5);
+    color: oklab(1 0 0 / 0.5);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -307,7 +307,7 @@
   }
 
   .tz-modal-close:hover {
-    color: #fff;
+    color: oklab(1 0 0);
   }
 
   .tz-modal-body {
@@ -349,7 +349,7 @@
     letter-spacing: 0.09em;
     text-transform: uppercase;
     color: oklab(0.72 0.17 0.16 / 0.8);
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    border-bottom: 1px solid oklab(1 0 0 / 0.08);
     margin-bottom: 0.15rem;
   }
 
@@ -370,11 +370,11 @@
   }
 
   .tz-option-btn:hover {
-    background: rgb(255 255 255 / 0.08);
+    background: oklab(1 0 0 / 0.08);
   }
 
   .tz-option-btn--selected {
-    background: rgb(255 255 255 / 0.12);
+    background: oklab(1 0 0 / 0.12);
   }
 
   .tz-option-btn__offset {
@@ -386,21 +386,21 @@
       'wght' 500;
     font-size: 0.85rem;
     letter-spacing: 0.08em;
-    color: rgb(255 255 255 / 0.9);
+    color: oklab(1 0 0 / 0.9);
   }
 
   .tz-option-btn--selected .tz-option-btn__offset {
-    color: #fff;
+    color: oklab(1 0 0);
   }
 
   .tz-option-btn__label {
     font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.5);
+    color: oklab(1 0 0 / 0.5);
   }
 
   .tz-option-btn:hover .tz-option-btn__label,
   .tz-option-btn--selected .tz-option-btn__label {
-    color: rgb(255 255 255 / 0.8);
+    color: oklab(1 0 0 / 0.8);
   }
 
   /* Transition */

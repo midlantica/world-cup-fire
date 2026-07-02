@@ -361,7 +361,7 @@
   /* Mobile: currently-visible day stays yellow */
   .scores-section__day--active .scores-section__day-title,
   .scores-section__day--active .scores-section__day-caret {
-    color: #fff3a0;
+    color: oklab(0.9553 -0.0199 0.102);
   }
 
   .scores-section__day-caret {

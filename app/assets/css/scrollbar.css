@@ -25,10 +25,11 @@ html.modal-open body {
 
 ::-webkit-scrollbar-thumb {
   /* --color-theme-scrollbar is set on modal elements to show the team color.
-     Falls back to the default app theme color for all other scrollbars. */
+     Falls back to the shared --scrollbar-thumb-default token (colors.css)
+     for all other scrollbars. */
   background: var(
     --color-theme-scrollbar,
-    var(--color-theme-700, oklch(37.2% 0.044 257.9))
+    var(--color-theme-700, var(--scrollbar-thumb-default))
   );
   border-radius: 3px;
   transition: background 0.2s ease;
@@ -37,7 +38,7 @@ html.modal-open body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(
     --color-theme-scrollbar,
-    var(--color-theme-600, oklch(44.6% 0.043 257.1))
+    var(--color-theme-600, var(--scrollbar-thumb-hover))
   );
   filter: brightness(1.1);
 }
@@ -51,7 +52,7 @@ html.modal-open body {
   scrollbar-width: thin;
   scrollbar-color: var(
       --color-theme-scrollbar,
-      var(--color-theme-700, oklch(37.2% 0.044 257.9))
+      var(--color-theme-700, var(--scrollbar-thumb-default))
     )
     oklab(100% 0 0 / 0.04);
 }

@@ -119,10 +119,14 @@
 <template>
   <Teleport to="body">
     <Transition name="pool-modal">
-      <div v-if="open" class="pool-modal__backdrop" @click="onBackdrop">
-        <div class="pool-modal">
+      <div
+        v-if="open"
+        class="pool-modal__backdrop modal-backdrop-base"
+        @click="onBackdrop"
+      >
+        <div class="pool-modal modal-panel-base">
           <button
-            class="pool-modal__close"
+            class="pool-modal__close modal-close-base"
             aria-label="Close"
             @click="emit('close')"
           >
@@ -203,25 +207,24 @@
   @reference "~/assets/css/main.css";
 
   .pool-modal__backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 9200;
     background: oklab(0% 0 0 / 0.82);
-    display: flex;
     align-items: flex-start;
-    justify-content: center;
-    padding: 1rem;
     overflow-y: auto;
   }
 
   .pool-modal {
+    /* border comes from modal-panel-base (border-bottom is overridden to none
+       below via box-shadow:none; this panel is fully square, no bottom accent) */
     position: relative;
     margin-top: 2rem;
     width: 100%;
     max-width: 34rem;
     border-radius: 0;
-    background: #1b1917;
+    background: oklab(0.2149 0.0019 0.0046);
     border: 1px solid oklab(100% 0 0 / 0.1);
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     box-shadow: none;
     padding: 1.25rem 1.25rem 1.5rem;
   }
@@ -233,18 +236,12 @@
   }
 
   .pool-modal__close {
-    position: absolute;
+    /* position/background/border/padding/cursor/display/align-items/
+       justify-content come from modal-close-base */
     top: 0.75rem;
     right: 0.75rem;
-    background: none;
-    border: none;
     color: oklab(100% 0 0 / 0.5);
-    padding: 0.35rem;
     border-radius: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .pool-modal__close:hover {
@@ -257,7 +254,7 @@
   }
 
   .pool-modal__title {
-    color: var(--color-white, #fff);
+    color: var(--color-white, oklab(1 0 0));
     font-family: 'Anybody', sans-serif;
     font-size: 1.35rem;
     font-variation-settings:
@@ -281,7 +278,7 @@
   }
 
   .pool-modal__pool-name {
-    color: #86efac;
+    color: oklab(0.8712 -0.1229 0.0588);
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
@@ -298,9 +295,9 @@
     width: 100%;
     padding: 0.75rem 1.1rem;
     border-radius: 0;
-    background: #9c9c9c;
+    background: oklab(0.6927 0 0);
     border: none;
-    color: #111111;
+    color: oklab(0.1776 0 0);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -310,7 +307,7 @@
   }
 
   .pool-modal__input::placeholder {
-    color: rgb(0 0 0 / 0.55);
+    color: oklab(0 0 0 / 0.55);
   }
 
   .pool-modal__input:focus {
@@ -345,8 +342,8 @@
   }
 
   .pool-modal__delete {
-    background: #dc2626;
-    color: #ffffff;
+    background: oklab(0.5771 0.1911 0.0988);
+    color: oklab(1 0 0);
     border: none;
     border-radius: 0;
     font-family: 'Anybody', sans-serif;
@@ -370,19 +367,19 @@
   }
 
   .pool-modal__delete:hover:not(:disabled) {
-    background: #b91c1c;
+    background: oklab(0.5054 0.1689 0.088);
   }
 
   .pool-modal__delete:disabled {
-    background: #4b4b4b;
-    color: rgb(255 255 255 / 0.35);
+    background: oklab(0.4128 0 0);
+    color: oklab(1 0 0 / 0.35);
     cursor: not-allowed;
   }
 
   .pool-modal__cancel {
     background: transparent;
     border: none;
-    color: #6f6f6f;
+    color: oklab(0.5417 0 0);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -402,12 +399,12 @@
   }
 
   .pool-modal__cancel:hover {
-    color: #b5b5b5;
+    color: oklab(0.7731 0 0);
   }
 
   .pool-modal__submit {
     background: oklab(0.62 0.13 0.14);
-    color: #ffffff;
+    color: oklab(1 0 0);
     border: none;
     border-radius: 0;
     font-family: 'Anybody', sans-serif;
@@ -436,8 +433,8 @@
   }
 
   .pool-modal__submit:disabled {
-    background: #3a3a3a;
-    color: rgb(255 255 255 / 0.3);
+    background: oklab(0.3485 0 0);
+    color: oklab(1 0 0 / 0.3);
     opacity: 1;
     cursor: not-allowed;
   }

@@ -132,10 +132,16 @@
 
         // Draw radial gradient blob
         const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius)
-        grad.addColorStop(0, `hsla(45,100%,78%,${p.opacity})`)
-        grad.addColorStop(0.3, `hsla(35,100%,60%,${p.opacity * 0.75})`)
-        grad.addColorStop(0.6, `hsla(20,100%,45%,${p.opacity * 0.45})`)
-        grad.addColorStop(1, `hsla(15,100%,35%,0)`)
+        grad.addColorStop(0, `oklab(0.9207 -0.0031 0.1081 / ${p.opacity})`)
+        grad.addColorStop(
+          0.3,
+          `oklab(0.8032 0.0548 0.149 / ${p.opacity * 0.75})`
+        )
+        grad.addColorStop(
+          0.6,
+          `oklab(0.6251 0.1554 0.1261 / ${p.opacity * 0.45})`
+        )
+        grad.addColorStop(1, `oklab(0.5044 0.1439 0.1015 / 0)`)
 
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
@@ -344,8 +350,8 @@
       'wdth' 100,
       'wght' 800;
     letter-spacing: 0.04em;
-    color: #ffffff;
-    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
+    color: oklab(1 0 0);
+    text-shadow: 0px 1px 0px oklab(0 0 0 / 0.5);
     margin-left: 0.5rem;
   }
 
@@ -383,9 +389,9 @@
     letter-spacing: 0.07em;
 
     /* Inactive: warm white on the orange bg, no bg fill */
-    color: hsl(30deg 100% 95% / 1);
+    color: oklab(0.9685 0.0083 0.0202);
     background: transparent;
-    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
+    text-shadow: 0px 1px 0px oklab(0 0 0 / 0.5);
     transition:
       color 0.15s ease,
       background 0.15s ease,
@@ -393,13 +399,13 @@
   }
 
   .app-header__nav-link:hover {
-    color: hsl(30deg 100% 98% / 0.95);
+    color: oklab(0.9873 0.0033 0.008 / 0.95);
     background: oklab(0.62 0.13 0.14);
   }
 
   /* Active: semi-transparent fill — lets fire show through */
   .app-header__nav-link--active {
-    color: #ffffff;
+    color: oklab(1 0 0);
     background: oklab(0.62 0.13 0.14 / 0.6);
   }
 
@@ -418,8 +424,8 @@
     height: 1.2rem;
     padding: 0 0.3rem;
     border-radius: 9999px;
-    background: #16a34a;
-    color: #ffffff;
+    background: oklab(0.6271 -0.146 0.087);
+    color: oklab(1 0 0);
     font-family: 'Anybody', sans-serif;
     font-size: 0.75rem;
     font-variation-settings:
@@ -427,7 +433,7 @@
       'wght' 800;
     letter-spacing: 0;
     line-height: 1;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+    box-shadow: 0 1px 3px oklab(0 0 0 / 0.4);
   }
 
   .pick-badge-enter-active {
@@ -488,10 +494,10 @@
     white-space: nowrap;
 
     /* Inactive: warm dim on the orange bg */
-    color: hsl(30deg 100% 95% / 0.85);
+    color: oklab(0.9685 0.0083 0.0202 / 0.85);
     background: transparent;
     border: none;
-    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
+    text-shadow: 0px 1px 0px oklab(0 0 0 / 0.5);
     transition:
       color 0.15s ease,
       background 0.15s ease;
@@ -499,7 +505,7 @@
 
   /* Divider between stage buttons */
   .app-header__stage-btn + .app-header__stage-btn {
-    border-left: 1px solid rgb(255 255 255 / 0.07);
+    border-left: 1px solid oklab(1 0 0 / 0.07);
   }
 
   .app-header__stage-btn:hover:not(.app-header__stage-btn--active) {
@@ -509,7 +515,7 @@
 
   /* Active L2 — semi-transparent orange, no gradient, no shadow */
   .app-header__stage-btn--active {
-    color: #ffffff;
+    color: oklab(1 0 0);
     background: oklab(0.62 0.13 0.14 / 0.6);
     border: none;
   }
@@ -536,8 +542,8 @@
     height: 1.05rem;
     padding: 0 0.28rem;
     border-radius: 9999px;
-    background: #16a34a;
-    color: #ffffff;
+    background: oklab(0.6271 -0.146 0.087);
+    color: oklab(1 0 0);
     font-size: 0.65rem;
     font-variation-settings:
       'wdth' 100,
@@ -565,10 +571,10 @@
     transition:
       color 0.15s ease,
       background 0.15s ease;
-    color: hsl(29deg 100% 95% / 85%);
+    color: oklab(0.9677 0.0089 0.0198 / 0.85);
     background: transparent;
     border: none;
-    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 50%);
+    text-shadow: 0px 1px 0px oklab(0 0 0 / 0.5);
     /* Right-side divider via box-shadow — zero layout impact, never jumps */
     box-shadow: 2px 0 0 0 oklab(1 0 0 / 0.15);
     cursor: pointer;
@@ -580,14 +586,14 @@
   }
 
   .app-header__week-tab:hover:not(.app-header__week-tab--active) {
-    color: hsl(30deg 100% 95% / 1);
+    color: oklab(0.9685 0.0083 0.0202);
     background: oklab(1 0 0 / 0.15);
   }
 
   /* Active L3 — inset ring only, zero layout impact, no jump, no doubling */
   .app-header__week-tab--active {
     background: oklab(0.62 0.13 0.14 / 0.5);
-    color: #ffffff;
+    color: oklab(1 0 0);
     border: none;
     box-shadow: inset 0 0 0 2px oklab(1 0 0 / 0.4);
     z-index: 1;
@@ -599,11 +605,11 @@
   }
 
   .app-header__week-tab--active .app-header__week-label {
-    color: #ffffff;
+    color: oklab(1 0 0);
   }
 
   .app-header__week-tab--active .app-header__week-dates {
-    color: rgb(255 255 255 / 1);
+    color: oklab(1 0 0);
     opacity: 1;
   }
 
@@ -675,10 +681,10 @@
       font-size: 0.9rem;
       border-radius: 0;
       border: none;
-      border-right: 1px solid rgb(255 255 255 / 0.08);
+      border-right: 1px solid oklab(1 0 0 / 0.08);
       min-height: unset;
       align-self: stretch;
-      /* background: rgb(255 255 255 / 0.06); */
+      /* background: oklab(1 0 0 / 0.06); */
     }
 
     .app-header__nav-link:last-child {

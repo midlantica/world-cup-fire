@@ -426,17 +426,17 @@
   .match-card {
     @apply relative cursor-pointer rounded-xl transition-all duration-200 hover:shadow-lg;
     /* Nation-tinted card surface (falls back to plain grey when no nation). */
-    background-color: var(--nation-card, #1d1d1d);
-    border: 1px solid rgb(255 255 255 / 0.08);
+    background-color: var(--nation-card, oklab(0.2308 0 0));
+    border: 1px solid oklab(1 0 0 / 0.08);
   }
 
   @keyframes halo-pulse {
     0%,
     100% {
-      box-shadow: 0px 0px 2px 0px #f97316;
+      box-shadow: 0px 0px 2px 0px oklab(0.7049 0.1259 0.1379);
     }
     50% {
-      box-shadow: 0px 0px 5px 0px #f97316;
+      box-shadow: 0px 0px 5px 0px oklab(0.7049 0.1259 0.1379);
     }
   }
 
@@ -445,7 +445,7 @@
   }
 
   .match-card:hover {
-    background-color: var(--nation-card-hover, #252525);
+    background-color: var(--nation-card-hover, oklab(0.2645 0 0));
   }
 
   /* ── My nation: subtle accent ring ──────────────────────────────────────────
@@ -454,8 +454,8 @@
      graceful fallback if no theme is active. */
   .match-card--mine {
     /* Stronger nation-tinted surface for the selected nation's own matches. */
-    background-color: var(--nation-card-mine, #1d1d1d);
-    border-color: var(--nation-accent-soft, rgb(255 255 255 / 0.08));
+    background-color: var(--nation-card-mine, oklab(0.2308 0 0));
+    border-color: var(--nation-accent-soft, oklab(1 0 0 / 0.08));
     box-shadow: 0 0 0 1px var(--nation-accent-soft, transparent);
   }
 
@@ -468,10 +468,10 @@
     @apply flex items-stretch justify-between overflow-hidden rounded-t-xl;
     background: linear-gradient(
       180deg,
-      rgb(0 0 0 / 0.45) 0%,
-      rgb(0 0 0 / 0.1) 100%
+      oklab(0 0 0 / 0.45) 0%,
+      oklab(0 0 0 / 0.1) 100%
     );
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    border-bottom: 1px solid oklab(1 0 0 / 0.08);
   }
 
   /* Group pill */
@@ -480,7 +480,7 @@
     padding-inline: 0.7rem 0.7rem;
     padding-block: 0.4rem 0.25rem;
     letter-spacing: 0.1em;
-    color: color-mix(in oklab, #fff 60%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 60%, transparent);
     @apply font-anybody-bold;
   }
 
@@ -490,14 +490,14 @@
   }
 
   .match-card__group--link:hover {
-    color: color-mix(in oklab, #fff 90%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 90%, transparent);
   }
 
   .match-card__venue {
     @apply flex-1 self-center truncate text-right text-xs;
     padding-inline: 0.7rem 0.7rem;
     padding-block: 0.4rem 0.25rem;
-    color: color-mix(in oklab, #fff 60%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 60%, transparent);
   }
 
   /* Fire/wild badge — absolute top-right corner of the whole card */
@@ -527,7 +527,7 @@
     flex-direction: column;
     gap: calc(var(--spacing, 0.25rem) * 1.5);
     padding-right: 0.7rem;
-    border-right: 1px solid #393939;
+    border-right: 1px solid oklab(0.3446 0 0);
   }
 
   .match-card__team {
@@ -561,7 +561,7 @@
   .match-card__teams:hover .match-card__name--hoverable {
     text-decoration: underline;
     text-underline-offset: 0.2em;
-    text-decoration-color: color-mix(in oklab, #fff 40%, transparent);
+    text-decoration-color: color-mix(in oklab, oklab(1 0 0) 40%, transparent);
   }
 
   /* Full name shown by default; short name hidden */
@@ -647,7 +647,7 @@
     @apply font-anybody-bold tabular-nums;
     font-size: 0.7rem;
     font-weight: 700;
-    color: color-mix(in oklab, #fff 45%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 45%, transparent);
     margin-left: 2px;
     flex-shrink: 0;
   }
@@ -659,7 +659,7 @@
     height: 0;
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
-    border-right: 7px solid #006f0d;
+    border-right: 7px solid oklab(0.4699 -0.1246 0.0924);
     flex-shrink: 0;
     margin-left: 4px;
     margin-right: -11px;
@@ -701,7 +701,7 @@
   .match-card__kickoff {
     @apply font-semibold tabular-nums;
     font-size: 1rem;
-    color: color-mix(in oklab, #fff 80%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 80%, transparent);
     @apply font-anybody-medium;
     /* Align times of different digit-counts (e.g. "3:00" vs "11:00"):
        digits are right-aligned in a fixed-width cell so the colon always
@@ -723,7 +723,7 @@
 
   .match-card__date-label {
     font-size: 0.9rem;
-    color: color-mix(in oklab, #fff 75%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 75%, transparent);
     @apply font-anybody-copy;
   }
 
@@ -732,7 +732,7 @@
     @apply font-anybody-copy tabular-nums;
     font-size: 1rem;
     font-weight: 700;
-    color: #fff;
+    color: oklab(1 0 0);
     line-height: 1.1;
     min-width: 2.8rem; /* fits "110'" without wrapping */
     text-align: center;
@@ -743,7 +743,7 @@
   .match-card__status {
     @apply text-xs font-bold text-white/50 uppercase tabular-nums;
     @apply font-anybody-bold;
-    background: #383838;
+    background: oklab(0.3407 0 0);
     border-radius: 4px;
     padding: 0.35rem 0.45rem;
     min-width: 2.2rem;
@@ -771,11 +771,19 @@
     animation-duration: 2s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
     animation-iteration-count: infinite;
-    background-color: color-mix(in srgb, #22c55e 20%, transparent);
-    color: #4ade80;
+    background-color: color-mix(
+      in oklab,
+      oklab(0.7227 -0.1656 0.0972) 20%,
+      transparent
+    );
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   .match-card__status--ft {
-    color: color-mix(in oklab, var(--color-white, #fff) 50%, transparent);
+    color: color-mix(
+      in oklab,
+      var(--color-white, oklab(1 0 0)) 50%,
+      transparent
+    );
   }
 </style>

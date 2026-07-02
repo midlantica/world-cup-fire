@@ -40,7 +40,7 @@
       keys: [
         { name: 'possessionPct', label: 'Possession' },
         { name: 'totalPasses', label: 'Passes' },
-        { name: 'passPct', label: 'Pass Completion %' },
+        { name: 'passPct', label: 'Pass Comp %' },
       ],
     },
     {
@@ -177,7 +177,7 @@
     color: oklab(100% 0 0 / 0.4);
     font-size: 0.9rem;
     font-weight: 200;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.09em;
   }
 
   /* ── Table ─────────────────────────────────────────────────────────────────── */
@@ -202,7 +202,7 @@
     gap: 0.4rem;
     font-size: 0.85rem;
     font-weight: 400;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: oklab(100% 0 0 / 0.85);
     /* Allow the name to shrink so the flag stays pinned beside the centre
@@ -256,10 +256,11 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: oklab(0.81 0.06 0.19 / 0.75);
     border-top: 1px solid oklab(100% 0 0 / 0.4);
-    border-bottom: 1px solid hsl(0deg 0% 100% / 20%);
+    border-bottom: 1px solid oklab(1 0 0 / 0.2);
     text-align: center;
   }
 
@@ -298,7 +299,7 @@
     font-size: 0.95rem;
     font-weight: 300;
     color: oklab(100% 0 0);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.06em;
     min-width: 2.5ch;
     text-align: center;
   }
@@ -313,7 +314,7 @@
     font-weight: 100;
 
     color: oklab(100% 0 0 / 0.9);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     text-align: center;
     padding: 0 0.25rem;

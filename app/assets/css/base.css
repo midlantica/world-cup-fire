@@ -62,3 +62,35 @@ summary {
 @utility grd-body {
   padding: 1rem;
 }
+
+/* ── Shared modal-chrome utilities ────────────────────────────────────────────
+   Common shape shared by every modal's backdrop / panel / close-button.
+   Per-modal specifics (z-index, backdrop opacity, vertical alignment, panel
+   border-radius/background, close-button position) stay in each component's
+   own scoped <style> block layered on top of these utility classes — they are
+   load-bearing for stacking order and must not be collapsed into one value. */
+@utility modal-backdrop-base {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+@utility modal-panel-base {
+  border: 1px solid oklab(100% 0 0 / 0.08);
+  border-bottom: 3px solid oklab(100% 0 0 / 0.1);
+}
+
+@utility modal-close-base {
+  position: absolute;
+  background: none;
+  border: none;
+  line-height: 1;
+  padding: 0.35rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}

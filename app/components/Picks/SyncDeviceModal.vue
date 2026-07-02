@@ -35,10 +35,14 @@
 <template>
   <Teleport to="body">
     <Transition name="sync-modal">
-      <div v-if="open" class="sync-modal__backdrop" @click="onBackdrop">
-        <div class="sync-modal">
+      <div
+        v-if="open"
+        class="sync-modal__backdrop modal-backdrop-base"
+        @click="onBackdrop"
+      >
+        <div class="sync-modal modal-panel-base">
           <button
-            class="sync-modal__close"
+            class="sync-modal__close modal-close-base"
             aria-label="Close"
             @click="emit('close')"
           >
@@ -87,24 +91,22 @@
   @reference "~/assets/css/main.css";
 
   .sync-modal__backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 9200;
     background: oklab(0% 0 0 / 0.82);
-    display: flex;
     align-items: flex-start;
-    justify-content: center;
-    padding: 1rem;
     overflow-y: auto;
   }
 
   .sync-modal {
+    /* border comes from modal-panel-base (no border-bottom accent here) */
     position: relative;
     margin-top: 2rem;
     width: 100%;
     max-width: 34rem;
-    background: #1b1917;
+    background: oklab(0.2149 0.0019 0.0046);
     border: 1px solid oklab(100% 0 0 / 0.1);
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     padding: 2rem 2.25rem 2.15rem;
     display: flex;
     flex-direction: column;
@@ -112,17 +114,11 @@
   }
 
   .sync-modal__close {
-    position: absolute;
+    /* position/background/border/padding/cursor/display/align-items/
+       justify-content come from modal-close-base */
     top: 0.5rem;
     right: 0.5rem;
-    background: none;
-    border: none;
     color: oklab(100% 0 0 / 0.5);
-    padding: 0.35rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .sync-modal__close:hover {
@@ -149,11 +145,11 @@
   .sync-modal__icon :deep(svg) {
     width: 1.4rem;
     height: 1.4rem;
-    color: rgb(255 255 255 / 0.6);
+    color: oklab(1 0 0 / 0.6);
   }
 
   .sync-modal__title {
-    color: #ffffff;
+    color: oklab(1 0 0);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -169,7 +165,7 @@
       'wdth' 100,
       'wght' 300;
     font-size: 1rem;
-    color: rgb(255 255 255 / 0.75);
+    color: oklab(1 0 0 / 0.75);
     line-height: 1.65;
     letter-spacing: 0.06rem;
     margin: 0;
@@ -179,7 +175,7 @@
     font-variation-settings:
       'wdth' 100,
       'wght' 500;
-    color: #ffffff;
+    color: oklab(1 0 0);
   }
 
   .sync-modal__warning {
@@ -188,14 +184,14 @@
       'wdth' 100,
       'wght' 300;
     font-size: 0.82rem;
-    color: rgb(251 146 60 / 0.9);
+    color: oklab(0.7576 0.0891 0.1317 / 0.9);
     line-height: 1.5;
     margin: 0;
   }
 
   .sync-modal__url-row {
-    background: rgb(255 255 255 / 0.06);
-    border: 1px solid rgb(255 255 255 / 0.1);
+    background: oklab(1 0 0 / 0.06);
+    border: 1px solid oklab(1 0 0 / 0.1);
     padding: 0.65rem 0.9rem;
     overflow: hidden;
   }
@@ -203,14 +199,14 @@
   .sync-modal__url {
     font-family: 'Courier New', monospace;
     font-size: 0.72rem;
-    color: rgb(255 255 255 / 0.55);
+    color: oklab(1 0 0 / 0.55);
     word-break: break-all;
     display: block;
   }
 
   .sync-modal__copy-btn {
     background: oklab(0.54 0.12 0.12);
-    color: #ffffff;
+    color: oklab(1 0 0);
     border: none;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
@@ -231,12 +227,12 @@
   }
 
   .sync-modal__copy-btn--copied {
-    background: #16a34a;
-    color: #ffffff;
+    background: oklab(0.6271 -0.146 0.087);
+    color: oklab(1 0 0);
   }
 
   .sync-modal__copy-btn--copied:hover {
-    background: #15803d;
+    background: oklab(0.5273 -0.1188 0.0684);
   }
 
   .sync-modal__note {
@@ -245,7 +241,7 @@
       'wdth' 100,
       'wght' 300;
     font-size: 0.78rem;
-    color: rgb(255 255 255 / 0.35);
+    color: oklab(1 0 0 / 0.35);
     line-height: 1.5;
     margin: 0;
   }

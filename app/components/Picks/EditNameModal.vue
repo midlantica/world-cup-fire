@@ -41,10 +41,14 @@
 <template>
   <Teleport to="body">
     <Transition name="en-modal">
-      <div v-if="open" class="en-modal__backdrop" @click="onBackdrop">
-        <div class="en-modal">
+      <div
+        v-if="open"
+        class="en-modal__backdrop modal-backdrop-base"
+        @click="onBackdrop"
+      >
+        <div class="en-modal modal-panel-base">
           <button
-            class="en-modal__close"
+            class="en-modal__close modal-close-base"
             aria-label="Close"
             @click="emit('close')"
           >
@@ -87,39 +91,31 @@
   @reference "~/assets/css/main.css";
 
   .en-modal__backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 9300;
     background: oklab(0% 0 0 / 0.82);
-    display: flex;
     align-items: flex-start;
-    justify-content: center;
-    padding: 1rem;
     overflow-y: auto;
   }
 
   .en-modal {
+    /* border comes from modal-panel-base (this panel has no border-bottom accent) */
     position: relative;
     margin-top: 2rem;
     width: 100%;
     max-width: 34rem;
-    background: #1b1917;
+    background: oklab(0.2149 0.0019 0.0046);
     border: 1px solid oklab(100% 0 0 / 0.1);
+    border-bottom: 1px solid oklab(100% 0 0 / 0.1);
     padding: 2rem 2.25rem 2.15rem;
   }
 
   .en-modal__close {
-    position: absolute;
+    /* position/background/border/padding/cursor/display/align-items/
+       justify-content come from modal-close-base */
     top: 0.75rem;
     right: 0.75rem;
-    background: none;
-    border: none;
     color: oklab(100% 0 0 / 0.5);
-    padding: 0.35rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .en-modal__close:hover {
@@ -132,7 +128,7 @@
   }
 
   .en-modal__title {
-    color: #fff;
+    color: oklab(1 0 0);
     font-family: 'Anybody', sans-serif;
     font-size: 1.35rem;
     font-variation-settings:
@@ -152,9 +148,9 @@
   .en-modal__input {
     width: 100%;
     padding: 0.75rem 1.1rem;
-    background: #9c9c9c;
+    background: oklab(0.6927 0 0);
     border: none;
-    color: #111111;
+    color: oklab(0.1776 0 0);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -164,7 +160,7 @@
   }
 
   .en-modal__input::placeholder {
-    color: rgb(0 0 0 / 0.55);
+    color: oklab(0 0 0 / 0.55);
   }
 
   .en-modal__input:focus {
@@ -182,7 +178,7 @@
   .en-modal__cancel {
     background: transparent;
     border: none;
-    color: #6f6f6f;
+    color: oklab(0.5417 0 0);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -194,12 +190,12 @@
   }
 
   .en-modal__cancel:hover {
-    color: #b5b5b5;
+    color: oklab(0.7731 0 0);
   }
 
   .en-modal__submit {
     background: oklab(0.62 0.13 0.14);
-    color: #ffffff;
+    color: oklab(1 0 0);
     border: none;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
@@ -218,8 +214,8 @@
   }
 
   .en-modal__submit:disabled {
-    background: #3a3a3a;
-    color: rgb(255 255 255 / 0.3);
+    background: oklab(0.3485 0 0);
+    color: oklab(1 0 0 / 0.3);
     cursor: not-allowed;
   }
 

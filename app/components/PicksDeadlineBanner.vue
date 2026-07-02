@@ -152,10 +152,10 @@
 
   .deadline-banner__inner {
     @apply flex flex-col gap-3 rounded-xl px-5 py-4;
-    background: linear-gradient(135deg, #f97316 0%, hwb(25deg 0% 33.91%) 100%);
+    background: linear-gradient(135deg, oklab(0.7049 0.1259 0.1379) 0%, oklab(0.518 0.1006 0.1048) 100%);
     box-shadow:
-      0 4px 16px rgba(249, 115, 22, 0.5),
-      0 2px 6px rgba(0, 0, 0, 0.35);
+      0 4px 16px oklab(0.7049 0.1259 0.1379 / 0.5),
+      0 2px 6px oklab(0 0 0 / 0.35);
   }
 
   @media (min-width: 640px) {
@@ -189,7 +189,7 @@
     @apply font-bold text-white;
     font-size: 1rem;
     line-height: 1.3;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px oklab(0 0 0 / 0.3);
     font-variation-settings:
       'wdth' 100,
       'wght' 600;
@@ -220,13 +220,13 @@
     font-size: 0.9375rem;
     border-radius: 0;
     font-weight: 800;
-    color: #ffffff;
-    background: #f69000;
+    color: oklab(1 0 0);
+    background: oklab(0.7455 0.0778 0.1515);
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
     letter-spacing: 0.07rem;
-    text-shadow: 0px 1px 0px hsl(0deg 0% 0% / 20%);
+    text-shadow: 0px 1px 0px oklab(0 0 0 / 0.2);
     white-space: nowrap;
   }
 
@@ -238,7 +238,7 @@
 
   .deadline-banner__cta:hover {
     @apply scale-105;
-    background: #ffa020;
+    background: oklab(0.7847 0.0668 0.1528);
   }
 
   /* Slide-down transition */

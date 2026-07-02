@@ -123,8 +123,8 @@
   .pool-card {
     @apply border p-4;
     border-radius: 0;
-    border-color: #3c3834;
-    background: #1e1a18;
+    border-color: oklab(0.3434 0.0034 0.0082);
+    background: oklab(0.2217 0.0049 0.0055);
   }
 
   .pool-card__name {
@@ -165,43 +165,43 @@
 
   /* Copy invite link — orange */
   .pool-card__action-btn--copy {
-    background: rgb(221 85 0 / 0.8);
-    color: rgb(255 255 255 / 0.82);
+    background: oklab(0.6215 0.1362 0.1255 / 0.8);
+    color: oklab(1 0 0 / 0.82);
   }
 
   .pool-card__action-btn--copy:hover {
-    background: rgb(248 99 0);
+    background: oklab(0.6813 0.1451 0.1377);
   }
 
   /* Copied state — slightly darker orange, no green */
   .pool-card__action-btn--copied {
-    background: rgb(186 51 0);
-    color: rgb(255 255 255 / 0.9);
+    background: oklab(0.524 0.1439 0.1055);
+    color: oklab(1 0 0 / 0.9);
   }
 
   .pool-card__action-btn--copied:hover {
-    background: rgb(186 51 0);
+    background: oklab(0.524 0.1439 0.1055);
   }
 
   /* Edit pool — orange */
   .pool-card__action-btn--edit {
-    background: rgb(221 85 0 / 0.8);
-    color: rgb(255 255 255 / 0.82);
+    background: oklab(0.6215 0.1362 0.1255 / 0.8);
+    color: oklab(1 0 0 / 0.82);
   }
 
   .pool-card__action-btn--edit:hover {
-    background: rgb(248 99 0);
+    background: oklab(0.6813 0.1451 0.1377);
   }
 
   /* Leave pool — muted danger */
   .pool-card__action-btn--leave {
-    background: rgb(255 255 255 / 0.08);
-    color: rgb(255 255 255 / 0.6);
+    background: oklab(1 0 0 / 0.08);
+    color: oklab(1 0 0 / 0.6);
   }
 
   .pool-card__action-btn--leave:hover {
-    background: #e06464;
-    color: #ffffff;
+    background: oklab(0.6559 0.1439 0.0591);
+    color: oklab(1 0 0);
   }
 
   /* ── Sync to device (last item in card, owner only) ─────────────────────── */
@@ -210,14 +210,14 @@
     align-items: center;
     gap: 0.45rem;
     background: none;
-    border: 1px solid rgb(255 255 255 / 0.12);
+    border: 1px solid oklab(1 0 0 / 0.12);
     border-radius: 0;
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
       'wght' 400;
     font-size: 0.82rem;
-    color: rgb(255 255 255 / 0.45);
+    color: oklab(1 0 0 / 0.45);
     padding: 0.55rem 0.7rem;
     cursor: pointer;
     transition:
@@ -236,8 +236,8 @@
   }
 
   .pool-card__sync-btn:hover {
-    border-color: rgb(255 255 255 / 0.3);
-    color: rgb(255 255 255 / 0.75);
+    border-color: oklab(1 0 0 / 0.3);
+    color: oklab(1 0 0 / 0.75);
   }
 
   /* ── Your picks summary ──────────────────────────────────────────────────── */
@@ -248,7 +248,7 @@
       'wdth' 90,
       'wght' 200;
     font-size: 0.85rem;
-    color: rgb(255 255 255 / 0.7);
+    color: oklab(1 0 0 / 0.7);
     line-height: 1.5;
   }
 
@@ -267,7 +267,7 @@
       'wdth' 90,
       'wght' 200;
     font-size: 0.8rem;
-    color: #ffffff;
+    color: oklab(1 0 0);
     padding: 0;
     transition: color 0.12s ease;
     text-decoration: underline;
@@ -275,7 +275,7 @@
   }
 
   .pool-card__check-picks:hover {
-    color: rgb(255 255 255 / 0.7);
+    color: oklab(1 0 0 / 0.7);
   }
 
   .pool-card__board {

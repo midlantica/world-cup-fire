@@ -405,12 +405,12 @@
   }
 
   .player-row__sub--on .player-row__sub-arrow {
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
     font-size: 0.55rem;
   }
 
   .player-row__sub--off .player-row__sub-arrow {
-    color: #f87171;
+    color: oklab(0.7106 0.1538 0.0628);
     font-size: 0.55rem;
   }
 

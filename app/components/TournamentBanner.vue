@@ -128,10 +128,10 @@
     border-radius: 10px;
     background: linear-gradient(
       135deg,
-      rgba(15, 23, 42, 0.95) 0%,
-      rgba(30, 41, 59, 0.95) 100%
+      oklab(0.2077 -0.0029 -0.0397 / 0.95) 0%,
+      oklab(0.2795 -0.0064 -0.0363 / 0.95) 100%
     );
-    border: 1px solid rgb(255 255 255 / 0.1);
+    border: 1px solid oklab(1 0 0 / 0.1);
     overflow: hidden;
   }
 
@@ -149,7 +149,7 @@
     font-size: 1rem;
     line-height: 1.5;
     letter-spacing: 0.06rem;
-    color: rgb(255 255 255);
+    color: oklab(1 0 0);
     text-align: center;
     text-wrap: balance;
   }
@@ -203,14 +203,14 @@
     font-size: 1rem;
     line-height: 1.55;
     letter-spacing: 0.08rem;
-    color: rgb(255 255 255 / 0.85);
+    color: oklab(1 0 0 / 0.85);
   }
 
   .tb-copy strong {
     font-variation-settings:
       'wdth' 100,
       'wght' 700;
-    color: #ffffff;
+    color: oklab(1 0 0);
   }
 
   /* ── CTA column ──────────────────────────────────────────────────────────── */
@@ -221,7 +221,7 @@
   .tb-cta-btn {
     display: inline-block;
     background: oklab(0.62 0.13 0.14 / 0.9);
-    color: #ffffff;
+    color: oklab(1 0 0);
     border: none;
     border-radius: 0;
     font-family: 'Anybody', sans-serif;

@@ -457,10 +457,10 @@
     <Transition name="grd-modal">
       <div
         v-if="groupModalOpen && group"
-        class="grd-backdrop"
+        class="grd-backdrop modal-backdrop-base"
         @click="onBackdrop"
       >
-        <div class="grd-panel">
+        <div class="grd-panel modal-panel-base">
           <!-- Header -->
           <div class="grd-header">
             <!-- Centered nav group -->
@@ -492,7 +492,11 @@
             </div>
 
             <!-- Close -->
-            <button class="grd-close" aria-label="Close" @click="closeGroup">
+            <button
+              class="grd-close modal-close-base"
+              aria-label="Close"
+              @click="closeGroup"
+            >
               <IconsClose />
             </button>
           </div>
@@ -630,14 +634,10 @@
 
   /* ── Backdrop ──────────────────────────────────────────────────────────── */
   .grd-backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 9050;
-    background: hsl(0deg 0% 0% / 80%);
-    display: flex;
+    background: oklab(0 0 0 / 0.8);
     align-items: flex-start;
-    justify-content: center;
-    padding: 1rem;
     overflow-y: auto;
   }
 
@@ -650,9 +650,8 @@
     flex-direction: column;
     border-radius: 0.875rem;
     /* No overflow:hidden here — it would clip the slide transition */
+    /* border/border-bottom come from modal-panel-base */
     background: oklch(14% 0.008 260);
-    border: 1px solid oklab(100% 0 0 / 0.08);
-    border-bottom: 3px solid oklab(100% 0 0 / 0.1);
     box-shadow: 0 12px 48px oklab(0% 0 0 / 1);
   }
 
@@ -772,18 +771,12 @@
 
   /* ── Close ─────────────────────────────────────────────────────────────── */
   .grd-close {
-    position: absolute;
+    /* position/border/line-height/padding/cursor/display/align-items/
+       justify-content come from modal-close-base */
     top: 0.5rem;
     right: 0.5rem;
     background: none !important;
-    border: none;
     color: oklab(100% 0 0 / 0.6);
-    line-height: 1;
-    padding: 0.35rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: color 0.15s !important;
     z-index: 1;
   }

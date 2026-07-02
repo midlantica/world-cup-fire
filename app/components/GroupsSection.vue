@@ -135,7 +135,7 @@
     width: 0.65rem;
     height: 0.65rem;
     border-radius: 2px;
-    background: #10b981;
+    background: oklab(0.6959 -0.1422 0.0449);
   }
 
   .groups-section__loading {
@@ -161,15 +161,15 @@
      background stays neutral — only the ring distinguishes the group
      containing the user's selected nation. */
   .group-card--mine {
-    border-color: var(--nation-accent, rgb(255 255 255 / 0.25));
+    border-color: var(--nation-accent, oklab(1 0 0 / 0.25));
     box-shadow:
-      0 0 0 1px var(--nation-accent, rgb(255 255 255 / 0.2)),
+      0 0 0 1px var(--nation-accent, oklab(1 0 0 / 0.2)),
       0 0 8px 0 var(--nation-glow, transparent);
   }
 
   .group-card--mine:hover {
     box-shadow:
-      0 0 0 1px var(--nation-accent, rgb(255 255 255 / 0.3)),
+      0 0 0 1px var(--nation-accent, oklab(1 0 0 / 0.3)),
       0 0 12px 0 var(--nation-glow, transparent);
   }
 
@@ -179,10 +179,10 @@
     padding-block: 0.4rem 0.25rem;
     background: linear-gradient(
       180deg,
-      rgb(0 0 0 / 0.45) 0%,
-      rgb(0 0 0 / 0.1) 100%
+      oklab(0 0 0 / 0.45) 0%,
+      oklab(0 0 0 / 0.1) 100%
     );
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    border-bottom: 1px solid oklab(1 0 0 / 0.08);
     margin: -0.75rem -0.75rem 0.5rem;
   }
 
@@ -194,7 +194,7 @@
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.06em;
-    color: color-mix(in oklab, #fff 70%, transparent);
+    color: color-mix(in oklab, oklab(1 0 0) 70%, transparent);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,
@@ -204,7 +204,7 @@
   }
 
   .group-card:hover .group-card__label {
-    color: #fff3a0;
+    color: oklab(0.9553 -0.0199 0.102);
   }
 
   .group-card__table {
@@ -238,7 +238,7 @@
     padding-top: 0;
     padding-bottom: 0.3rem;
     text-align: center;
-    color: rgb(255 255 255 / 0.7);
+    color: oklab(1 0 0 / 0.7);
     @apply font-semibold;
     line-height: 1;
     vertical-align: bottom;
@@ -257,7 +257,7 @@
   .group-card__th--pts {
     text-align: right;
     @apply font-black;
-    color: rgb(255 255 255 / 0.65);
+    color: oklab(1 0 0 / 0.65);
     @apply font-anybody-semi;
   }
 
@@ -272,7 +272,7 @@
   .group-card__td {
     @apply py-1 tabular-nums;
     text-align: center;
-    color: rgb(255 255 255 / 0.7);
+    color: oklab(1 0 0 / 0.7);
   }
 
   .group-card__td--team {
@@ -307,6 +307,6 @@
   .group-card__team-name--link:hover {
     text-decoration: underline;
     text-underline-offset: 2px;
-    text-decoration-color: rgb(255 255 255 / 0.4);
+    text-decoration-color: oklab(1 0 0 / 0.4);
   }
 </style>

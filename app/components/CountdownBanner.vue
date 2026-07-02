@@ -237,8 +237,8 @@
     border-radius: 10px;
     background: linear-gradient(
       180deg,
-      rgba(255, 235, 156, 1) 0%,
-      rgba(255, 203, 0, 1) 100%
+      oklab(0.9387 -0.0099 0.1002) 0%,
+      oklab(0.8633 0.0003 0.1764) 100%
     );
     overflow: hidden;
   }
@@ -309,7 +309,7 @@
     font-size: 50cqh;
     line-height: 1;
     letter-spacing: -0.04em;
-    color: #000000;
+    color: oklab(0 0 0);
     text-align: center;
     display: block;
     font-variant-numeric: tabular-nums;
@@ -324,7 +324,7 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     text-align: center;
-    color: #000000;
+    color: oklab(0 0 0);
     display: block;
     white-space: nowrap;
   }
@@ -340,7 +340,7 @@
     font-weight: 800;
     font-size: 50cqh;
     line-height: 1;
-    color: #000000;
+    color: oklab(0 0 0);
     flex: 0 0 auto;
     text-align: center;
     /* JetBrains Mono's colon is vertically centred in the em-box, so we centre
@@ -377,7 +377,7 @@
     font-size: clamp(0.75rem, 1.6cqw, 0.875rem);
     line-height: 1.55;
     letter-spacing: 0.03em;
-    color: #000000;
+    color: oklab(0 0 0);
   }
 
   .cb-copy strong {
@@ -434,7 +434,7 @@
       padding: 0;
       border: none;
       background: none;
-      color: #000000;
+      color: oklab(0 0 0);
       cursor: pointer;
       /* line-height of the first line so the caret centres on line 1 */
       line-height: 1.55;
@@ -474,15 +474,15 @@
         'wght' 400;
       font-size: 1.25em;
       line-height: 1;
-      color: #000000;
+      color: oklab(0 0 0);
       pointer-events: none;
       /* soft fade so the clipped text tucks under the ellipsis cleanly */
       padding-left: 0.5em;
       background: linear-gradient(
         to right,
-        rgba(255, 217, 64, 0) 0%,
-        rgba(255, 217, 64, 0.95) 40%,
-        rgba(255, 217, 64, 1) 100%
+        oklab(0.8927 -0.0126 0.1647 / 0) 0%,
+        oklab(0.8927 -0.0126 0.1647 / 0.95) 40%,
+        oklab(0.8927 -0.0126 0.1647) 100%
       );
     }
 

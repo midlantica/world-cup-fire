@@ -467,8 +467,8 @@
     position: sticky;
     top: calc(var(--app-header-h, 0px) + var(--predictor-header-h, 0px));
     z-index: 20;
-    background: #111111;
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    background: oklab(0.1776 0 0);
+    border-bottom: 1px solid oklab(1 0 0 / 0.08);
   }
 
   /* ── Floating caret bar — zero-height, overlays the label row ───────────── */
@@ -492,9 +492,9 @@
     justify-content: center;
     width: 1.5rem;
     height: 2.7rem;
-    background: rgb(17 17 17 / 0.85);
+    background: oklab(0.1776 0 0 / 0.85);
     border: none;
-    color: #ffffff;
+    color: oklab(1 0 0);
     font-size: 1.6rem;
     line-height: 1;
     cursor: pointer;
@@ -505,8 +505,8 @@
   }
 
   .bracket-nav-btn:hover {
-    color: #f97316;
-    background: rgb(17 17 17 / 0.95);
+    color: oklab(0.7049 0.1259 0.1379);
+    background: oklab(0.1776 0 0 / 0.95);
   }
 
   .bracket-nav-spacer {
@@ -588,20 +588,20 @@
   }
 
   .bracket-label-cell__name {
-    color: #f97316;
+    color: oklab(0.7049 0.1259 0.1379);
   }
 
   .bracket-label-cell__sep {
-    color: #cbd5e1;
+    color: oklab(0.869 -0.0058 -0.019);
   }
 
   .bracket-label-cell__count {
     font-variant-numeric: tabular-nums;
-    color: #cbd5e1;
+    color: oklab(0.869 -0.0058 -0.019);
   }
 
   .bracket-label-cell__count-total {
-    color: #cbd5e1;
+    color: oklab(0.869 -0.0058 -0.019);
   }
 
   /* ── Rounds row ──────────────────────────────────────────────────────────── */
@@ -625,8 +625,8 @@
   .bracket-match {
     overflow: hidden;
     border-radius: 4px;
-    background: #1e1e1e;
-    border: 1px solid rgb(255 255 255 / 0.12);
+    background: oklab(0.235 0 0);
+    border: 1px solid oklab(1 0 0 / 0.12);
     display: flex;
     flex-direction: column;
     margin-bottom: 0.5rem;
@@ -638,16 +638,16 @@
       'wdth' 87.5,
       'wght' 400;
     font-size: 0.75rem;
-    color: #ffffff;
+    color: oklab(1 0 0);
     text-align: center;
     padding: 0.25rem 0.5rem 0.1rem;
     letter-spacing: 0.08em;
     background: linear-gradient(
       180deg,
-      rgb(0 0 0 / 0.45) 0%,
-      rgb(0 0 0 / 0.1) 100%
+      oklab(0 0 0 / 0.45) 0%,
+      oklab(0 0 0 / 0.1) 100%
     );
-    border-bottom: 1px solid hsl(0deg 0% 100% / 10%);
+    border-bottom: 1px solid oklab(1 0 0 / 0.1);
   }
 
   .bracket-match__team {
@@ -660,7 +660,7 @@
     border: none;
     cursor: pointer;
     transition: all 0.15s ease;
-    color: #e2e8f0;
+    color: oklab(0.9288 -0.0032 -0.0122);
     width: 100%;
     text-align: center;
   }
@@ -670,13 +670,13 @@
   }
 
   .bracket-match__team:not(:disabled):hover {
-    background: #0d0d0d;
-    color: #ffffff;
+    background: oklab(0.1591 0 0);
+    color: oklab(1 0 0);
   }
 
   .bracket-match__team--picked {
-    background: #0d0d0d !important;
-    color: #ffffff !important;
+    background: oklab(0.1591 0 0) !important;
+    color: oklab(1 0 0) !important;
   }
 
   .bracket-match__team--unpicked {
@@ -705,7 +705,7 @@
       'wdth' 87.5,
       'wght' 500;
     font-size: 0.85rem;
-    color: #858585;
+    color: oklab(0.6167 0 0);
     letter-spacing: 0.08em;
     padding: 0.3rem 0;
   }
@@ -716,18 +716,18 @@
       'wdth' 87.5,
       'wght' 500;
     font-size: 0.65rem;
-    color: hsl(0deg 0% 100% / 70%);
+    color: oklab(1 0 0 / 0.7);
     text-align: center;
     padding: 0.05rem 0;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    border-top: 1px solid hsl(0deg 0% 100% / 5%);
-    border-bottom: 1px solid hsl(0deg 0% 100% / 5%);
+    border-top: 1px solid oklab(1 0 0 / 0.05);
+    border-bottom: 1px solid oklab(1 0 0 / 0.05);
   }
 
   /* ── Locked match (real FT result) ──────────────────────────────────────── */
   .bracket-match--locked {
-    border-color: rgb(34 197 94 / 0.3);
+    border-color: oklab(0.7227 -0.1656 0.0972 / 0.3);
   }
 
   /* ── Date/time in bracket card header ───────────────────────────────────── */
@@ -745,14 +745,14 @@
     font-variation-settings:
       'wdth' 87.5,
       'wght' 500;
-    color: #94a3b8;
+    color: oklab(0.7107 -0.008 -0.0342);
     letter-spacing: 0.02em;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .bracket-match__date-sep {
-    color: #475569;
+    color: oklab(0.4455 -0.0082 -0.0365);
     flex-shrink: 0;
   }
 
@@ -760,7 +760,7 @@
     font-variation-settings:
       'wdth' 87.5,
       'wght' 600;
-    color: #cbd5e1;
+    color: oklab(0.869 -0.0058 -0.019);
     font-variant-numeric: tabular-nums;
     flex-shrink: 0;
   }
@@ -774,7 +774,7 @@
       'wdth' 87.5,
       'wght' 700;
     letter-spacing: 0.1em;
-    color: #22c55e;
+    color: oklab(0.7227 -0.1656 0.0972);
     vertical-align: middle;
     line-height: 1;
   }
@@ -794,7 +794,7 @@
     font-size: 0.85rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #f97316;
+    color: oklab(0.7049 0.1259 0.1379);
     text-align: center;
     padding: 0.75rem 0 0.25rem;
     line-height: 1;

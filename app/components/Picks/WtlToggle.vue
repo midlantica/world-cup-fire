@@ -331,7 +331,7 @@
     height: 1.3rem;
   }
 
-  /* ── OPEN picker: grey bar (#424242) with caret + white-marked slots ───────
+  /* ── OPEN picker: grey bar (oklab(0.3791 0 0)) with caret + white-marked slots ───────
      Pops out to the LEFT, anchored to the right edge of the slot so it never
      pushes the layout or overlaps the kickoff time. Caret on the LEFT points
      back at this row's team name. */
@@ -349,8 +349,8 @@
     width: 4px;
     height: 8px;
     flex-shrink: 0;
-    background: #424242;
-    filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.5));
+    background: oklab(0.3791 0 0);
+    filter: drop-shadow(0 2px 1px oklab(0 0 0 / 0.5));
   }
 
   /* Caret pointing LEFT — sits on the picker's LEFT edge (before the btns),
@@ -389,7 +389,7 @@
     gap: 2px;
     padding: 2px 2px;
     border-radius: 0.2rem;
-    background: #424242;
+    background: oklab(0.3791 0 0);
     box-shadow: none;
   }
 
@@ -533,7 +533,7 @@
     font-size: 1rem;
     line-height: 1;
     letter-spacing: 0.13em;
-    color: hsl(0deg 0% 74.63%);
+    color: oklab(0.8025 0 0);
     text-align: right;
     white-space: nowrap;
     flex-shrink: 0;
@@ -557,7 +557,7 @@
     height: 0;
     border-top: 4px solid transparent;
     border-bottom: 4px solid transparent;
-    border-left: 5px solid hsl(0deg 0% 74.63%);
+    border-left: 5px solid oklab(0.8025 0 0);
     vertical-align: middle;
     margin-left: 0.2em;
     flex-shrink: 0;
@@ -566,7 +566,7 @@
   /* Left-pointing variant (for caret-right / right-side label: "◀ PICK") */
   .wtl__pick-tri--left {
     border-left: none;
-    border-right: 5px solid hsl(0deg 0% 74.63%);
+    border-right: 5px solid oklab(0.8025 0 0);
     margin-left: 0;
     margin-right: 0.2em;
   }
@@ -584,7 +584,7 @@
     font-size: 1rem;
     line-height: 1;
     letter-spacing: 0.13em;
-    color: hsl(0deg 0% 74.63%);
+    color: oklab(0.8025 0 0);
     white-space: nowrap;
     flex-shrink: 0;
     pointer-events: none;
@@ -629,13 +629,13 @@
       background-color: transparent;
     }
     25% {
-      background-color: rgb(255 255 255 / 0.12);
+      background-color: oklab(1 0 0 / 0.12);
     }
     55% {
       background-color: transparent;
     }
     75% {
-      background-color: rgb(255 255 255 / 0.08);
+      background-color: oklab(1 0 0 / 0.08);
     }
     100% {
       background-color: transparent;

@@ -808,7 +808,7 @@
     <Transition name="gd-modal">
       <div
         v-if="modalOpen && selectedMatch"
-        class="gd-backdrop"
+        class="gd-backdrop modal-backdrop-base"
         @click="onBackdrop"
       >
         <div class="gd-panel-wrap">
@@ -832,7 +832,7 @@
             >🎲</span
           >
 
-          <div class="gd-panel">
+          <div class="gd-panel modal-panel-base">
             <!-- Header -->
             <div class="gd-header">
               <!-- Group link -->
@@ -1232,7 +1232,11 @@
               </div>
 
               <!-- Close button -->
-              <button class="gd-close" aria-label="Close" @click="closeMatch">
+              <button
+                class="gd-close modal-close-base"
+                aria-label="Close"
+                @click="closeMatch"
+              >
                 <IconsClose />
               </button>
             </div>
@@ -1325,18 +1329,16 @@
   @reference "~/assets/css/main.css";
 
   /* ── Backdrop ──────────────────────────────────────────────────────────────── */
+  /* Base position/inset/display/justify-content/padding come from the shared
+     .modal-backdrop-base utility (base.css). z-index/background/align-items/
+     overflow-y stay here — they're specific to this modal. */
   .gd-backdrop {
-    position: fixed;
-    inset: 0;
     /* Above GroupDetail (9050) so cards clicked inside a group modal
        surface the game detail on top; below CountryDetail (9100) so
        drilling into a team from here still layers correctly. */
     z-index: 9075;
-    background: hsl(0deg 0% 0% / 60%);
-    display: flex;
+    background: oklab(0 0 0 / 0.6);
     align-items: flex-start;
-    justify-content: center;
-    padding: 1rem;
     overflow-y: auto;
   }
 
@@ -1360,6 +1362,9 @@
   }
 
   /* ── Panel ─────────────────────────────────────────────────────────────────── */
+  /* border/border-bottom come from the shared .modal-panel-base utility
+     (base.css). Layout, radius, background and shadow stay here — they're
+     specific to this modal. */
   .gd-panel {
     width: 100%;
     max-height: 88dvh;
@@ -1367,10 +1372,8 @@
     flex-direction: column;
     overflow: hidden;
     border-radius: 0.75rem;
-    background: #07090c;
-    border: 1px solid oklab(100% 0 0 / 0.08);
-    border-bottom: 3px solid oklab(100% 0 0 / 0.1);
-    box-shadow: 0px 0px 20px -7px hsl(0deg 0% 0% / 85%);
+    background: oklab(0.1386 -0.0019 -0.0075);
+    box-shadow: 0px 0px 20px -7px oklab(0 0 0 / 0.85);
   }
 
   @media (min-width: 640px) {
@@ -1406,7 +1409,7 @@
     color: oklab(100% 0 0 / 0.6);
     text-decoration: none;
     margin-bottom: 0.4rem;
-    background: hsl(0deg 0% 100% / 12%);
+    background: oklab(1 0 0 / 0.12);
     border-radius: 9999px;
     padding: 0.2rem 0.75rem 0.1rem;
     cursor: pointer;
@@ -1650,7 +1653,7 @@
       grid-column: 2;
       grid-row: 1 / 3;
       padding: 0.35rem 0 0.35rem 0.65rem;
-      border-left: 1px solid #393939;
+      border-left: 1px solid oklab(0.3446 0 0);
     }
 
     /* On mobile, home team-btn shows [flag][name] left-to-right.
@@ -1874,11 +1877,11 @@
   }
 
   .gd-header__winner-badge--left {
-    border-right: 7px solid #006f0d;
+    border-right: 7px solid oklab(0.4699 -0.1246 0.0924);
   }
 
   .gd-header__winner-badge--right {
-    border-left: 7px solid #006f0d;
+    border-left: 7px solid oklab(0.4699 -0.1246 0.0924);
   }
 
   /* Mobile winner badges — sit above/below the status badge in the status column.
@@ -1887,7 +1890,7 @@
      Override all four border sides from the base class to form vertical triangles. */
   .gd-header__winner-badge--mobile-home {
     border-top: none;
-    border-bottom: 7px solid #006f0d;
+    border-bottom: 7px solid oklab(0.4699 -0.1246 0.0924);
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     margin-bottom: 0.25rem;
@@ -1895,7 +1898,7 @@
 
   .gd-header__winner-badge--mobile-away {
     border-bottom: none;
-    border-top: 7px solid #006f0d;
+    border-top: 7px solid oklab(0.4699 -0.1246 0.0924);
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     margin-top: 0.25rem;
@@ -1929,14 +1932,14 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     border-radius: 2px;
-    background: hsl(0deg 0% 73.03%);
+    background: oklab(0.7896 0 0);
     padding: 2px 4px 1px 6px;
   }
 
   .gd-header__status--live {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     background: oklab(50% -0.1 0.1 / 1);
-    color: #4ade80;
+    color: oklab(0.8003 -0.1603 0.0863);
   }
 
   @keyframes pulse {
@@ -1989,22 +1992,14 @@
     color: oklab(100% 0 0 / 0.45);
   }
 
-  /* Close button */
+  /* Close button — position/background/border/padding/layout/transition
+     come from the shared .modal-close-base utility (base.css). Only the
+     exact top/right offset, color, and border-radius stay here. */
   .gd-close {
-    position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    background: none;
-    border: none;
     color: oklab(100% 0 0 / 0.5);
-    line-height: 1;
-    padding: 0.35rem;
     border-radius: 0.25rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.15s;
   }
 
   .gd-close :deep(svg) {
@@ -2128,8 +2123,8 @@
   @media (max-width: 639px) {
     .gd-header__events {
       padding: 0.5rem 0;
-      border-top: 1px solid hsl(0deg 0% 100% / 10%);
-      border-bottom: 1px solid hsl(0deg 0% 100% / 10%);
+      border-top: 1px solid oklab(1 0 0 / 0.1);
+      border-bottom: 1px solid oklab(1 0 0 / 0.1);
     }
 
     .gd-header__meta {

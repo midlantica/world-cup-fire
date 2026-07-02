@@ -33,8 +33,12 @@
 <template>
   <Teleport to="body">
     <Transition name="vnd-modal">
-      <div v-if="open && venue" class="vnd-backdrop" @click="onBackdrop">
-        <div class="vnd-panel" role="dialog" aria-modal="true">
+      <div
+        v-if="open && venue"
+        class="vnd-backdrop modal-backdrop-base"
+        @click="onBackdrop"
+      >
+        <div class="vnd-panel modal-panel-base" role="dialog" aria-modal="true">
           <!-- Close -->
           <button
             class="vnd-close"
@@ -88,18 +92,16 @@
 <style scoped>
   /* ── Backdrop ──────────────────────────────────────────────────────────── */
   .vnd-backdrop {
-    position: fixed;
-    inset: 0;
+    /* position/inset/display/justify-content/padding come from modal-backdrop-base */
     z-index: 9200; /* above game modal (9100) and group modal (9050) */
     background: oklab(0% 0 0 / 0.6);
-    display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 1rem;
   }
 
   /* ── Panel ─────────────────────────────────────────────────────────────── */
   .vnd-panel {
+    /* border/border-bottom come from modal-panel-base (opacity differs slightly
+       here: 0.1/0.12 vs the base's 0.08/0.1 — kept as an explicit override) */
     position: relative;
     width: 100%;
     max-width: 26rem;
@@ -166,10 +168,10 @@
     left: 0.6rem;
     background: linear-gradient(
       135deg,
-      rgb(234 179 8 / 0.95),
-      rgb(202 138 4 / 0.95)
+      oklab(0.7952 0.0111 0.1613 / 0.95),
+      oklab(0.6806 0.0348 0.138 / 0.95)
     );
-    color: #000;
+    color: oklab(0 0 0);
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 100,

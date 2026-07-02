@@ -85,6 +85,6 @@
     left: 4px;
     transform: translate(0.18em, 0.04em) rotate(15deg);
     transform-origin: center;
-    filter: drop-shadow(-1px 0 1px rgb(0 0 0 / 1));
+    filter: drop-shadow(-1px 0 1px oklab(0 0 0));
   }
 </style>
