@@ -373,8 +373,14 @@
     { rank: 85, country: 'New Zealand', iso2: 'NZ' },
   ]
 
+  // ── Live 2026 stats ───────────────────────────────────────────────────────
+  const { data: liveStats, status: liveStatsStatus } = useFetch('/api/stats')
+  const { data: teamStats, status: teamStatsStatus } =
+    useFetch('/api/team-stats')
+
   // ── Active section for filter tabs ────────────────────────────────────────
   const sections = [
+    '2026 Stats',
     'Ranking',
     'Venues',
     'Winners',
@@ -383,7 +389,7 @@
     'Facts',
   ] as const
   type Section = (typeof sections)[number]
-  const activeSection = ref<Section>('Ranking')
+  const activeSection = ref<Section>('2026 Stats')
 
   function flagUrl(iso2: string): string {
     if (iso2 === 'GB-ENG') return '/flags/GB-ENG.svg'
@@ -403,19 +409,6 @@
         </p>
       </div>
 
-      <!-- ── By the numbers ────────────────────────────────────────────────── -->
-      <div class="stats-numbers">
-        <div
-          v-for="item in byTheNumbers"
-          :key="item.label"
-          class="stats-numbers__card"
-        >
-          <span class="stats-numbers__value">{{ item.number }}</span>
-          <span class="stats-numbers__label">{{ item.label }}</span>
-          <span class="stats-numbers__sub">{{ item.sub }}</span>
-        </div>
-      </div>
-
       <!-- ── Section filter tabs ────────────────────────────────────────────── -->
       <div class="stats-tabs">
         <button
@@ -428,6 +421,371 @@
           {{ s }}
         </button>
       </div>
+
+      <!-- ══════════════════════════════════════════════════════════════════════
+           2026 LIVE STATS
+           ══════════════════════════════════════════════════════════════════ -->
+      <section v-if="activeSection === '2026 Stats'" class="stats-section">
+        <h2 class="stats-section__heading">📡 2026 World Cup — Live Stats</h2>
+        <p class="stats-section__intro">
+          Real-time player statistics from the 2026 FIFA World Cup, powered by
+          ESPN. Updated after every match.
+        </p>
+
+        <!-- Loading state -->
+        <div v-if="liveStatsStatus === 'pending'" class="live-loading">
+          <span class="live-loading__spinner" />
+          <span class="live-loading__text">Loading live stats…</span>
+        </div>
+
+        <!-- Error state -->
+        <div v-else-if="liveStatsStatus === 'error'" class="live-error">
+          <span>⚠️ Could not load live stats. Please try again later.</span>
+        </div>
+
+        <!-- Player stats panels (2-col grid) -->
+        <div v-else-if="liveStats" class="live-panels">
+          <!-- Top Scorers -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">⚽</span>
+              <span class="live-panel__title">Top Scorers</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(p, i) in liveStats.topScorers"
+                :key="p.name"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="p.iso2"
+                  :src="flagUrl(p.iso2)"
+                  :alt="p.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ p.name }}</span>
+                  <span class="live-row__meta">{{ p.teamName }}</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ p.goals }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Assists -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">🎯</span>
+              <span class="live-panel__title">Top Assists</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(p, i) in liveStats.topAssists"
+                :key="p.name"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="p.iso2"
+                  :src="flagUrl(p.iso2)"
+                  :alt="p.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ p.name }}</span>
+                  <span class="live-row__meta">{{ p.teamName }}</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ p.assists }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team stats heading -->
+        <h2 class="stats-section__heading" style="margin-top: 1rem">
+          🏳️ Team Stats — 2026 Tournament
+        </h2>
+        <p class="stats-section__intro">
+          Aggregated team statistics across all completed 2026 World Cup
+          matches, sourced from ESPN match data.
+        </p>
+
+        <!-- Team stats loading -->
+        <div v-if="teamStatsStatus === 'pending'" class="live-loading">
+          <span class="live-loading__spinner" />
+          <span class="live-loading__text">Loading team stats…</span>
+        </div>
+
+        <!-- Team stats panels (2-col grid) -->
+        <div v-else-if="teamStats" class="live-panels">
+          <!-- Most Passes -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">🔄</span>
+              <span class="live-panel__title">Most Passes</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topPasses"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{
+                    t.value.toLocaleString()
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Shots -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">🥅</span>
+              <span class="live-panel__title">Most Shots</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topShots"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Shots on Target -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">🎯</span>
+              <span class="live-panel__title">Shots on Target</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topShotsOnTarget"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Tackles -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">💪</span>
+              <span class="live-panel__title">Most Tackles</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topTackles"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Interceptions -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">✋</span>
+              <span class="live-panel__title">Interceptions</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topInterceptions"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Saves -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">🧤</span>
+              <span class="live-panel__title">Most Saves</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topSaves"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Corners -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">📐</span>
+              <span class="live-panel__title">Most Corners</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topCorners"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Fouls -->
+          <div class="live-panel">
+            <div class="live-panel__header">
+              <span class="live-panel__icon">🟨</span>
+              <span class="live-panel__title">Most Fouls</span>
+            </div>
+            <div class="live-panel__list">
+              <div
+                v-for="(t, i) in teamStats.topFouls"
+                :key="t.teamAbbrev"
+                class="live-row"
+                :class="{ 'live-row--top3': i < 3 }"
+              >
+                <span class="live-row__rank">{{ i + 1 }}</span>
+                <img
+                  v-if="t.iso2"
+                  :src="flagUrl(t.iso2)"
+                  :alt="t.teamName"
+                  class="live-row__flag"
+                />
+                <span v-else class="live-row__flag-placeholder" />
+                <div class="live-row__info">
+                  <span class="live-row__name">{{ t.teamName }}</span>
+                  <span class="live-row__meta">{{ t.matches }} matches</span>
+                </div>
+                <div class="live-row__stats">
+                  <span class="live-row__primary">{{ t.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ══════════════════════════════════════════════════════════════════════
            FIFA RANKING
@@ -836,16 +1194,16 @@
         </div>
       </section>
 
-      <!-- ── Coming soon banner ─────────────────────────────────────────────── -->
-      <div class="coming-soon">
-        <span class="coming-soon__icon">📡</span>
-        <div class="coming-soon__body">
-          <h3 class="coming-soon__title">Live Stats Coming June 11</h3>
-          <p class="coming-soon__text">
-            Once the tournament kicks off, this page will fill up with live
-            goals, assists, cards, saves, and real-time leaderboards from every
-            match. Check back on opening day!
-          </p>
+      <!-- ── By the numbers ────────────────────────────────────────────────── -->
+      <div class="stats-numbers">
+        <div
+          v-for="item in byTheNumbers"
+          :key="item.label"
+          class="stats-numbers__card"
+        >
+          <span class="stats-numbers__value">{{ item.number }}</span>
+          <span class="stats-numbers__label">{{ item.label }}</span>
+          <span class="stats-numbers__sub">{{ item.sub }}</span>
         </div>
       </div>
     </div>
@@ -1866,53 +2224,232 @@
     transition: width 0.6s ease;
   }
 
-  /* ── Coming soon banner ──────────────────────────────────────────────────── */
-  .coming-soon {
+  /* ── Live stats loading / error ──────────────────────────────────────────── */
+  .live-loading {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    background: linear-gradient(
-      135deg,
-      rgb(234 179 8 / 0.08),
-      rgb(239 68 68 / 0.06)
-    );
-    border: 1px solid rgb(234 179 8 / 0.2);
-    /* border-radius: 16px; */
-    padding: 1.5rem;
-    margin-top: 0.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    justify-content: center;
+    color: rgb(255 255 255 / 0.5);
   }
 
-  .coming-soon__icon {
-    font-size: 2.5rem;
+  .live-loading__spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgb(255 255 255 / 0.15);
+    border-top-color: oklab(0.72 0.17 0.16 / 0.8);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
     flex-shrink: 0;
-    line-height: 1;
   }
 
-  .coming-soon__body {
-    flex: 1;
-    min-width: 0;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
-  .coming-soon__title {
-    font-family: 'Anybody', sans-serif;
-    font-variation-settings:
-      'wdth' 100,
-      'wght' 800;
-    font-size: 1.1rem;
-    color: #ffffff;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.4rem;
-    text-transform: uppercase;
-  }
-
-  .coming-soon__text {
+  .live-loading__text {
     font-family: 'Anybody', sans-serif;
     font-variation-settings:
       'wdth' 87.5,
       'wght' 300;
-    font-size: 0.88rem;
-    color: rgb(255 255 255 / 0.7);
-    line-height: 1.65;
-    letter-spacing: 0.08em;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+  }
+
+  .live-error {
+    padding: 1.5rem;
+    text-align: center;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 300;
+    font-size: 0.9rem;
+    color: rgb(255 255 255 / 0.5);
+    background: rgb(239 68 68 / 0.06);
+    border: 1px solid rgb(239 68 68 / 0.15);
+  }
+
+  /* ── Live stats panels grid ──────────────────────────────────────────────── */
+  .live-panels {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 768px) {
+    .live-panels {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .live-panel {
+    background: rgb(255 255 255 / 0.03);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .live-panel__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    background: rgb(255 255 255 / 0.04);
+    border-bottom: 1px solid rgb(255 255 255 / 0.07);
+  }
+
+  .live-panel__icon {
+    font-size: 1rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .live-panel__title {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    font-size: 1rem;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .live-panel__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Live row ────────────────────────────────────────────────────────────── */
+  .live-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 0.85rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.04);
+    transition: background 0.12s ease;
+  }
+
+  .live-row:last-child {
+    border-bottom: none;
+  }
+
+  .live-row:hover {
+    background: rgb(255 255 255 / 0.05);
+  }
+
+  .live-row--top3 {
+    background: rgb(234 179 8 / 0.04);
+  }
+
+  .live-row--top3:hover {
+    background: rgb(234 179 8 / 0.08);
+  }
+
+  .live-row__rank {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 300;
+    font-size: 0.844rem;
+    color: rgb(255 255 255 / 0.5);
+    width: 1.4rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .live-row--top3 .live-row__rank {
+    color: rgb(234 179 8 / 0.8);
+  }
+
+  .live-row__flag {
+    width: 1.75rem;
+    height: 1.3rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+  }
+
+  .live-row__flag-placeholder {
+    width: 1.75rem;
+    height: 1.3rem;
+    flex-shrink: 0;
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  .live-row__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
+  .live-row__name {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 600;
+    font-size: 0.85rem;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .live-row__meta {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 300;
+    font-size: 0.82rem;
+    color: rgb(255 255 255 / 0.65);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .live-row__stats {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .live-row__primary {
+    font-family:
+      'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1;
+  }
+
+  .live-row__unit {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 400;
+    font-size: 0.65rem;
+    color: oklab(0.72 0.17 0.16 / 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .live-row__secondary {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 300;
+    font-size: 0.75rem;
+    color: rgb(255 255 255 / 0.4);
+    letter-spacing: 0.03em;
+    margin-left: 0.25rem;
   }
 </style>
