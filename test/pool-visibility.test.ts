@@ -6,11 +6,11 @@ import type { StoredPool } from '../server/utils/pools.ts'
 
 const NOW = Date.parse('2026-06-20T12:00:00Z')
 
-// Real group-stage ESPN match IDs (760414–760485) — picksMade only counts these.
+// Real group-stage ESPN match IDs (760414–760485).
 const STARTED = '760414'
 const FUTURE = '760415'
 const UNKNOWN = '760416'
-// A knockout-range ID: visible when started, but excluded from picksMade.
+// A knockout-range ID (760486–760517).
 const KNOCKOUT = '760486'
 
 const kickoffs = new Map([
@@ -69,7 +69,7 @@ test('an unavailable schedule hides every non-self outcome', () => {
   assert.deepEqual(result.members[1]?.picks, {})
 })
 
-test('knockout picks never count toward picksMade', () => {
+test('knockout picks count toward picksMade', () => {
   const knockoutPool: StoredPool = {
     ...pool,
     members: [
@@ -84,5 +84,5 @@ test('knockout picks never count toward picksMade', () => {
   }
   const result = filterPoolForViewer(knockoutPool, 'self', kickoffs, NOW)
 
-  assert.equal(result.members[0]?.picksMade, 1)
+  assert.equal(result.members[0]?.picksMade, 2)
 })
