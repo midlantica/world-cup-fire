@@ -72,6 +72,8 @@ export interface BracketMatch {
   locked: boolean
   /** FIFA official match number */
   matchNumber: number
+  /** ISO date string for the match kickoff time */
+  date?: string
 }
 
 /** Minimal match shape needed for group standings computation */
@@ -92,6 +94,8 @@ export interface GroupMatch {
   statusCode: 'ns' | 'live' | 'ht' | 'ft'
   homeScore: string | null
   awayScore: string | null
+  /** ISO date string for the match kickoff time */
+  date?: string
   /**
    * For knockout matches decided by penalties (90-min score is a draw),
    * the name of the team that advanced. Used to determine the bracket winner
@@ -417,6 +421,24 @@ export function usePredictions() {
     //   2. Draw after 90 min decided by ET/penalties: penWinner carries the
     //      advancing team name (populated from ESPN's competitor.winner flag)
     //   3. Fallback: if scores are equal and no penWinner, skip (result unknown)
+    // Build a date lookup: matchNumber → ISO date string (for all knockout matches).
+    // Seed with known static dates for SF/3rd/Final — ESPN's API doesn't return
+    // these future matches in the full-tournament date range query.
+    const STATIC_MATCH_DATES: Record<number, string> = {
+      101: '2026-07-14T19:00Z', // SF-1: Tue Jul 14
+      102: '2026-07-15T19:00Z', // SF-2: Wed Jul 15
+      103: '2026-07-18T21:00Z', // 3rd Place: Sat Jul 18
+      104: '2026-07-19T19:00Z', // Final: Sun Jul 19
+    }
+    const matchDates = new Map<number, string>(
+      Object.entries(STATIC_MATCH_DATES).map(([k, v]) => [Number(k), v])
+    )
+    for (const m of knockoutMatches) {
+      if (m.matchNumber != null && m.date) {
+        matchDates.set(m.matchNumber, m.date)
+      }
+    }
+
     const ftResults = new Map<
       number,
       { winner: string; loser: string; actualHome: string; actualAway: string }
@@ -539,6 +561,7 @@ export function usePredictions() {
         ready,
         locked: ftResult !== null,
         matchNumber: slot.matchNumber,
+        date: matchDates.get(slot.matchNumber),
       })
     }
 

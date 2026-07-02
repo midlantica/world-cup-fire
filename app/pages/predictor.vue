@@ -2,6 +2,7 @@
   import { usePredictions } from '~/composables/usePredictions'
   import type { GroupMatch } from '~/composables/usePredictions'
   import { WC_GROUPS, matchNumberByEventId } from '~/constants/worldcup'
+  import { useTimezone } from '~/composables/useTimezone'
 
   useHead({ title: 'Predictor — World Cup Fire 🔥' })
 
@@ -77,6 +78,7 @@
       statusCode: m.status.code,
       homeScore: m.homeScore,
       awayScore: m.awayScore,
+      date: m.date,
       penWinner,
       matchNumber: matchNumberByEventId(m.id),
     }
@@ -197,6 +199,24 @@
     if (predictorHeaderEl.value) ro.observe(predictorHeaderEl.value)
     onUnmounted(() => ro.disconnect())
   })
+
+  // ── Timezone helpers for match date/time display ───────────────────────────
+  const { iana, formatTime } = useTimezone()
+
+  function matchKickoffLabel(date: string | undefined): string {
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: iana.value,
+    })
+  }
+
+  function matchTimeLabel(date: string | undefined): string {
+    if (!date) return ''
+    return formatTime(date)
+  }
 
   // ── Confirm clear ──────────────────────────────────────────────────────────
   const showClearConfirm = ref(false)
@@ -342,6 +362,30 @@
               class="predictor-match"
               :class="{ 'predictor-match--final': match.statusCode === 'ft' }"
             >
+              <!-- Date/time header — shown for all matches -->
+              <div v-if="match.date" class="predictor-match__datetime">
+                <span class="predictor-match__date">{{
+                  matchKickoffLabel(match.date)
+                }}</span>
+                <span class="predictor-match__sep">·</span>
+                <span
+                  v-if="match.statusCode === 'ns'"
+                  class="predictor-match__time"
+                  >{{ matchTimeLabel(match.date) }}</span
+                >
+                <span
+                  v-else-if="
+                    match.statusCode === 'live' || match.statusCode === 'ht'
+                  "
+                  class="predictor-match__time predictor-match__time--live"
+                  >LIVE</span
+                >
+                <span
+                  v-else-if="match.statusCode === 'ft'"
+                  class="predictor-match__time predictor-match__time--ft"
+                  >FT</span
+                >
+              </div>
               <!--
               Unified row layout:
               [home half: name + flag, flush-right] | [center col] | [away half: flag + name, flush-left]
@@ -828,6 +872,51 @@
 
   .predictor-match {
     padding: 0;
+  }
+
+  /* ── Date/time header bar ────────────────────────────────────────────────── */
+  .predictor-match__datetime {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem 0.15rem;
+    background: rgb(0 0 0 / 0.2);
+    border-bottom: 1px solid rgb(255 255 255 / 0.05);
+  }
+
+  .predictor-match__date {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 500;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    letter-spacing: 0.02em;
+  }
+
+  .predictor-match__time {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 600;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .predictor-match__sep {
+    color: #475569;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  .predictor-match__time--live {
+    color: #4ade80;
+  }
+
+  .predictor-match__time--ft {
+    color: #64748b;
   }
 
   /* Unified 3-column row: [home half] [center] [away half] */

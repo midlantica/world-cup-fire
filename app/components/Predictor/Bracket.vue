@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { BracketMatch } from '~/composables/usePredictions'
   import type { PredictOutcome } from '~/composables/usePredictions'
+  import { useTimezone } from '~/composables/useTimezone'
 
   const props = defineProps<{
     bracket: BracketMatch[]
@@ -158,6 +159,23 @@
     focusedRoundIdx.value = bestIdx
   }
 
+  const { iana, formatTime } = useTimezone()
+
+  function bracketDateLabel(date: string | undefined): string {
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: iana.value,
+    })
+  }
+
+  function bracketTimeLabel(date: string | undefined): string {
+    if (!date) return ''
+    return formatTime(date)
+  }
+
   onMounted(() => {
     const scroll = scrollEl.value
     const labelScroll = labelScrollEl.value
@@ -270,10 +288,26 @@
                 }"
               >
                 <div class="bracket-match__num">
-                  M{{ match.matchNumber
-                  }}<span v-if="match.locked" class="bracket-match__ft-badge"
-                    >FT</span
-                  >
+                  <template v-if="match.date">
+                    <span class="bracket-match__date">{{
+                      bracketDateLabel(match.date)
+                    }}</span>
+                    <span class="bracket-match__date-sep">·</span>
+                    <span
+                      v-if="match.locked"
+                      class="bracket-match__ft-badge bracket-match__ft-badge--inline"
+                      >FT</span
+                    >
+                    <span v-else class="bracket-match__kickoff">{{
+                      bracketTimeLabel(match.date)
+                    }}</span>
+                  </template>
+                  <template v-else>
+                    M{{ match.matchNumber
+                    }}<span v-if="match.locked" class="bracket-match__ft-badge"
+                      >FT</span
+                    >
+                  </template>
                 </div>
                 <button
                   class="bracket-match__team bracket-match__team--home"
@@ -339,7 +373,23 @@
                   'bracket-match--picked': match.pick !== null,
                 }"
               >
-                <div class="bracket-match__num">M{{ match.matchNumber }}</div>
+                <div class="bracket-match__num">
+                  <template v-if="match.date">
+                    <span class="bracket-match__date">{{
+                      bracketDateLabel(match.date)
+                    }}</span>
+                    <span class="bracket-match__date-sep">·</span>
+                    <span
+                      v-if="match.locked"
+                      class="bracket-match__ft-badge bracket-match__ft-badge--inline"
+                      >FT</span
+                    >
+                    <span v-else class="bracket-match__kickoff">{{
+                      bracketTimeLabel(match.date)
+                    }}</span>
+                  </template>
+                  <template v-else>M{{ match.matchNumber }}</template>
+                </div>
                 <button
                   class="bracket-match__team bracket-match__team--home"
                   :class="{
@@ -680,6 +730,41 @@
     border-color: rgb(34 197 94 / 0.3);
   }
 
+  /* ── Date/time in bracket card header ───────────────────────────────────── */
+  .bracket-match__num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .bracket-match__date {
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 500;
+    color: #94a3b8;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bracket-match__date-sep {
+    color: #475569;
+    flex-shrink: 0;
+  }
+
+  .bracket-match__kickoff {
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 600;
+    color: #cbd5e1;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
   .bracket-match__ft-badge {
     display: inline-block;
     margin-left: 0.35rem;
@@ -692,6 +777,12 @@
     color: #22c55e;
     vertical-align: middle;
     line-height: 1;
+  }
+
+  .bracket-match__ft-badge--inline {
+    margin-left: 0;
+    font-size: 0.7rem;
+    flex-shrink: 0;
   }
 
   /* ── 3rd Place inline label ──────────────────────────────────────────────── */
