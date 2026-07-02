@@ -1103,8 +1103,8 @@ const MATCH_NUMBER_BY_EVENT_ID: Record<string, number> = {
   '760492': 78, // France vs Sweden
   '760491': 79, // Mexico vs Ecuador
   '760495': 80, // England vs Congo DR
-  '760493': 81, // Belgium vs Senegal
-  '760494': 82, // United States vs Bosnia-Herzegovina
+  '760493': 82, // Belgium vs Senegal
+  '760494': 81, // United States vs Bosnia-Herzegovina
   '760497': 83, // Spain vs Austria
   '760496': 84, // Portugal vs Croatia
   '760498': 85, // Switzerland vs Algeria
