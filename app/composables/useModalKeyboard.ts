@@ -13,6 +13,20 @@ export function useModalKeyboard(isOpen: () => boolean, close: () => void) {
   function onKeydown(e: KeyboardEvent) {
     if (e.key !== 'Escape') return
     if (stack[stack.length - 1] !== token) return
+
+    // If focus is in a text input, first Escape blurs it instead of
+    // discarding the modal — avoids losing in-progress typing.
+    const active = document.activeElement
+    if (
+      active instanceof HTMLElement &&
+      (active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        active.isContentEditable)
+    ) {
+      active.blur()
+      return
+    }
+
     close()
   }
 
