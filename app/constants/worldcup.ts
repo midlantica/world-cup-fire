@@ -1098,23 +1098,24 @@ const MATCH_NUMBER_BY_EVENT_ID: Record<string, number> = {
   '760489': 74, // Germany vs Paraguay
   '760488': 75, // Netherlands vs Morocco
   '760487': 76, // Brazil vs Japan
-  '760490': 77, // Ivory Coast vs Norway
-  '760492': 78, // France vs Sweden
+  '760492': 77, // France vs Sweden
+  '760490': 78, // Ivory Coast vs Norway
   '760491': 79, // Mexico vs Ecuador
   '760495': 80, // England vs Congo DR
-  '760493': 82, // Belgium vs Senegal
   '760494': 81, // United States vs Bosnia-Herzegovina
-  '760497': 83, // Spain vs Austria
-  '760496': 84, // Portugal vs Croatia
+  '760493': 82, // Belgium vs Senegal
+  '760496': 83, // Portugal vs Croatia
+  '760497': 84, // Spain vs Austria
   '760498': 85, // Switzerland vs Algeria
-  '760499': 86, // Australia vs Egypt
-  '760500': 87, // Argentina vs Cape Verde
-  '760501': 88, // Colombia vs Ghana
+  '760500': 86, // Argentina vs Cape Verde
+  '760501': 87, // Colombia vs Ghana
+  '760499': 88, // Australia vs Egypt
+
   // ── Round of 16 (Jul 4 – Jul 8) ──────────────────────────────────────────
-  '760502': 89, // W74 vs W77
-  '760503': 90, // W73 vs W75
-  '760504': 91, // W76 vs W78
-  '760505': 92, // W79 vs W80
+  // Verified against live ESPN home/away order: '760502' is "Morocco at
+  // Canada" (home=Canada=W73, away=Morocco=W75) → Match 90, and '760503' is
+  // "France at Paraguay" (home=Paraguay=W74, away=France=W77) → Match 89.
+  '760503': 89, // W74 vs W77 (Paraguay vs
   '760506': 93, // W83 vs W84
   '760507': 94, // W81 vs W82
   '760508': 95, // W86 vs W88

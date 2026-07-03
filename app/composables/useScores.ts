@@ -177,6 +177,15 @@ function defaultTab(): WeekTab {
   return 'week6'
 }
 
+/** Returns the tournament stage ('group' or 'knockout') currently in
+ *  progress, based on the same date logic as `defaultTab()`. Used to default
+ *  other stage-aware UI (e.g. the Predictor's Group Stage / My Bracket
+ *  sub-nav) to whichever stage is currently underway. */
+export function currentStage(): Stage {
+  const tab = WC_TABS.find((t) => t.key === defaultTab())
+  return tab?.stage ?? 'group'
+}
+
 // ---------------------------------------------------------------------------
 // Quality scoring
 // ---------------------------------------------------------------------------

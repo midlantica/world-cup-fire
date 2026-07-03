@@ -489,32 +489,71 @@ export function usePredictions() {
       }
     }
 
+    // A team name is "known" if it matches a real WC_TEAMS entry. ESPN
+    // returns placeholder text for future knockout fixtures whose teams
+    // aren't decided yet (e.g. "Round of 32 16 Winner") — those must NOT be
+    // treated as real teams.
+    function isKnownTeam(name: string): boolean {
+      return WC_TEAMS.some((t) => t.name === name)
+    }
+
+    // Lookup of the real scheduled/live/FT knockout fixture for a given FIFA
+    // match number, regardless of status. Once the real schedule has a fixture
+    // for a slot (with two real, resolved team names), that fixture is the
+    // single source of truth for which two teams play each other — it MUST
+    // take precedence over our own predicted/guessed slot resolution
+    // (`resolveSlot`'s naive 3rd-place wildcard picking does not implement
+    // FIFA's actual "best third-place team" ranking rules, and can guess
+    // wrong or duplicate a team that's already really playing elsewhere).
+    const matchByNumber = new Map<number, GroupMatch>()
+    for (const m of knockoutMatches) {
+      if (m.matchNumber != null) matchByNumber.set(m.matchNumber, m)
+    }
+
     const result: BracketMatch[] = []
 
     for (const slot of WC_2026_BRACKET_SEEDING) {
-      const homeTeam = resolveSlot(
-        slot.home,
-        advancers,
-        bracketWinners,
-        bracketLosers,
-        assignedThirdPlace
-      )
-      const awayTeam = resolveSlot(
-        slot.away,
-        advancers,
-        bracketWinners,
-        bracketLosers,
-        assignedThirdPlace
-      )
+      const realMatch = matchByNumber.get(slot.matchNumber) ?? null
+      const realMatchKnown =
+        realMatch != null &&
+        isKnownTeam(realMatch.home) &&
+        isKnownTeam(realMatch.away)
+
+      let homeTeam: string
+      let awayTeam: string
+
+      if (realMatchKnown) {
+        // Real fixture with two known teams — use it directly, bypassing
+        // prediction/wildcard guessing entirely. Mark both teams as
+        // "consumed" so a 3rd-place wildcard guess for a DIFFERENT,
+        // not-yet-played slot can never pick a team that's already
+        // confirmed to be playing in this real match.
+        homeTeam = realMatch!.home
+        awayTeam = realMatch!.away
+        assignedThirdPlace.add(homeTeam)
+        assignedThirdPlace.add(awayTeam)
+      } else {
+        homeTeam = resolveSlot(
+          slot.home,
+          advancers,
+          bracketWinners,
+          bracketLosers,
+          assignedThirdPlace
+        )
+        awayTeam = resolveSlot(
+          slot.away,
+          advancers,
+          bracketWinners,
+          bracketLosers,
+          assignedThirdPlace
+        )
+      }
 
       // Look up the real FT result by match number — immune to name mismatches.
       const ftResult = ftResults.get(slot.matchNumber) ?? null
 
-      // When a real result exists, use the actual teams from the real match.
-      // This handles cases where the predicted slot team (e.g. from a 3rd-place
-      // wildcard) doesn't match the ESPN display name, or the slot is unresolved.
-      const displayHome = ftResult?.actualHome ?? homeTeam
-      const displayAway = ftResult?.actualAway ?? awayTeam
+      const displayHome = homeTeam
+      const displayAway = awayTeam
 
       const homeData = teamData(displayHome)
       const awayData = teamData(displayAway)

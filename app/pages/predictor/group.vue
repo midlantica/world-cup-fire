@@ -1,0 +1,672 @@
+<script setup lang="ts">
+  import { WC_GROUPS } from '~/constants/worldcup'
+  import { PREDICTOR_CONTEXT_KEY } from '~/composables/usePredictorContext'
+
+  const ctx = inject(PREDICTOR_CONTEXT_KEY)
+  if (!ctx) {
+    throw new Error(
+      'PredictorGroupPage must be rendered inside pages/predictor.vue'
+    )
+  }
+  const {
+    matchesByGroup,
+    standingsByGroup,
+    getPrediction,
+    onGroupPick,
+    matchKickoffLabel,
+    matchTimeLabel,
+  } = ctx
+</script>
+
+<template>
+  <div class="predictor-page__content">
+    <div class="predictor-groups-grid">
+      <div
+        v-for="groupLetter in WC_GROUPS"
+        :key="groupLetter"
+        class="predictor-group"
+      >
+        <!-- Group header + mini standings -->
+        <div class="predictor-group__header">
+          <h2 class="predictor-group__title">
+            <NuxtLink
+              :to="`/group/${groupLetter.toLowerCase()}`"
+              class="predictor-group__title-link"
+            >
+              Group {{ groupLetter }}
+              <svg
+                class="predictor-group__link-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z"
+                  clip-rule="evenodd"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </NuxtLink>
+          </h2>
+          <!-- Mini predicted standings -->
+          <div class="predictor-group__standings">
+            <div
+              v-for="entry in standingsByGroup.get(groupLetter)"
+              :key="entry.teamName"
+              class="predictor-group__standing-row"
+              :class="{
+                'predictor-group__standing-row--advances': entry.rank <= 2,
+              }"
+            >
+              <span class="predictor-group__standing-rank">{{
+                entry.rank
+              }}</span>
+              <CountryFlag :iso2="entry.iso2" :size="16" />
+              <span class="predictor-group__standing-name">{{
+                entry.shortName
+              }}</span>
+              <span class="predictor-group__standing-pts"
+                >{{ entry.points }}pt</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Match pick cards -->
+        <div class="predictor-group__matches">
+          <div
+            v-for="match in matchesByGroup.get(groupLetter)"
+            :key="match.id"
+            class="predictor-match"
+            :class="{ 'predictor-match--final': match.statusCode === 'ft' }"
+          >
+            <!-- Date/time header — shown for all matches -->
+            <div v-if="match.date" class="predictor-match__datetime">
+              <span class="predictor-match__date">{{
+                matchKickoffLabel(match.date)
+              }}</span>
+              <span class="predictor-match__sep">·</span>
+              <span
+                v-if="match.statusCode === 'ns'"
+                class="predictor-match__time"
+                >{{ matchTimeLabel(match.date) }}</span
+              >
+              <span
+                v-else-if="
+                  match.statusCode === 'live' || match.statusCode === 'ht'
+                "
+                class="predictor-match__time predictor-match__time--live"
+                >LIVE</span
+              >
+              <span
+                v-else-if="match.statusCode === 'ft'"
+                class="predictor-match__time predictor-match__time--ft"
+                >FT</span
+              >
+            </div>
+            <!--
+              Unified row layout:
+              [home half: name + flag, flush-right] | [center col] | [away half: flag + name, flush-left]
+            -->
+            <div class="predictor-match__row">
+              <!-- ── Home half ── -->
+              <template v-if="match.statusCode === 'ft'">
+                <!-- FT: static div, winner highlighted -->
+                <div
+                  class="predictor-match__half predictor-match__half--home"
+                  :class="{
+                    'predictor-match__half--winner':
+                      Number(match.homeScore) > Number(match.awayScore),
+                    'predictor-match__half--loser':
+                      Number(match.homeScore) < Number(match.awayScore),
+                  }"
+                  :style="{ '--team-color': `#${match.homeColor}` }"
+                >
+                  <span class="predictor-match__name">
+                    <span class="predictor-match__name--full">{{
+                      match.homeShort
+                    }}</span>
+                    <span class="predictor-match__name--abbr">{{
+                      match.homeAbbrev
+                    }}</span>
+                  </span>
+                  <CountryFlag :iso2="match.homeIso2" :size="22" />
+                </div>
+              </template>
+              <template v-else>
+                <!-- Pickable button -->
+                <button
+                  class="predictor-match__half predictor-match__half--home"
+                  :class="{
+                    'predictor-match__half--picked':
+                      getPrediction(match.id) === 'home',
+                    'predictor-match__half--unpicked':
+                      getPrediction(match.id) !== null &&
+                      getPrediction(match.id) !== 'home',
+                  }"
+                  :style="{ '--team-color': `#${match.homeColor}` }"
+                  @click="onGroupPick(match.id, 'home')"
+                >
+                  <span class="predictor-match__name">
+                    <span class="predictor-match__name--full">{{
+                      match.homeShort
+                    }}</span>
+                    <span class="predictor-match__name--abbr">{{
+                      match.homeAbbrev
+                    }}</span>
+                  </span>
+                  <CountryFlag :iso2="match.homeIso2" :size="22" />
+                </button>
+              </template>
+
+              <!-- ── Center column ── -->
+              <div class="predictor-match__center">
+                <!-- FT: score row -->
+                <template v-if="match.statusCode === 'ft'">
+                  <div class="predictor-match__score-row">
+                    <span class="predictor-match__score-num">{{
+                      match.homeScore
+                    }}</span>
+                    <span class="predictor-match__score-sep">–</span>
+                    <span class="predictor-match__score-num">{{
+                      match.awayScore
+                    }}</span>
+                  </div>
+                </template>
+                <!-- Live: pulsing score row -->
+                <template
+                  v-else-if="
+                    match.statusCode === 'live' || match.statusCode === 'ht'
+                  "
+                >
+                  <div
+                    class="predictor-match__score-row predictor-match__score-row--live"
+                  >
+                    <span class="predictor-match__live-dot" />
+                    <span class="predictor-match__score-num">{{
+                      match.homeScore
+                    }}</span>
+                    <span class="predictor-match__score-sep">–</span>
+                    <span class="predictor-match__score-num">{{
+                      match.awayScore
+                    }}</span>
+                  </div>
+                </template>
+                <!-- NS: Draw button -->
+                <template v-else>
+                  <button
+                    class="predictor-match__draw"
+                    :class="{
+                      'predictor-match__draw--picked':
+                        getPrediction(match.id) === 'draw',
+                    }"
+                    @click="onGroupPick(match.id, 'draw')"
+                  >
+                    D
+                  </button>
+                </template>
+              </div>
+
+              <!-- ── Away half ── -->
+              <template v-if="match.statusCode === 'ft'">
+                <div
+                  class="predictor-match__half predictor-match__half--away"
+                  :class="{
+                    'predictor-match__half--winner':
+                      Number(match.awayScore) > Number(match.homeScore),
+                    'predictor-match__half--loser':
+                      Number(match.awayScore) < Number(match.homeScore),
+                  }"
+                  :style="{ '--team-color': `#${match.awayColor}` }"
+                >
+                  <CountryFlag :iso2="match.awayIso2" :size="22" />
+                  <span class="predictor-match__name">
+                    <span class="predictor-match__name--full">{{
+                      match.awayShort
+                    }}</span>
+                    <span class="predictor-match__name--abbr">{{
+                      match.awayAbbrev
+                    }}</span>
+                  </span>
+                </div>
+              </template>
+              <template v-else>
+                <button
+                  class="predictor-match__half predictor-match__half--away"
+                  :class="{
+                    'predictor-match__half--picked':
+                      getPrediction(match.id) === 'away',
+                    'predictor-match__half--unpicked':
+                      getPrediction(match.id) !== null &&
+                      getPrediction(match.id) !== 'away',
+                  }"
+                  :style="{ '--team-color': `#${match.awayColor}` }"
+                  @click="onGroupPick(match.id, 'away')"
+                >
+                  <CountryFlag :iso2="match.awayIso2" :size="22" />
+                  <span class="predictor-match__name">
+                    <span class="predictor-match__name--full">{{
+                      match.awayShort
+                    }}</span>
+                    <span class="predictor-match__name--abbr">{{
+                      match.awayAbbrev
+                    }}</span>
+                  </span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+  @reference "~/assets/css/main.css";
+
+  /* ── Content area ────────────────────────────────────────────────────────── */
+  .predictor-page__content {
+    @apply mx-auto max-w-5xl px-4 py-4;
+  }
+
+  /* ── Groups grid: 1-col by default, 2-col at ≥640px ─────────────────────── */
+  .predictor-groups-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  @media (min-width: 640px) {
+    .predictor-groups-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ── Group section ───────────────────────────────────────────────────────── */
+  .predictor-group {
+    @apply overflow-hidden rounded-xl;
+    background: #1a1a1a;
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .predictor-group__header {
+    @apply flex items-center justify-between gap-4 px-4 py-3;
+    background: rgb(0 0 0 / 0.25);
+    border-bottom: 1px solid rgb(255 255 255 / 0.07);
+  }
+
+  .predictor-group__title {
+    @apply font-bold tracking-widest uppercase;
+    font-size: 1.3rem;
+    color: #94a3b8;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .predictor-group__title-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    line-height: 1;
+  }
+
+  .predictor-group__title-link:hover {
+    color: #e2e8f0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .predictor-group__link-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    flex-shrink: 0;
+    opacity: 0.6;
+    position: relative;
+    top: -3px;
+  }
+
+  .predictor-group__title-link:hover .predictor-group__link-icon {
+    opacity: 1;
+  }
+
+  /* Mini standings */
+  .predictor-group__standings {
+    @apply flex flex-col gap-0.5;
+    min-width: 0;
+  }
+
+  .predictor-group__standing-row {
+    @apply flex items-center gap-1.5;
+    opacity: 0.45;
+  }
+
+  .predictor-group__standing-row--advances {
+    opacity: 1;
+  }
+
+  .predictor-group__standing-rank {
+    @apply w-3 text-right text-xs tabular-nums;
+    color: #64748b;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 500;
+  }
+
+  .predictor-group__standing-name {
+    @apply min-w-0 flex-1 truncate text-xs;
+    color: #cbd5e1;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 500;
+  }
+
+  .predictor-group__standing-pts {
+    @apply text-xs tabular-nums;
+    color: #64748b;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 400;
+  }
+
+  .predictor-group__standing-row--advances .predictor-group__standing-pts {
+    color: #94a3b8;
+  }
+
+  /* ── Match rows ──────────────────────────────────────────────────────────── */
+  .predictor-group__matches {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Faint divider between rows only (not after last) */
+  .predictor-match + .predictor-match {
+    border-top: 1px solid rgb(255 255 255 / 0.07);
+  }
+
+  .predictor-match {
+    padding: 0;
+  }
+
+  /* ── Date/time header bar ────────────────────────────────────────────────── */
+  .predictor-match__datetime {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem 0.15rem;
+    background: rgb(0 0 0 / 0.2);
+    border-bottom: 1px solid rgb(255 255 255 / 0.05);
+  }
+
+  .predictor-match__date {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 500;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    letter-spacing: 0.02em;
+  }
+
+  .predictor-match__time {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 87.5,
+      'wght' 600;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .predictor-match__sep {
+    color: #475569;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  .predictor-match__time--live {
+    color: #4ade80;
+  }
+
+  .predictor-match__time--ft {
+    color: #64748b;
+  }
+
+  /* Unified 3-column row: [home half] [center] [away half] */
+  .predictor-match__row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    min-height: 2.75rem;
+  }
+
+  /* ── Half buttons / divs ─────────────────────────────────────────────────── */
+  .predictor-match__half {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+    min-width: 0;
+  }
+
+  /* Home: name flush-right, flag on right edge */
+  .predictor-match__half--home {
+    justify-content: flex-end;
+    text-align: right;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  /* Away: flag on left edge, name flush-left */
+  .predictor-match__half--away {
+    justify-content: flex-start;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  /* FT static halves: not clickable */
+  div.predictor-match__half {
+    cursor: default;
+  }
+
+  /* Hover (pickable only) */
+  button.predictor-match__half:hover {
+    background: #0d0d0d;
+    color: #ffffff;
+  }
+
+  /* Picked */
+  .predictor-match__half--picked {
+    background: #0d0d0d !important;
+    color: #ffffff !important;
+  }
+
+  /* Unpicked (other side was chosen) */
+  .predictor-match__half--unpicked {
+    opacity: 0.35;
+  }
+
+  /* FT winner */
+  .predictor-match__half--winner {
+    background: rgb(0 0 0 / 50%);
+    color: #e2e8f0;
+  }
+
+  /* FT loser */
+  .predictor-match__half--loser {
+    color: #475569;
+  }
+
+  /* Team name spans */
+  .predictor-match__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 90,
+      'wght' 400;
+    font-size: 0.9rem;
+    color: inherit;
+  }
+
+  /* Full name: shown by default, hidden on mobile */
+  .predictor-match__name--full {
+    display: inline;
+  }
+
+  /* Abbrev: hidden by default, shown on mobile */
+  .predictor-match__name--abbr {
+    display: none;
+  }
+
+  /* ── Center column ───────────────────────────────────────────────────────── */
+  .predictor-match__center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    padding: 0 0.25rem;
+    flex-shrink: 0;
+    min-width: 3.25rem;
+  }
+
+  /* Draw button */
+  .predictor-match__draw {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 0.05);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    color: hsl(0deg 0% 100% / 75%);
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .predictor-match__draw:hover {
+    background: rgb(255 255 255 / 0.1);
+    color: #cbd5e1;
+  }
+
+  .predictor-match__draw--picked {
+    background: #000000;
+    border-color: #ffffff;
+    color: #ffffff;
+  }
+
+  /* Score row (horizontal: num – num) */
+  .predictor-match__score-row {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  /* Live: add dot before score */
+  .predictor-match__score-row--live {
+    gap: 0.25rem;
+  }
+
+  .predictor-match__score-num {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 800;
+    font-size: 1rem;
+    color: #e2e8f0;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .predictor-match__score-sep {
+    font-family: 'Anybody', sans-serif;
+    font-variation-settings:
+      'wdth' 100,
+      'wght' 700;
+    font-size: 0.85rem;
+    color: #ffffff;
+    line-height: 1;
+  }
+
+  /* Live dot */
+  .predictor-match__live-dot {
+    display: block;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 5px #22c55e;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  /* ── Mobile ≤425px: abbreviations ───────────────────────────────────────── */
+  @media (max-width: 425px) {
+    .predictor-match__name--full {
+      display: none;
+    }
+
+    .predictor-match__name--abbr {
+      display: inline;
+    }
+
+    .predictor-match__name {
+      font-size: 0.85rem;
+    }
+
+    .predictor-match__half {
+      padding: 0.4rem 0.5rem;
+      gap: 0.35rem;
+    }
+
+    .predictor-match__center {
+      min-width: 2.75rem;
+    }
+  }
+</style>
