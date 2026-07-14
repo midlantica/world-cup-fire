@@ -8,6 +8,22 @@ A fast, clean World Cup scores app built with **Nuxt 4** and deployed on **Netli
 
 <img width="1059" height="702" alt="WorldCupFire-com-01" src="https://github.com/user-attachments/assets/aac0b4c3-5953-443f-834d-9ff9b132d35f" />
 
+<img width="668" height="506" alt="WorldCupFire-com-02" src="https://github.com/user-attachments/assets/cec5fda2-f70d-46c8-8955-90bee079333c" />
+
+<img width="669" height="636" alt="WorldCupFire-com-03" src="https://github.com/user-attachments/assets/bc2c9761-39c8-4698-b471-aea7c4a0e1ec" />
+
+<img width="556" height="568" alt="WorldCupFire-com-04" src="https://github.com/user-attachments/assets/43afd69b-5fe2-4f65-9192-90400ea5dfbc" />
+
+<img width="840" height="631" alt="WorldCupFire-com-05" src="https://github.com/user-attachments/assets/51762cc8-fce6-42cc-aff6-576fa6875422" />
+
+<img width="657" height="561" alt="WorldCupFire-com-06" src="https://github.com/user-attachments/assets/4ef8a042-a3ea-459a-8546-6a737e82e235" />
+
+<img width="899" height="628" alt="WorldCupFire-com-07" src="https://github.com/user-attachments/assets/4a7c09d8-1d74-4843-baea-cc8f58528574" />
+
+<img width="634" height="644" alt="WorldCupFire-com-08" src="https://github.com/user-attachments/assets/b8f119ca-d1a4-43b5-a972-5a8b244814d9" />
+
+<img width="660" height="463" alt="WorldCupFire-com-09" src="https://github.com/user-attachments/assets/3428f39d-af79-4288-a4c8-02503ed1f74f" />
+
 
 
 ---
