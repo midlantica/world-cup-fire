@@ -6,6 +6,12 @@ A fast, clean World Cup scores app built with **Nuxt 4** and deployed on **Netli
 
 ---
 
+<img width="1059" height="702" alt="WorldCupFire-com-01" src="https://github.com/user-attachments/assets/aac0b4c3-5953-443f-834d-9ff9b132d35f" />
+
+
+
+---
+
 ## Features
 
 - **Live Scores** — Real-time match scores with live clock, halftime, and full-time indicators. Auto-polls every 30 seconds when live matches are active.
