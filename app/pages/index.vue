@@ -77,6 +77,7 @@
 
 <style scoped>
   @reference "~/assets/css/main.css";
+
   .home-page {
     margin-top: 0;
   }
